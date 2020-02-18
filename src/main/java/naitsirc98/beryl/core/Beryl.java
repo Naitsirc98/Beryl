@@ -1,6 +1,5 @@
 package naitsirc98.beryl.core;
 
-import naitsirc98.beryl.graphics.window.Window;
 import org.lwjgl.system.Configuration;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -36,6 +35,7 @@ public final class Beryl {
             beryl.init();
             beryl.run();
         } catch (Throwable error) {
+            Log.error(error.getMessage(), error);
             beryl.error(error);
         } finally {
             beryl.terminate();
@@ -98,7 +98,6 @@ public final class Beryl {
                 framesPerSecond = 0;
                 showFPSTimer = Time.time();
             }
-
         }
     }
 

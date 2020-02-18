@@ -65,11 +65,11 @@ public final class TypeUtils {
     }
 
     public static void destroy(Object object) {
-        callAnnotatedMethod(object.getClass(), Destructor.class);
+        callAnnotatedMethod(object.getClass(), Destructor.class, object);
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> T callAnnotatedMethod(Class<?> clazz, Class<? extends Annotation> annotation) {
+    public static <T> T callAnnotatedMethod(Class<?> clazz, Class<? extends Annotation> annotation, Object object) {
         Optional<Method> result = Stream.of(clazz.getDeclaredMethods())
                 .parallel()
                 .filter(method -> nonNull(method.getDeclaredAnnotation(annotation)))
@@ -77,9 +77,11 @@ public final class TypeUtils {
 
         if(result.isPresent()) {
             try {
-                return (T) result.get().invoke(null);
+                Method method = result.get();
+                method.setAccessible(true);
+                return (T) method.invoke(object);
             } catch (IllegalAccessException | InvocationTargetException e) {
-                Log.error("Cannot invoke method " + result.get().getName());
+                Log.error("Cannot invoke method " + result.get().getName(), e);
             }
         }
 

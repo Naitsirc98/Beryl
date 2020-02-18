@@ -15,6 +15,7 @@ public class Main {
 
     private static void setConfig() {
         BerylConfiguration.DEBUG.set(true);
+        BerylConfiguration.INTERNAL_DEBUG.set(true);
     }
 
 }

@@ -15,7 +15,7 @@ public final class Asserts {
     public static void assertTrue(boolean condition) {
         if(ENABLED) {
             if(!condition) {
-                throw new AssertionException();
+                throw new AssertionException("Assert condition was false");
             }
         }
     }

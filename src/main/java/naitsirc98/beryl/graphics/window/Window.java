@@ -1,23 +1,28 @@
 package naitsirc98.beryl.graphics.window;
 
+import naitsirc98.beryl.images.Image;
+import naitsirc98.beryl.images.PixelFormat;
 import naitsirc98.beryl.util.*;
 import org.joml.Vector2i;
 import org.joml.Vector2ic;
+import org.lwjgl.glfw.GLFWImage;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.system.MemoryStack;
 
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
-import static naitsirc98.beryl.util.Asserts.assertNonNull;
-import static naitsirc98.beryl.util.Asserts.assertNotEquals;
+import static naitsirc98.beryl.util.Asserts.*;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.system.MemoryStack.stackPush;
 
 // TODO: icons
 
 /**
- * Class for represent window instances. This is basically a wrapper around a {@code GLFWWindow} handle
+ * The type Window.
  */
 public final class Window implements LongHandle {
 
@@ -254,6 +259,42 @@ public final class Window implements LongHandle {
      */
     public Window cursorType(CursorType cursorType) {
         glfwSetInputMode(handle, GLFW_CURSOR, cursorType.glfwInputMode());
+        return this;
+    }
+
+    /**
+     * Sets the icon of this window. The image must be RGBA
+     *
+     * @param icon the image icon. Must be RGBA
+     * @return this window
+     * */
+    public Window icon(Image icon) {
+        return icons(Collections.singletonList(icon));
+    }
+
+    /**
+     * Sets the icons of this window. The images must be RGBA
+     *
+     * @param icons a collection of icon images. Must be RGBA
+     * @return this window
+     * */
+    public Window icons(List<Image> icons) {
+        try(MemoryStack stack = stackPush()) {
+            GLFWImage.Buffer images = GLFWImage.mallocStack(icons.size(), stack);
+
+            for(int i = 0;i < icons.size();i++) {
+                Image icon = icons.get(i);
+                assertEquals(icon.pixelFormat(), PixelFormat.RGBA);
+
+                GLFWImage image = images.get(i);
+
+                image.width(icon.width());
+                image.height(icon.height());
+                image.pixels(icon.pixelsi());
+            }
+
+            glfwSetWindowIcon(handle, images);
+        }
         return this;
     }
 
