@@ -1,17 +1,11 @@
 package naitsirc98.beryl.core;
 
-import naitsirc98.beryl.core.BerylSystemManager.Allocator;
-
 import static org.lwjgl.glfw.GLFW.*;
 
 public final class Time extends BerylSystem {
 
+    @Singleton
     private static Time instance;
-
-    @Allocator
-    private static Time create() {
-        return instance = new Time();
-    }
 
     /**
      * Returns the nano time passed since the application started
@@ -96,7 +90,10 @@ public final class Time extends BerylSystem {
 
     @Override
     protected void init() {
-
+        if(!glfwInit()) {
+            throw new ExceptionInInitializerError("Cannot initialize GLFW");
+        }
+        glfwSetTime(BerylConfiguration.INITIAL_TIME_VALUE.get(0.0));
     }
 
     @Override

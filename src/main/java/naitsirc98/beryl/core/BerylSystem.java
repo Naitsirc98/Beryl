@@ -12,8 +12,8 @@ public abstract class BerylSystem {
     protected abstract void terminate();
 
     @Retention(RetentionPolicy.RUNTIME)
-    @Target(ElementType.METHOD)
-    protected @interface Allocator {
+    @Target(ElementType.FIELD)
+    protected @interface Singleton {
 
     }
 }
