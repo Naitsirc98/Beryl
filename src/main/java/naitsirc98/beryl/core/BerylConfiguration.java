@@ -17,13 +17,11 @@ public final class BerylConfiguration<T> {
     public static final BerylConfiguration<Collection<Log.Channel>> LOG_CHANNELS = new BerylConfiguration<>();
     public static final BerylConfiguration<DateTimeFormatter> LOG_DATETIME_FORMATTER = new BerylConfiguration<>();
 
+    public static final BerylConfiguration<Boolean> ENABLE_ASSERTS = new BerylConfiguration<>();
+
     private T value;
 
     public BerylConfiguration() {
-    }
-
-    public BerylConfiguration(T value) {
-        this.value = value;
     }
 
     public boolean empty() {

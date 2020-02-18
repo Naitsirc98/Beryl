@@ -3,37 +3,46 @@ package naitsirc98.beryl.core;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-class BerylSystemManager extends BerylSystem {
+import static java.util.Arrays.stream;
+
+public class BerylSystemManager extends BerylSystem {
 
     // ===> Beryl Systems
 
-    private final Log log;
-    private final Time time;
-
+    private final BerylSystem[] systems;
 
     // <===
 
     public BerylSystemManager() {
-        log = allocate(Log.class);
-        time = allocate(Time.class);
+        systems = new BerylSystem[] {
+                allocate(Log.class),
+                allocate(Time.class)
+        };
     }
 
     @Override
-    protected void init() {
+    public void init() {
         // Initialize systems in order
-        log.init();
-        time.init();
+        stream(systems).forEach(BerylSystem::init);
     }
 
     @Override
-    protected void terminate() {
+    public void terminate() {
         // Terminate systems in reverse order
-        time.terminate();
-        log.terminate();
+        reverseOrder(systems).forEach(BerylSystem::terminate);
+    }
+
+    private Stream<BerylSystem> reverseOrder(BerylSystem[] systems) {
+        return IntStream.range(0, systems.length)
+                .boxed()
+                .map(index -> systems[systems.length - index - 1])
+                .filter(Objects::nonNull);
     }
 
     private <T extends BerylSystem> T allocate(Class<T> clazz) {
