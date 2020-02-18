@@ -17,9 +17,10 @@ public class BerylSystemManager {
 
     public BerylSystemManager() {
         systems = new BerylSystem[] {
-                allocate(Log.class),
-                allocate(Time.class),
-                allocate(Graphics.class)
+                createSystem(GLFWLibrary.class),
+                createSystem(Log.class),
+                createSystem(Time.class),
+                createSystem(Graphics.class)
         };
     }
 
@@ -48,7 +49,7 @@ public class BerylSystemManager {
                 .filter(Objects::nonNull);
     }
 
-    private <T extends BerylSystem> T allocate(Class<T> clazz) {
+    private <T extends BerylSystem> T createSystem(Class<T> clazz) {
         final T system = newInstance(clazz);
         initSingleton(clazz, system);
         return system;

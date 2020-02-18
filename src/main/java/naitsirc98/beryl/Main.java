@@ -3,7 +3,6 @@ package naitsirc98.beryl;
 import naitsirc98.beryl.core.Beryl;
 import naitsirc98.beryl.core.BerylApplication;
 import naitsirc98.beryl.core.BerylConfiguration;
-import org.lwjgl.glfw.GLFW;
 
 
 public class Main {
