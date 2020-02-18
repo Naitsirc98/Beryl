@@ -1,6 +1,7 @@
 package naitsirc98.beryl.util;
 
 import naitsirc98.beryl.core.Log;
+import org.jetbrains.annotations.NotNull;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
@@ -14,6 +15,7 @@ import static java.util.Objects.nonNull;
 
 public final class TypeUtils {
 
+    @NotNull
     public static <T> T newInstance(Class<T> type) {
         try {
             Constructor<T> constructor = type.getDeclaredConstructor();
@@ -25,6 +27,7 @@ public final class TypeUtils {
         return null;
     }
 
+    @NotNull
     public static <T> T newInstance(Class<T> type, Object... args) {
         try {
             Constructor<T> constructor = type.getDeclaredConstructor(classesOf(args));

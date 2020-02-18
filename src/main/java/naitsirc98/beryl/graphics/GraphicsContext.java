@@ -4,6 +4,4 @@ import naitsirc98.beryl.graphics.window.WindowFactory;
 
 public interface GraphicsContext {
 
-    WindowFactory windowFactory();
-
 }

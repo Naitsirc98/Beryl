@@ -42,6 +42,9 @@ public final class BerylConfiguration<T> {
     public static final BerylConfiguration<Sizec> WINDOW_SIZE = new BerylConfiguration<>();
     public static final BerylConfiguration<DisplayMode> WINDOW_DISPLAY_MODE = new BerylConfiguration<>();
     public static final BerylConfiguration<CursorType> WINDOW_CURSOR_TYPE = new BerylConfiguration<>();
+    public static final BerylConfiguration<Boolean> WINDOW_VISIBLE = new BerylConfiguration<>();
+    public static final BerylConfiguration<Boolean> WINDOW_RESIZABLE = new BerylConfiguration<>();
+    public static final BerylConfiguration<Boolean> WINDOW_FOCUS_ON_SHOW = new BerylConfiguration<>();
 
 
     private T value;

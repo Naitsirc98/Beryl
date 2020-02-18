@@ -11,6 +11,8 @@ module Beryl {
     requires org.joml;
     // <===
 
+    requires org.jetbrains.annotations;
+
     requires java.logging;
 
 }

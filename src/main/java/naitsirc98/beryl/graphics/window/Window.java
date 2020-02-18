@@ -1,5 +1,6 @@
 package naitsirc98.beryl.graphics.window;
 
+import naitsirc98.beryl.graphics.WindowDestroyAccessor;
 import naitsirc98.beryl.util.*;
 import org.joml.Vector2i;
 import org.joml.Vector2ic;
@@ -14,7 +15,7 @@ import static naitsirc98.beryl.util.Asserts.assertNotEquals;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.system.MemoryStack.stackPush;
 
-public final class Window implements LongHandle {
+public final class Window extends WindowDestroyAccessor {
 
     @Singleton
     private static Window instance;
