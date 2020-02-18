@@ -2,18 +2,27 @@ package naitsirc98.beryl.core;
 
 import org.lwjgl.system.Configuration;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import static java.util.Objects.requireNonNull;
+import static naitsirc98.beryl.util.TypeUtils.initSingleton;
 
 public final class Beryl {
 
     public static final boolean INTERNAL_DEBUG = BerylConfiguration.INTERNAL_DEBUG.get(false);
     public static final boolean DEBUG = BerylConfiguration.DEBUG.get(INTERNAL_DEBUG);
 
-    public static void launch() {
+    private static final AtomicBoolean LAUNCHED = new AtomicBoolean(false);
+
+    public static synchronized void launch() {
         launch(new BerylApplication());
     }
 
-    public static void launch(BerylApplication application) {
+    public static synchronized void launch(BerylApplication application) {
+
+        if(!LAUNCHED.compareAndSet(false, true)) {
+            throw new ExceptionInInitializerError("Beryl has been already launched");
+        }
 
         Beryl beryl = new Beryl(requireNonNull(application));
 
@@ -32,6 +41,7 @@ public final class Beryl {
 
     private Beryl(BerylApplication application) {
         this.application = application;
+        initSingleton(BerylApplication.class, application);
         systemManager = new BerylSystemManager();
     }
 

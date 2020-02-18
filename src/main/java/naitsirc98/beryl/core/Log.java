@@ -1,5 +1,7 @@
 package naitsirc98.beryl.core;
 
+import naitsirc98.beryl.util.Singleton;
+
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStream;

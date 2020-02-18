@@ -1,5 +1,7 @@
 package naitsirc98.beryl.core;
 
+import naitsirc98.beryl.util.Singleton;
+
 import static org.lwjgl.glfw.GLFW.*;
 
 public final class Time extends BerylSystem {

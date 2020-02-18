@@ -5,6 +5,16 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * A class to set different configuration variables. The value of each configuration container will be read once and
+ * its contents will be either stored in a {@code static final} variable or used at the moment.
+ *
+ * A value of null means default value. If another behaviour is wanted, it must be set before {@link Beryl} class loads.
+ * There is a special method for it, which is {@link BerylApplication#setConfiguration}.
+ *
+ * This class is heavily based on {@link org.lwjgl.system.Configuration}
+ *
+ * */
 public final class BerylConfiguration<T> {
 
     public static final BerylConfiguration<Boolean> DEBUG = new BerylConfiguration<>();

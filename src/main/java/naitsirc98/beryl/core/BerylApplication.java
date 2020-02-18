@@ -1,10 +1,20 @@
 package naitsirc98.beryl.core;
 
+import naitsirc98.beryl.util.Singleton;
+
 import java.util.function.Consumer;
 
 import static java.util.Objects.requireNonNull;
 
 public class BerylApplication {
+
+    // Application instance used by Beryl
+    @Singleton
+    private static BerylApplication instance;
+
+    public static BerylApplication getInstance() {
+        return instance;
+    }
 
     public BerylApplication() {
         setConfiguration();
