@@ -6,8 +6,7 @@ import naitsirc98.beryl.graphics.window.Window;
 import naitsirc98.beryl.graphics.window.WindowFactory;
 import naitsirc98.beryl.util.Singleton;
 
-import static naitsirc98.beryl.util.TypeUtils.initSingleton;
-import static naitsirc98.beryl.util.TypeUtils.newInstance;
+import static naitsirc98.beryl.util.TypeUtils.*;
 
 public final class Graphics extends BerylSystem {
 
@@ -30,7 +29,7 @@ public final class Graphics extends BerylSystem {
     @Override
     protected void terminate() {
         // TODO: release graphics resources
-        window.destroy();
+        destroy(window);
     }
 
 }

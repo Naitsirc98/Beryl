@@ -1,6 +1,5 @@
 package naitsirc98.beryl.graphics.window;
 
-import naitsirc98.beryl.graphics.WindowDestroyAccessor;
 import naitsirc98.beryl.util.*;
 import org.joml.Vector2i;
 import org.joml.Vector2ic;
@@ -15,11 +14,21 @@ import static naitsirc98.beryl.util.Asserts.assertNotEquals;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.system.MemoryStack.stackPush;
 
-public final class Window extends WindowDestroyAccessor {
+// TODO: icons
+
+/**
+ * Class for represent window instances. This is basically a wrapper around a {@code GLFWWindow} handle
+ */
+public final class Window implements LongHandle {
 
     @Singleton
     private static Window instance;
 
+    /**
+     * Returns the application window
+     *
+     * @return the window
+     */
     public static Window get() {
         return instance;
     }
@@ -41,6 +50,7 @@ public final class Window extends WindowDestroyAccessor {
         }
     }
 
+
     Window(long handle, String title, DisplayMode displayMode, Sizec defaultSize) {
 
         this.handle = handle;
@@ -55,28 +65,59 @@ public final class Window extends WindowDestroyAccessor {
         rect = new Rect();
     }
 
+    /**
+     * Returns the native handle of this window
+     *
+     * @return the {@code GLFWWindow} handle
+     * */
     @Override
     public long handle() {
         return handle;
     }
 
+    /**
+     * Returns the title of this window
+     *
+     * @return the title
+     */
     public String title() {
         return title;
     }
 
+    /**
+     * Sets the title of this window
+     *
+     * @param title the title
+     * @return this window
+     */
     public Window title(String title) {
         glfwSetWindowTitle(handle, title);
         return this;
     }
 
+    /**
+     * Returns the position x coordinate
+     *
+     * @return the x coordinate
+     */
     public int x() {
         return position().x();
     }
 
+    /**
+     * Returns the position y coordinate
+     *
+     * @return the y coordinate
+     */
     public int y() {
         return position().y();
     }
 
+    /**
+     * Returns the position of this window
+     *
+     * @return the position
+     */
     public Vector2ic position() {
         try(MemoryStack stack = stackPush()) {
             IntBuffer x = stack.mallocInt(1);
@@ -86,11 +127,23 @@ public final class Window extends WindowDestroyAccessor {
         }
     }
 
+    /**
+     * Sets the position of this window
+     *
+     * @param x the x coordinate
+     * @param y the y coordinate
+     * @return this window
+     */
     public Window position(int x, int y) {
         glfwSetWindowPos(handle, x, y);
         return this;
     }
 
+    /**
+     * Center the window.
+     *
+     * @return this window
+     */
     public Window center() {
 
         GLFWVidMode vmode = assertNonNull(glfwGetVideoMode(glfwGetPrimaryMonitor()));
@@ -100,18 +153,38 @@ public final class Window extends WindowDestroyAccessor {
         return position(centerX(vmode.width(), size.width()), centerY(vmode.height(), size.height()));
     }
 
+    /**
+     * Returns the width of this window
+     *
+     * @return the width
+     */
     public int width() {
         return size().width();
     }
 
+    /**
+     * Returns the height of this window
+     *
+     * @return the height
+     */
     public int height() {
         return size().height();
     }
 
+    /**
+     * Returns the aspect ratio of this window
+     *
+     * @return the aspect ratio
+     */
     public float aspect() {
         return size().aspect();
     }
 
+    /**
+     * Returns the size of this window
+     *
+     * @return the size of the window
+     */
     public Sizec size() {
         try(MemoryStack stack = stackPush()) {
             IntBuffer width = stack.mallocInt(1);
@@ -121,11 +194,23 @@ public final class Window extends WindowDestroyAccessor {
         }
     }
 
+    /**
+     * Sets the size of this window
+     *
+     * @param width  the width
+     * @param height the height
+     * @return this window
+     */
     public Window size(int width, int height) {
         glfwSetWindowSize(handle, width, height);
         return this;
     }
 
+    /**
+     * Returns the framebuffer's size of this window
+     *
+     * @return the framebuffer's size
+     */
     public Sizec framebufferSize() {
         try(MemoryStack stack = stackPush()) {
             IntBuffer width = stack.mallocInt(1);
@@ -135,6 +220,12 @@ public final class Window extends WindowDestroyAccessor {
         }
     }
 
+    /**
+     * Retrieves the size, in screen coordinates, of each edge of the frame of this window.
+     * This size includes the title bar, if the window has one.
+     *
+     * @return the frame size
+     */
     public Rectc rect() {
         try(MemoryStack stack = MemoryStack.stackPush()) {
             IntBuffer left = stack.ints(0);
@@ -146,35 +237,87 @@ public final class Window extends WindowDestroyAccessor {
         }
     }
 
+    /**
+     * Returns the current cursor type
+     *
+     * @return the cursor type
+     */
     public CursorType cursorType() {
         return CursorType.of(glfwGetInputMode(handle, GLFW_CURSOR));
     }
 
+    /**
+     * Sets the cursor type of this window
+     *
+     * @param cursorType the cursor type
+     * @return this window
+     */
     public Window cursorType(CursorType cursorType) {
         glfwSetInputMode(handle, GLFW_CURSOR, cursorType.glfwInputMode());
         return this;
     }
 
+    /**
+     * Returns a native handle to the clipboard
+     *
+     * @return a handle to the clipboard
+     */
+    public long clipboardHandle() {
+        return nglfwGetClipboardString(handle);
+    }
+
+    /**
+     * Returns the contents of the clipboard as {@link String}
+     *
+     * @return the clipboard as {@link String}
+     */
     public String clipboard() {
         return glfwGetClipboardString(handle);
     }
 
+    /**
+     * Sets the clipboard contents
+     *
+     * @param clipboard the clipboard contents as {@link String}
+     * @return this window
+     */
     public Window clipboard(String clipboard) {
         glfwSetClipboardString(handle, clipboard);
         return this;
     }
 
+
+    /**
+     * Sets the clipboard contents
+     *
+     * @param clipboard the clipboard contents as {@link ByteBuffer}
+     * @return this window
+     */
     public Window clipboard(ByteBuffer clipboard) {
         glfwSetClipboardString(handle, clipboard);
         return this;
     }
 
+    /**
+     * Returns the current display mode.
+     *
+     * @return the current display mode
+     */
     public DisplayMode displayMode() {
-        return displayMode;
+        return visible() ? displayMode : DisplayMode.MINIMIZED;
     }
 
+    /**
+     * Sets the display mode of this window.
+     *
+     * @param displayMode the new display mode
+     * @return this window
+     */
     public Window displayMode(DisplayMode displayMode) {
+
         switch(displayMode) {
+            case MINIMIZED:
+                return hide();
             case FULLSCREEN:
                 return fullscreen();
             case MAXIMIZED:
@@ -185,6 +328,11 @@ public final class Window extends WindowDestroyAccessor {
         throw new IllegalArgumentException();
     }
 
+    /**
+     * Sets the window in fullscreen mode
+     *
+     * @return this window
+     */
     public Window fullscreen() {
         displayMode = DisplayMode.FULLSCREEN;
         long monitor = assertNotEquals(glfwGetPrimaryMonitor(), NULL);
@@ -195,6 +343,11 @@ public final class Window extends WindowDestroyAccessor {
         return changeDisplayMode(monitor, vmode.refreshRate(), 0, 0, vmode.width(), vmode.height());
     }
 
+    /**
+     * Sets this window in maximized mode
+     *
+     * @return this window
+     */
     public Window maximized() {
         windowed();
 
@@ -208,6 +361,11 @@ public final class Window extends WindowDestroyAccessor {
                 vmode.width() - rect.right(), vmode.height() - rect.bottom());
     }
 
+    /**
+     * Sets this window in windowed mode
+     *
+     * @return this window
+     */
     public Window windowed() {
 
         displayMode = DisplayMode.WINDOWED;
@@ -221,27 +379,70 @@ public final class Window extends WindowDestroyAccessor {
                 defaultHeight);
     }
 
+    /**
+     * Tells whether this window is currently visible or not
+     *
+     * @return {@code true} this window is visible, {@code false} otherwise
+     *
+     * */
+    public boolean visible() {
+        return glfwGetWindowAttrib(handle, GLFW_VISIBLE) == GLFW_TRUE;
+    }
+
+    /**
+     * Shows this window if it was not visible
+     *
+     * @return this window
+     */
     public Window show() {
         glfwShowWindow(handle);
         return this;
     }
 
+    /**
+     * Hides this window if it was visible
+     *
+     * @return this window
+     */
     public Window hide() {
         glfwHideWindow(handle);
         return this;
     }
 
+    /**
+     * Tells whether this window should stay open or not
+     *
+     * @return if window should be open
+     */
     public boolean open() {
         return !shouldClose();
     }
 
+    /**
+     * Returns if this window should be closed
+     *
+     * @return if window should close
+     */
     public boolean shouldClose() {
         return glfwWindowShouldClose(handle);
     }
 
-    public Window shouldClose(boolean shouldClose) {
-        glfwSetWindowShouldClose(handle, shouldClose);
+    /**
+     * Indicates that this window should close
+     *
+     * @return this window
+     */
+    public Window close() {
+        glfwSetWindowShouldClose(handle, true);
         return this;
+    }
+
+    /**
+     * Destroys this window
+     * */
+    @Destructor
+    private void destroy() {
+        glfwDestroyWindow(handle);
     }
 
     private int centerY(int monitorHeight, int windowHeight) {

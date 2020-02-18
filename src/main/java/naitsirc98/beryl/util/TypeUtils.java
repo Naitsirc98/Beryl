@@ -64,6 +64,10 @@ public final class TypeUtils {
                 });
     }
 
+    public static void destroy(Object object) {
+        callAnnotatedMethod(object.getClass(), Destructor.class);
+    }
+
     @SuppressWarnings("unchecked")
     public static <T> T callAnnotatedMethod(Class<?> clazz, Class<? extends Annotation> annotation) {
         Optional<Method> result = Stream.of(clazz.getDeclaredMethods())
