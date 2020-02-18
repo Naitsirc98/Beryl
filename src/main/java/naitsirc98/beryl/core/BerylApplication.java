@@ -16,8 +16,18 @@ public class BerylApplication {
         return instance;
     }
 
+    private boolean running;
+
     public BerylApplication() {
         setConfiguration();
+    }
+
+    public final boolean running() {
+        return running;
+    }
+
+    public final void exit() {
+        running = false;
     }
 
     protected void setConfiguration() {
@@ -48,6 +58,10 @@ public class BerylApplication {
 
     }
 
+    void start() {
+        running = true;
+        onStart();
+    }
 
     public static final class Builder {
 

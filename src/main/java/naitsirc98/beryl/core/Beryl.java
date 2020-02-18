@@ -4,6 +4,7 @@ import org.lwjgl.system.Configuration;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
 import static naitsirc98.beryl.util.TypeUtils.initSingleton;
 
@@ -11,6 +12,9 @@ public final class Beryl {
 
     public static final boolean INTERNAL_DEBUG = BerylConfiguration.INTERNAL_DEBUG.get(false);
     public static final boolean DEBUG = BerylConfiguration.DEBUG.get(INTERNAL_DEBUG);
+
+    private static final int UPDATES_PER_SECOND = 60;
+    private static final float IDEAL_FRAME_DELAY = 1.0f / UPDATES_PER_SECOND;
 
     private static final AtomicBoolean LAUNCHED = new AtomicBoolean(false);
 
@@ -39,6 +43,9 @@ public final class Beryl {
     private final BerylApplication application;
     private final BerylSystemManager systemManager;
 
+    private float updateDelay;
+    private int updatesPerSecond;
+
     private Beryl(BerylApplication application) {
         this.application = application;
         initSingleton(BerylApplication.class, application);
@@ -47,9 +54,9 @@ public final class Beryl {
 
     private void init() {
 
-        application.onInit();
-
         setLWJGLConfiguration();
+
+        application.onInit();
 
         systemManager.init();
 
@@ -60,17 +67,60 @@ public final class Beryl {
 
         Log.info("Starting Application...");
 
-        application.onStart();
+        application.start();
 
-        // main loop
+        // Get frequently used systems
+        final Time time = systemManager.get(Time.class);
+
+        float lastFrame = 0.0f;
+        float showFPSTimer = 0.0f;
+
+        int framesPerSecond = 0;
+
+        while(application.running()) {
+
+            final float now = Time.time();
+            time.deltaTime = now - lastFrame;
+            lastFrame = now;
+
+            update(time.deltaTime);
+
+            render();
+            ++framesPerSecond;
+
+            if(DEBUG && Time.time() - showFPSTimer >= 1.0f) {
+                Log.debug(format("FPS: %d | UPS: %d | DeltaTime: %.3f", framesPerSecond, updatesPerSecond, Time.deltaTime()));
+                time.ups = updatesPerSecond;
+                time.fps = framesPerSecond;
+                updatesPerSecond = 0;
+                framesPerSecond = 0;
+                showFPSTimer = Time.time();
+            }
+
+        }
     }
 
-    private void update() {
+    private void update(float deltaTime) {
 
+        updateDelay += deltaTime;
+
+        while(updateDelay >= IDEAL_FRAME_DELAY) {
+
+            application.onUpdate();
+
+            updateDelay -= IDEAL_FRAME_DELAY;
+            ++updatesPerSecond;
+        }
     }
 
     private void render() {
-
+        // TODO
+        // For now just simulate some rendering delay
+        try {
+            Thread.sleep(1);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     private void error(Throwable error) {

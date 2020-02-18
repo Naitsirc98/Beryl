@@ -1,5 +1,6 @@
 package naitsirc98.beryl.core;
 
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -19,14 +20,22 @@ public class BerylSystemManager extends BerylSystem {
         };
     }
 
+    @SuppressWarnings("unchecked")
+    public <T> T get(Class<T> clazz) {
+        return (T) Arrays.stream(systems)
+                .filter(system -> system.getClass().equals(clazz))
+                .findAny()
+                .orElseThrow(() -> new IllegalArgumentException(clazz.getName() + " is not a valid Beryl System"));
+    }
+
     @Override
-    public void init() {
+    protected void init() {
         // Initialize systems in order
         stream(systems).forEach(BerylSystem::init);
     }
 
     @Override
-    public void terminate() {
+    protected void terminate() {
         // Terminate systems in reverse order
         reverseOrder(systems).forEach(BerylSystem::terminate);
     }
