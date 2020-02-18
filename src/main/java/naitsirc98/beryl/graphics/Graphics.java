@@ -2,18 +2,18 @@ package naitsirc98.beryl.graphics;
 
 import naitsirc98.beryl.core.BerylConfiguration;
 import naitsirc98.beryl.core.BerylSystem;
+import naitsirc98.beryl.graphics.window.Window;
 import naitsirc98.beryl.util.Singleton;
 
-public class Graphics extends BerylSystem {
+import static naitsirc98.beryl.util.TypeUtils.initSingleton;
+
+public final class Graphics extends BerylSystem {
 
     @Singleton
     private static Graphics instance;
 
-    public static API getGraphicsAPI() {
-        return instance.graphicsAPI;
-    }
-
-    private API graphicsAPI;
+    private GraphicsContext graphicsContext;
+    private Window window;
 
     private Graphics() {
 
@@ -21,8 +21,7 @@ public class Graphics extends BerylSystem {
 
     @Override
     protected void init() {
-        graphicsAPI = BerylConfiguration.GRAPHICS_API.get(API.VULKAN);
-        // TODO: init graphics context and window
+        initSingleton(GraphicsAPI.class, BerylConfiguration.GRAPHICS_API.get(GraphicsAPI.OPENGL));
     }
 
     @Override
@@ -30,10 +29,4 @@ public class Graphics extends BerylSystem {
         // TODO: release graphics resources
     }
 
-    public enum API {
-
-        VULKAN,
-        OPENGL
-
-    }
 }

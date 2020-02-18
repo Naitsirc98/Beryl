@@ -1,6 +1,10 @@
 package naitsirc98.beryl.core;
 
-import naitsirc98.beryl.graphics.Graphics;
+import naitsirc98.beryl.graphics.GraphicsAPI;
+import naitsirc98.beryl.graphics.window.CursorType;
+import naitsirc98.beryl.graphics.window.DisplayMode;
+import naitsirc98.beryl.util.Sizec;
+import org.joml.Vector2ic;
 
 import java.time.format.DateTimeFormatter;
 import java.util.Collection;
@@ -31,7 +35,14 @@ public final class BerylConfiguration<T> {
 
     public static final BerylConfiguration<Boolean> ENABLE_ASSERTS = new BerylConfiguration<>();
 
-    public static final BerylConfiguration<Graphics.API> GRAPHICS_API = new BerylConfiguration<>();
+    public static final BerylConfiguration<GraphicsAPI> GRAPHICS_API = new BerylConfiguration<>();
+
+    public static final BerylConfiguration<String> WINDOW_TITLE = new BerylConfiguration<>();
+    public static final BerylConfiguration<Vector2ic> WINDOW_POSITION = new BerylConfiguration<>();
+    public static final BerylConfiguration<Sizec> WINDOW_SIZE = new BerylConfiguration<>();
+    public static final BerylConfiguration<DisplayMode> WINDOW_DISPLAY_MODE = new BerylConfiguration<>();
+    public static final BerylConfiguration<CursorType> WINDOW_CURSOR_TYPE = new BerylConfiguration<>();
+
 
     private T value;
 

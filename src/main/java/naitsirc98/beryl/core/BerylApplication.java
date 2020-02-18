@@ -12,7 +12,7 @@ public class BerylApplication {
     @Singleton
     private static BerylApplication instance;
 
-    public static BerylApplication getInstance() {
+    public static BerylApplication get() {
         return instance;
     }
 

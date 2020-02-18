@@ -8,6 +8,7 @@ module Beryl {
     requires org.lwjgl.glfw.natives;
     requires org.lwjgl.glfw;
 
+    requires org.joml;
     // <===
 
     requires java.logging;

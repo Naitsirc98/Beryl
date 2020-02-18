@@ -6,6 +6,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -22,6 +23,23 @@ public final class TypeUtils {
             Log.error("Cannot invoke constructor for class " + type, e);
         }
         return null;
+    }
+
+    public static <T> T newInstance(Class<T> type, Object... args) {
+        try {
+            Constructor<T> constructor = type.getDeclaredConstructor(classesOf(args));
+            constructor.setAccessible(true);
+            return constructor.newInstance(args);
+        } catch (Exception e) {
+            Log.error("Cannot invoke constructor for class " + type + " with arguments: " + Arrays.toString(args), e);
+        }
+        return null;
+    }
+
+    public static Class<?>[] classesOf(Object[] objects) {
+        return (Class<?>[]) Arrays.stream(objects)
+                .map(object -> object == null ? null : object.getClass())
+                .toArray();
     }
 
     public static void initSingleton(Class<?> clazz, Object value) {

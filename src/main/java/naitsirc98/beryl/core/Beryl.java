@@ -7,6 +7,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
 import static naitsirc98.beryl.util.TypeUtils.initSingleton;
+import static org.lwjgl.glfw.GLFW.glfwPollEvents;
 
 public final class Beryl {
 
@@ -105,6 +106,8 @@ public final class Beryl {
         updateDelay += deltaTime;
 
         while(updateDelay >= IDEAL_FRAME_DELAY) {
+
+            glfwPollEvents();
 
             application.onUpdate();
 
