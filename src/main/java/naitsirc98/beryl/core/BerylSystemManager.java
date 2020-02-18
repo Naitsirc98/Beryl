@@ -1,5 +1,7 @@
 package naitsirc98.beryl.core;
 
+import naitsirc98.beryl.graphics.Graphics;
+
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.stream.IntStream;
@@ -9,14 +11,15 @@ import static java.util.Arrays.stream;
 import static naitsirc98.beryl.util.TypeUtils.initSingleton;
 import static naitsirc98.beryl.util.TypeUtils.newInstance;
 
-public class BerylSystemManager extends BerylSystem {
+public class BerylSystemManager {
 
     private final BerylSystem[] systems;
 
     public BerylSystemManager() {
         systems = new BerylSystem[] {
                 allocate(Log.class),
-                allocate(Time.class)
+                allocate(Time.class),
+                allocate(Graphics.class)
         };
     }
 
@@ -28,14 +31,12 @@ public class BerylSystemManager extends BerylSystem {
                 .orElseThrow(() -> new IllegalArgumentException(clazz.getName() + " is not a valid Beryl System"));
     }
 
-    @Override
-    protected void init() {
+    public void init() {
         // Initialize systems in order
         stream(systems).forEach(BerylSystem::init);
     }
 
-    @Override
-    protected void terminate() {
+    public void terminate() {
         // Terminate systems in reverse order
         reverseOrder(systems).forEach(BerylSystem::terminate);
     }

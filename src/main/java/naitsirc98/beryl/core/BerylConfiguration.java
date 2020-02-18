@@ -1,5 +1,7 @@
 package naitsirc98.beryl.core;
 
+import naitsirc98.beryl.graphics.Graphics;
+
 import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.Map;
@@ -28,6 +30,8 @@ public final class BerylConfiguration<T> {
     public static final BerylConfiguration<DateTimeFormatter> LOG_DATETIME_FORMATTER = new BerylConfiguration<>();
 
     public static final BerylConfiguration<Boolean> ENABLE_ASSERTS = new BerylConfiguration<>();
+
+    public static final BerylConfiguration<Graphics.API> GRAPHICS_API = new BerylConfiguration<>();
 
     private T value;
 

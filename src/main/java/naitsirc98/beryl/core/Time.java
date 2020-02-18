@@ -92,9 +92,6 @@ public final class Time extends BerylSystem {
 
     @Override
     protected void init() {
-        if(!glfwInit()) {
-            throw new ExceptionInInitializerError("Cannot initialize GLFW");
-        }
         glfwSetTime(BerylConfiguration.INITIAL_TIME_VALUE.get(0.0));
     }
 
