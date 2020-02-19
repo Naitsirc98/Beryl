@@ -46,6 +46,8 @@ public final class BerylConfiguration<T> {
     public static final BerylConfiguration<Boolean> WINDOW_RESIZABLE = new BerylConfiguration<>();
     public static final BerylConfiguration<Boolean> WINDOW_FOCUS_ON_SHOW = new BerylConfiguration<>();
 
+    public static final BerylConfiguration<Integer> EVENT_QUEUE_INITIAL_CAPACITY = new BerylConfiguration<>();
+
 
     private T value;
 

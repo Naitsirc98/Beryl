@@ -2,8 +2,8 @@ package naitsirc98.beryl.core;
 
 public abstract class BerylSystem {
 
-    protected abstract void init();
+    protected void init() {}
 
-    protected abstract void terminate();
+    protected void terminate() {}
 
 }
