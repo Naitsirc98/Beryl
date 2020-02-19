@@ -2,49 +2,74 @@ package naitsirc98.beryl.events;
 
 import naitsirc98.beryl.core.BerylConfiguration;
 import naitsirc98.beryl.core.BerylSystem;
-import naitsirc98.beryl.core.Log;
 import naitsirc98.beryl.util.Singleton;
 
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static naitsirc98.beryl.util.Asserts.assertNonNull;
 import static org.lwjgl.glfw.GLFW.*;
 
+/**
+ * The event manager process all the events that occur during a frame
+ */
 public final class EventManager extends BerylSystem {
-
-    private static final long EVENT_PROCESSING_TIMEOUT = 360;
-
 
     @Singleton
     private static EventManager instance;
 
+
+    /**
+     * Adds an event callback for a particular event class at the back of its list
+     *
+     * @param eventClass the event class
+     * @param callback   the callback
+     */
     public static void addEventCallback(Class<? extends Event> eventClass, EventCallback<? extends Event> callback) {
         instance.addEventCallbackInternal(assertNonNull(eventClass), assertNonNull(callback));
     }
 
+    /**
+     *  Adds an event callback for a particular event class at the front of its list
+     *
+     * @param eventClass the event class
+     * @param callback   the callback
+     */
     public static void pushEventCallback(Class<? extends Event> eventClass, EventCallback<? extends Event> callback) {
         instance.pushEventCallbackInternal(assertNonNull(eventClass), assertNonNull(callback));
     }
 
+    /**
+     * Remove an event callback.
+     *
+     * @param eventClass    the event class
+     * @param eventCallback the event callback
+     */
     public static void removeEventCallback(Class<? extends Event> eventClass, EventCallback<?> eventCallback) {
         instance.removeEventCallbackInternal(assertNonNull(eventClass), eventCallback);
     }
 
+    /**
+     * Submit a new event to be processed in the next frame
+     *
+     * @param event the event
+     */
     public static void submit(Event event) {
-        instance.eventQueue.add(assertNonNull(event));
+        instance.frontEventQueue.add(assertNonNull(event));
     }
 
+    /**
+     * Submit a new event to be processed after the next frame
+     *
+     * @param event the event
+     */
     public static void submitLater(Event event) {
-        instance.eventQueueLater.add(assertNonNull(event));
+        instance.backEventQueue.add(assertNonNull(event));
     }
 
-    private Queue<Event> eventQueue;
-    private Queue<Event> eventQueueLater;
+    private Queue<Event> frontEventQueue;
+    private Queue<Event> backEventQueue;
     private Map<Class<? extends Event>, List<EventCallback<?>>> eventCallbacks;
-    private ExecutorService threadPool;
+    private EventDispatcher dispatcher;
 
     private EventManager() {
 
@@ -52,77 +77,61 @@ public final class EventManager extends BerylSystem {
 
     @Override
     protected void init() {
-        this.eventQueue = new ArrayDeque<>(BerylConfiguration.EVENT_QUEUE_INITIAL_CAPACITY.get(64));
-        this.eventQueueLater = new ArrayDeque<>();
+        this.frontEventQueue = new ArrayDeque<>(BerylConfiguration.EVENT_QUEUE_INITIAL_CAPACITY.get(64));
+        this.backEventQueue = new ArrayDeque<>(BerylConfiguration.EVENT_QUEUE_INITIAL_CAPACITY.get(64));
         this.eventCallbacks = new HashMap<>();
-        threadPool = Executors.newCachedThreadPool();
+        dispatcher = new EventDispatcher(eventCallbacks);
     }
 
+    @Override
+    protected void terminate() {
+        dispatcher.shutdown();
+    }
+
+    /**
+     * Wait for events.
+     */
     public void waitForEvents() {
         glfwWaitEvents();
     }
 
+    /**
+     * Wait for events for a certain timeout of time
+     *
+     * @param timeout the timeout in seconds
+     */
     public void waitForEvents(double timeout) {
         glfwWaitEventsTimeout(timeout);
     }
 
+    /**
+     * Process events.
+     */
     public void processEvents() {
 
         glfwPollEvents();
 
         processEventQueue();
 
-        submitLaterEvents();
+        swapEventQueues();
     }
 
     private void processEventQueue() {
 
-        if(eventQueue.isEmpty()) {
+        if(frontEventQueue.isEmpty()) {
             return;
         }
 
-        while(!eventQueue.isEmpty()) {
-            threadPool.submit(() -> processEvent(eventQueue.remove()));
-        }
-
-        try {
-            threadPool.awaitTermination(EVENT_PROCESSING_TIMEOUT, MILLISECONDS);
-        } catch (InterruptedException e) {
-            Log.error("Timeout at waiting for event processing", e);
+        while(!frontEventQueue.isEmpty()) {
+            final Event event = frontEventQueue.poll();
+            dispatcher.dispatch(event);
         }
     }
 
-    private void submitLaterEvents() {
-        while(!eventQueueLater.isEmpty()) {
-            eventQueue.add(eventQueueLater.remove());
-        }
-    }
-
-    private void processEvent(Event event) {
-
-        if(eventCallbacks.containsKey(event.getClass())) {
-            processEvent(event, eventCallbacks.get(event.getClass()));
-        } else {
-            processEvent(event, eventCallbacks.get(event.type()));
-        }
-    }
-
-    private void processEvent(Event event, List<EventCallback<?>> eventCallbacks) {
-
-        for(EventCallback<?> callback : eventCallbacks) {
-
-            call(event, callback);
-
-            if(event.consumed()) {
-                break;
-            }
-        }
-
-    }
-
-    @SuppressWarnings("unchecked")
-    private <T extends Event> void call(T event, EventCallback<?> callback) {
-        ((EventCallback<T>)callback).onEvent(event);
+    private void swapEventQueues() {
+        final Queue<Event> tmp = this.frontEventQueue;
+        this.frontEventQueue = backEventQueue;
+        backEventQueue = tmp;
     }
 
     private void addEventCallbackInternal(Class<? extends Event> eventClass, EventCallback<? extends Event> callback) {

@@ -8,7 +8,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
 import static naitsirc98.beryl.util.TypeUtils.initSingleton;
-import static org.lwjgl.glfw.GLFW.glfwPollEvents;
 
 public final class Beryl {
 
@@ -91,6 +90,8 @@ public final class Beryl {
 
             render();
             ++framesPerSecond;
+
+            ++time.frames;
 
             if(DEBUG && Time.time() - showFPSTimer >= 1.0f) {
                 Log.debug(format("FPS: %d | UPS: %d | DeltaTime: %.3f", framesPerSecond, updatesPerSecond, Time.deltaTime()));

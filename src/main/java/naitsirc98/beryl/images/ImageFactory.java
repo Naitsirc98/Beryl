@@ -45,7 +45,7 @@ public final class ImageFactory {
      * Creates a new image suitable for window icons. An icon must be RGBA
      *
      * @param filename the filename of the icon
-     * @param flipY    tells whether this image should be flipped vertically on load
+     * @param flipY tells whether this image should be flipped vertically on load
      * @return the icon image
      */
     public static Image newIcon(String filename, boolean flipY) {
@@ -53,10 +53,10 @@ public final class ImageFactory {
     }
 
     /**
-     * Creates a new image
+     * Creates a new image from the specified filename
      *
-     * @param filename    the filename
-     * @param flipY       the flip y
+     * @param filename    the filename of the image
+     * @param flipY       tells whether this image should be flipped vertically on load
      * @param pixelFormat the pixel format
      * @return the image
      */
@@ -99,14 +99,6 @@ public final class ImageFactory {
 
     private static final class STBImage extends Image {
 
-        /**
-         * Instantiates a new Un managed image.
-         *
-         * @param width       the width
-         * @param height      the height
-         * @param pixelFormat the pixel format
-         * @param pixels      the pixels
-         */
         STBImage(int width, int height, PixelFormat pixelFormat, Buffer pixels) {
             super(width, height, pixelFormat, pixels);
         }
@@ -119,15 +111,6 @@ public final class ImageFactory {
 
     private static final class BufferedImage extends Image {
 
-
-        /**
-         * Instantiates a new Managed image.
-         *
-         * @param width       the width
-         * @param height      the height
-         * @param pixelFormat the pixel format
-         * @param pixels      the pixels
-         */
         BufferedImage(int width, int height, PixelFormat pixelFormat, Buffer pixels) {
             super(width, height, pixelFormat, pixels);
         }

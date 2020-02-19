@@ -73,6 +73,15 @@ public final class Time extends BerylSystem {
     }
 
     /**
+     * Returns the number of frames run since the application started
+     *
+     * @return the number of frames
+     * */
+    public static long frames() {
+        return instance.frames;
+    }
+
+    /**
      * Returns the frequency of the underlying timer
      *
      * @return the timer frequency
@@ -81,10 +90,10 @@ public final class Time extends BerylSystem {
         return (float)glfwGetTimerFrequency();
     }
 
-
     float deltaTime;
     float fps;
     float ups;
+    long frames;
 
     private Time() {
 
