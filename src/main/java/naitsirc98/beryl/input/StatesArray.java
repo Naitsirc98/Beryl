@@ -18,6 +18,11 @@ public class StatesArray<T extends Enum<T>> implements Iterable<Map.Entry<T, Sta
         states = new EnumMap<>(type);
     }
 
+    public StatesArray(Class<T> type, StatesArray<T> other) {
+        this(type);
+        other.forEach(entry -> set(entry.getKey(), entry.getValue()));
+    }
+
     public StatesArray<T> clear() {
         states.clear();
         return this;

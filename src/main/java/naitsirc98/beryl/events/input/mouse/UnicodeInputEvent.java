@@ -1,4 +1,4 @@
-package naitsirc98.beryl.events.input;
+package naitsirc98.beryl.events.input.mouse;
 
 import naitsirc98.beryl.events.Event;
 

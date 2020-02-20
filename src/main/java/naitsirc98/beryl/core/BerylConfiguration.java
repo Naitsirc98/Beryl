@@ -51,7 +51,6 @@ public final class BerylConfiguration<T> {
 
     public static final BerylConfiguration<Integer> EVENT_QUEUE_INITIAL_CAPACITY = new BerylConfiguration<>();
 
-
     private T value;
 
     public BerylConfiguration() {

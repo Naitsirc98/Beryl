@@ -1,4 +1,4 @@
-package naitsirc98.beryl.events.input;
+package naitsirc98.beryl.events.input.keyboard;
 
 import naitsirc98.beryl.events.Event;
 import naitsirc98.beryl.input.Key;

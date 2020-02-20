@@ -1,13 +1,19 @@
 package naitsirc98.beryl.input;
 
 import naitsirc98.beryl.core.BerylSystem;
+import naitsirc98.beryl.core.Log;
 import naitsirc98.beryl.events.EventManager;
-import naitsirc98.beryl.events.input.*;
+import naitsirc98.beryl.events.input.keyboard.KeyPressedEvent;
+import naitsirc98.beryl.events.input.keyboard.KeyReleasedEvent;
+import naitsirc98.beryl.events.input.keyboard.KeyRepeatEvent;
+import naitsirc98.beryl.events.input.keyboard.KeyTypedEvent;
+import naitsirc98.beryl.events.input.mouse.*;
 import naitsirc98.beryl.graphics.window.Window;
 import naitsirc98.beryl.util.Singleton;
 import org.lwjgl.system.MemoryStack;
 
 import java.nio.DoubleBuffer;
+import java.util.EnumMap;
 
 import static org.lwjgl.glfw.GLFW.glfwGetCursorPos;
 
@@ -156,19 +162,49 @@ public final class Input extends BerylSystem {
         return instance.mouseScrollY;
     }
 
+    /**
+     * Returns a gamepad view of the given joystick
+     *
+     * @param joystick the joystick
+     * @return the gamepad from the given joystick
+     * */
+    public static Gamepad gamepad(Joystick joystick) {
+
+        if(!joystick.isGamepad()) {
+            Log.warning("The joystick " + joystick + " is not gamepad");
+            return null;
+        }
+
+        if(instance.gamepads.containsKey(joystick)) {
+            return instance.gamepads.get(joystick);
+        }
+
+        Gamepad gamepad = new Gamepad(joystick);
+        instance.gamepads.put(joystick, gamepad);
+
+        return gamepad;
+    }
 
 
-    private StatesArray<Key> keyStates;
-    private StatesArray<MouseButton> mouseButtonStates;
+    private final StatesArray<Key> keyStates;
+    private final StatesArray<MouseButton> mouseButtonStates;
+    private final EnumMap<Joystick, Gamepad> gamepads;
     private float mouseX, mouseY;
     private float mouseScrollX, mouseScrollY;
 
     private Input() {
+        keyStates = new StatesArray<>(Key.class);
+        mouseButtonStates = new StatesArray<>(MouseButton.class);
+        gamepads = new EnumMap<>(Joystick.class);
     }
 
     @Override
     protected void init() {
         setEventCallbacks();
+    }
+
+    public void update() {
+        gamepads.values().forEach(Gamepad::update);
     }
 
     private void cacheMousePosition() {

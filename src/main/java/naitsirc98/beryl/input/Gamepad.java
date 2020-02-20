@@ -2,6 +2,7 @@ package naitsirc98.beryl.input;
 
 import naitsirc98.beryl.util.GLFWWrapper;
 import org.lwjgl.glfw.GLFWGamepadState;
+import org.lwjgl.system.MemoryStack;
 
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
@@ -13,26 +14,22 @@ import static naitsirc98.beryl.input.State.asState;
 import static naitsirc98.beryl.util.Asserts.assertNonNull;
 import static naitsirc98.beryl.util.Asserts.assertTrue;
 import static org.lwjgl.glfw.GLFW.*;
+import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.memASCIISafe;
 
 public class Gamepad implements GLFWWrapper {
 
-    private static final EnumMap<Joystick, Gamepad> GAMEPADS = new EnumMap<>(Joystick.class);
-
     public static Gamepad of(Joystick joystick) {
-        assertTrue(joystick.isGamepad());
-        return GAMEPADS.computeIfAbsent(joystick, k -> new Gamepad(joystick));
+        return Input.gamepad(joystick);
     }
 
     private final Joystick joystick;
-    private final GLFWGamepadState gamepadState;
     private final StatesArray<Joystick.Button> buttons;
     private final EnumMap<Joystick.Axis, Float> axes;
 
-    private Gamepad(Joystick joystick) {
+    Gamepad(Joystick joystick) {
         assertTrue(joystick.isGamepad());
         this.joystick = joystick;
-        gamepadState = GLFWGamepadState.create();
         buttons = new StatesArray<>(Joystick.Button.class);
         axes = new EnumMap<>(Joystick.Axis.class);
     }
@@ -63,10 +60,6 @@ public class Gamepad implements GLFWWrapper {
         return this;
     }
 
-    public GLFWGamepadState gamepadState() {
-        return gamepadState;
-    }
-
     public boolean isPresent() {
         return joystick().isPresent();
     }
@@ -79,23 +72,25 @@ public class Gamepad implements GLFWWrapper {
         return axes;
     }
 
-    public Gamepad update() {
-        glfwGetGamepadState(glfwHandle(), gamepadState());
-        updateButtons();
-        updateAxes();
-        return this;
+    void update() {
+        try(MemoryStack stack = stackPush()) {
+            GLFWGamepadState gamepadState = GLFWGamepadState.mallocStack(stack);
+            glfwGetGamepadState(glfwHandle(), gamepadState);
+            updateButtons(gamepadState);
+            updateAxes(gamepadState);
+        }
     }
 
-    private void updateButtons() {
-        ByteBuffer states = gamepadState().buttons();
+    private void updateButtons(GLFWGamepadState gamepadState) {
+        ByteBuffer states = gamepadState.buttons();
         buttons.clear();
         for(int i = 0;i < states.limit();i++) {
             buttons.set(asJoystickButton(i), asState(states.get(i)));
         }
     }
 
-    private void updateAxes() {
-        FloatBuffer states = gamepadState().axes();
+    private void updateAxes(GLFWGamepadState gamepadState) {
+        FloatBuffer states = gamepadState.axes();
         axes.clear();
         for(int i = 0;i < states.limit();i++) {
             axes.put(asJoystickAxis(i), states.get(i));

@@ -1,4 +1,4 @@
-package naitsirc98.beryl.events.input;
+package naitsirc98.beryl.events.input.mouse;
 
 public class MouseMovedEvent extends MouseEvent {
 	

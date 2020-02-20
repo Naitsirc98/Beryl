@@ -1,7 +1,7 @@
 package naitsirc98.beryl.core;
 
 import naitsirc98.beryl.events.EventManager;
-import naitsirc98.beryl.graphics.window.Window;
+import naitsirc98.beryl.input.Input;
 import org.lwjgl.system.Configuration;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -78,6 +78,7 @@ public final class Beryl {
         // Get frequently used systems
         final Time time = systemManager.get(Time.class);
         final EventManager eventManager = systemManager.get(EventManager.class);
+        final Input input = systemManager.get(Input.class);
 
         float lastFrame = 0.0f;
         float showFPSTimer = 0.0f;
@@ -90,7 +91,7 @@ public final class Beryl {
             time.deltaTime = now - lastFrame;
             lastFrame = now;
 
-            update(time.deltaTime, eventManager);
+            update(time.deltaTime, eventManager, input);
 
             render();
             ++framesPerSecond;
@@ -108,13 +109,15 @@ public final class Beryl {
         }
     }
 
-    private void update(float deltaTime, EventManager eventManager) {
+    private void update(float deltaTime, EventManager eventManager, Input input) {
 
         updateDelay += deltaTime;
 
         while(updateDelay >= IDEAL_FRAME_DELAY) {
 
             eventManager.processEvents();
+
+            input.update();
 
             application.onUpdate();
 
