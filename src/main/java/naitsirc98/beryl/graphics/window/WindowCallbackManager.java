@@ -9,6 +9,7 @@ import naitsirc98.beryl.events.window.WindowFocusEvent;
 import naitsirc98.beryl.events.window.WindowMovedEvent;
 import naitsirc98.beryl.events.window.WindowResizedEvent;
 import naitsirc98.beryl.input.Key;
+import naitsirc98.beryl.input.Modifier;
 import naitsirc98.beryl.input.MouseButton;
 import naitsirc98.beryl.util.Destructor;
 import org.lwjgl.glfw.*;
@@ -128,10 +129,10 @@ class WindowCallbackManager {
 
             case GLFW_PRESS:
                 keyRepeatCount = 0;
-                event = new MouseButtonPressedEvent(MouseButton.asMouseButton(button));
+                event = new MouseButtonPressedEvent(MouseButton.asMouseButton(button), Modifier.asModifierMask(mods));
                 break;
             case GLFW_RELEASE:
-                event = new MouseButtonReleasedEvent(MouseButton.asMouseButton(button));
+                event = new MouseButtonReleasedEvent(MouseButton.asMouseButton(button), Modifier.asModifierMask(mods));
                 break;
         }
 
@@ -145,13 +146,13 @@ class WindowCallbackManager {
         switch(action) {
             case GLFW_PRESS:
                 keyRepeatCount = 0;
-                event = new KeyPressedEvent(Key.asKey(key));
+                event = new KeyPressedEvent(Key.asKey(key), Modifier.asModifierMask(mods));
                 break;
             case GLFW_REPEAT:
-                event = new KeyRepeatEvent(Key.asKey(key), ++keyRepeatCount);
+                event = new KeyRepeatEvent(Key.asKey(key), Modifier.asModifierMask(mods), ++keyRepeatCount);
                 break;
             case GLFW_RELEASE:
-                event = new KeyReleasedEvent(Key.asKey(key));
+                event = new KeyReleasedEvent(Key.asKey(key), Modifier.asModifierMask(mods));
                 break;
         }
 

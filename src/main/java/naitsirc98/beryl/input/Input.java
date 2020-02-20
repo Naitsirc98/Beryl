@@ -207,9 +207,9 @@ public final class Input extends BerylSystem {
             if(keyStates.stateOf(key) != State.TYPE) {
                 // Trigger a typed event
                 keyStates.set(key, State.TYPE);
-                EventManager.submit(new KeyTypedEvent(key));
+                EventManager.submit(new KeyTypedEvent(key, e.modifiers()));
                 // Reset state to RELEASE in the next event pass
-                EventManager.submitLater(new KeyReleasedEvent(key));
+                EventManager.submitLater(new KeyReleasedEvent(key, e.modifiers()));
 
             } else {
                 keyStates.set(key, State.RELEASE);
@@ -231,9 +231,9 @@ public final class Input extends BerylSystem {
             if(mouseButtonStates.stateOf(button) != State.CLICK) {
                 // Trigger a clicked event
                 mouseButtonStates.set(button, State.CLICK);
-                EventManager.submit(new MouseButtonClickedEvent(button));
+                EventManager.submit(new MouseButtonClickedEvent(button, e.modifiers()));
                 // Reset in the next event pass
-                EventManager.submitLater(new MouseButtonReleasedEvent(button));
+                EventManager.submitLater(new MouseButtonReleasedEvent(button, e.modifiers()));
             } else {
                 mouseButtonStates.set(button, State.RELEASE);
             }

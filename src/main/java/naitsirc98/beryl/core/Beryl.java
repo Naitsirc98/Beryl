@@ -1,7 +1,6 @@
 package naitsirc98.beryl.core;
 
 import naitsirc98.beryl.events.EventManager;
-import naitsirc98.beryl.util.SystemInfo;
 import org.lwjgl.system.Configuration;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -127,10 +126,8 @@ public final class Beryl {
     private void render() {
         // TODO
         // For now just simulate some rendering delay
-        try {
-            Thread.sleep(1);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+        for(int i = 0;i < 10000;i++) {
+            Math.sin(i);
         }
     }
 
