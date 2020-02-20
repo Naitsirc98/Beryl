@@ -81,8 +81,7 @@ public final class TypeUtils {
                 method.setAccessible(true);
                 return (T) method.invoke(object);
             } catch (IllegalAccessException | InvocationTargetException e) {
-                e.printStackTrace();
-                // Log.error("Cannot invoke method " + result.get().getName() + ": " + e.getMessage(), e);
+                Log.error("Cannot invoke method " + result.get().getName(), e);
             }
         }
 

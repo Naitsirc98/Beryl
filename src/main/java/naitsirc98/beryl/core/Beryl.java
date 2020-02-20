@@ -7,8 +7,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
-import static naitsirc98.beryl.util.SystemInfo.getMemoryUsed;
-import static naitsirc98.beryl.util.SystemInfo.getTotalMemory;
+import static naitsirc98.beryl.util.SystemInfo.*;
 import static naitsirc98.beryl.util.TypeUtils.initSingleton;
 
 public final class Beryl {
@@ -160,12 +159,13 @@ public final class Beryl {
 
     private String buildDebugReport(int fps, int ups, float deltaTime) {
 
-        StringBuilder builder = new StringBuilder(format("FPS: %d | UPS: %d | DeltaTime: %.3f", fps, ups, deltaTime));
+        StringBuilder builder = new StringBuilder(format("FPS: %d | UPS: %d | DeltaTime: %.5f", fps, ups, deltaTime));
 
         builder.append("\n\t");
         if(MEMORY_USAGE_REPORT) {
-            builder.append("[MEMORY]: Used = ").append(getMemoryUsed() / 1024 / 1024)
-                    .append(" MB | Total = ").append(getTotalMemory() / 1024 / 1024).append(" MB");
+            builder.append("[JVM MEMORY]: Used = ").append(getMemoryUsed() / 1024 / 1024)
+                    .append(" MB | Total = ").append(getTotalMemory() / 1024 / 1024)
+                    .append(" MB | Max = ").append(getMaxMemory() / 1024 / 1024).append(" MB");
         }
 
         builder.append("\n\t");

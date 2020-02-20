@@ -3,6 +3,7 @@ package naitsirc98.beryl.graphics.window;
 import naitsirc98.beryl.core.BerylApplication;
 import naitsirc98.beryl.events.Event;
 import naitsirc98.beryl.events.EventManager;
+import naitsirc98.beryl.events.FramebufferResizeEvent;
 import naitsirc98.beryl.events.input.*;
 import naitsirc98.beryl.events.window.WindowClosedEvent;
 import naitsirc98.beryl.events.window.WindowFocusEvent;
@@ -20,19 +21,14 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import static naitsirc98.beryl.events.EventManager.submit;
-import static naitsirc98.beryl.util.Asserts.assertNonNull;
 import static org.lwjgl.glfw.GLFW.*;
 
 class CallbackManager {
 
-    private final long handle;
-    private final Consumer<DisplayMode> onDisplayModeChange;
     private final List<Callback> callbacks;
     private int keyRepeatCount;
 
-    public CallbackManager(long handle, Consumer<DisplayMode> onDisplayModeChange) {
-        this.handle = handle;
-        this.onDisplayModeChange = assertNonNull(onDisplayModeChange);
+    public CallbackManager() {
         callbacks = new ArrayList<>();
     }
 
@@ -42,7 +38,7 @@ class CallbackManager {
         callbacks.clear();
     }
 
-    void setup() {
+    CallbackManager setup(long handle, Consumer<DisplayMode> onDisplayModeChange) {
 
         glfwSetWindowPosCallback(handle, add(onWindowPos()));
 
@@ -50,7 +46,7 @@ class CallbackManager {
 
         glfwSetFramebufferSizeCallback(handle, add(onFramebufferResize()));
 
-        glfwSetWindowMaximizeCallback(handle, add(onWindowMaximixe()));
+        glfwSetWindowMaximizeCallback(handle, add(onWindowMaximixe(onDisplayModeChange)));
 
         glfwSetWindowFocusCallback(handle, add(onWindowFocus()));
 
@@ -66,54 +62,60 @@ class CallbackManager {
         glfwSetScrollCallback(handle, add(onScrollEvent()));
 
         glfwSetCursorPosCallback(handle, add(onCursorPosEvent()));
+
+        glfwSetCursorEnterCallback(handle, add(onCursorEnterEvent()));
+
+        return this;
+    }
+
+    private GLFWCursorEnterCallback onCursorEnterEvent() {
+        return GLFWCursorEnterCallback.create((handle, entered) -> submit(entered ? new MouseEnterEvent() : new MouseExitEvent()));
     }
 
     private GLFWCursorPosCallback onCursorPosEvent() {
-        return GLFWCursorPosCallback.create((whandle, x, y) -> submit(new MouseMovedEvent((float)x, (float)y)));
+        return GLFWCursorPosCallback.create((handle, x, y) -> submit(new MouseMovedEvent((float)x, (float)y)));
     }
 
     private GLFWScrollCallback onScrollEvent() {
-        return GLFWScrollCallback.create((whandle, xoffset, yoffset) -> submit(new MouseScrollEvent((float)xoffset, (float)yoffset)));
+        return GLFWScrollCallback.create((handle, xoffset, yoffset) -> submit(new MouseScrollEvent((float)xoffset, (float)yoffset)));
     }
 
     private GLFWMouseButtonCallback onMouseButtonEvent() {
-        return GLFWMouseButtonCallback.create((whandle, button, action, mods) -> submit(newMouseButtonEvent(button, action, mods)));
+        return GLFWMouseButtonCallback.create((handle, button, action, mods) -> submit(newMouseButtonEvent(button, action, mods)));
     }
 
     private GLFWCharCallback onUnicodeEvent() {
-        return GLFWCharCallback.create((whandle, codePoint) -> submit(new UnicodeInputEvent(codePoint)));
+        return GLFWCharCallback.create((handle, codePoint) -> submit(new UnicodeInputEvent(codePoint)));
     }
 
     private GLFWKeyCallback onKeyEvent() {
-        return GLFWKeyCallback.create((whandle, key, scancode, action, mods) -> submit(newKeyEvent(key, scancode, action, mods)));
+        return GLFWKeyCallback.create((handle, key, scancode, action, mods) -> submit(newKeyEvent(key, scancode, action, mods)));
     }
 
     private GLFWWindowCloseCallback onWindowClose() {
-        return GLFWWindowCloseCallback.create((whandle) -> submit(new WindowClosedEvent()));
+        return GLFWWindowCloseCallback.create((handle) -> submit(new WindowClosedEvent()));
     }
 
     private GLFWWindowFocusCallback onWindowFocus() {
-        return GLFWWindowFocusCallback.create((whandle, focused) -> submit(new WindowFocusEvent(focused)));
+        return GLFWWindowFocusCallback.create((handle, focused) -> submit(new WindowFocusEvent(focused)));
     }
 
-    private GLFWWindowMaximizeCallback onWindowMaximixe() {
-        return GLFWWindowMaximizeCallback.create((whandle, maximized) -> onDisplayModeChange.accept(maximized
+    private GLFWWindowMaximizeCallback onWindowMaximixe(Consumer<DisplayMode> onDisplayModeChange) {
+        return GLFWWindowMaximizeCallback.create((handle, maximized) -> onDisplayModeChange.accept(maximized
                 ? DisplayMode.MAXIMIZED
                 : DisplayMode.WINDOWED));
     }
 
     private GLFWFramebufferSizeCallback onFramebufferResize() {
-        return GLFWFramebufferSizeCallback.create((whandle, w, h) -> {
-            // getGraphics().getContext().getGraphicsPipeline().setViewport(0, 0, w, h);
-        });
+        return GLFWFramebufferSizeCallback.create((handle, w, h) -> submit(new FramebufferResizeEvent(w, h)));
     }
 
     private GLFWWindowSizeCallback onWindowResize() {
-        return GLFWWindowSizeCallback.create((whandle, w, h) -> submit(new WindowResizedEvent(w, h)));
+        return GLFWWindowSizeCallback.create((handle, w, h) -> submit(new WindowResizedEvent(w, h)));
     }
 
     private GLFWWindowPosCallback onWindowPos() {
-        return GLFWWindowPosCallback.create((whandle, x, y) -> submit(new WindowMovedEvent(x, y)));
+        return GLFWWindowPosCallback.create((handle, x, y) -> submit(new WindowMovedEvent(x, y)));
     }
 
     private <T extends Callback> T add(T callback) {

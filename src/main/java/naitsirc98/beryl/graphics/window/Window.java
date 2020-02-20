@@ -67,8 +67,7 @@ public final class Window implements LongHandle {
         framebufferSize = new Size();
         rect = new Rect();
 
-        callbacks = new CallbackManager(handle, newDisplayMode -> this.displayMode = newDisplayMode);
-        callbacks.setup();
+        callbacks = new CallbackManager().setup(handle, newDisplayMode -> this.displayMode = newDisplayMode);
     }
 
     /**
