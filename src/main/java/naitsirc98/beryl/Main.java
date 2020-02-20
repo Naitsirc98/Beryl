@@ -9,15 +9,6 @@ public class Main {
 
     public static void main(String[] args) {
 
-        try {
-
-            throw new RuntimeException(new NullPointerException());
-
-        } catch(Throwable e) {
-            e.printStackTrace();
-            System.out.println(e.toString());
-        }
-
         Beryl.launch(new BerylApplication.Builder().setConfiguration(Main::setConfig).build());
 
     }

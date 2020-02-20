@@ -83,7 +83,7 @@ public final class Log extends BerylSystem {
      * @param msg the message
      */
     public static void error(Object msg) {
-        instance.logMessage(Level.ERROR, withStackTrace(msg, getStackTrace()));
+        instance.logMessage(Level.ERROR, withStackTrace(msg));
     }
 
     /**
@@ -93,7 +93,7 @@ public final class Log extends BerylSystem {
      * @param cause the {@link Throwable} cause
      */
     public static void error(Object msg, Throwable cause) {
-        instance.logMessage(Level.ERROR, withStackTrace(msg, getStackTrace(cause.getStackTrace(), 0)));
+        instance.logMessage(Level.ERROR, withThrowable(msg, cause));
     }
 
     /**
@@ -111,7 +111,7 @@ public final class Log extends BerylSystem {
         FatalException exception = new FatalException(msgString);
         exception.setStackTrace(Arrays.copyOfRange(stackTrace, 2, stackTrace.length));
 
-        instance.logMessage(Level.FATAL, withStackTrace(msgString, getStackTrace(stackTrace, 2)));
+        instance.logMessage(Level.FATAL, withStackTrace(msgString, stackTrace, 2));
         instance.terminate();
 
         throw exception;
@@ -127,7 +127,8 @@ public final class Log extends BerylSystem {
      * @param cause the {@link Throwable} cause
      */
     public static void fatal(Object msg, Throwable cause) {
-        instance.logMessage(Level.FATAL, msg);
+
+        instance.logMessage(Level.FATAL, withThrowable(msg, cause));
         instance.terminate();
 
         FatalException exception = new FatalException(String.valueOf(msg), cause);
@@ -136,20 +137,44 @@ public final class Log extends BerylSystem {
         throw exception;
     }
 
+    private static String withThrowable(Object msg, Throwable throwable) {
+        return msg + getThrowableString(throwable);
+    }
 
-    private static String withStackTrace(Object msg, String stackTrace) {
-        return String.valueOf(msg) + '\n' + stackTrace;
+    private static String getThrowableString(Throwable throwable) {
+
+        StringBuilder builder = new StringBuilder();
+
+        Throwable cause = throwable;
+
+        while(cause != null) {
+            builder.append('\n').append('\t').append("Caused by ");
+            builder.append(cause.toString());
+            builder.append('\n').append(getStackTrace(cause.getStackTrace(), 0));
+
+            cause = cause.getCause();
+        }
+
+        return builder.toString();
+    }
+
+    private static String withStackTrace(Object msg) {
+        return String.valueOf(msg) + '\n' + getStackTrace();
+    }
+
+    private static String withStackTrace(Object msg, StackTraceElement[] stackTrace, int startIndex) {
+        return String.valueOf(msg) + '\n' + getStackTrace(stackTrace, startIndex);
     }
 
     private static String getStackTrace() {
-        return getStackTrace(Thread.currentThread().getStackTrace(), 3);
+        return getStackTrace(Thread.currentThread().getStackTrace(), 4);
     }
 
     private static String getStackTrace(StackTraceElement[] stackTrace, int startIndex) {
-        StringBuilder builder = new StringBuilder("\tAt ");
+        StringBuilder builder = new StringBuilder();
 
         for(int i = startIndex;i < stackTrace.length;i++) {
-            builder.append(stackTrace[i]).append('\n').append('\t');
+            builder.append('\t').append("at ").append(stackTrace[i]).append('\n');
         }
 
         return builder.toString();
