@@ -26,6 +26,9 @@ public final class BerylConfiguration<T> {
     public static final BerylConfiguration<Boolean> DEBUG = new BerylConfiguration<>();
     public static final BerylConfiguration<Boolean> INTERNAL_DEBUG = new BerylConfiguration<>();
 
+    public static final BerylConfiguration<Boolean> MEMORY_USAGE_REPORT = new BerylConfiguration<>();
+    public static final BerylConfiguration<Boolean> EVENTS_DEBUG_REPORT = new BerylConfiguration<>();
+
     public static final BerylConfiguration<Double> INITIAL_TIME_VALUE = new BerylConfiguration<>();
 
     public static final BerylConfiguration<Set<Log.Level>> LOG_LEVELS = new BerylConfiguration<>();

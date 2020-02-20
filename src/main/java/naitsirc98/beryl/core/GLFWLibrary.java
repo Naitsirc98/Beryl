@@ -16,4 +16,5 @@ public final class GLFWLibrary extends BerylSystem {
     protected void terminate() {
         glfwTerminate();
     }
+
 }

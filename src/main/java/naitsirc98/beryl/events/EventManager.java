@@ -1,5 +1,6 @@
 package naitsirc98.beryl.events;
 
+import naitsirc98.beryl.core.Beryl;
 import naitsirc98.beryl.core.BerylConfiguration;
 import naitsirc98.beryl.core.BerylSystem;
 import naitsirc98.beryl.util.Singleton;
@@ -17,6 +18,23 @@ public final class EventManager extends BerylSystem {
     @Singleton
     private static EventManager instance;
 
+    /**
+     * Tells whether the event manager will report debug info or not
+     *
+     * @return if debug reports are enabled for the event manager
+     * */
+    public static boolean debugReportsEnabled() {
+        return instance.debugReport != null;
+    }
+
+    /**
+     * Returns the debug report of the event manager
+     *
+     * @return the debug report, or null if debug reports are disabled
+     * */
+    public static String debugReport() {
+        return debugReportsEnabled() ? instance.debugReport.report() : null;
+    }
 
     /**
      * Adds an event callback for a particular event class at the back of its list
@@ -24,7 +42,7 @@ public final class EventManager extends BerylSystem {
      * @param eventClass the event class
      * @param callback   the callback
      */
-    public static void addEventCallback(Class<? extends Event> eventClass, EventCallback<? extends Event> callback) {
+    public static <T extends Event> void addEventCallback(Class<T> eventClass, EventCallback<T> callback) {
         instance.addEventCallbackInternal(assertNonNull(eventClass), assertNonNull(callback));
     }
 
@@ -34,7 +52,7 @@ public final class EventManager extends BerylSystem {
      * @param eventClass the event class
      * @param callback   the callback
      */
-    public static void pushEventCallback(Class<? extends Event> eventClass, EventCallback<? extends Event> callback) {
+    public static <T extends Event> void pushEventCallback(Class<T> eventClass, EventCallback<T> callback) {
         instance.pushEventCallbackInternal(assertNonNull(eventClass), assertNonNull(callback));
     }
 
@@ -46,6 +64,15 @@ public final class EventManager extends BerylSystem {
      */
     public static void removeEventCallback(Class<? extends Event> eventClass, EventCallback<?> eventCallback) {
         instance.removeEventCallbackInternal(assertNonNull(eventClass), eventCallback);
+    }
+
+    /**
+     * Submit a new event and process it immediately
+     *
+     * @param event the event
+     */
+    public static void submitNow(Event event) {
+        instance.dispatcher.dispatch(event);
     }
 
     /**
@@ -70,9 +97,9 @@ public final class EventManager extends BerylSystem {
     private Queue<Event> backEventQueue;
     private Map<Class<? extends Event>, List<EventCallback<?>>> eventCallbacks;
     private EventDispatcher dispatcher;
+    private EventDebugReport debugReport;
 
     private EventManager() {
-
     }
 
     @Override
@@ -81,6 +108,7 @@ public final class EventManager extends BerylSystem {
         this.backEventQueue = new ArrayDeque<>(BerylConfiguration.EVENT_QUEUE_INITIAL_CAPACITY.get(64));
         this.eventCallbacks = new HashMap<>();
         dispatcher = new EventDispatcher(eventCallbacks);
+        debugReport = BerylConfiguration.EVENTS_DEBUG_REPORT.get(Beryl.DEBUG) ? new EventDebugReport() : null;
     }
 
     @Override
@@ -111,6 +139,10 @@ public final class EventManager extends BerylSystem {
 
         glfwPollEvents();
 
+        if(debugReport != null) {
+            debugReport.count(frontEventQueue.size());
+        }
+
         processEventQueue();
 
         swapEventQueues();
@@ -135,16 +167,12 @@ public final class EventManager extends BerylSystem {
     }
 
     private void addEventCallbackInternal(Class<? extends Event> eventClass, EventCallback<? extends Event> callback) {
-
         List<EventCallback<?>> callbacks = eventCallbacks.computeIfAbsent(eventClass, k -> new ArrayList<>(1));
-
         callbacks.add(callback);
     }
 
     private void pushEventCallbackInternal(Class<? extends Event> eventClass, EventCallback<? extends Event> callback) {
-
         List<EventCallback<?>> callbacks = eventCallbacks.computeIfAbsent(eventClass, k -> new ArrayList<>(1));
-
         callbacks.add(0, callback);
     }
 
@@ -152,6 +180,25 @@ public final class EventManager extends BerylSystem {
         List<EventCallback<?>> callbacks = eventCallbacks.get(eventClass);
         if(callbacks != null) {
             callbacks.remove(eventCallback);
+        }
+    }
+
+    private class EventDebugReport implements DebugReport {
+
+        private int eventCount;
+        private int maxEventCount;
+
+        private void count(int count) {
+            eventCount += count;
+        }
+
+        @Override
+        public String report() {
+            maxEventCount = Math.max(maxEventCount, eventCount);
+            final int eventCount = this.eventCount;
+            this.eventCount = 0;
+
+            return "Event count: " + eventCount + " | Max Event count: " + maxEventCount;
         }
     }
 }

@@ -6,4 +6,11 @@ public abstract class BerylSystem {
 
     protected void terminate() {}
 
+
+    public interface DebugReport {
+
+        String report();
+
+    }
+
 }

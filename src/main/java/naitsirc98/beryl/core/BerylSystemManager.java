@@ -2,6 +2,7 @@ package naitsirc98.beryl.core;
 
 import naitsirc98.beryl.events.EventManager;
 import naitsirc98.beryl.graphics.Graphics;
+import naitsirc98.beryl.input.Input;
 
 import java.util.Arrays;
 import java.util.Objects;
@@ -21,8 +22,9 @@ public class BerylSystemManager {
                 createSystem(GLFWLibrary.class),
                 createSystem(Log.class),
                 createSystem(Time.class),
+                createSystem(EventManager.class),
+                createSystem(Input.class),
                 createSystem(Graphics.class),
-                createSystem(EventManager.class)
         };
     }
 

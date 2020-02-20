@@ -29,7 +29,7 @@ public final class Graphics extends BerylSystem {
     @Override
     protected void terminate() {
         // TODO: release graphics resources
-        destroy(window);
+        delete(window);
     }
 
 }

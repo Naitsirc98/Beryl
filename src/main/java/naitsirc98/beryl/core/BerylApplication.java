@@ -12,8 +12,8 @@ public class BerylApplication {
     @Singleton
     private static BerylApplication instance;
 
-    public static BerylApplication get() {
-        return instance;
+    public static void exit() {
+        instance.running = false;
     }
 
     private boolean running;
@@ -24,10 +24,6 @@ public class BerylApplication {
 
     public final boolean running() {
         return running;
-    }
-
-    public final void exit() {
-        running = false;
     }
 
     protected void setConfiguration() {

@@ -1,10 +1,13 @@
 package naitsirc98.beryl.graphics.window;
 
 import naitsirc98.beryl.core.BerylConfiguration;
+import naitsirc98.beryl.events.EventManager;
+import naitsirc98.beryl.events.window.WindowMovedEvent;
+import naitsirc98.beryl.events.window.WindowResizedEvent;
 import naitsirc98.beryl.graphics.GraphicsAPI;
 import naitsirc98.beryl.util.Size;
 import naitsirc98.beryl.util.Sizec;
-import org.lwjgl.glfw.GLFWVidMode;
+import org.lwjgl.glfw.*;
 import org.lwjgl.system.Platform;
 
 import static naitsirc98.beryl.graphics.GraphicsAPI.OPENGL;

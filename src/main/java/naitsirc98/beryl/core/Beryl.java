@@ -1,18 +1,23 @@
 package naitsirc98.beryl.core;
 
 import naitsirc98.beryl.events.EventManager;
+import naitsirc98.beryl.util.SystemInfo;
 import org.lwjgl.system.Configuration;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
+import static naitsirc98.beryl.util.SystemInfo.getMemoryUsed;
+import static naitsirc98.beryl.util.SystemInfo.getTotalMemory;
 import static naitsirc98.beryl.util.TypeUtils.initSingleton;
 
 public final class Beryl {
 
     public static final boolean INTERNAL_DEBUG = BerylConfiguration.INTERNAL_DEBUG.get(false);
     public static final boolean DEBUG = BerylConfiguration.DEBUG.get(INTERNAL_DEBUG);
+
+    public static final boolean MEMORY_USAGE_REPORT = BerylConfiguration.MEMORY_USAGE_REPORT.get(DEBUG);
 
     private static final int UPDATES_PER_SECOND = 60;
     private static final float IDEAL_FRAME_DELAY = 1.0f / UPDATES_PER_SECOND;
@@ -94,7 +99,7 @@ public final class Beryl {
             ++time.frames;
 
             if(DEBUG && Time.time() - showFPSTimer >= 1.0f) {
-                Log.debug(format("FPS: %d | UPS: %d | DeltaTime: %.3f", framesPerSecond, updatesPerSecond, Time.deltaTime()));
+                Log.debug(buildDebugReport(framesPerSecond, updatesPerSecond, time.deltaTime));
                 time.ups = updatesPerSecond;
                 time.fps = framesPerSecond;
                 updatesPerSecond = 0;
@@ -156,4 +161,21 @@ public final class Beryl {
         Configuration.DISABLE_FUNCTION_CHECKS.set(!INTERNAL_DEBUG);
     }
 
+    private String buildDebugReport(int fps, int ups, float deltaTime) {
+
+        StringBuilder builder = new StringBuilder(format("FPS: %d | UPS: %d | DeltaTime: %.3f", fps, ups, deltaTime));
+
+        builder.append("\n\t");
+        if(MEMORY_USAGE_REPORT) {
+            builder.append("[MEMORY]: Used = ").append(getMemoryUsed() / 1024 / 1024)
+                    .append(" MB | Total = ").append(getTotalMemory() / 1024 / 1024).append(" MB");
+        }
+
+        builder.append("\n\t");
+        if(EventManager.debugReportsEnabled()) {
+            builder.append("[EVENT-MANAGER]: ").append(EventManager.debugReport());
+        }
+
+        return builder.toString();
+    }
 }

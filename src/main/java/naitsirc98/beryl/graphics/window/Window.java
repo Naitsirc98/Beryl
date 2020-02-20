@@ -1,20 +1,31 @@
 package naitsirc98.beryl.graphics.window;
 
+import naitsirc98.beryl.core.BerylApplication;
+import naitsirc98.beryl.events.Event;
+import naitsirc98.beryl.events.EventManager;
+import naitsirc98.beryl.events.input.*;
+import naitsirc98.beryl.events.window.WindowClosedEvent;
+import naitsirc98.beryl.events.window.WindowFocusEvent;
+import naitsirc98.beryl.events.window.WindowMovedEvent;
+import naitsirc98.beryl.events.window.WindowResizedEvent;
 import naitsirc98.beryl.images.Image;
 import naitsirc98.beryl.images.PixelFormat;
+import naitsirc98.beryl.input.Key;
+import naitsirc98.beryl.input.MouseButton;
 import naitsirc98.beryl.util.*;
 import org.joml.Vector2i;
 import org.joml.Vector2ic;
-import org.lwjgl.glfw.GLFWImage;
-import org.lwjgl.glfw.GLFWVidMode;
+import org.lwjgl.glfw.*;
+import org.lwjgl.system.CallbackI;
 import org.lwjgl.system.MemoryStack;
 
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static naitsirc98.beryl.events.EventManager.submit;
 import static naitsirc98.beryl.util.Asserts.*;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.system.MemoryStack.stackPush;
@@ -48,6 +59,8 @@ public final class Window implements LongHandle {
     private Size framebufferSize;
     private Rect rect;
     private DisplayMode displayMode;
+    private int keyRepeatCount;
+    private final WindowCallbackManager callbackManager;
 
     {
         if(instance != null) {
@@ -68,6 +81,9 @@ public final class Window implements LongHandle {
         this.size = new Size();
         framebufferSize = new Size();
         rect = new Rect();
+
+        callbackManager = new WindowCallbackManager(handle, newDisplayMode -> this.displayMode = newDisplayMode);
+        callbackManager.setup();
     }
 
     /**
@@ -483,6 +499,7 @@ public final class Window implements LongHandle {
      * */
     @Destructor
     private void destroy() {
+        callbackManager.destroy();
         glfwDestroyWindow(handle);
     }
 
