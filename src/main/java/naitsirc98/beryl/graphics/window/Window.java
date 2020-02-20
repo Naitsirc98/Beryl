@@ -67,7 +67,7 @@ public final class Window implements LongHandle {
         framebufferSize = new Size();
         rect = new Rect();
 
-        callbacks = new CallbackManager().setup(handle, newDisplayMode -> this.displayMode = newDisplayMode);
+        callbacks = new CallbackManager().setup(handle);
     }
 
     /**
@@ -390,16 +390,9 @@ public final class Window implements LongHandle {
      * @return this window
      */
     public Window maximized() {
-        windowed();
-
         displayMode = DisplayMode.MAXIMIZED;
-
-        GLFWVidMode vmode = assertNonNull(glfwGetVideoMode(glfwGetPrimaryMonitor()));
-
-        Rectc rect = rect();
-
-        return changeDisplayMode(NULL, vmode.refreshRate(), rect.left(), rect.top(),
-                vmode.width() - rect.right(), vmode.height() - rect.bottom());
+        glfwMaximizeWindow(handle);
+        return this;
     }
 
     /**

@@ -5,10 +5,7 @@ import naitsirc98.beryl.events.Event;
 import naitsirc98.beryl.events.EventManager;
 import naitsirc98.beryl.events.FramebufferResizeEvent;
 import naitsirc98.beryl.events.input.*;
-import naitsirc98.beryl.events.window.WindowClosedEvent;
-import naitsirc98.beryl.events.window.WindowFocusEvent;
-import naitsirc98.beryl.events.window.WindowMovedEvent;
-import naitsirc98.beryl.events.window.WindowResizedEvent;
+import naitsirc98.beryl.events.window.*;
 import naitsirc98.beryl.input.Key;
 import naitsirc98.beryl.input.Modifier;
 import naitsirc98.beryl.input.MouseButton;
@@ -18,7 +15,6 @@ import org.lwjgl.system.Callback;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Consumer;
 
 import static naitsirc98.beryl.events.EventManager.submit;
 import static org.lwjgl.glfw.GLFW.*;
@@ -38,7 +34,7 @@ class CallbackManager {
         callbacks.clear();
     }
 
-    CallbackManager setup(long handle, Consumer<DisplayMode> onDisplayModeChange) {
+    CallbackManager setup(long handle) {
 
         glfwSetWindowPosCallback(handle, add(onWindowPos()));
 
@@ -46,7 +42,7 @@ class CallbackManager {
 
         glfwSetFramebufferSizeCallback(handle, add(onFramebufferResize()));
 
-        glfwSetWindowMaximizeCallback(handle, add(onWindowMaximixe(onDisplayModeChange)));
+        glfwSetWindowMaximizeCallback(handle, add(onWindowMaximixe()));
 
         glfwSetWindowFocusCallback(handle, add(onWindowFocus()));
 
@@ -65,7 +61,14 @@ class CallbackManager {
 
         glfwSetCursorEnterCallback(handle, add(onCursorEnterEvent()));
 
+        glfwSetWindowIconifyCallback(handle, add(OnWindowIconified()));
+
         return this;
+    }
+
+    private GLFWWindowIconifyCallback OnWindowIconified() {
+        return GLFWWindowIconifyCallback.create((handle, iconified) -> submit(iconified
+                ? new WindowIconifiedEvent() : new WindowRestoredEvent()));
     }
 
     private GLFWCursorEnterCallback onCursorEnterEvent() {
@@ -100,10 +103,9 @@ class CallbackManager {
         return GLFWWindowFocusCallback.create((handle, focused) -> submit(new WindowFocusEvent(focused)));
     }
 
-    private GLFWWindowMaximizeCallback onWindowMaximixe(Consumer<DisplayMode> onDisplayModeChange) {
-        return GLFWWindowMaximizeCallback.create((handle, maximized) -> onDisplayModeChange.accept(maximized
-                ? DisplayMode.MAXIMIZED
-                : DisplayMode.WINDOWED));
+    private GLFWWindowMaximizeCallback onWindowMaximixe() {
+        return GLFWWindowMaximizeCallback.create((handle, maximized) -> submit(maximized
+                ? new WindowMaximizedEvent() : new WindowRestoredEvent()));
     }
 
     private GLFWFramebufferSizeCallback onFramebufferResize() {
