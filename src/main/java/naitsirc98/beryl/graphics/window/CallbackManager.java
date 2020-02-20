@@ -23,14 +23,14 @@ import static naitsirc98.beryl.events.EventManager.submit;
 import static naitsirc98.beryl.util.Asserts.assertNonNull;
 import static org.lwjgl.glfw.GLFW.*;
 
-class WindowCallbackManager {
+class CallbackManager {
 
     private final long handle;
     private final Consumer<DisplayMode> onDisplayModeChange;
     private final List<Callback> callbacks;
     private int keyRepeatCount;
 
-    public WindowCallbackManager(long handle, Consumer<DisplayMode> onDisplayModeChange) {
+    public CallbackManager(long handle, Consumer<DisplayMode> onDisplayModeChange) {
         this.handle = handle;
         this.onDisplayModeChange = assertNonNull(onDisplayModeChange);
         callbacks = new ArrayList<>();

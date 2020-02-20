@@ -15,17 +15,10 @@ import static org.lwjgl.glfw.GLFW.*;
  */
 public final class EventManager extends BerylSystem {
 
+    public static final boolean DEBUG_REPORT_ENABLED = BerylConfiguration.EVENTS_DEBUG_REPORT.get(Beryl.DEBUG);
+
     @Singleton
     private static EventManager instance;
-
-    /**
-     * Tells whether the event manager will report debug info or not
-     *
-     * @return if debug reports are enabled for the event manager
-     * */
-    public static boolean debugReportsEnabled() {
-        return instance.debugReport != null;
-    }
 
     /**
      * Returns the debug report of the event manager
@@ -33,7 +26,7 @@ public final class EventManager extends BerylSystem {
      * @return the debug report, or null if debug reports are disabled
      * */
     public static String debugReport() {
-        return debugReportsEnabled() ? instance.debugReport.report() : null;
+        return DEBUG_REPORT_ENABLED ? instance.debugReport.report() : null;
     }
 
     /**
@@ -108,7 +101,7 @@ public final class EventManager extends BerylSystem {
         this.backEventQueue = new ArrayDeque<>(BerylConfiguration.EVENT_QUEUE_INITIAL_CAPACITY.get(64));
         this.eventCallbacks = new HashMap<>();
         dispatcher = new EventDispatcher(eventCallbacks);
-        debugReport = BerylConfiguration.EVENTS_DEBUG_REPORT.get(Beryl.DEBUG) ? new EventDebugReport() : null;
+        debugReport = DEBUG_REPORT_ENABLED ? new EventDebugReport() : null;
     }
 
     @Override
@@ -139,7 +132,7 @@ public final class EventManager extends BerylSystem {
 
         glfwPollEvents();
 
-        if(debugReport != null) {
+        if(DEBUG_REPORT_ENABLED) {
             debugReport.count(frontEventQueue.size());
         }
 

@@ -169,7 +169,7 @@ public final class Beryl {
         }
 
         builder.append("\n\t");
-        if(EventManager.debugReportsEnabled()) {
+        if(EventManager.DEBUG_REPORT_ENABLED) {
             builder.append("[EVENT-MANAGER]: ").append(EventManager.debugReport());
         }
 
