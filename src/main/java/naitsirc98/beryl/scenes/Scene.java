@@ -70,7 +70,7 @@ public final class Scene {
     }
 
     public Entity entity(String name) {
-        return entityManager.get(name);
+        return entityManager.find(name);
     }
 
     public int entityCount() {
@@ -82,15 +82,15 @@ public final class Scene {
     }
 
     public Entity entityWithTag(String tag) {
-        return entityManager.getWithTag(tag);
+        return entityManager.findWithTag(tag);
     }
 
     public Stream<Entity> entitiesWithTag(String tag) {
-        return entityManager.getAllWithTags(tag);
+        return entityManager.findAllWithTags(tag);
     }
 
     public void destroy(String entityName) {
-        destroy(entityManager.get(entityName));
+        destroy(entityManager.find(entityName));
     }
 
     public void destroy(Entity entity) {
@@ -104,7 +104,7 @@ public final class Scene {
     }
 
     public void destroyNow(String entityName) {
-        destroyNow(entityManager.get(entityName));
+        destroyNow(entityManager.find(entityName));
     }
 
     public void destroyNow(Entity entity) {
