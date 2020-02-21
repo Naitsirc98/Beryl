@@ -23,7 +23,7 @@ public class Main extends BerylApplication {
     private Gamepad gamepad;
 
     private Main() {
-
+        
     }
 
     @Override

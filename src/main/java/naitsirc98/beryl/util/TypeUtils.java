@@ -2,9 +2,11 @@ package naitsirc98.beryl.util;
 
 import naitsirc98.beryl.core.Log;
 import org.jetbrains.annotations.NotNull;
+import sun.misc.Unsafe;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -14,6 +16,18 @@ import java.util.stream.Stream;
 import static java.util.Objects.nonNull;
 
 public final class TypeUtils {
+
+    private static final Unsafe UNSAFE;
+
+    @NotNull
+    public static <T> T newInstanceUnsafe(Class<T> type) {
+        try {
+            return type.cast(UNSAFE.allocateInstance(type));
+        } catch (InstantiationException e) {
+            Log.error("Cannot instanciate unsafe " + type, e);
+        }
+        return null;
+    }
 
     @NotNull
     public static <T> T newInstance(Class<T> type) {
@@ -88,6 +102,24 @@ public final class TypeUtils {
         return null;
     }
 
+    public static <T> T getOrElse(T actual, T orElse) {
+        return actual == null ? orElse : actual;
+    }
+
+    static {
+
+        Unsafe unsafe = null;
+
+        try {
+            Field field = Unsafe.class.getDeclaredField("theUnsafe");
+            field.setAccessible(true);
+            unsafe = (Unsafe) field.get(null);
+        } catch (IllegalAccessException | NoSuchFieldException e) {
+            Log.fatal("Cannot instantiate Unsafe instance", e);
+        }
+
+        UNSAFE = unsafe;
+    }
 
     private TypeUtils() {
     }

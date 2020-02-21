@@ -23,4 +23,6 @@ module Beryl {
 
     requires java.logging;
 
+    requires jdk.unsupported;
+
 }
