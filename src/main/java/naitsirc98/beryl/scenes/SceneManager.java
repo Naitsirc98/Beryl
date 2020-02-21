@@ -18,6 +18,10 @@ public final class SceneManager extends BerylSystem {
 
     public static void setScene(Scene scene) {
 
+        if(calledWithinSceneUpdate()) {
+            return;
+        }
+
         if(notSuitable(scene)) {
             return;
         }
@@ -32,6 +36,10 @@ public final class SceneManager extends BerylSystem {
     }
 
     public static void addScene(Scene scene, AddMode mode) {
+
+        if(calledWithinSceneUpdate()) {
+            return;
+        }
 
         if(notSuitable(scene)) {
             return;
@@ -58,6 +66,16 @@ public final class SceneManager extends BerylSystem {
             Log.error("Scene " + scene + " is already added");
             return true;
         }
+        return false;
+    }
+
+    private static boolean calledWithinSceneUpdate() {
+
+        if(activeScene() != null) {
+            Log.error("Cannot perform SceneManager operations within a scene update");
+            return true;
+        }
+
         return false;
     }
 
