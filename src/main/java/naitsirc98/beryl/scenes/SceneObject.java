@@ -2,6 +2,8 @@ package naitsirc98.beryl.scenes;
 
 public abstract class SceneObject {
 
+    private boolean destroyed;
+
     public abstract Scene scene();
 
     public abstract boolean enabled();
@@ -10,9 +12,19 @@ public abstract class SceneObject {
 
     public abstract SceneObject disable();
 
-    public abstract boolean destroyed();
+    public final boolean destroyed() {
+        return destroyed;
+    }
+
+    final void markDestroyed() {
+        destroyed = true;
+    }
 
     public abstract void destroy();
 
     protected abstract void onDestroy();
+
+    protected final void doLater(Runnable task) {
+        scene().submit(task);
+    }
 }

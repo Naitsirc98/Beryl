@@ -49,17 +49,7 @@ public final class EntityManager {
         return entity;
     }
 
-    public void destroy(String name) {
-        if(exists(name)) {
-            destroy(get(name));
-        }
-    }
-
     public void destroy(Entity entity) {
-
-        if(entity == null || entity.destroyed()) {
-            return;
-        }
 
         if(!entity.name().equals(UNNAMED)) {
             nameTable.remove(entity.name());

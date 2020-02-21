@@ -111,11 +111,6 @@ public final class Entity extends SceneObject {
     }
 
     @Override
-    public boolean destroyed() {
-        return index == INVALID_INDEX;
-    }
-
-    @Override
     public void destroy() {
         scene.destroy(this);
     }

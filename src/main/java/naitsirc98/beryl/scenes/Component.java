@@ -5,7 +5,6 @@ public abstract class Component<SELF extends Component> extends SceneObject {
     Entity entity;
     private ComponentManager<SELF> system;
     private boolean enabled;
-    private boolean destroyed;
 
     public Entity entity() {
         return entity;
@@ -35,11 +34,6 @@ public abstract class Component<SELF extends Component> extends SceneObject {
             // TODO: set disabled to its system
         }
         return self();
-    }
-
-    @Override
-    public final boolean destroyed() {
-        return destroyed;
     }
 
     public Class<? extends Component> type() {
