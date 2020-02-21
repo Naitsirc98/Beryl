@@ -1,5 +1,6 @@
 package naitsirc98.beryl.scenes;
 
+import naitsirc98.beryl.core.Log;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
@@ -19,6 +20,34 @@ public final class Entity extends SceneObject implements Iterable<Component> {
     public static final String UNNAMED = "__UNNAMED";
     public static final String UNTAGGED = "__UNTAGGED";
 
+    public static Entity create() {
+        if(noAvailableScene()) {
+            return null;
+        }
+        return SceneManager.scene().newEntity();
+    }
+
+    public static Entity create(String name) {
+        if(noAvailableScene()) {
+            return null;
+        }
+        return SceneManager.scene().newEntity(name);
+    }
+
+    public static Entity create(String name, String tag) {
+        if(noAvailableScene()) {
+            return null;
+        }
+        return SceneManager.scene().newEntity(name, tag);
+    }
+
+    private static boolean noAvailableScene() {
+        if(SceneManager.scene() == null) {
+            Log.fatal("There is no scene available to create the Entity");
+            return true;
+        }
+        return false;
+    }
 
     private String name;
     private String tag;

@@ -8,6 +8,9 @@ import naitsirc98.beryl.graphics.window.Window;
 import naitsirc98.beryl.input.Gamepad;
 import naitsirc98.beryl.input.Input;
 import naitsirc98.beryl.input.Joystick;
+import naitsirc98.beryl.scenes.Entity;
+import naitsirc98.beryl.scenes.Scene;
+import naitsirc98.beryl.scenes.SceneManager;
 
 import static naitsirc98.beryl.input.Key.KEY_F1;
 
@@ -20,10 +23,8 @@ public class Main extends BerylApplication {
 
     }
 
-    private Gamepad gamepad;
-
     private Main() {
-        
+
     }
 
     @Override
@@ -35,20 +36,16 @@ public class Main extends BerylApplication {
     @Override
     protected void onStart() {
 
-        gamepad = Gamepad.of(Joystick.JOYSTICK_1);
+        Scene scene = SceneManager.newScene();
+
+        Entity entity = Entity.create();
 
     }
 
     @Override
     protected void onUpdate() {
 
-        if(gamepad.axes().get(Joystick.Axis.AXIS_RIGHT_TRIGGER) >= 0.5f) {
-            System.out.println("Shoot!");
-        }
 
-        if(Input.isKeyPressed(KEY_F1)) {
-            Window.get().cursorType(CursorType.DISABLED);
-        }
 
     }
 }

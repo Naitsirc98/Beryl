@@ -2,6 +2,7 @@ package naitsirc98.beryl.core;
 
 import naitsirc98.beryl.events.EventManager;
 import naitsirc98.beryl.input.Input;
+import naitsirc98.beryl.scenes.SceneManager;
 import org.lwjgl.system.Configuration;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -79,6 +80,7 @@ public final class Beryl {
         final Time time = systemManager.get(Time.class);
         final EventManager eventManager = systemManager.get(EventManager.class);
         final Input input = systemManager.get(Input.class);
+        final SceneManager sceneManager = systemManager.get(SceneManager.class);
 
         float lastFrame = 0.0f;
         float showFPSTimer = 0.0f;
@@ -93,9 +95,9 @@ public final class Beryl {
             time.deltaTime = now - lastFrame;
             lastFrame = now;
 
-            update(time.deltaTime, eventManager, input);
+            update(time.deltaTime, eventManager, input, sceneManager);
 
-            render();
+            render(sceneManager);
             ++framesPerSecond;
 
             ++time.frames;
@@ -111,7 +113,7 @@ public final class Beryl {
         }
     }
 
-    private void update(float deltaTime, EventManager eventManager, Input input) {
+    private void update(float deltaTime, EventManager eventManager, Input input, SceneManager sceneManager) {
 
         updateDelay += deltaTime;
 
@@ -121,6 +123,8 @@ public final class Beryl {
 
             input.update();
 
+            sceneManager.update();
+
             application.onUpdate();
 
             updateDelay -= IDEAL_FRAME_DELAY;
@@ -128,9 +132,12 @@ public final class Beryl {
         }
     }
 
-    private void render() {
-        // TODO
+    private void render(SceneManager sceneManager) {
+
+        sceneManager.render();
+
         application.onRender();
+
         // For now just simulate some rendering delay
         for(int i = 0;i < 10000;i++) {
             Math.sin(i);

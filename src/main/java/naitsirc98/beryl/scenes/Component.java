@@ -10,6 +10,10 @@ public abstract class Component<SELF extends Component> extends SceneObject {
         return entity;
     }
 
+    protected final <T extends Component> T requires(Class<T> componentClass) {
+        return entity.requires(componentClass);
+    }
+
     @Override
     public Scene scene() {
         return entity().scene();

@@ -3,6 +3,7 @@ package naitsirc98.beryl.core;
 import naitsirc98.beryl.events.EventManager;
 import naitsirc98.beryl.graphics.Graphics;
 import naitsirc98.beryl.input.Input;
+import naitsirc98.beryl.scenes.SceneManager;
 
 import java.util.Arrays;
 import java.util.Objects;
@@ -25,6 +26,7 @@ public class BerylSystemManager {
                 createSystem(EventManager.class),
                 createSystem(Input.class),
                 createSystem(Graphics.class),
+                createSystem(SceneManager.class)
         };
     }
 
