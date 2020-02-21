@@ -27,7 +27,7 @@ public abstract class Component<SELF extends Component> extends SceneObject {
     @Override
     public final SELF enable() {
         if(!enabled()) {
-            // TODO: set enabled to its system
+            system.enable(self());
         }
         return self();
     }
@@ -35,7 +35,7 @@ public abstract class Component<SELF extends Component> extends SceneObject {
     @Override
     public final SELF disable() {
         if(enabled()) {
-            // TODO: set disabled to its system
+            system.disable(self());
         }
         return self();
     }
