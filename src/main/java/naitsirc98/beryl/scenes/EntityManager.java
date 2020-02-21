@@ -1,5 +1,6 @@
 package naitsirc98.beryl.scenes;
 
+import naitsirc98.beryl.core.Log;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -9,13 +10,16 @@ import static naitsirc98.beryl.scenes.Entity.UNNAMED;
 import static naitsirc98.beryl.scenes.Entity.UNTAGGED;
 import static naitsirc98.beryl.util.TypeUtils.getOrElse;
 
+/**
+ * The EntityManager handles the creation, storage, look-up and destruction of entities of a scene
+ */
 public final class EntityManager implements Iterable<Entity> {
 
     private static final int INITIAL_CAPACITY = 32;
 
-    /** Scene of this EntityManager */
+    /** Scene of this EntityManager and thus the scene of all the entities created by it */
     private final Scene scene;
-    /** List of entities. */
+    /** List of entities. Slots with null values means recyclable positions */
     private final List<Entity> entities;
     /** Indices of free positions to recycle */
     private final Queue<Integer> freeIndices;
@@ -24,6 +28,11 @@ public final class EntityManager implements Iterable<Entity> {
     /** Entity tag look-up table */
     private final Map<String, List<Entity>> tagTable;
 
+    /**
+     * Instantiates a new Entity manager.
+     *
+     * @param scene the scene
+     */
     EntityManager(Scene scene) {
         this.scene = scene;
         entities = new ArrayList<>(INITIAL_CAPACITY);
@@ -32,11 +41,28 @@ public final class EntityManager implements Iterable<Entity> {
         tagTable = new HashMap<>(INITIAL_CAPACITY);
     }
 
+    /**
+     * Creates a new Entity with no name and no tag
+     *
+     * @return the entity
+     */
     public Entity newEntity() {
         return newEntity(UNNAMED, UNTAGGED);
     }
 
+    /**
+     * Creates a new entity with the given name and tag. Only the name must be unique
+     *
+     * @param name the unique name of this entity
+     * @param tag  the tag
+     * @return the entity
+     */
     public synchronized Entity newEntity(String name, String tag) {
+
+        if(nameTable.containsKey(name)) {
+            Log.error("There is already an Entity named " + name + " in this scene. Names must be unique per scene");
+            return null;
+        }
 
         Entity entity;
 
@@ -65,6 +91,11 @@ public final class EntityManager implements Iterable<Entity> {
         tagTable.computeIfAbsent(tag, k -> new ArrayList<>()).add(entity);
     }
 
+    /**
+     * Destroys the given entity
+     *
+     * @param entity the entity
+     */
     public void destroy(Entity entity) {
 
         if(!entity.name().equals(UNNAMED)) {
@@ -81,32 +112,66 @@ public final class EntityManager implements Iterable<Entity> {
         entity.onDestroy();
     }
 
-    public Entity get(String name) {
+    /**
+     * Finds the entity by its name
+     *
+     * @param name the name
+     * @return the entity
+     */
+    public Entity find(String name) {
         return nameTable.get(name);
     }
 
-    public Entity getWithTag(String tag) {
+    /**
+     * Finds the first entity with the specified tag
+     *
+     * @param tag the tag
+     * @return the with tag
+     */
+    public Entity findWithTag(String tag) {
         if(!tagTable.containsKey(tag)) {
             return null;
         }
         return tagTable.get(tag).get(0);
     }
 
-    public Stream<Entity> getAllWithTags(String tag) {
+    /**
+     * Finds all the entities with the specified tag
+     *
+     * @param tag the tag
+     * @return the all with tags
+     */
+    public Stream<Entity> findAllWithTags(String tag) {
         if(!tagTable.containsKey(tag)) {
             return null;
         }
         return tagTable.get(tag).stream();
     }
 
+    /**
+     * Tells whether exists an entity with the given name or not
+     *
+     * @param name the name
+     * @return the boolean
+     */
     public boolean exists(String name) {
         return nameTable.containsKey(name);
     }
 
+    /**
+     * Returns the number of entities alive
+     *
+     * @return the int
+     */
     public int entityCount() {
         return (int) entities.stream().filter(Objects::nonNull).count();
     }
 
+    /**
+     * Returns all the entities
+     *
+     * @return the stream
+     */
     public Stream<Entity> entities() {
         return entities.stream().filter(Objects::nonNull);
     }
@@ -117,6 +182,9 @@ public final class EntityManager implements Iterable<Entity> {
         return entities().iterator();
     }
 
+    /**
+     * Destroy all entities
+     */
     void destroy() {
 
         entities().forEach(Entity::onDestroy);
