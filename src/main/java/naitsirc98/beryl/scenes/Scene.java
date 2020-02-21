@@ -24,6 +24,29 @@ public final class Scene {
         taskQueue = new ArrayDeque<>();
     }
 
+    void update() {
+        // TODO
+    }
+
+    void processTasks() {
+        while(!taskQueue.isEmpty()) {
+            taskQueue.poll().run();
+        }
+    }
+
+    void lateUpdate() {
+        // TODO
+    }
+
+    void render() {
+        // TODO
+    }
+
+    void terminate() {
+        // TODO
+        entityManager.destroy();
+    }
+
     public synchronized void submit(Runnable task) {
 
         if(task == null) {

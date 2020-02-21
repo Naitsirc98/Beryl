@@ -117,6 +117,16 @@ public final class EntityManager implements Iterable<Entity> {
         return entities().iterator();
     }
 
+    void destroy() {
+
+        entities().forEach(Entity::onDestroy);
+
+        entities.clear();
+        freeIndices.clear();
+        nameTable.clear();
+        tagTable.clear();
+    }
+
     private Entity recycle(String name, String tag, int index) {
 
         Entity entity = newEntity(name, tag, index);
