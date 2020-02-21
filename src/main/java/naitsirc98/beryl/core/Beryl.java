@@ -164,7 +164,8 @@ public final class Beryl {
 
     private String buildDebugReport(int fps, int ups, float deltaTime) {
 
-        StringBuilder builder = new StringBuilder(format("FPS: %d | UPS: %d | DeltaTime: %.5f", fps, ups, deltaTime));
+        StringBuilder builder = new StringBuilder(
+                format("FPS: %d | UPS: %d | DeltaTime: %.5fs | Time: %.3fs", fps, ups, deltaTime, Time.time()));
 
         builder.append("\n\t");
         if(MEMORY_USAGE_REPORT) {
