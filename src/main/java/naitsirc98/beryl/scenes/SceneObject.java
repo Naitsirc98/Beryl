@@ -1,7 +1,7 @@
 package naitsirc98.beryl.scenes;
 
 /**
- * The base class for all the objects that life in a scene
+ * The base class for all the objects that live in a scene
  */
 public abstract class SceneObject {
 
