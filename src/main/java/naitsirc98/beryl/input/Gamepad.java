@@ -32,6 +32,7 @@ public class Gamepad implements GLFWWrapper {
         this.joystick = joystick;
         buttons = new StatesArray<>(Joystick.Button.class);
         axes = new EnumMap<>(Joystick.Axis.class);
+        update();
     }
 
     public Joystick joystick() {

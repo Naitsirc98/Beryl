@@ -3,6 +3,8 @@ package naitsirc98.beryl.input;
 import naitsirc98.beryl.core.BerylSystem;
 import naitsirc98.beryl.core.Log;
 import naitsirc98.beryl.events.EventManager;
+import naitsirc98.beryl.events.input.joystick.JoystickConnectedEvent;
+import naitsirc98.beryl.events.input.joystick.JoystickDisconnectedEvent;
 import naitsirc98.beryl.events.input.keyboard.KeyPressedEvent;
 import naitsirc98.beryl.events.input.keyboard.KeyReleasedEvent;
 import naitsirc98.beryl.events.input.keyboard.KeyRepeatEvent;
@@ -10,12 +12,14 @@ import naitsirc98.beryl.events.input.keyboard.KeyTypedEvent;
 import naitsirc98.beryl.events.input.mouse.*;
 import naitsirc98.beryl.graphics.window.Window;
 import naitsirc98.beryl.util.Singleton;
+import org.lwjgl.glfw.GLFWJoystickCallback;
 import org.lwjgl.system.MemoryStack;
 
 import java.nio.DoubleBuffer;
 import java.util.EnumMap;
 
-import static org.lwjgl.glfw.GLFW.glfwGetCursorPos;
+import static naitsirc98.beryl.input.Joystick.asJoystick;
+import static org.lwjgl.glfw.GLFW.*;
 
 /**
  * Class for manage input events
@@ -170,25 +174,18 @@ public final class Input extends BerylSystem {
      * */
     public static Gamepad gamepad(Joystick joystick) {
 
-        if(!joystick.isGamepad()) {
-            Log.warning("The joystick " + joystick + " is not gamepad");
+        if(!joystick.isPresent() || !joystick.isGamepad()) {
             return null;
         }
 
-        if(instance.gamepads.containsKey(joystick)) {
-            return instance.gamepads.get(joystick);
-        }
-
-        Gamepad gamepad = new Gamepad(joystick);
-        instance.gamepads.put(joystick, gamepad);
-
-        return gamepad;
+        return instance.gamepads.computeIfAbsent(joystick, j -> new Gamepad(joystick));
     }
 
 
     private final StatesArray<Key> keyStates;
     private final StatesArray<MouseButton> mouseButtonStates;
     private final EnumMap<Joystick, Gamepad> gamepads;
+    private final GLFWJoystickCallback joystickCallback;
     private float mouseX, mouseY;
     private float mouseScrollX, mouseScrollY;
 
@@ -196,11 +193,17 @@ public final class Input extends BerylSystem {
         keyStates = new StatesArray<>(Key.class);
         mouseButtonStates = new StatesArray<>(MouseButton.class);
         gamepads = new EnumMap<>(Joystick.class);
+        joystickCallback = GLFWJoystickCallback.create(this::onJoystickEvent);
     }
 
     @Override
     protected void init() {
         setEventCallbacks();
+    }
+
+    @Override
+    protected void terminate() {
+        joystickCallback.free();
     }
 
     public void update() {
@@ -226,6 +229,22 @@ public final class Input extends BerylSystem {
     private void setEventCallbacks() {
         setKeyboardEventCallbacks();
         setMouseEventCallbacks();
+        setJoystickCallbacks();
+    }
+
+    private void setJoystickCallbacks() {
+
+        glfwSetJoystickCallback(joystickCallback);
+
+        EventManager.addEventCallback(JoystickConnectedEvent.class, e -> {
+            Log.info(e.joystick() + " has been connected");
+            Gamepad.of(e.joystick());
+        });
+
+        EventManager.addEventCallback(JoystickConnectedEvent.class, e -> {
+            Log.info(e.joystick() + " has been disconnected");
+            gamepads.remove(e.joystick());
+        });
     }
 
     private void setKeyboardEventCallbacks() {
@@ -286,6 +305,13 @@ public final class Input extends BerylSystem {
 
             EventManager.submitLater(new ClearMouseScrollEvent());
         });
+    }
+
+    private void onJoystickEvent(int jid, int event) {
+
+        Joystick joystick = asJoystick(jid);
+
+        EventManager.submit(event == GLFW_CONNECTED ? new JoystickConnectedEvent(joystick) : new JoystickDisconnectedEvent(joystick));
     }
 
 }
