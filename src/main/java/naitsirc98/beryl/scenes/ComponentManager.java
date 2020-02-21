@@ -10,6 +10,10 @@ public abstract class ComponentManager<T extends Component> {
 
     protected abstract void init();
 
+    protected abstract void addEnabled(T component);
+
+    protected abstract void addDisabled(T component);
+
     protected abstract void enable(T component);
 
     protected abstract void disable(T component);

@@ -3,7 +3,7 @@ package naitsirc98.beryl.scenes;
 public abstract class Component<SELF extends Component> extends SceneObject {
 
     Entity entity;
-    private ComponentManager<SELF> system;
+    ComponentManager<SELF> system;
     private boolean enabled;
 
     public Entity entity() {
@@ -38,6 +38,11 @@ public abstract class Component<SELF extends Component> extends SceneObject {
 
     public Class<? extends Component> type() {
         return getClass();
+    }
+
+    @Override
+    public final void destroy() {
+        entity.destroy(this);
     }
 
     protected abstract void onEnable();

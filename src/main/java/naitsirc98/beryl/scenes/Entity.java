@@ -26,7 +26,7 @@ public final class Entity extends SceneObject {
         init(name, scene, index);
     }
 
-    public <T extends Component> T add(Class<T> componentClass) {
+    public synchronized <T extends Component> T add(Class<T> componentClass) {
 
         assertNonNull(componentClass);
 
@@ -39,7 +39,7 @@ public final class Entity extends SceneObject {
 
         components.put(componentClass, component);
 
-        // TODO: add component to scene
+        scene.add(component);
 
         return component;
     }
@@ -60,11 +60,15 @@ public final class Entity extends SceneObject {
     }
 
     public void destroy(Class<? extends Component> componentClass) {
-        // TODO:
+        destroy(get(componentClass));
     }
 
     public void destroy(Component component) {
-        // TODO
+        if(component == null || component.destroyed()) {
+            return;
+        }
+        scene.destroy(component);
+        doLater(() -> components.remove(component.getClass()));
     }
 
     public boolean has(Class<? extends Component> componentClass) {

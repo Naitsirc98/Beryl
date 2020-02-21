@@ -28,7 +28,7 @@ public final class EntityManager {
         return newEntity(UNNAMED);
     }
 
-    public Entity newEntity(String name) {
+    public synchronized Entity newEntity(String name) {
 
         Entity entity;
 
