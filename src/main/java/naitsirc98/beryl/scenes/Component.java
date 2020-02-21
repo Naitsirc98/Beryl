@@ -10,6 +10,10 @@ public abstract class Component<SELF extends Component> extends SceneObject {
         return entity;
     }
 
+    protected final <T extends Component> T get(Class<T> componentClass) {
+        return entity.get(componentClass);
+    }
+
     protected final <T extends Component> T requires(Class<T> componentClass) {
         return entity.requires(componentClass);
     }
