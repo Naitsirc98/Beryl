@@ -104,6 +104,10 @@ public final class Time extends BerylSystem {
         glfwSetTime(BerylConfiguration.INITIAL_TIME_VALUE.get(0.0));
     }
 
+    public void start() {
+        glfwSetTime(0.0f);
+    }
+
     @Override
     protected void terminate() {
 
