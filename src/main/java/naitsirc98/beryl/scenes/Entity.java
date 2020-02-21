@@ -14,7 +14,7 @@ import static naitsirc98.beryl.util.TypeUtils.getOrElse;
 import static naitsirc98.beryl.util.TypeUtils.newInstanceUnsafe;
 
 /**
- * An entity is a container for components. An entity can only have 1 component of 1 component class, but it may contain
+ * An Entity is a container for {@link Component}. An entity can only have 1 component of 1 component class, but it may contain
  * many components of the same type. Refer to {@link Component} to see the difference between class and type in this context.
  */
 public final class Entity extends SceneObject implements Iterable<Component> {
