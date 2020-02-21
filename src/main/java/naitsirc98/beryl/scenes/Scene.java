@@ -6,7 +6,9 @@ import java.util.ArrayDeque;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Queue;
+import java.util.stream.Stream;
 
+import static naitsirc98.beryl.scenes.Entity.UNTAGGED;
 import static naitsirc98.beryl.util.Asserts.assertNonNull;
 import static naitsirc98.beryl.util.Asserts.assertTrue;
 
@@ -37,7 +39,31 @@ public final class Scene {
     }
     
     public Entity newEntity(String name) {
-        return entityManager.newEntity(name);
+        return entityManager.newEntity(name, UNTAGGED);
+    }
+
+    public Entity newEntity(String name, String tag) {
+        return entityManager.newEntity(name, tag);
+    }
+
+    public Entity entity(String name) {
+        return entityManager.get(name);
+    }
+
+    public int entityCount() {
+        return entityManager.entityCount();
+    }
+
+    public Stream<Entity> entities() {
+        return entityManager.entities();
+    }
+
+    public Entity entityWithTag(String tag) {
+        return entityManager.getWithTag(tag);
+    }
+
+    public Stream<Entity> entitiesWithTag(String tag) {
+        return entityManager.getAllWithTags(tag);
     }
 
     public void destroy(String entityName) {
@@ -52,6 +78,20 @@ public final class Scene {
 
         entity.markDestroyed();
         submit(() -> entityManager.destroy(entity));
+    }
+
+    public void destroyNow(String entityName) {
+        destroyNow(entityManager.get(entityName));
+    }
+
+    public void destroyNow(Entity entity) {
+
+        if(entity == null || entity.destroyed()) {
+            return;
+        }
+
+        entity.markDestroyed();
+        entityManager.destroy(entity);
     }
 
     @SuppressWarnings("unchecked")
@@ -75,6 +115,17 @@ public final class Scene {
 
         component.markDestroyed();
         submit(() -> managerOf(component.type()).destroy(component));
+    }
+
+    @SuppressWarnings("unchecked")
+    void destroyNow(Component component) {
+
+        if(component == null || component.destroyed()) {
+            return;
+        }
+
+        component.markDestroyed();
+        managerOf(component.type()).destroy(component);
     }
 
     @SuppressWarnings("unchecked")

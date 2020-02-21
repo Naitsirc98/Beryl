@@ -22,6 +22,8 @@ public abstract class SceneObject {
 
     public abstract void destroy();
 
+    public abstract void destroyNow();
+
     protected abstract void onDestroy();
 
     protected final void doLater(Runnable task) {

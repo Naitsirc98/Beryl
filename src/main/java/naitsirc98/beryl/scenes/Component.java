@@ -45,6 +45,11 @@ public abstract class Component<SELF extends Component> extends SceneObject {
         entity.destroy(this);
     }
 
+    @Override
+    public void destroyNow() {
+        entity.destroyNow(this);
+    }
+
     protected abstract void onEnable();
 
     protected abstract void onDisable();
