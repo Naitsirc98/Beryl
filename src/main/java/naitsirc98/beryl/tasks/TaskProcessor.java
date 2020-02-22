@@ -4,7 +4,8 @@ import naitsirc98.beryl.logging.Log;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 class TaskProcessor {
 
@@ -21,7 +22,7 @@ class TaskProcessor {
     public void shutdown() {
         threadPool.shutdown();
         try {
-            threadPool.awaitTermination(10, TimeUnit.SECONDS);
+            threadPool.awaitTermination(Long.MAX_VALUE, MILLISECONDS);
         } catch (InterruptedException e) {
             Log.error("Timeout error while waiting for TaskProcessor to shutdown", e);
         }

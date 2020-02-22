@@ -5,7 +5,10 @@ import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.util.Singleton;
 
 import java.util.Optional;
-import java.util.concurrent.*;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
@@ -68,7 +71,7 @@ public final class TaskManager extends BerylSystem {
         Log.info("[TASK-MANAGER]: waiting for " + taskCount() + " tasks to complete...");
 
         try {
-            taskThread.awaitTermination(5, TimeUnit.SECONDS);
+            taskThread.awaitTermination(Long.MAX_VALUE, MILLISECONDS);
         } catch (InterruptedException e) {
             Log.error("Timeout error while waiting for TaskManager to terminate", e);
         }

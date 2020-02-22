@@ -71,7 +71,7 @@ public final class Scene {
     public Entity newEntity() {
         return entityManager.newEntity();
     }
-    
+
     public Entity newEntity(String name) {
         return entityManager.newEntity(name, UNTAGGED);
     }
