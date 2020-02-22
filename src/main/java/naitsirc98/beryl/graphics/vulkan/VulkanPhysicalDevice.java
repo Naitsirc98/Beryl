@@ -22,12 +22,12 @@ public class VulkanPhysicalDevice {
     }
 
     private VkPhysicalDevice vkPhysicalDevice;
-    private QueueFamilyIndices queueFamilies;
+    private QueueFamilyIndices queueFamilyIndices;
 
     private VulkanPhysicalDevice(VkInstance vkInstance, long surface) {
         findSuitablePhysicalDevice(vkInstance, surface).get((physicalDevice, queueFamilyIndices) -> {
             vkPhysicalDevice = physicalDevice;
-            queueFamilies = queueFamilyIndices;
+            this.queueFamilyIndices = queueFamilyIndices;
         });
     }
 
@@ -36,7 +36,7 @@ public class VulkanPhysicalDevice {
     }
 
     public QueueFamilyIndices queueFamilyIndices() {
-        return queueFamilies;
+        return queueFamilyIndices;
     }
 
     private Pair<VkPhysicalDevice, QueueFamilyIndices> findSuitablePhysicalDevice(VkInstance vkInstance, long surface) {
@@ -65,7 +65,7 @@ public class VulkanPhysicalDevice {
 
                 queueFamilyIndices = findQueueFamilies(physicalDevice, surface);
 
-                if(isDeviceSuitable(physicalDevice, surface, queueFamilies)) {
+                if(isDeviceSuitable(physicalDevice, surface, queueFamilyIndices)) {
                     break;
                 }
             }
