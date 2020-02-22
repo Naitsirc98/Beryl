@@ -2,15 +2,12 @@ package naitsirc98.beryl.core;
 
 public abstract class BerylSystem {
 
-    protected void init() {}
+    protected abstract void init();
 
-    protected void terminate() {}
+    protected abstract void terminate();
 
-
-    public interface DebugReport {
-
-        String report();
-
+    protected String debugReport() {
+        return null;
     }
 
 }

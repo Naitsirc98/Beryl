@@ -184,7 +184,12 @@ public final class Beryl {
 
         builder.append("\n\t");
         if(EventManager.DEBUG_REPORT_ENABLED) {
-            builder.append("[EVENT-MANAGER]: ").append(EventManager.debugReport());
+            builder.append("[EVENT-MANAGER]: ").append(systems.eventManager.debugReport());
+        }
+
+        builder.append("\n\t");
+        if(SceneManager.DEBUG_REPORT_ENABLED) {
+            builder.append("[SCENE-MANAGER]: ").append(systems.sceneManager.debugReport());
         }
 
         return builder.toString();

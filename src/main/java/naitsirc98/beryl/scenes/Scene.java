@@ -55,7 +55,7 @@ public final class Scene {
         // TODO
         processTasks();
         entityManager.destroy();
-        componentManagers.values().forEach(ComponentManager::clear);
+        componentManagers.values().forEach(ComponentManager::removeAll);
     }
 
     public void submit(Runnable task) {
@@ -86,6 +86,10 @@ public final class Scene {
 
     public int entityCount() {
         return entityManager.entityCount();
+    }
+
+    public int componentCount() {
+        return componentManagers.values().stream().mapToInt(cm -> cm.size()).sum();
     }
 
     public Stream<Entity> entities() {

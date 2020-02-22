@@ -11,7 +11,7 @@ public abstract class ComponentManager<T extends Component> {
     private final Scene scene;
 
     /**
-     * Instantiates a new Component manager.
+     * Instantiates a new Component Manager.
      *
      * @param scene the scene
      */
@@ -59,5 +59,12 @@ public abstract class ComponentManager<T extends Component> {
     /**
      * Removes all components
      */
-    protected abstract void clear();
+    protected abstract void removeAll();
+
+    /**
+     * Returns the number of components managed by this Component Manager
+     *
+     * @return the number of components
+     * */
+    protected abstract int size();
 }

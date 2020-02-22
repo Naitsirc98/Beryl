@@ -1,5 +1,7 @@
 package naitsirc98.beryl.scenes;
 
+import naitsirc98.beryl.core.Beryl;
+import naitsirc98.beryl.core.BerylConfiguration;
 import naitsirc98.beryl.core.BerylSystem;
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.util.Singleton;
@@ -11,6 +13,8 @@ import java.util.stream.Stream;
 import static naitsirc98.beryl.util.TypeUtils.getOrElse;
 
 public final class SceneManager extends BerylSystem {
+
+    public static final boolean DEBUG_REPORT_ENABLED = BerylConfiguration.SCENES_DEBUG_REPORT.get(Beryl.DEBUG);
 
     @Singleton
     private static SceneManager instance;
@@ -123,6 +127,16 @@ public final class SceneManager extends BerylSystem {
         scenes = new ArrayDeque<>(2);
     }
 
+    @Override
+    protected void init() {
+
+    }
+
+    @Override
+    protected void terminate() {
+
+    }
+
     public void update() {
         for(Scene scene : scenes) {
             update(activeScene = scene);
@@ -159,5 +173,23 @@ public final class SceneManager extends BerylSystem {
         FIRST,
         LAST
 
+    }
+
+    @Override
+    public String debugReport() {
+
+        StringBuilder builder = new StringBuilder();
+
+        int index = 0;
+
+        for(Scene scene : scenes) {
+
+            builder.append("\n\t\t").append("[SCENE ").append(index++).append("]: ");
+
+            builder.append("Entity count = ").append(scene.entityCount());
+            builder.append(" | Component count = ").append(scene.componentCount());
+        }
+
+        return builder.toString();
     }
 }

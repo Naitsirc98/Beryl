@@ -45,6 +45,10 @@ public class ComponentContainer<T extends Component, EnabledContainer extends Co
         }
     }
 
+    public int size() {
+        return enabledComponents.size() + disabledComponents.size();
+    }
+
     public void clear() {
         enabledComponents.clear();
         disabledComponents.clear();

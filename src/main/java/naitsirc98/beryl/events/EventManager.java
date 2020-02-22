@@ -21,15 +21,6 @@ public final class EventManager extends BerylSystem {
     private static EventManager instance;
 
     /**
-     * Returns the debug report of the event manager
-     *
-     * @return the debug report, or null if debug reports are disabled
-     * */
-    public static String debugReport() {
-        return DEBUG_REPORT_ENABLED ? instance.debugReport.report() : null;
-    }
-
-    /**
      * Adds an event callback for a particular event class at the back of its list
      *
      * @param eventClass the event class
@@ -141,6 +132,15 @@ public final class EventManager extends BerylSystem {
         swapEventQueues();
     }
 
+    /**
+     * Returns the debug report of the event manager
+     *
+     * @return the debug report, or null if debug reports are disabled
+     * */
+    public String debugReport() {
+        return DEBUG_REPORT_ENABLED ? instance.debugReport.report() : null;
+    }
+
     private void processEventQueue() {
 
         if(frontEventQueue.isEmpty()) {
@@ -176,7 +176,7 @@ public final class EventManager extends BerylSystem {
         }
     }
 
-    private class EventDebugReport implements DebugReport {
+    private class EventDebugReport {
 
         private int eventCount;
         private int maxEventCount;
@@ -185,7 +185,6 @@ public final class EventManager extends BerylSystem {
             eventCount += count;
         }
 
-        @Override
         public String report() {
             maxEventCount = Math.max(maxEventCount, eventCount);
             final int eventCount = this.eventCount;
