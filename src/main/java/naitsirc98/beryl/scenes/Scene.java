@@ -36,12 +36,6 @@ public final class Scene {
         behaviours.update();
     }
 
-    void processTasks() {
-        while(!taskQueue.isEmpty()) {
-            taskQueue.poll().run();
-        }
-    }
-
     void lateUpdate() {
         // TODO
         behaviours.lateUpdate();
@@ -56,7 +50,7 @@ public final class Scene {
         entityManager.destroy();
     }
 
-    public synchronized void submit(Runnable task) {
+    public void submit(Runnable task) {
 
         if(task == null) {
             Log.error("Cannot to submit a null task");

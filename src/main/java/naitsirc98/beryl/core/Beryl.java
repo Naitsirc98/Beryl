@@ -48,15 +48,14 @@ public final class Beryl {
     }
 
     private final BerylApplication application;
-    private final BerylSystemManager systemManager;
-
+    private final BerylSystemManager systems;
     private float updateDelay;
     private int updatesPerSecond;
 
     private Beryl(BerylApplication application) {
         this.application = application;
         initSingleton(BerylApplication.class, application);
-        systemManager = new BerylSystemManager();
+        systems = new BerylSystemManager();
     }
 
     private void init() {
@@ -65,7 +64,7 @@ public final class Beryl {
 
         application.onInit();
 
-        systemManager.init();
+        systems.init();
 
         Log.info("Beryl Systems initialized successfully");
     }
@@ -77,13 +76,11 @@ public final class Beryl {
         application.start();
 
         // Get frequently used systems
-        final Time time = systemManager.get(Time.class);
-        final EventManager eventManager = systemManager.get(EventManager.class);
-        final Input input = systemManager.get(Input.class);
-        final SceneManager sceneManager = systemManager.get(SceneManager.class);
+        final Time time = systems.time;
 
         float lastFrame = 0.0f;
         float showFPSTimer = 0.0f;
+        float deltaTime = 0.0f;
 
         int framesPerSecond = 0;
 
@@ -92,18 +89,18 @@ public final class Beryl {
         while(application.running()) {
 
             final float now = Time.time();
-            time.deltaTime = now - lastFrame;
+            time.deltaTime = deltaTime = now - lastFrame;
             lastFrame = now;
 
-            update(time.deltaTime, eventManager, input, sceneManager);
+            update(deltaTime);
 
-            render(sceneManager);
+            render();
             ++framesPerSecond;
 
             ++time.frames;
 
             if(DEBUG && Time.time() - showFPSTimer >= 1.0f) {
-                Log.debug(buildDebugReport(framesPerSecond, updatesPerSecond, time.deltaTime));
+                Log.debug(buildDebugReport(framesPerSecond, updatesPerSecond, deltaTime));
                 time.ups = updatesPerSecond;
                 time.fps = framesPerSecond;
                 updatesPerSecond = 0;
@@ -113,7 +110,11 @@ public final class Beryl {
         }
     }
 
-    private void update(float deltaTime, EventManager eventManager, Input input, SceneManager sceneManager) {
+    private void update(float deltaTime) {
+
+        final EventManager eventManager = systems.eventManager;
+        final Input input = systems.input;
+        final SceneManager sceneManager = systems.sceneManager;
 
         updateDelay += deltaTime;
 
@@ -132,9 +133,9 @@ public final class Beryl {
         }
     }
 
-    private void render(SceneManager sceneManager) {
+    private void render() {
 
-        sceneManager.render();
+        systems.sceneManager.render();
 
         application.onRender();
 
@@ -154,7 +155,7 @@ public final class Beryl {
 
         application.onTerminate();
 
-        systemManager.terminate();
+        systems.terminate();
     }
 
 
