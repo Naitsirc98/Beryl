@@ -36,10 +36,14 @@ public class Main extends BerylApplication {
 
         Scene scene = SceneManager.newScene();
 
-        for(int i = 0;i < 10000;i++) {
-            Entity entity = Entity.create();
+        double start = System.nanoTime();
+
+        for(int i = 0;i < 100000;i++) {
+            Entity entity = scene.newEntity();
             entity.add(MyBehaviour.class);
         }
+
+        System.out.println("time = " + ((System.nanoTime() - start) / 1e6) + "ms");
 
     }
 

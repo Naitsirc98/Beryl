@@ -34,11 +34,6 @@ public class Behaviour extends Component<Behaviour> {
     }
 
     @Override
-    public Class<? extends Component> type() {
-        return Behaviour.class;
-    }
-
-    @Override
     protected void onEnable() {
 
     }
@@ -49,13 +44,17 @@ public class Behaviour extends Component<Behaviour> {
     }
 
     @Override
-    protected final Behaviour self() {
-        return this;
-    }
-
-    @Override
     protected void onDestroy() {
 
     }
 
+    @Override
+    public Class<? extends Component> type() {
+        return Behaviour.class;
+    }
+
+    @Override
+    protected final Behaviour self() {
+        return this;
+    }
 }
