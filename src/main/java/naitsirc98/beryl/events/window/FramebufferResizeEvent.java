@@ -1,4 +1,6 @@
-package naitsirc98.beryl.events;
+package naitsirc98.beryl.events.window;
+
+import naitsirc98.beryl.events.Event;
 
 public class FramebufferResizeEvent extends Event {
 

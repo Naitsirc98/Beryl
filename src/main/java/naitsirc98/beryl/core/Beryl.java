@@ -84,8 +84,6 @@ public final class Beryl {
 
         int framesPerSecond = 0;
 
-        time.start();
-
         while(application.running()) {
 
             final float now = Time.time();

@@ -47,7 +47,7 @@ public class BehaviourManager extends ComponentManager<Behaviour> {
     }
 
     @Override
-    protected void destroy(Behaviour component) {
+    protected void remove(Behaviour component) {
         components.remove(component);
     }
 

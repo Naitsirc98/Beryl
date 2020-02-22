@@ -111,7 +111,8 @@ public final class Scene {
         }
 
         entity.markDestroyed();
-        submit(() -> entityManager.destroy(entity));
+
+        submit(() -> destroyEntity(entity));
     }
 
     public void destroyNow(String entityName) {
@@ -125,6 +126,11 @@ public final class Scene {
         }
 
         entity.markDestroyed();
+
+        destroyEntity(entity);
+    }
+
+    private void destroyEntity(Entity entity) {
         entityManager.destroy(entity);
     }
 
@@ -136,7 +142,6 @@ public final class Scene {
         component.manager = manager;
     }
 
-    @SuppressWarnings("unchecked")
     void destroy(Component component) {
 
         if(component == null || component.destroyed()) {
@@ -144,10 +149,10 @@ public final class Scene {
         }
 
         component.markDestroyed();
-        submit(() -> managerOf(component.type()).destroy(component));
+
+        submit(() -> destroyComponent(component));
     }
 
-    @SuppressWarnings("unchecked")
     void destroyNow(Component component) {
 
         if(component == null || component.destroyed()) {
@@ -155,7 +160,14 @@ public final class Scene {
         }
 
         component.markDestroyed();
-        managerOf(component.type()).destroy(component);
+
+        destroyComponent(component);
+    }
+
+    @SuppressWarnings("unchecked")
+    private void destroyComponent(Component component) {
+        managerOf(component.type()).remove(component);
+        component.onDestroy();
     }
 
     @SuppressWarnings("unchecked")

@@ -54,7 +54,7 @@ public abstract class ComponentManager<T extends Component> {
      *
      * @param component the component
      */
-    protected abstract void destroy(T component);
+    protected abstract void remove(T component);
 
     /**
      * Removes all components

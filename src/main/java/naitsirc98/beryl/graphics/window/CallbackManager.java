@@ -3,7 +3,7 @@ package naitsirc98.beryl.graphics.window;
 import naitsirc98.beryl.core.BerylApplication;
 import naitsirc98.beryl.events.Event;
 import naitsirc98.beryl.events.EventManager;
-import naitsirc98.beryl.events.FramebufferResizeEvent;
+import naitsirc98.beryl.events.window.FramebufferResizeEvent;
 import naitsirc98.beryl.events.input.keyboard.KeyEvent;
 import naitsirc98.beryl.events.input.keyboard.KeyPressedEvent;
 import naitsirc98.beryl.events.input.keyboard.KeyReleasedEvent;
