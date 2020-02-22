@@ -4,17 +4,12 @@ import naitsirc98.beryl.core.Beryl;
 import naitsirc98.beryl.core.BerylApplication;
 import naitsirc98.beryl.core.BerylConfiguration;
 import naitsirc98.beryl.core.Log;
-import naitsirc98.beryl.graphics.window.CursorType;
-import naitsirc98.beryl.graphics.window.Window;
-import naitsirc98.beryl.input.Gamepad;
 import naitsirc98.beryl.input.Input;
-import naitsirc98.beryl.input.Joystick;
 import naitsirc98.beryl.scenes.Entity;
 import naitsirc98.beryl.scenes.Scene;
 import naitsirc98.beryl.scenes.SceneManager;
 import naitsirc98.beryl.scenes.components.behaviours.Behaviour;
 
-import static naitsirc98.beryl.input.Key.KEY_F1;
 import static naitsirc98.beryl.input.Key.KEY_W;
 
 
@@ -41,9 +36,11 @@ public class Main extends BerylApplication {
 
         Scene scene = SceneManager.newScene();
 
-        Entity entity = Entity.create();
+        for(int i = 0;i < 10000;i++) {
+            Entity entity = Entity.create();
+            entity.add(MyBehaviour.class);
+        }
 
-        entity.add(MyBehaviour.class);
     }
 
     @Override
@@ -54,8 +51,12 @@ public class Main extends BerylApplication {
 
     private class MyBehaviour extends Behaviour {
 
+        private double dummy;
+
         @Override
         protected void onUpdate() {
+
+            dummy = Math.sin(Math.random());
 
             if(Input.isKeyTyped(KEY_W)) {
                 Log.trace("Hey!");
