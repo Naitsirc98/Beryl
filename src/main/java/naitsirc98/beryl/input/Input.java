@@ -1,7 +1,7 @@
 package naitsirc98.beryl.input;
 
 import naitsirc98.beryl.core.BerylSystem;
-import naitsirc98.beryl.core.Log;
+import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.events.EventManager;
 import naitsirc98.beryl.events.input.joystick.JoystickConnectedEvent;
 import naitsirc98.beryl.events.input.joystick.JoystickDisconnectedEvent;

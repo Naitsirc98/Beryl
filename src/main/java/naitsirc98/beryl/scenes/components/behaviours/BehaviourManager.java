@@ -52,7 +52,7 @@ public class BehaviourManager extends ComponentManager<Behaviour> {
     }
 
     @Override
-    protected void destroy() {
+    protected void clear() {
         components.clear();
     }
 }

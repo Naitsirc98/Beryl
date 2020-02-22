@@ -1,6 +1,6 @@
 package naitsirc98.beryl.scenes;
 
-import naitsirc98.beryl.core.Log;
+import naitsirc98.beryl.logging.Log;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;

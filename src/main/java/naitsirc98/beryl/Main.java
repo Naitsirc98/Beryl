@@ -3,7 +3,7 @@ package naitsirc98.beryl;
 import naitsirc98.beryl.core.Beryl;
 import naitsirc98.beryl.core.BerylApplication;
 import naitsirc98.beryl.core.BerylConfiguration;
-import naitsirc98.beryl.core.Log;
+import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.input.Input;
 import naitsirc98.beryl.scenes.Entity;
 import naitsirc98.beryl.scenes.Scene;

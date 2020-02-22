@@ -1,6 +1,6 @@
 package naitsirc98.beryl.scenes;
 
-import naitsirc98.beryl.core.Log;
+import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.scenes.components.behaviours.Behaviour;
 import naitsirc98.beryl.scenes.components.behaviours.BehaviourManager;
 
@@ -36,6 +36,12 @@ public final class Scene {
         behaviours.update();
     }
 
+    void processTasks() {
+        while(!taskQueue.isEmpty()) {
+            taskQueue.poll().run();
+        }
+    }
+
     void lateUpdate() {
         // TODO
         behaviours.lateUpdate();
@@ -48,6 +54,7 @@ public final class Scene {
     void terminate() {
         // TODO
         entityManager.destroy();
+        componentManagers.values().forEach(ComponentManager::clear);
     }
 
     public void submit(Runnable task) {

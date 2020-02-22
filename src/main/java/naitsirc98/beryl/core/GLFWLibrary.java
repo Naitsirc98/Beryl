@@ -1,5 +1,6 @@
 package naitsirc98.beryl.core;
 
+import naitsirc98.beryl.logging.Log;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.system.MemoryStack;
 

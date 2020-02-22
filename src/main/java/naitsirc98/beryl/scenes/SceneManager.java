@@ -1,7 +1,7 @@
 package naitsirc98.beryl.scenes;
 
 import naitsirc98.beryl.core.BerylSystem;
-import naitsirc98.beryl.core.Log;
+import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.util.Singleton;
 
 import java.util.ArrayDeque;

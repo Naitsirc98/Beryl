@@ -59,5 +59,5 @@ public abstract class ComponentManager<T extends Component> {
     /**
      * Removes all components
      */
-    protected abstract void destroy();
+    protected abstract void clear();
 }

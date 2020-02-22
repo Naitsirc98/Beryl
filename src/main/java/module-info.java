@@ -17,9 +17,8 @@ module Beryl {
     requires org.lwjgl.vulkan;
 
     requires org.joml;
-    // <===
 
-    requires org.jetbrains.annotations;
+    // <===
 
     requires java.logging;
 

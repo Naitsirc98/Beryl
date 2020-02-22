@@ -1,14 +1,11 @@
-package naitsirc98.beryl.core;
+package naitsirc98.beryl.logging;
 
+import naitsirc98.beryl.core.Beryl;
+import naitsirc98.beryl.core.BerylConfiguration;
+import naitsirc98.beryl.core.BerylSystem;
+import naitsirc98.beryl.util.ANSIColor;
 import naitsirc98.beryl.util.Singleton;
 
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintStream;
-import java.nio.file.Files;
-import java.nio.file.OpenOption;
-import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -18,9 +15,6 @@ import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static java.nio.file.StandardOpenOption.APPEND;
-import static java.nio.file.StandardOpenOption.CREATE;
 import static java.util.Objects.requireNonNull;
 import static java.util.concurrent.Executors.newSingleThreadExecutor;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
@@ -182,7 +176,7 @@ public final class Log extends BerylSystem {
 
     private final EnumSet<Level> levelMask;
     private final EnumMap<Level, ANSIColor> levelColors;
-    private final List<Channel> channels;
+    private final List<LogChannel> channels;
     private final BlockingQueue<Message> messageQueue;
     private final AtomicBoolean running;
     private final ExecutorService executor;
@@ -220,7 +214,7 @@ public final class Log extends BerylSystem {
         }
     }
 
-    private void closeChannel(Channel channel) {
+    private void closeChannel(LogChannel channel) {
         try {
             channel.close();
         } catch (Exception e) {
@@ -258,7 +252,7 @@ public final class Log extends BerylSystem {
                 .forEach(channel -> writeMessage(channel, bakedMessage));
     }
 
-    private void writeMessage(Channel channel, String bakedMessage) {
+    private void writeMessage(LogChannel channel, String bakedMessage) {
         try {
             channel.write(bakedMessage);
         } catch (Exception e) {
@@ -285,7 +279,7 @@ public final class Log extends BerylSystem {
     }
 
     private void setChannels() {
-        channels.addAll(BerylConfiguration.LOG_CHANNELS.get(Collections.singleton(Channel.stdout())));
+        channels.addAll(BerylConfiguration.LOG_CHANNELS.get(Collections.singleton(LogChannel.stdout())));
     }
 
     private void setLevelColors() {
@@ -327,112 +321,6 @@ public final class Log extends BerylSystem {
 
     }
 
-    public enum ANSIColor {
-
-        NONE(""),
-        RESET("\u001b[0m"),
-        CYAN("\u001b[36m"),
-        BLUE("\u001b[34m"),
-        GREEN("\u001b[32m"),
-        YELLOW("\u001b[33m"),
-        MAGENTA("\u001b[35m"),
-        RED("\u001b[31m"),
-        RESET_BOLD("\u001b[0;1m"),
-        CYAN_BOLD("\u001b[36;1m"),
-        BLUE_BOLD("\u001b[34;1m"),
-        GREEN_BOLD("\u001b[32;1m"),
-        YELLOW_BOLD("\u001b[33;1m"),
-        MAGENTA_BOLD("\u001b[35;1m"),
-        RED_BOLD("\u001b[31;1m");
-
-        public final String code;
-
-        ANSIColor(String code) {
-            this.code = code;
-        }
-    }
-
-    @FunctionalInterface
-    public interface Channel {
-
-        static Channel stdout() {
-            return of(System.out);
-        }
-
-        static Channel of(OutputStream outputStream) {
-            return msg -> outputStream.write(msg.getBytes(UTF_8));
-        }
-
-        static Channel of(PrintStream printStream) {
-            return printStream::print;
-        }
-
-        void write(String message) throws Exception;
-
-        /**
-         * Override this if the underlying channel must be closed
-         *
-         */
-        default void close() throws Exception {}
-
-        /**
-         * Tells whether this channel may act on the specified level or not
-         *
-         */
-        default boolean accept(Level level) {
-            return true;
-        }
-    }
-
-    public static class FileChannel implements Channel {
-
-        public static final OpenOption[] DEFAULT_OPEN_OPTIONS = {
-                CREATE,
-                APPEND
-        };
-
-        private final BufferedWriter bufferedWriter;
-        private final EnumSet<Level> acceptedLevels;
-
-
-        public FileChannel(Path path, OpenOption... openOptions) {
-            this(path, EnumSet.allOf(Level.class), openOptions);
-        }
-
-        public FileChannel(Path path, Level minLevel, OpenOption... openOptions) {
-            this(path, EnumSet.range(requireNonNull(minLevel), Level.ERROR), openOptions);
-        }
-
-        public FileChannel(Path path, EnumSet<Level> acceptedLevels, OpenOption... openOptions) {
-            this.acceptedLevels = requireNonNull(acceptedLevels);
-            bufferedWriter = createBufferedWriter(path, openOptions);
-        }
-
-        private BufferedWriter createBufferedWriter(Path path, OpenOption... openOptions) {
-            try {
-                return Files.newBufferedWriter(path, openOptions);
-            } catch (IOException e) {
-                Logger.getLogger(Log.class.getName()).log(java.util.logging.Level.SEVERE, "Error while creating buffered writer", e);
-            }
-            return null;
-        }
-
-        @Override
-        public void write(String message) throws Exception {
-            bufferedWriter.write(message);
-        }
-
-        @Override
-        public void close() throws Exception {
-            bufferedWriter.close();
-        }
-
-        @Override
-        public boolean accept(Level level) {
-            return acceptedLevels.contains(level);
-        }
-    }
-
     private static final class Message {
 
         private final Level level;
@@ -441,21 +329,6 @@ public final class Log extends BerylSystem {
         public Message(Level level, Object contents) {
             this.level = level;
             this.contents = contents;
-        }
-    }
-
-    private static class FatalException extends RuntimeException {
-
-        public FatalException(String msg) {
-            super(msg);
-        }
-
-        public FatalException(Throwable cause) {
-            super(cause);
-        }
-
-        public FatalException(String message, Throwable cause) {
-            super(message, cause);
         }
     }
 

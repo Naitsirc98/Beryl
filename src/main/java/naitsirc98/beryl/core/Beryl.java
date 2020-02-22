@@ -2,6 +2,7 @@ package naitsirc98.beryl.core;
 
 import naitsirc98.beryl.events.EventManager;
 import naitsirc98.beryl.input.Input;
+import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.scenes.SceneManager;
 import org.lwjgl.system.Configuration;
 
@@ -75,12 +76,11 @@ public final class Beryl {
 
         application.start();
 
-        // Get frequently used systems
         final Time time = systems.time;
 
         float lastFrame = 0.0f;
-        float showFPSTimer = 0.0f;
-        float deltaTime = 0.0f;
+        float lastDebugReport = 0.0f;
+        float deltaTime;
 
         int framesPerSecond = 0;
 
@@ -99,13 +99,13 @@ public final class Beryl {
 
             ++time.frames;
 
-            if(DEBUG && Time.time() - showFPSTimer >= 1.0f) {
+            if(DEBUG && Time.time() - lastDebugReport >= 1.0f) {
                 Log.debug(buildDebugReport(framesPerSecond, updatesPerSecond, deltaTime));
                 time.ups = updatesPerSecond;
                 time.fps = framesPerSecond;
                 updatesPerSecond = 0;
                 framesPerSecond = 0;
-                showFPSTimer = Time.time();
+                lastDebugReport = Time.time();
             }
         }
     }

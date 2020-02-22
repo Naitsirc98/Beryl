@@ -1,6 +1,6 @@
 package naitsirc98.beryl.util;
 
-import naitsirc98.beryl.core.Log;
+import naitsirc98.beryl.logging.Log;
 import org.jetbrains.annotations.NotNull;
 import sun.misc.Unsafe;
 
