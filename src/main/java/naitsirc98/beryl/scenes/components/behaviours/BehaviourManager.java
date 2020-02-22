@@ -4,6 +4,9 @@ import naitsirc98.beryl.scenes.ComponentManager;
 import naitsirc98.beryl.scenes.Scene;
 import naitsirc98.beryl.scenes.components.ComponentContainer;
 
+/**
+ * The Behaviour Manager updates the {@link Behaviour} instances of a scene
+ */
 public class BehaviourManager extends ComponentManager<Behaviour> {
 
     private final ComponentContainer.Default<Behaviour> components;
@@ -13,12 +16,18 @@ public class BehaviourManager extends ComponentManager<Behaviour> {
         components = new ComponentContainer.Default<>();
     }
 
+    /**
+     * Performs the update pass
+     */
     public void update() {
         for(Behaviour behaviour : components.enabled()) {
             behaviour.onUpdate();
         }
     }
 
+    /**
+     * Performs the late-update pass
+     */
     public void lateUpdate() {
         for(Behaviour behaviour : components.enabled()) {
             behaviour.onLateUpdate();
