@@ -10,6 +10,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
+/**
+ * The Task Manager enqueues and asynchronously executes tasks
+ */
 public final class TaskManager extends BerylSystem {
 
     private static final int TASK_POP_TIMEOUT = 16;
@@ -18,10 +21,20 @@ public final class TaskManager extends BerylSystem {
     private static TaskManager instance;
 
 
+    /**
+     * Submit a task to be executed in the future.
+     *
+     * @param task the task
+     */
     public static void submitTask(Task task) {
         instance.submit(task);
     }
 
+    /**
+     * Returns the number of enqueued tasks.
+     *
+     * @return the number of tasks
+     */
     public static int taskCount() {
         return instance.taskQueue.size();
     }
