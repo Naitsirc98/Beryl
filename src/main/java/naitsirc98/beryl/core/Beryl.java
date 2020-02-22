@@ -4,6 +4,7 @@ import naitsirc98.beryl.events.EventManager;
 import naitsirc98.beryl.input.Input;
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.scenes.SceneManager;
+import naitsirc98.beryl.util.Version;
 import org.lwjgl.system.Configuration;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -15,8 +16,14 @@ import static naitsirc98.beryl.util.TypeUtils.initSingleton;
 
 public final class Beryl {
 
+    public static final Version VERSION = new Version(1, 0, 0);
+    public static final String NAME = "Beryl";
+
     public static final boolean INTERNAL_DEBUG = BerylConfiguration.INTERNAL_DEBUG.get(false);
     public static final boolean DEBUG = BerylConfiguration.DEBUG.get(INTERNAL_DEBUG);
+
+    public static final String APPLICATION_NAME = BerylConfiguration.APPLICATION_NAME.get("");
+    public static final Version APPLICATION_VERSION = BerylConfiguration.APPLICATION_VERSION.get(() -> new Version(1, 0, 0));
 
     public static final boolean MEMORY_USAGE_REPORT = BerylConfiguration.MEMORY_USAGE_REPORT.get(DEBUG);
 

@@ -23,6 +23,7 @@ import java.util.List;
 import static naitsirc98.beryl.events.EventManager.triggerEvent;
 import static org.lwjgl.glfw.GLFW.*;
 
+@Destructor(method = "destroy")
 class CallbackManager {
 
     private final List<Callback> callbacks;
@@ -32,7 +33,6 @@ class CallbackManager {
         callbacks = new ArrayList<>();
     }
 
-    @Destructor
     void destroy() {
         callbacks.forEach(Callback::free);
         callbacks.clear();

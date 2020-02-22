@@ -2,8 +2,10 @@ package naitsirc98.beryl.graphics;
 
 import naitsirc98.beryl.core.BerylConfiguration;
 import naitsirc98.beryl.core.BerylSystem;
+import naitsirc98.beryl.graphics.vulkan.VulkanContext;
 import naitsirc98.beryl.graphics.window.Window;
 import naitsirc98.beryl.graphics.window.WindowFactory;
+import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.util.Singleton;
 
 import static naitsirc98.beryl.util.TypeUtils.*;
@@ -12,6 +14,7 @@ public final class Graphics extends BerylSystem {
 
     @Singleton
     private static Graphics instance;
+
 
     private GraphicsContext graphicsContext;
     private Window window;
@@ -22,8 +25,31 @@ public final class Graphics extends BerylSystem {
 
     @Override
     protected void init() {
-        initSingleton(GraphicsAPI.class, BerylConfiguration.GRAPHICS_API.get(GraphicsAPI.OPENGL));
+
+        Log.trace("Initializing Graphics...");
+
+        initSingleton(GraphicsAPI.class, BerylConfiguration.GRAPHICS_API.get(GraphicsAPI.VULKAN));
+
+        Log.trace("Using " + GraphicsAPI.get() + " as the Graphics API");
+
+        Log.trace("Creating window...");
+
         window = newInstance(WindowFactory.class).newWindow();
+
+        Log.trace("Window created");
+
+        Log.trace("Creating Graphics Context...");
+
+        graphicsContext = createGraphicsContext();
+
+        Log.trace(GraphicsAPI.get()  + " Context created");
+    }
+
+    private GraphicsContext createGraphicsContext() {
+        if(GraphicsAPI.get() == GraphicsAPI.VULKAN) {
+            return newInstance(VulkanContext.class);
+        }
+        throw new IllegalStateException();
     }
 
     @Override

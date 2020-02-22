@@ -7,12 +7,14 @@ import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.logging.LogChannel;
 import naitsirc98.beryl.util.ANSIColor;
 import naitsirc98.beryl.util.Sizec;
+import naitsirc98.beryl.util.Version;
 import org.joml.Vector2ic;
 
 import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 
 /**
  * A class to set different configuration variables. The value of each configuration container will be read once and
@@ -33,6 +35,9 @@ public final class BerylConfiguration<T> {
     public static final BerylConfiguration<Boolean> EVENTS_DEBUG_REPORT = new BerylConfiguration<>();
     public static final BerylConfiguration<Boolean> SCENES_DEBUG_REPORT = new BerylConfiguration<>();
 
+    public static final BerylConfiguration<String> APPLICATION_NAME = new BerylConfiguration<>();
+    public static final BerylConfiguration<Version> APPLICATION_VERSION = new BerylConfiguration<>();
+
     public static final BerylConfiguration<Double> INITIAL_TIME_VALUE = new BerylConfiguration<>();
 
     public static final BerylConfiguration<Set<Log.Level>> LOG_LEVELS = new BerylConfiguration<>();
@@ -44,7 +49,6 @@ public final class BerylConfiguration<T> {
 
     public static final BerylConfiguration<GraphicsAPI> GRAPHICS_API = new BerylConfiguration<>();
 
-    public static final BerylConfiguration<String> WINDOW_TITLE = new BerylConfiguration<>();
     public static final BerylConfiguration<Vector2ic> WINDOW_POSITION = new BerylConfiguration<>();
     public static final BerylConfiguration<Sizec> WINDOW_SIZE = new BerylConfiguration<>();
     public static final BerylConfiguration<DisplayMode> WINDOW_DISPLAY_MODE = new BerylConfiguration<>();
@@ -54,6 +58,9 @@ public final class BerylConfiguration<T> {
     public static final BerylConfiguration<Boolean> WINDOW_FOCUS_ON_SHOW = new BerylConfiguration<>();
 
     public static final BerylConfiguration<Integer> EVENT_QUEUE_INITIAL_CAPACITY = new BerylConfiguration<>();
+
+    public static final BerylConfiguration<Boolean> ENABLE_VULKAN_VALIDATION_LAYERS = new BerylConfiguration<>();
+    public static final BerylConfiguration<Set<String>> VULKAN_VALIDATION_LAYERS = new BerylConfiguration<>();
 
     private T value;
 
@@ -75,6 +82,13 @@ public final class BerylConfiguration<T> {
     public T get(T defaultValue) {
         if(empty()) {
             value = defaultValue;
+        }
+        return value;
+    }
+
+    public T get(Supplier<T> defaultValueSupplier) {
+        if(empty()) {
+            value = defaultValueSupplier.get();
         }
         return value;
     }

@@ -147,10 +147,5 @@
             <artifactId>joml</artifactId>
             <version>${joml.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.jetbrains.kotlin</groupId>
-            <artifactId>kotlin-compiler-embeddable</artifactId>
-            <version>${kotlin.version}</version>
-        </dependency>
     </dependencies>
 </project>
