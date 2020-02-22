@@ -5,6 +5,7 @@ import naitsirc98.beryl.graphics.Graphics;
 import naitsirc98.beryl.input.Input;
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.scenes.SceneManager;
+import naitsirc98.beryl.tasks.TaskManager;
 
 import java.util.Objects;
 import java.util.stream.IntStream;
@@ -22,6 +23,7 @@ public class BerylSystemManager {
     final EventManager eventManager;
     final Input input;
     final Graphics graphics;
+    final TaskManager taskManager;
     final SceneManager sceneManager;
     private final BerylSystem[] systems;
 
@@ -33,6 +35,7 @@ public class BerylSystemManager {
                 eventManager = createSystem(EventManager.class),
                 input = createSystem(Input.class),
                 graphics = createSystem(Graphics.class),
+                taskManager = createSystem(TaskManager.class),
                 sceneManager = createSystem(SceneManager.class)
         };
     }

@@ -64,7 +64,7 @@ public final class EventManager extends BerylSystem {
      *
      * @param event the event
      */
-    public static void submitNow(Event event) {
+    public static void triggerEventNow(Event event) {
         instance.dispatcher.dispatch(event);
     }
 
@@ -73,7 +73,7 @@ public final class EventManager extends BerylSystem {
      *
      * @param event the event
      */
-    public static void submit(Event event) {
+    public static void triggerEvent(Event event) {
         instance.frontEventQueue.add(assertNonNull(event));
     }
 

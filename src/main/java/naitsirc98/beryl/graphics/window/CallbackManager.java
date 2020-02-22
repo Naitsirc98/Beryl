@@ -20,7 +20,7 @@ import org.lwjgl.system.Callback;
 import java.util.ArrayList;
 import java.util.List;
 
-import static naitsirc98.beryl.events.EventManager.submit;
+import static naitsirc98.beryl.events.EventManager.triggerEvent;
 import static org.lwjgl.glfw.GLFW.*;
 
 class CallbackManager {
@@ -71,57 +71,57 @@ class CallbackManager {
     }
 
     private GLFWWindowIconifyCallback OnWindowIconified() {
-        return GLFWWindowIconifyCallback.create((handle, iconified) -> submit(iconified
+        return GLFWWindowIconifyCallback.create((handle, iconified) -> triggerEvent(iconified
                 ? new WindowIconifiedEvent() : new WindowRestoredEvent()));
     }
 
     private GLFWCursorEnterCallback onCursorEnterEvent() {
-        return GLFWCursorEnterCallback.create((handle, entered) -> submit(entered ? new MouseEnterEvent() : new MouseExitEvent()));
+        return GLFWCursorEnterCallback.create((handle, entered) -> triggerEvent(entered ? new MouseEnterEvent() : new MouseExitEvent()));
     }
 
     private GLFWCursorPosCallback onCursorPosEvent() {
-        return GLFWCursorPosCallback.create((handle, x, y) -> submit(new MouseMovedEvent((float)x, (float)y)));
+        return GLFWCursorPosCallback.create((handle, x, y) -> triggerEvent(new MouseMovedEvent((float)x, (float)y)));
     }
 
     private GLFWScrollCallback onScrollEvent() {
-        return GLFWScrollCallback.create((handle, xoffset, yoffset) -> submit(new MouseScrollEvent((float)xoffset, (float)yoffset)));
+        return GLFWScrollCallback.create((handle, xoffset, yoffset) -> triggerEvent(new MouseScrollEvent((float)xoffset, (float)yoffset)));
     }
 
     private GLFWMouseButtonCallback onMouseButtonEvent() {
-        return GLFWMouseButtonCallback.create((handle, button, action, mods) -> submit(newMouseButtonEvent(button, action, mods)));
+        return GLFWMouseButtonCallback.create((handle, button, action, mods) -> triggerEvent(newMouseButtonEvent(button, action, mods)));
     }
 
     private GLFWCharCallback onUnicodeEvent() {
-        return GLFWCharCallback.create((handle, codePoint) -> submit(new UnicodeInputEvent(codePoint)));
+        return GLFWCharCallback.create((handle, codePoint) -> triggerEvent(new UnicodeInputEvent(codePoint)));
     }
 
     private GLFWKeyCallback onKeyEvent() {
-        return GLFWKeyCallback.create((handle, key, scancode, action, mods) -> submit(newKeyEvent(key, scancode, action, mods)));
+        return GLFWKeyCallback.create((handle, key, scancode, action, mods) -> triggerEvent(newKeyEvent(key, scancode, action, mods)));
     }
 
     private GLFWWindowCloseCallback onWindowClose() {
-        return GLFWWindowCloseCallback.create((handle) -> submit(new WindowClosedEvent()));
+        return GLFWWindowCloseCallback.create((handle) -> triggerEvent(new WindowClosedEvent()));
     }
 
     private GLFWWindowFocusCallback onWindowFocus() {
-        return GLFWWindowFocusCallback.create((handle, focused) -> submit(new WindowFocusEvent(focused)));
+        return GLFWWindowFocusCallback.create((handle, focused) -> triggerEvent(new WindowFocusEvent(focused)));
     }
 
     private GLFWWindowMaximizeCallback onWindowMaximixe() {
-        return GLFWWindowMaximizeCallback.create((handle, maximized) -> submit(maximized
+        return GLFWWindowMaximizeCallback.create((handle, maximized) -> triggerEvent(maximized
                 ? new WindowMaximizedEvent() : new WindowRestoredEvent()));
     }
 
     private GLFWFramebufferSizeCallback onFramebufferResize() {
-        return GLFWFramebufferSizeCallback.create((handle, w, h) -> submit(new FramebufferResizeEvent(w, h)));
+        return GLFWFramebufferSizeCallback.create((handle, w, h) -> triggerEvent(new FramebufferResizeEvent(w, h)));
     }
 
     private GLFWWindowSizeCallback onWindowResize() {
-        return GLFWWindowSizeCallback.create((handle, w, h) -> submit(new WindowResizedEvent(w, h)));
+        return GLFWWindowSizeCallback.create((handle, w, h) -> triggerEvent(new WindowResizedEvent(w, h)));
     }
 
     private GLFWWindowPosCallback onWindowPos() {
-        return GLFWWindowPosCallback.create((handle, x, y) -> submit(new WindowMovedEvent(x, y)));
+        return GLFWWindowPosCallback.create((handle, x, y) -> triggerEvent(new WindowMovedEvent(x, y)));
     }
 
     private <T extends Callback> T add(T callback) {
