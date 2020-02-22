@@ -3,12 +3,15 @@ package naitsirc98.beryl.graphics.vulkan;
 import naitsirc98.beryl.logging.Log;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.NativeResource;
-import org.lwjgl.vulkan.*;
+import org.lwjgl.vulkan.VkDebugUtilsMessengerCallbackDataEXT;
+import org.lwjgl.vulkan.VkDebugUtilsMessengerCallbackEXT;
+import org.lwjgl.vulkan.VkDebugUtilsMessengerCreateInfoEXT;
+import org.lwjgl.vulkan.VkInstance;
 
 import java.nio.LongBuffer;
 
+import static naitsirc98.beryl.graphics.vulkan.VulkanContext.VULKAN_DEBUG_MESSAGES_ENABLED;
 import static naitsirc98.beryl.graphics.vulkan.VulkanUtils.vkCall;
-import static naitsirc98.beryl.graphics.vulkan.VulkanValidationLayers.VALIDATION_LAYERS_ENABLED;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.NULL;
 import static org.lwjgl.vulkan.EXTDebugUtils.*;
@@ -17,8 +20,8 @@ import static org.lwjgl.vulkan.VK10.*;
 
 public class VulkanDebugMessenger implements NativeResource {
 
-    public static VulkanDebugMessenger newVulkanDebugMessenger(VkInstance vkInstance) {
-        return VALIDATION_LAYERS_ENABLED ? new VulkanDebugMessenger(vkInstance) : null;
+    static VulkanDebugMessenger newVulkanDebugMessenger(VkInstance vkInstance) {
+        return VULKAN_DEBUG_MESSAGES_ENABLED ? new VulkanDebugMessenger(vkInstance) : null;
     }
 
     public static int vulkanDebugCallback(int messageSeverity, int messageType, long pCallbackData, long pUserData) {

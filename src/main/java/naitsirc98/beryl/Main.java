@@ -3,6 +3,7 @@ package naitsirc98.beryl;
 import naitsirc98.beryl.core.Beryl;
 import naitsirc98.beryl.core.BerylApplication;
 import naitsirc98.beryl.core.BerylConfiguration;
+import naitsirc98.beryl.graphics.GraphicsAPI;
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.input.Input;
 import naitsirc98.beryl.scenes.Entity;
@@ -33,6 +34,7 @@ public class Main extends BerylApplication {
     protected void setConfiguration() {
         BerylConfiguration.DEBUG.set(true);
         BerylConfiguration.INTERNAL_DEBUG.set(true);
+        BerylConfiguration.GRAPHICS_API.set(GraphicsAPI.OPENGL);
     }
 
     @Override

@@ -10,13 +10,11 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toSet;
+import static naitsirc98.beryl.graphics.vulkan.VulkanContext.VALIDATION_LAYERS;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.vulkan.VK10.vkEnumerateInstanceLayerProperties;
 
 public class VulkanValidationLayers {
-
-    public static final boolean VALIDATION_LAYERS_ENABLED = BerylConfiguration.ENABLE_VULKAN_VALIDATION_LAYERS.get(Beryl.DEBUG);
-    public static final Set<String> VALIDATION_LAYERS = BerylConfiguration.VULKAN_VALIDATION_LAYERS.get(defaultValidationLayers());
 
     public static boolean validationLayersSupported() {
         return availableValidationLayers().containsAll(VALIDATION_LAYERS);
@@ -40,7 +38,7 @@ public class VulkanValidationLayers {
         }
     }
 
-    private static Set<String> defaultValidationLayers() {
+    static Set<String> defaultValidationLayers() {
         return Stream.of("VK_LAYER_KHRONOS_validation").collect(toSet());
     }
 

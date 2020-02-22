@@ -2,12 +2,14 @@ package naitsirc98.beryl.graphics;
 
 import naitsirc98.beryl.core.BerylConfiguration;
 import naitsirc98.beryl.core.BerylSystem;
+import naitsirc98.beryl.graphics.opengl.GLContext;
 import naitsirc98.beryl.graphics.vulkan.VulkanContext;
 import naitsirc98.beryl.graphics.window.Window;
 import naitsirc98.beryl.graphics.window.WindowFactory;
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.util.Singleton;
 
+import static naitsirc98.beryl.graphics.GraphicsAPI.VULKAN;
 import static naitsirc98.beryl.util.TypeUtils.*;
 
 public final class Graphics extends BerylSystem {
@@ -28,7 +30,7 @@ public final class Graphics extends BerylSystem {
 
         Log.trace("Initializing Graphics...");
 
-        initSingleton(GraphicsAPI.class, BerylConfiguration.GRAPHICS_API.get(GraphicsAPI.VULKAN));
+        initSingleton(GraphicsAPI.class, BerylConfiguration.GRAPHICS_API.get(VULKAN));
 
         Log.trace("Using " + GraphicsAPI.get() + " as the Graphics API");
 
@@ -46,15 +48,12 @@ public final class Graphics extends BerylSystem {
     }
 
     private GraphicsContext createGraphicsContext() {
-        if(GraphicsAPI.get() == GraphicsAPI.VULKAN) {
-            return newInstance(VulkanContext.class);
-        }
-        throw new IllegalStateException();
+        return GraphicsAPI.get() == VULKAN ? newInstance(VulkanContext.class) : newInstance(GLContext.class);
     }
 
     @Override
     protected void terminate() {
-        // TODO: release graphics resources
+        graphicsContext.free();
         delete(window);
     }
 

@@ -11,6 +11,8 @@ import org.lwjgl.vulkan.VkInstanceCreateInfo;
 
 import java.util.Collection;
 
+import static naitsirc98.beryl.graphics.vulkan.VulkanContext.VULKAN_DEBUG_MESSAGES_ENABLED;
+import static naitsirc98.beryl.graphics.vulkan.VulkanContext.VALIDATION_LAYERS;
 import static naitsirc98.beryl.graphics.vulkan.VulkanDebugMessenger.newVulkanDebugMessengerCreateInfo;
 import static naitsirc98.beryl.graphics.vulkan.VulkanExtensions.requiredExtensions;
 import static naitsirc98.beryl.graphics.vulkan.VulkanUtils.makeVersion;
@@ -25,7 +27,7 @@ class VulkanInstanceFactory {
 
     public static VkInstance newVkInstance() {
 
-        if(VALIDATION_LAYERS_ENABLED && !validationLayersSupported()) {
+        if(VULKAN_DEBUG_MESSAGES_ENABLED && !validationLayersSupported()) {
             Log.fatal("Validation layers requested but not supported");
             return null;
         }
@@ -49,8 +51,7 @@ class VulkanInstanceFactory {
                 .pApplicationInfo(appInfo)
                 .ppEnabledExtensionNames(requiredExtensions());
 
-        if(VALIDATION_LAYERS_ENABLED) {
-
+        if(VULKAN_DEBUG_MESSAGES_ENABLED) {
             createInfo.ppEnabledLayerNames(asPointerBuffer(VALIDATION_LAYERS));
             createInfo.pNext(newVulkanDebugMessengerCreateInfo(stack).address());
         }
