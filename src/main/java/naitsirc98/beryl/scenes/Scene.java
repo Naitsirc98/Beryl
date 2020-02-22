@@ -1,6 +1,8 @@
 package naitsirc98.beryl.scenes;
 
 import naitsirc98.beryl.core.Log;
+import naitsirc98.beryl.scenes.components.behaviours.Behaviour;
+import naitsirc98.beryl.scenes.components.behaviours.BehaviourManager;
 
 import java.util.ArrayDeque;
 import java.util.HashMap;
@@ -11,21 +13,27 @@ import java.util.stream.Stream;
 import static naitsirc98.beryl.scenes.Entity.UNTAGGED;
 import static naitsirc98.beryl.util.Asserts.assertNonNull;
 import static naitsirc98.beryl.util.Asserts.assertTrue;
+import static naitsirc98.beryl.util.TypeUtils.newInstance;
 
 public final class Scene {
     
     private final EntityManager entityManager;
+    private final BehaviourManager behaviours;
     private final Map<Class<? extends Component>, ComponentManager<?>> componentManagers;
     private final Queue<Runnable> taskQueue;
 
     public Scene() {
         entityManager = new EntityManager(this);
+        // Create Component Managers
+        behaviours = newInstance(BehaviourManager.class, this);
         componentManagers = createComponentManagersMap();
+        // ---
         taskQueue = new ArrayDeque<>();
     }
 
     void update() {
         // TODO
+        behaviours.update();
     }
 
     void processTasks() {
@@ -36,6 +44,7 @@ public final class Scene {
 
     void lateUpdate() {
         // TODO
+        behaviours.lateUpdate();
     }
 
     void render() {
@@ -118,15 +127,11 @@ public final class Scene {
     }
 
     @SuppressWarnings("unchecked")
-    void add(Component component) {
-
+    <T extends Component> void add(T component) {
         assertNonNull(component);
-
-        if(component.enabled()) {
-            managerOf(component.type()).addEnabled(component);
-        } else {
-            managerOf(component.type()).addDisabled(component);
-        }
+        ComponentManager<T> manager = managerOf(component.type());
+        manager.add(component);
+        component.manager = manager;
     }
 
     @SuppressWarnings("unchecked")
@@ -158,6 +163,11 @@ public final class Scene {
     }
 
     private Map<Class<? extends Component>, ComponentManager<?>> createComponentManagersMap() {
-        return new HashMap<>();
+
+        Map<Class<? extends Component>, ComponentManager<?>> components = new HashMap<>();
+
+        components.put(Behaviour.class, behaviours);
+
+        return components;
     }
 }

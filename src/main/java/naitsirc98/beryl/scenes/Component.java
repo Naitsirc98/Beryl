@@ -20,10 +20,16 @@ package naitsirc98.beryl.scenes;
  */
 public abstract class Component<SELF extends Component> extends SceneObject {
 
-
     Entity entity;
     ComponentManager<SELF> manager;
     private boolean enabled;
+
+
+    @Override
+    protected void init() {
+        super.init();
+        enabled = true;
+    }
 
     /**
      * Returns the entity of this component
@@ -88,9 +94,7 @@ public abstract class Component<SELF extends Component> extends SceneObject {
      *
      * @return the type
      */
-    public Class<? extends Component> type() {
-        return getClass();
-    }
+    public abstract Class<? extends Component> type();
 
     @Override
     public final void destroy() {

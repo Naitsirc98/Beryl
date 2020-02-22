@@ -29,18 +29,11 @@ public abstract class ComponentManager<T extends Component> {
     }
 
     /**
-     * Adds an enabled component
+     * Adds the specified component to this Component Manager
      *
      * @param component the component
-     */
-    protected abstract void addEnabled(T component);
-
-    /**
-     * Adds a disabled component
-     *
-     * @param component the component
-     */
-    protected abstract void addDisabled(T component);
+     * */
+    protected abstract void add(T component);
 
     /**
      * Indicates that the given component is enabled.

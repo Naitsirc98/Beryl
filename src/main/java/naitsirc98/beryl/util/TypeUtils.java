@@ -29,7 +29,6 @@ public final class TypeUtils {
         return null;
     }
 
-    @NotNull
     public static <T> T newInstance(Class<T> type) {
         try {
             Constructor<T> constructor = type.getDeclaredConstructor();
@@ -41,7 +40,6 @@ public final class TypeUtils {
         return null;
     }
 
-    @NotNull
     public static <T> T newInstance(Class<T> type, Object... args) {
         try {
             Constructor<T> constructor = type.getDeclaredConstructor(classesOf(args));
@@ -53,10 +51,14 @@ public final class TypeUtils {
         return null;
     }
 
-    public static Class<?>[] classesOf(Object[] objects) {
-        return (Class<?>[]) Arrays.stream(objects)
-                .map(object -> object == null ? null : object.getClass())
-                .toArray();
+    public static Class[] classesOf(Object[] objects) {
+        Class[] classes = new Class[objects.length];
+
+        for(int i = 0;i < objects.length;i++) {
+            classes[i] = objects[i].getClass();
+        }
+
+        return classes;
     }
 
     public static void initSingleton(Class<?> clazz, Object value) {

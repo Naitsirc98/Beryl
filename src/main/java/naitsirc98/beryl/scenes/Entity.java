@@ -107,6 +107,7 @@ public final class Entity extends SceneObject implements Iterable<Component> {
         }
 
         T component = newInstanceUnsafe(componentClass);
+        component.init();
         component.entity = this;
 
         components.put(componentClass, component);
@@ -326,6 +327,7 @@ public final class Entity extends SceneObject implements Iterable<Component> {
         this.tag = getOrElse(name, UNTAGGED);
         this.scene = assertNonNull(scene);
         this.index = index;
+        enabled = true;
     }
 
 }

@@ -8,6 +8,14 @@ public abstract class SceneObject {
     private boolean destroyed;
 
     /**
+     * Initializes this SceneObject
+     *
+     * */
+    void init() {
+        destroyed = false;
+    }
+
+    /**
      * The scene of this object
      *
      * @return the scene
