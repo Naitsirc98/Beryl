@@ -163,7 +163,7 @@ public final class EntityManager implements Iterable<Entity> {
      * @return the int
      */
     public int entityCount() {
-        return (int) entities.stream().filter(Objects::nonNull).count();
+        return entities.size() - freeIndices.size();
     }
 
     /**

@@ -88,8 +88,8 @@ public final class EventManager extends BerylSystem {
 
     @Override
     protected void init() {
-        this.frontEventQueue = new ArrayDeque<>(BerylConfiguration.EVENT_QUEUE_INITIAL_CAPACITY.get(64));
-        this.backEventQueue = new ArrayDeque<>(BerylConfiguration.EVENT_QUEUE_INITIAL_CAPACITY.get(64));
+        this.frontEventQueue = new ArrayDeque<>(BerylConfiguration.EVENT_QUEUE_INITIAL_CAPACITY.get(128));
+        this.backEventQueue = new ArrayDeque<>(BerylConfiguration.EVENT_QUEUE_INITIAL_CAPACITY.get(128));
         this.eventCallbacks = new HashMap<>();
         dispatcher = new EventDispatcher(eventCallbacks);
         debugReport = DEBUG_REPORT_ENABLED ? new EventDebugReport() : null;
@@ -137,7 +137,7 @@ public final class EventManager extends BerylSystem {
      *
      * @return the debug report, or null if debug reports are disabled
      * */
-    public String debugReport() {
+    public CharSequence debugReport() {
         return DEBUG_REPORT_ENABLED ? instance.debugReport.report() : null;
     }
 
@@ -186,6 +186,7 @@ public final class EventManager extends BerylSystem {
         }
 
         public String report() {
+
             maxEventCount = Math.max(maxEventCount, eventCount);
             final int eventCount = this.eventCount;
             this.eventCount = 0;

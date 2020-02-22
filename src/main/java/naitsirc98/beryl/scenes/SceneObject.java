@@ -49,7 +49,7 @@ public abstract class SceneObject {
      *
      * @return true if this object is destroyed (or is going to be destroyed), false otherwise
      */
-    public final boolean destroyed() {
+    public boolean destroyed() {
         return destroyed;
     }
 

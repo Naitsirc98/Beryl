@@ -134,7 +134,7 @@ public final class SceneManager extends BerylSystem {
 
     @Override
     protected void terminate() {
-
+        terminateAllScenes();
     }
 
     public void update() {
@@ -168,15 +168,8 @@ public final class SceneManager extends BerylSystem {
         }
     }
 
-    public enum AddMode {
-
-        FIRST,
-        LAST
-
-    }
-
     @Override
-    public String debugReport() {
+    public CharSequence debugReport() {
 
         StringBuilder builder = new StringBuilder();
 
@@ -190,6 +183,13 @@ public final class SceneManager extends BerylSystem {
             builder.append(" | Component count = ").append(scene.componentCount());
         }
 
-        return builder.toString();
+        return builder;
+    }
+
+    public enum AddMode {
+
+        FIRST,
+        LAST
+
     }
 }

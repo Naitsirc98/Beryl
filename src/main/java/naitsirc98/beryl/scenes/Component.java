@@ -41,6 +41,24 @@ public abstract class Component<SELF extends Component> extends SceneObject {
     }
 
     /**
+     * Returns the name of this component, which is the same as its entity
+     *
+     * @return this component's name
+     * */
+    public String name() {
+        return entity.name();
+    }
+
+    /**
+     * Returns the tag of this component, which is the same as its entity
+     *
+     * @return this component's tag
+     * */
+    public String tag() {
+        return entity.tag();
+    }
+
+    /**
      * Returns a component of the given class contained by its entity
      *
      * @param componentClass the component class
@@ -95,6 +113,11 @@ public abstract class Component<SELF extends Component> extends SceneObject {
      * @return the type
      */
     public abstract Class<? extends Component> type();
+
+    @Override
+    public boolean destroyed() {
+        return super.destroyed() || entity.destroyed();
+    }
 
     @Override
     public final void destroy() {

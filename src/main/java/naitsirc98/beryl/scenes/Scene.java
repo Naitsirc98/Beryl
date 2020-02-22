@@ -169,7 +169,7 @@ public final class Scene {
     }
 
     @SuppressWarnings("unchecked")
-    private void destroyComponent(Component component) {
+    void destroyComponent(Component component) {
         managerOf(component.type()).remove(component);
         component.onDestroy();
     }

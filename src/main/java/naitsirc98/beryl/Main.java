@@ -10,10 +10,14 @@ import naitsirc98.beryl.scenes.Scene;
 import naitsirc98.beryl.scenes.SceneManager;
 import naitsirc98.beryl.scenes.components.behaviours.Behaviour;
 
+import java.util.Random;
+
 import static naitsirc98.beryl.input.Key.KEY_W;
 
 
 public class Main extends BerylApplication {
+
+    private static final Random RAND = new Random(System.nanoTime());
 
     public static void main(String[] args) {
 
@@ -34,23 +38,24 @@ public class Main extends BerylApplication {
     @Override
     protected void onStart() {
 
-        addScene();
-        addScene();
+        int count = RAND.nextInt(9) + 2;
+
+        for(int i = 0;i < count;i++) {
+            addScene(RAND);
+        }
 
     }
 
-    private void addScene() {
+    private void addScene(Random rand) {
 
         Scene scene = new Scene();
 
-        double start = System.nanoTime();
+        int count = rand.nextInt(5000) + 5000;
 
-        for(int i = 0;i < 10000;i++) {
-            Entity entity = scene.newEntity();
-            entity.add(MyBehaviour.class);
+        for(int i = 0;i < count;i++) {
+            Entity entity = scene.newEntity(String.valueOf(i));
+            entity.add(MyBehaviour.class).setCount(count);
         }
-
-        System.out.println("time = " + ((System.nanoTime() - start) / 1e6) + "ms");
 
         SceneManager.addScene(scene);
     }
@@ -63,17 +68,30 @@ public class Main extends BerylApplication {
 
     private class MyBehaviour extends Behaviour {
 
-        private double dummy;
+        private int count;
 
         @Override
         protected void onUpdate() {
-
-            dummy = Math.sin(Math.random());
 
             if(Input.isKeyTyped(KEY_W)) {
                 Log.trace("Hey!");
             }
 
+            if(RAND.nextFloat() < 0.05f) {
+
+                String name = String.valueOf(RAND.nextInt(count));
+
+                if(entity().name().equals(name)) {
+                    return;
+                }
+
+                scene().destroy(name);
+            }
+
+        }
+
+        public void setCount(int count) {
+            this.count = count;
         }
     }
 

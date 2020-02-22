@@ -1,7 +1,6 @@
 package naitsirc98.beryl.scenes;
 
 import naitsirc98.beryl.logging.Log;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -289,7 +288,6 @@ public final class Entity extends SceneObject implements Iterable<Component> {
         scene.destroyNow(this);
     }
 
-    @NotNull
     @Override
     public Iterator<Component> iterator() {
         return components.values().iterator();
@@ -297,9 +295,10 @@ public final class Entity extends SceneObject implements Iterable<Component> {
 
     @Override
     protected void onDestroy() {
-        components.values().forEach(scene::destroyNow);
+        components.values().forEach(scene::destroyComponent);
         index = INVALID_INDEX;
         name = null;
+        tag = null;
         scene = null;
         components.clear();
         components = null;
@@ -324,7 +323,7 @@ public final class Entity extends SceneObject implements Iterable<Component> {
      */
     void init(String name, String tag, Scene scene, int index) {
         this.name = getOrElse(name, UNNAMED);
-        this.tag = getOrElse(name, UNTAGGED);
+        this.tag = getOrElse(tag, UNTAGGED);
         this.scene = assertNonNull(scene);
         this.index = index;
         enabled = true;

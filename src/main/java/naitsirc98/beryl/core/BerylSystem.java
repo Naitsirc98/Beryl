@@ -6,7 +6,7 @@ public abstract class BerylSystem {
 
     protected abstract void terminate();
 
-    protected String debugReport() {
+    protected CharSequence debugReport() {
         return null;
     }
 
