@@ -1,7 +1,7 @@
 package naitsirc98.beryl.events.input.mouse;
 
 import naitsirc98.beryl.events.Event;
-import naitsirc98.beryl.input.Modifier;
+import naitsirc98.beryl.input.KeyModifier;
 import naitsirc98.beryl.input.MouseButton;
 
 import java.util.Set;
@@ -9,9 +9,9 @@ import java.util.Set;
 public abstract class MouseButtonEvent extends Event {
 	
 	private final MouseButton button;
-	private final Set<Modifier> modifiers;
+	private final Set<KeyModifier> modifiers;
 
-	public MouseButtonEvent(MouseButton button, Set<Modifier> modifiers) {
+	public MouseButtonEvent(MouseButton button, Set<KeyModifier> modifiers) {
 		this.button = button;
 		this.modifiers = modifiers;
 	}
@@ -20,7 +20,7 @@ public abstract class MouseButtonEvent extends Event {
 		return button;
 	}
 
-	public Set<Modifier> modifiers() {
+	public Set<KeyModifier> modifiers() {
 		return modifiers;
 	}
 

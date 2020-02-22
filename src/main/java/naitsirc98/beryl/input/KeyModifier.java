@@ -7,7 +7,7 @@ import java.util.*;
 
 import static org.lwjgl.glfw.GLFW.*;
 
-public enum Modifier implements GLFWWrapper {
+public enum KeyModifier implements GLFWWrapper {
 
     MOD_SHIFT(GLFW_MOD_SHIFT),
     MOD_CONTROL(GLFW_MOD_CONTROL),
@@ -15,20 +15,20 @@ public enum Modifier implements GLFWWrapper {
     MOD_SUPER(GLFW_MOD_SUPER),
     MOD_NUM_LOCK(GLFW_MOD_NUM_LOCK);
 
-    private static final EnumMapper<Modifier, Integer> MAPPER;
+    private static final EnumMapper<KeyModifier, Integer> MAPPER;
     static {
-        MAPPER = EnumMapper.of(Modifier.class, GLFWWrapper::glfwHandle);
+        MAPPER = EnumMapper.of(KeyModifier.class, GLFWWrapper::glfwHandle);
     }
 
-    private static final Map<Integer, Set<Modifier>> MASKS_CACHE = new WeakHashMap<>();
+    private static final Map<Integer, Set<KeyModifier>> MASKS_CACHE = new WeakHashMap<>();
 
-    public static Set<Modifier> asModifierMask(int flags) {
+    public static Set<KeyModifier> asModifierMask(int flags) {
 
         if(MASKS_CACHE.containsKey(flags)) {
             return MASKS_CACHE.get(flags);
         }
 
-        EnumSet<Modifier> mask = EnumSet.noneOf(Modifier.class);
+        EnumSet<KeyModifier> mask = EnumSet.noneOf(KeyModifier.class);
 
         if((flags & GLFW_MOD_SHIFT) == GLFW_MOD_SHIFT) {
             mask.add(MOD_SHIFT);
@@ -47,13 +47,13 @@ public enum Modifier implements GLFWWrapper {
         return mask;
     }
 
-    public static Modifier asModifier(int glfwHandle) {
+    public static KeyModifier asModifier(int glfwHandle) {
         return MAPPER.keyOf(glfwHandle);
     }
 
     private final int glfwHandle;
 
-    Modifier(int glfwHandle) {
+    KeyModifier(int glfwHandle) {
         this.glfwHandle = glfwHandle;
     }
 

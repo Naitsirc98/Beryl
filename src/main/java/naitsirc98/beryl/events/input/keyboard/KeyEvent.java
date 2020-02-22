@@ -2,16 +2,16 @@ package naitsirc98.beryl.events.input.keyboard;
 
 import naitsirc98.beryl.events.Event;
 import naitsirc98.beryl.input.Key;
-import naitsirc98.beryl.input.Modifier;
+import naitsirc98.beryl.input.KeyModifier;
 
 import java.util.Set;
 
 public abstract class KeyEvent extends Event {
 	
 	private final Key key;
-	private final Set<Modifier> modifiers;
+	private final Set<KeyModifier> modifiers;
 	
-	public KeyEvent(Key key, Set<Modifier> modifiers) {
+	public KeyEvent(Key key, Set<KeyModifier> modifiers) {
 		this.key = key;
 		this.modifiers = modifiers;
 	}
@@ -20,7 +20,7 @@ public abstract class KeyEvent extends Event {
 		return key;
 	}
 
-	public Set<Modifier> modifiers() {
+	public Set<KeyModifier> modifiers() {
 		return modifiers;
 	}
 
