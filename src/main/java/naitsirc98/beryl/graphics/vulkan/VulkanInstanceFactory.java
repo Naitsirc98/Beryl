@@ -9,16 +9,12 @@ import org.lwjgl.vulkan.VkApplicationInfo;
 import org.lwjgl.vulkan.VkInstance;
 import org.lwjgl.vulkan.VkInstanceCreateInfo;
 
-import java.util.Collection;
-
-import static naitsirc98.beryl.graphics.vulkan.VulkanContext.VULKAN_DEBUG_MESSAGES_ENABLED;
 import static naitsirc98.beryl.graphics.vulkan.VulkanContext.VALIDATION_LAYERS;
+import static naitsirc98.beryl.graphics.vulkan.VulkanContext.VULKAN_DEBUG_MESSAGES_ENABLED;
 import static naitsirc98.beryl.graphics.vulkan.VulkanDebugMessenger.newVulkanDebugMessengerCreateInfo;
 import static naitsirc98.beryl.graphics.vulkan.VulkanExtensions.requiredExtensions;
-import static naitsirc98.beryl.graphics.vulkan.VulkanUtils.makeVersion;
-import static naitsirc98.beryl.graphics.vulkan.VulkanUtils.vkCall;
-import static naitsirc98.beryl.graphics.vulkan.VulkanValidationLayers.*;
-import static org.lwjgl.system.MemoryStack.stackGet;
+import static naitsirc98.beryl.graphics.vulkan.VulkanUtils.*;
+import static naitsirc98.beryl.graphics.vulkan.VulkanValidationLayers.validationLayersSupported;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.vulkan.VK10.*;
 import static org.lwjgl.vulkan.VK11.VK_API_VERSION_1_1;
@@ -52,24 +48,11 @@ class VulkanInstanceFactory {
                 .ppEnabledExtensionNames(requiredExtensions());
 
         if(VULKAN_DEBUG_MESSAGES_ENABLED) {
-            createInfo.ppEnabledLayerNames(asPointerBuffer(VALIDATION_LAYERS));
+            createInfo.ppEnabledLayerNames(stringPointers(VALIDATION_LAYERS));
             createInfo.pNext(newVulkanDebugMessengerCreateInfo(stack).address());
         }
 
         return createInfo;
-    }
-
-    public static PointerBuffer asPointerBuffer(Collection<String> values) {
-
-        MemoryStack stack = stackGet();
-
-        PointerBuffer buffer = stack.mallocPointer(values.size());
-
-        values.stream()
-                .map(stack::UTF8)
-                .forEach(buffer::put);
-
-        return buffer.rewind();
     }
 
     private static VkApplicationInfo newApplicationInfo(MemoryStack stack) {

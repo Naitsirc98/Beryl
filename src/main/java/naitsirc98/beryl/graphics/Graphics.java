@@ -17,6 +17,13 @@ public final class Graphics extends BerylSystem {
     @Singleton
     private static Graphics instance;
 
+    public static VulkanContext vulkan() {
+        return (VulkanContext) instance.graphicsContext;
+    }
+
+    public static GLContext opengl() {
+        return (GLContext) instance.graphicsContext;
+    }
 
     private GraphicsContext graphicsContext;
     private Window window;

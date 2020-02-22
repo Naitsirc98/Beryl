@@ -2,7 +2,12 @@ package naitsirc98.beryl.graphics.vulkan;
 
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.util.Version;
+import org.lwjgl.PointerBuffer;
+import org.lwjgl.system.MemoryStack;
 
+import java.util.Collection;
+
+import static org.lwjgl.system.MemoryStack.stackGet;
 import static org.lwjgl.vulkan.VK10.*;
 
 public class VulkanUtils {
@@ -21,6 +26,19 @@ public class VulkanUtils {
 
     public static int makeVersion(Version version) {
         return VK_MAKE_VERSION(version.major(), version.minor(), version.revision());
+    }
+
+    public static PointerBuffer stringPointers(Collection<String> values) {
+
+        MemoryStack stack = stackGet();
+
+        PointerBuffer buffer = stack.mallocPointer(values.size());
+
+        values.stream()
+                .map(stack::UTF8)
+                .forEach(buffer::put);
+
+        return buffer.rewind();
     }
 
     public static String getErrorName(int errorCode) {

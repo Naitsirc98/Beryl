@@ -9,8 +9,11 @@ import org.lwjgl.vulkan.VkInstance;
 import java.util.Set;
 
 import static naitsirc98.beryl.graphics.vulkan.VulkanDebugMessenger.newVulkanDebugMessenger;
+import static naitsirc98.beryl.graphics.vulkan.VulkanDevice.defaultDeviceExtensions;
 import static naitsirc98.beryl.graphics.vulkan.VulkanInstanceFactory.newVkInstance;
+import static naitsirc98.beryl.graphics.vulkan.VulkanSurface.newVulkanSurface;
 import static naitsirc98.beryl.graphics.vulkan.VulkanValidationLayers.defaultValidationLayers;
+import static org.lwjgl.vulkan.KHRSurface.vkDestroySurfaceKHR;
 import static org.lwjgl.vulkan.VK10.vkDestroyInstance;
 
 @Destructor
@@ -18,21 +21,27 @@ public class VulkanContext implements GraphicsContext {
 
     public static final boolean VULKAN_DEBUG_MESSAGES_ENABLED = BerylConfiguration.VULKAN_ENABLE_DEBUG_MESSAGES.get(Beryl.DEBUG);
     public static final Set<String> VALIDATION_LAYERS = BerylConfiguration.VULKAN_VALIDATION_LAYERS.get(defaultValidationLayers());
+    public static final Set<String> DEVICE_EXTENSIONS = BerylConfiguration.VULKAN_DEVICE_EXTENSIONS.get(defaultDeviceExtensions());
+
 
     private final VkInstance vkInstance;
+    private final long surface;
     private final VulkanDevice device;
     private final VulkanDebugMessenger debugMessenger;
 
     private VulkanContext() {
         vkInstance = newVkInstance();
         debugMessenger = newVulkanDebugMessenger(vkInstance);
-        device = new VulkanDevice(vkInstance);
+        surface = newVulkanSurface(vkInstance);
+        device = new VulkanDevice(vkInstance, surface);
     }
 
     @Override
     public void free() {
 
         device.free();
+
+        vkDestroySurfaceKHR(vkInstance, surface, null);
 
         if(VULKAN_DEBUG_MESSAGES_ENABLED) {
             debugMessenger.free();
