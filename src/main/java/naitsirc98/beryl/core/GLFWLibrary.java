@@ -1,12 +1,13 @@
 package naitsirc98.beryl.core;
 
+import naitsirc98.beryl.logging.Log;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.system.MemoryStack;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.system.MemoryStack.stackPush;
 
-public final class GLFWLibrary extends BerylSystem {
+final class GLFWLibrary extends BerylSystem {
 
     private final GLFWErrorCallback errorCallback;
 

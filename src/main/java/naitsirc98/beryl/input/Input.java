@@ -1,7 +1,7 @@
 package naitsirc98.beryl.input;
 
 import naitsirc98.beryl.core.BerylSystem;
-import naitsirc98.beryl.core.Log;
+import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.events.EventManager;
 import naitsirc98.beryl.events.input.joystick.JoystickConnectedEvent;
 import naitsirc98.beryl.events.input.joystick.JoystickDisconnectedEvent;
@@ -262,7 +262,7 @@ public final class Input extends BerylSystem {
             if(keyStates.stateOf(key) != State.TYPE) {
                 // Trigger a typed event
                 keyStates.set(key, State.TYPE);
-                EventManager.submit(new KeyTypedEvent(key, e.modifiers()));
+                EventManager.triggerEvent(new KeyTypedEvent(key, e.modifiers()));
                 // Reset state to RELEASE in the next event pass
                 EventManager.submitLater(new KeyReleasedEvent(key, e.modifiers()));
 
@@ -286,7 +286,7 @@ public final class Input extends BerylSystem {
             if(mouseButtonStates.stateOf(button) != State.CLICK) {
                 // Trigger a clicked event
                 mouseButtonStates.set(button, State.CLICK);
-                EventManager.submit(new MouseButtonClickedEvent(button, e.modifiers()));
+                EventManager.triggerEvent(new MouseButtonClickedEvent(button, e.modifiers()));
                 // Reset in the next event pass
                 EventManager.submitLater(new MouseButtonReleasedEvent(button, e.modifiers()));
             } else {
@@ -311,7 +311,7 @@ public final class Input extends BerylSystem {
 
         Joystick joystick = asJoystick(jid);
 
-        EventManager.submit(event == GLFW_CONNECTED ? new JoystickConnectedEvent(joystick) : new JoystickDisconnectedEvent(joystick));
+        EventManager.triggerEvent(event == GLFW_CONNECTED ? new JoystickConnectedEvent(joystick) : new JoystickDisconnectedEvent(joystick));
     }
 
 }

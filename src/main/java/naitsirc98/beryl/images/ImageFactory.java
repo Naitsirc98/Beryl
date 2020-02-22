@@ -1,6 +1,6 @@
 package naitsirc98.beryl.images;
 
-import naitsirc98.beryl.core.Log;
+import naitsirc98.beryl.logging.Log;
 import org.lwjgl.system.MemoryStack;
 
 import java.nio.Buffer;

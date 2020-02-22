@@ -21,15 +21,6 @@ public final class EventManager extends BerylSystem {
     private static EventManager instance;
 
     /**
-     * Returns the debug report of the event manager
-     *
-     * @return the debug report, or null if debug reports are disabled
-     * */
-    public static String debugReport() {
-        return DEBUG_REPORT_ENABLED ? instance.debugReport.report() : null;
-    }
-
-    /**
      * Adds an event callback for a particular event class at the back of its list
      *
      * @param eventClass the event class
@@ -64,7 +55,7 @@ public final class EventManager extends BerylSystem {
      *
      * @param event the event
      */
-    public static void submitNow(Event event) {
+    public static void triggerEventNow(Event event) {
         instance.dispatcher.dispatch(event);
     }
 
@@ -73,7 +64,7 @@ public final class EventManager extends BerylSystem {
      *
      * @param event the event
      */
-    public static void submit(Event event) {
+    public static void triggerEvent(Event event) {
         instance.frontEventQueue.add(assertNonNull(event));
     }
 
@@ -97,8 +88,8 @@ public final class EventManager extends BerylSystem {
 
     @Override
     protected void init() {
-        this.frontEventQueue = new ArrayDeque<>(BerylConfiguration.EVENT_QUEUE_INITIAL_CAPACITY.get(64));
-        this.backEventQueue = new ArrayDeque<>(BerylConfiguration.EVENT_QUEUE_INITIAL_CAPACITY.get(64));
+        this.frontEventQueue = new ArrayDeque<>(BerylConfiguration.EVENT_QUEUE_INITIAL_CAPACITY.get(128));
+        this.backEventQueue = new ArrayDeque<>(BerylConfiguration.EVENT_QUEUE_INITIAL_CAPACITY.get(128));
         this.eventCallbacks = new HashMap<>();
         dispatcher = new EventDispatcher(eventCallbacks);
         debugReport = DEBUG_REPORT_ENABLED ? new EventDebugReport() : null;
@@ -141,6 +132,15 @@ public final class EventManager extends BerylSystem {
         swapEventQueues();
     }
 
+    /**
+     * Returns the debug report of the event manager
+     *
+     * @return the debug report, or null if debug reports are disabled
+     * */
+    public CharSequence debugReport() {
+        return DEBUG_REPORT_ENABLED ? instance.debugReport.report() : null;
+    }
+
     private void processEventQueue() {
 
         if(frontEventQueue.isEmpty()) {
@@ -176,7 +176,7 @@ public final class EventManager extends BerylSystem {
         }
     }
 
-    private class EventDebugReport implements DebugReport {
+    private class EventDebugReport {
 
         private int eventCount;
         private int maxEventCount;
@@ -185,8 +185,8 @@ public final class EventManager extends BerylSystem {
             eventCount += count;
         }
 
-        @Override
         public String report() {
+
             maxEventCount = Math.max(maxEventCount, eventCount);
             final int eventCount = this.eventCount;
             this.eventCount = 0;

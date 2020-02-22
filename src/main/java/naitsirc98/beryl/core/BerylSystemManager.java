@@ -3,8 +3,10 @@ package naitsirc98.beryl.core;
 import naitsirc98.beryl.events.EventManager;
 import naitsirc98.beryl.graphics.Graphics;
 import naitsirc98.beryl.input.Input;
+import naitsirc98.beryl.logging.Log;
+import naitsirc98.beryl.scenes.SceneManager;
+import naitsirc98.beryl.tasks.TaskManager;
 
-import java.util.Arrays;
 import java.util.Objects;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -15,25 +17,27 @@ import static naitsirc98.beryl.util.TypeUtils.newInstance;
 
 public class BerylSystemManager {
 
+    final GLFWLibrary glfwLibrary;
+    final Log log;
+    final Time time;
+    final EventManager eventManager;
+    final Input input;
+    final Graphics graphics;
+    final TaskManager taskManager;
+    final SceneManager sceneManager;
     private final BerylSystem[] systems;
 
     public BerylSystemManager() {
         systems = new BerylSystem[] {
-                createSystem(GLFWLibrary.class),
-                createSystem(Log.class),
-                createSystem(Time.class),
-                createSystem(EventManager.class),
-                createSystem(Input.class),
-                createSystem(Graphics.class),
+                glfwLibrary = createSystem(GLFWLibrary.class),
+                log = createSystem(Log.class),
+                time = createSystem(Time.class),
+                eventManager = createSystem(EventManager.class),
+                input = createSystem(Input.class),
+                graphics = createSystem(Graphics.class),
+                taskManager = createSystem(TaskManager.class),
+                sceneManager = createSystem(SceneManager.class)
         };
-    }
-
-    @SuppressWarnings("unchecked")
-    public <T> T get(Class<T> clazz) {
-        return (T) Arrays.stream(systems)
-                .filter(system -> system.getClass().equals(clazz))
-                .findAny()
-                .orElseThrow(() -> new IllegalArgumentException(clazz.getName() + " is not a valid Beryl System"));
     }
 
     public void init() {

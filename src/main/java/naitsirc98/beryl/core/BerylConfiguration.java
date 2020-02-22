@@ -3,6 +3,9 @@ package naitsirc98.beryl.core;
 import naitsirc98.beryl.graphics.GraphicsAPI;
 import naitsirc98.beryl.graphics.window.CursorType;
 import naitsirc98.beryl.graphics.window.DisplayMode;
+import naitsirc98.beryl.logging.Log;
+import naitsirc98.beryl.logging.LogChannel;
+import naitsirc98.beryl.util.ANSIColor;
 import naitsirc98.beryl.util.Sizec;
 import org.joml.Vector2ic;
 
@@ -28,12 +31,13 @@ public final class BerylConfiguration<T> {
 
     public static final BerylConfiguration<Boolean> MEMORY_USAGE_REPORT = new BerylConfiguration<>();
     public static final BerylConfiguration<Boolean> EVENTS_DEBUG_REPORT = new BerylConfiguration<>();
+    public static final BerylConfiguration<Boolean> SCENES_DEBUG_REPORT = new BerylConfiguration<>();
 
     public static final BerylConfiguration<Double> INITIAL_TIME_VALUE = new BerylConfiguration<>();
 
     public static final BerylConfiguration<Set<Log.Level>> LOG_LEVELS = new BerylConfiguration<>();
-    public static final BerylConfiguration<Map<Log.Level, Log.ANSIColor>> LOG_LEVEL_COLORS = new BerylConfiguration<>();
-    public static final BerylConfiguration<Collection<Log.Channel>> LOG_CHANNELS = new BerylConfiguration<>();
+    public static final BerylConfiguration<Map<Log.Level, ANSIColor>> LOG_LEVEL_COLORS = new BerylConfiguration<>();
+    public static final BerylConfiguration<Collection<LogChannel>> LOG_CHANNELS = new BerylConfiguration<>();
     public static final BerylConfiguration<DateTimeFormatter> LOG_DATETIME_FORMATTER = new BerylConfiguration<>();
 
     public static final BerylConfiguration<Boolean> ENABLE_ASSERTS = new BerylConfiguration<>();

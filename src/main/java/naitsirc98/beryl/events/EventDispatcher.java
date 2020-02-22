@@ -1,6 +1,6 @@
 package naitsirc98.beryl.events;
 
-import naitsirc98.beryl.core.Log;
+import naitsirc98.beryl.logging.Log;
 
 import java.util.List;
 import java.util.Map;

@@ -2,6 +2,8 @@ package naitsirc98.beryl.core;
 
 import naitsirc98.beryl.events.EventManager;
 import naitsirc98.beryl.input.Input;
+import naitsirc98.beryl.logging.Log;
+import naitsirc98.beryl.scenes.SceneManager;
 import org.lwjgl.system.Configuration;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -47,15 +49,14 @@ public final class Beryl {
     }
 
     private final BerylApplication application;
-    private final BerylSystemManager systemManager;
-
+    private final BerylSystemManager systems;
     private float updateDelay;
     private int updatesPerSecond;
 
     private Beryl(BerylApplication application) {
         this.application = application;
         initSingleton(BerylApplication.class, application);
-        systemManager = new BerylSystemManager();
+        systems = new BerylSystemManager();
     }
 
     private void init() {
@@ -64,7 +65,7 @@ public final class Beryl {
 
         application.onInit();
 
-        systemManager.init();
+        systems.init();
 
         Log.info("Beryl Systems initialized successfully");
     }
@@ -75,43 +76,43 @@ public final class Beryl {
 
         application.start();
 
-        // Get frequently used systems
-        final Time time = systemManager.get(Time.class);
-        final EventManager eventManager = systemManager.get(EventManager.class);
-        final Input input = systemManager.get(Input.class);
+        final Time time = systems.time;
 
         float lastFrame = 0.0f;
-        float showFPSTimer = 0.0f;
+        float lastDebugReport = 0.0f;
+        float deltaTime;
 
         int framesPerSecond = 0;
-
-        time.start();
 
         while(application.running()) {
 
             final float now = Time.time();
-            time.deltaTime = now - lastFrame;
+            time.deltaTime = deltaTime = now - lastFrame;
             lastFrame = now;
 
-            update(time.deltaTime, eventManager, input);
+            update(deltaTime);
 
             render();
             ++framesPerSecond;
 
             ++time.frames;
 
-            if(DEBUG && Time.time() - showFPSTimer >= 1.0f) {
-                Log.debug(buildDebugReport(framesPerSecond, updatesPerSecond, time.deltaTime));
+            if(DEBUG && Time.time() - lastDebugReport >= 1.0f) {
+                Log.debug(buildDebugReport(framesPerSecond, updatesPerSecond, deltaTime));
                 time.ups = updatesPerSecond;
                 time.fps = framesPerSecond;
                 updatesPerSecond = 0;
                 framesPerSecond = 0;
-                showFPSTimer = Time.time();
+                lastDebugReport = Time.time();
             }
         }
     }
 
-    private void update(float deltaTime, EventManager eventManager, Input input) {
+    private void update(float deltaTime) {
+
+        final EventManager eventManager = systems.eventManager;
+        final Input input = systems.input;
+        final SceneManager sceneManager = systems.sceneManager;
 
         updateDelay += deltaTime;
 
@@ -121,6 +122,8 @@ public final class Beryl {
 
             input.update();
 
+            sceneManager.update();
+
             application.onUpdate();
 
             updateDelay -= IDEAL_FRAME_DELAY;
@@ -129,8 +132,11 @@ public final class Beryl {
     }
 
     private void render() {
-        // TODO
+
+        systems.sceneManager.render();
+
         application.onRender();
+
         // For now just simulate some rendering delay
         for(int i = 0;i < 10000;i++) {
             Math.sin(i);
@@ -147,7 +153,7 @@ public final class Beryl {
 
         application.onTerminate();
 
-        systemManager.terminate();
+        systems.terminate();
     }
 
 
@@ -178,7 +184,12 @@ public final class Beryl {
 
         builder.append("\n\t");
         if(EventManager.DEBUG_REPORT_ENABLED) {
-            builder.append("[EVENT-MANAGER]: ").append(EventManager.debugReport());
+            builder.append("[EVENT-MANAGER]: ").append(systems.eventManager.debugReport());
+        }
+
+        builder.append("\n\t");
+        if(SceneManager.DEBUG_REPORT_ENABLED) {
+            builder.append("[SCENE-MANAGER]: ").append(systems.sceneManager.debugReport());
         }
 
         return builder.toString();
