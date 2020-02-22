@@ -53,6 +53,7 @@ public final class Scene {
 
     void terminate() {
         // TODO
+        processTasks();
         entityManager.destroy();
         componentManagers.values().forEach(ComponentManager::clear);
     }

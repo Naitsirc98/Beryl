@@ -10,6 +10,14 @@ public class FramebufferResizeEvent extends Event {
         this.height = height;
     }
 
+    public int width() {
+        return width;
+    }
+
+    public int height() {
+        return height;
+    }
+
     @Override
     public Class<? extends Event> type() {
         return FramebufferResizeEvent.class;
