@@ -3,13 +3,15 @@ package naitsirc98.beryl.graphics.vulkan;
 import naitsirc98.beryl.core.Beryl;
 import naitsirc98.beryl.core.BerylConfiguration;
 import naitsirc98.beryl.graphics.GraphicsContext;
+import naitsirc98.beryl.graphics.vulkan.devices.VulkanDevice;
+import naitsirc98.beryl.graphics.vulkan.swapchain.VulkanSwapchain;
 import naitsirc98.beryl.util.Destructor;
 import org.lwjgl.vulkan.VkInstance;
 
 import java.util.Set;
 
 import static naitsirc98.beryl.graphics.vulkan.VulkanDebugMessenger.newVulkanDebugMessenger;
-import static naitsirc98.beryl.graphics.vulkan.VulkanDevice.defaultDeviceExtensions;
+import static naitsirc98.beryl.graphics.vulkan.devices.VulkanDevice.defaultDeviceExtensions;
 import static naitsirc98.beryl.graphics.vulkan.VulkanInstanceFactory.newVkInstance;
 import static naitsirc98.beryl.graphics.vulkan.VulkanSurface.newVulkanSurface;
 import static naitsirc98.beryl.graphics.vulkan.VulkanValidationLayers.defaultValidationLayers;
@@ -25,19 +27,23 @@ public class VulkanContext implements GraphicsContext {
 
 
     private final VkInstance vkInstance;
+    private final VulkanDebugMessenger debugMessenger;
     private final long surface;
     private final VulkanDevice device;
-    private final VulkanDebugMessenger debugMessenger;
+    private final VulkanSwapchain swapchain;
 
     private VulkanContext() {
         vkInstance = newVkInstance();
         debugMessenger = newVulkanDebugMessenger(vkInstance);
         surface = newVulkanSurface(vkInstance);
         device = new VulkanDevice(vkInstance, surface);
+        swapchain = new VulkanSwapchain(device);
     }
 
     @Override
     public void free() {
+
+        swapchain.free();
 
         device.waitIdle();
 

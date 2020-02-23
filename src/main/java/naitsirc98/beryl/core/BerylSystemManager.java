@@ -17,8 +17,8 @@ import static naitsirc98.beryl.util.TypeUtils.newInstance;
 
 public class BerylSystemManager {
 
-    final GLFWLibrary glfwLibrary;
     final Log log;
+    final GLFWLibrary glfwLibrary;
     final Time time;
     final EventManager eventManager;
     final Input input;
@@ -29,8 +29,8 @@ public class BerylSystemManager {
 
     public BerylSystemManager() {
         systems = new BerylSystem[] {
-                glfwLibrary = createSystem(GLFWLibrary.class),
                 log = createSystem(Log.class),
+                glfwLibrary = createSystem(GLFWLibrary.class),
                 time = createSystem(Time.class),
                 eventManager = createSystem(EventManager.class),
                 input = createSystem(Input.class),

@@ -1,6 +1,6 @@
-package naitsirc98.beryl.graphics.vulkan;
+package naitsirc98.beryl.graphics.vulkan.devices;
 
-import naitsirc98.beryl.graphics.vulkan.VulkanPhysicalDevice.QueueFamilyIndices;
+import naitsirc98.beryl.graphics.vulkan.devices.VulkanPhysicalDevice.QueueFamilyIndices;
 import naitsirc98.beryl.util.Destructor;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;

@@ -7,11 +7,6 @@ import naitsirc98.beryl.scenes.SceneManager;
 import naitsirc98.beryl.util.Version;
 import org.lwjgl.system.Configuration;
 
-import java.time.Instant;
-import java.time.LocalTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.TemporalField;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.lang.String.format;
