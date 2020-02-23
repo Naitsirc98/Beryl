@@ -29,4 +29,9 @@ public enum GraphicsAPI {
     public int versionMinor() {
         return versionMinor;
     }
+
+    @Override
+    public String toString() {
+        return name() + " v" + versionMajor + "." + versionMinor;
+    }
 }

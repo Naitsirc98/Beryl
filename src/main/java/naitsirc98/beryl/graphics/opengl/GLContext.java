@@ -36,6 +36,10 @@ public class GLContext implements GraphicsContext, LongHandle {
         return glContext;
     }
 
+    public GLCapabilities capabilities() {
+        return capabilities;
+    }
+
     private void makeCurrent() {
         glfwMakeContextCurrent(glContext);
     }

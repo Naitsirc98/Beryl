@@ -49,6 +49,7 @@ public final class BerylConfiguration<T> {
 
     public static final BerylConfiguration<GraphicsAPI> GRAPHICS_API = new BerylConfiguration<>();
 
+    public static final BerylConfiguration<Boolean> SHOW_DEBUG_INFO_ON_WINDOW_TITLE = new BerylConfiguration<>();
     public static final BerylConfiguration<Vector2ic> WINDOW_POSITION = new BerylConfiguration<>();
     public static final BerylConfiguration<Sizec> WINDOW_SIZE = new BerylConfiguration<>();
     public static final BerylConfiguration<DisplayMode> WINDOW_DISPLAY_MODE = new BerylConfiguration<>();

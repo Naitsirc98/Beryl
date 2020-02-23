@@ -1,10 +1,14 @@
 package naitsirc98.beryl.core;
 
 import naitsirc98.beryl.events.EventManager;
+import naitsirc98.beryl.graphics.Graphics;
+import naitsirc98.beryl.graphics.GraphicsAPI;
+import naitsirc98.beryl.graphics.window.Window;
 import naitsirc98.beryl.input.Input;
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.scenes.SceneManager;
 import naitsirc98.beryl.util.Version;
+import org.lwjgl.system.CallbackI;
 import org.lwjgl.system.Configuration;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -21,6 +25,8 @@ public final class Beryl {
 
     public static final boolean INTERNAL_DEBUG = BerylConfiguration.INTERNAL_DEBUG.get(false);
     public static final boolean DEBUG = BerylConfiguration.DEBUG.get(INTERNAL_DEBUG);
+
+    private static final boolean SHOW_DEBUG_INFO_ON_WINDOW_TITLE = BerylConfiguration.SHOW_DEBUG_INFO_ON_WINDOW_TITLE.get(DEBUG);
 
     public static final String APPLICATION_NAME = BerylConfiguration.APPLICATION_NAME.get(NAME + " Application");
     public static final Version APPLICATION_VERSION = BerylConfiguration.APPLICATION_VERSION.get(() -> new Version(1, 0, 0));
@@ -180,7 +186,14 @@ public final class Beryl {
     private String buildDebugReport(int fps, int ups, float deltaTime) {
 
         StringBuilder builder = new StringBuilder(
-                format("FPS: %d | UPS: %d | DeltaTime: %.5fs | Time: %s", fps, ups, deltaTime, Time.format()));
+                format("FPS: %d | UPS: %d | DeltaTime: %.6fs | Time: %s | Graphics API: %s",
+                        fps, ups, deltaTime, Time.format(), GraphicsAPI.get()));
+
+        if(SHOW_DEBUG_INFO_ON_WINDOW_TITLE) {
+            Window.get().title(APPLICATION_NAME + " | [DEBUG INFO]: "
+                    + builder.toString()
+                    + " | Memory used: " + getMemoryUsed() / 1024 / 1024 + " MB");
+        }
 
         builder.append("\n\t");
         if(MEMORY_USAGE_REPORT) {

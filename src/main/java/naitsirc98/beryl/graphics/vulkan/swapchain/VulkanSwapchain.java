@@ -29,7 +29,9 @@ import static org.lwjgl.vulkan.KHRSwapchain.*;
 import static org.lwjgl.vulkan.VK10.*;
 
 @Destructor
-public final class VulkanSwapchain implements NativeResource {
+public class VulkanSwapchain implements NativeResource {
+
+    // TODO: add MSAA support
 
     private static final int COLOR_ATTACHMENT_INDEX = 0;
     private static final int DEPTH_ATTACHMENT_INDEX = 1;
