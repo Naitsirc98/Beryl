@@ -30,6 +30,7 @@ public class VulkanPhysicalDevice implements NativeResource {
     private final VkPhysicalDevice vkPhysicalDevice;
     private final QueueFamilyIndices queueFamilyIndices;
     private final SwapChainSupportDetails swapChainSupportDetails;
+    private final int msaaSamples;
 
     private VulkanPhysicalDevice(VkInstance vkInstance, long surface) {
         this.surface = surface;
@@ -38,6 +39,7 @@ public class VulkanPhysicalDevice implements NativeResource {
         vkPhysicalDevice = selection.vkPhysicalDevice;
         queueFamilyIndices = selection.queueFamilyIndices;
         swapChainSupportDetails = selection.swapChainSupportDetails;
+        msaaSamples = selection.msaaSamples;
     }
 
     public VkPhysicalDevice vkPhysicalDevice() {
@@ -50,6 +52,10 @@ public class VulkanPhysicalDevice implements NativeResource {
 
     public SwapChainSupportDetails swapChainSupportDetails() {
         return swapChainSupportDetails;
+    }
+
+    public int msaaSamples() {
+        return msaaSamples;
     }
 
     @Override
@@ -92,7 +98,10 @@ public class VulkanPhysicalDevice implements NativeResource {
                 throw new RuntimeException("Failed to find a suitable GPU");
             }
 
-            return new PhysicalDeviceSelection(physicalDevice, queueFamilyIndices, new SwapChainSupportDetails(physicalDevice));
+            return new PhysicalDeviceSelection(physicalDevice,
+                    queueFamilyIndices,
+                    new SwapChainSupportDetails(physicalDevice),
+                    getMaxMSAASmaples(physicalDevice));
         }
     }
 
@@ -162,6 +171,39 @@ public class VulkanPhysicalDevice implements NativeResource {
             VkExtensionProperties.Buffer availableExtensions = VkExtensionProperties.mallocStack(extensionCount.get(0), stack);
 
             return availableExtensions.stream().collect(toSet()).containsAll(DEVICE_EXTENSIONS);
+        }
+    }
+
+    private int getMaxMSAASmaples(VkPhysicalDevice physicalDevice) {
+
+        try(MemoryStack stack = stackPush()) {
+
+            VkPhysicalDeviceProperties physicalDeviceProperties = VkPhysicalDeviceProperties.mallocStack(stack);
+            vkGetPhysicalDeviceProperties(physicalDevice, physicalDeviceProperties);
+
+            int sampleCountFlags = physicalDeviceProperties.limits().framebufferColorSampleCounts()
+                    & physicalDeviceProperties.limits().framebufferDepthSampleCounts();
+
+            if((sampleCountFlags & VK_SAMPLE_COUNT_64_BIT) != 0) {
+                return VK_SAMPLE_COUNT_64_BIT;
+            }
+            if((sampleCountFlags & VK_SAMPLE_COUNT_32_BIT) != 0) {
+                return VK_SAMPLE_COUNT_32_BIT;
+            }
+            if((sampleCountFlags & VK_SAMPLE_COUNT_16_BIT) != 0) {
+                return VK_SAMPLE_COUNT_16_BIT;
+            }
+            if((sampleCountFlags & VK_SAMPLE_COUNT_8_BIT) != 0) {
+                return VK_SAMPLE_COUNT_8_BIT;
+            }
+            if((sampleCountFlags & VK_SAMPLE_COUNT_4_BIT) != 0) {
+                return VK_SAMPLE_COUNT_4_BIT;
+            }
+            if((sampleCountFlags & VK_SAMPLE_COUNT_2_BIT) != 0) {
+                return VK_SAMPLE_COUNT_2_BIT;
+            }
+
+            return VK_SAMPLE_COUNT_1_BIT;
         }
     }
 
@@ -282,12 +324,14 @@ public class VulkanPhysicalDevice implements NativeResource {
         private final VkPhysicalDevice vkPhysicalDevice;
         private final QueueFamilyIndices queueFamilyIndices;
         private final SwapChainSupportDetails swapChainSupportDetails;
+        public final int msaaSamples;
 
         public PhysicalDeviceSelection(VkPhysicalDevice vkPhysicalDevice, QueueFamilyIndices queueFamilyIndices,
-                                       SwapChainSupportDetails swapChainSupportDetails) {
+                                       SwapChainSupportDetails swapChainSupportDetails, int msaaSamples) {
             this.vkPhysicalDevice = vkPhysicalDevice;
             this.queueFamilyIndices = queueFamilyIndices;
             this.swapChainSupportDetails = swapChainSupportDetails;
+            this.msaaSamples = msaaSamples;
         }
     }
 
