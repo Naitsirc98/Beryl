@@ -59,6 +59,15 @@ public abstract class Component<SELF extends Component> extends SceneObject {
     }
 
     /**
+     * Tells whether this component is already added to the scene or not
+     *
+     * @return true if this component is already managed by its scene, false otherwise
+     * */
+    public final boolean active() {
+        return manager != null;
+    }
+
+    /**
      * Returns a component of the given class contained by its entity
      *
      * @param componentClass the component class
@@ -90,7 +99,7 @@ public abstract class Component<SELF extends Component> extends SceneObject {
 
     @Override
     public final SELF enable() {
-        if(!enabled()) {
+        if(!enabled() && active()) {
             manager.enable(self());
             onEnable();
         }
@@ -99,7 +108,7 @@ public abstract class Component<SELF extends Component> extends SceneObject {
 
     @Override
     public final SELF disable() {
-        if(enabled()) {
+        if(enabled() && active()) {
             manager.disable(self());
             onDisable();
         }
@@ -121,12 +130,16 @@ public abstract class Component<SELF extends Component> extends SceneObject {
 
     @Override
     public final void destroy() {
-        entity.destroy(this);
+        if(active()) {
+            entity.destroy(this);
+        }
     }
 
     @Override
     public void destroyNow() {
-        entity.destroyNow(this);
+        if(active()) {
+            entity.destroyNow(this);
+        }
     }
 
     /**

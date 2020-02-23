@@ -1,7 +1,6 @@
 package naitsirc98.beryl.util;
 
 import naitsirc98.beryl.logging.Log;
-import org.jetbrains.annotations.NotNull;
 import sun.misc.Unsafe;
 
 import java.lang.annotation.Annotation;
@@ -19,7 +18,6 @@ public final class TypeUtils {
 
     private static final Unsafe UNSAFE;
 
-    @NotNull
     public static <T> T newInstanceUnsafe(Class<T> type) {
         try {
             return type.cast(UNSAFE.allocateInstance(type));
@@ -61,6 +59,10 @@ public final class TypeUtils {
         return classes;
     }
 
+    public static void initSingleton(Class<?> clazz) {
+        initSingleton(clazz, newInstance(clazz));
+    }
+
     public static void initSingleton(Class<?> clazz, Object value) {
         setAnnotatedField(clazz, Singleton.class, value);
     }
@@ -80,8 +82,41 @@ public final class TypeUtils {
                 });
     }
 
+    @SuppressWarnings("unchecked")
+    public static <T> T getAnnotatedField(Class<?> clazz, Class<? extends Annotation> annotation) {
+        return (T) Stream.of(clazz.getDeclaredFields())
+                .parallel()
+                .filter(f -> nonNull(f.getAnnotation(annotation)))
+                .findAny()
+                .orElse(null);
+    }
+
+    public static <T> T singleton(Class<?> clazz) {
+        return getAnnotatedField(clazz, Singleton.class);
+    }
+
+    public static void deleteSingleton(Class<?> clazz) {
+        delete(singleton(clazz));
+    }
+
     public static void delete(Object object) {
-        callAnnotatedMethod(object.getClass(), Destructor.class, object);
+
+        Destructor destructor = object.getClass().getDeclaredAnnotation(Destructor.class);
+
+        if(destructor == null) {
+            Log.error("Trying to destroy " + object + ", but it has no destructor");
+            return;
+        }
+
+        try {
+
+            Method destructorMethod = object.getClass().getDeclaredMethod(destructor.method());
+            destructorMethod.setAccessible(true);
+            destructorMethod.invoke(object);
+
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+            Log.error("Cannot call destructor method of " + object, e);
+        }
     }
 
     @SuppressWarnings("unchecked")

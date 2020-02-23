@@ -35,6 +35,28 @@ public final class Log extends BerylSystem {
     @Singleton
     private static Log instance;
 
+
+    /**
+     * Logs the given message with the given {@link Level}
+     *
+     * @param level the level
+     * @param msg the message
+     */
+    public static void log( Level level, Object msg) {
+        instance.logMessage(level, msg);
+    }
+
+    /**
+     * Logs the given message with the given {@link Level}
+     *
+     * @param level the level
+     * @param msg the message
+     * @param throwable the throwable
+     */
+    public static void log(Level level, Object msg, Throwable throwable) {
+        instance.logMessage(level, withThrowable(msg, throwable));
+    }
+
     /**
      * Logs the given message with the {@link Level} 'TRACE'
      *

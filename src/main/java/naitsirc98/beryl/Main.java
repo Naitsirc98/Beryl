@@ -3,8 +3,9 @@ package naitsirc98.beryl;
 import naitsirc98.beryl.core.Beryl;
 import naitsirc98.beryl.core.BerylApplication;
 import naitsirc98.beryl.core.BerylConfiguration;
-import naitsirc98.beryl.logging.Log;
+import naitsirc98.beryl.graphics.GraphicsAPI;
 import naitsirc98.beryl.input.Input;
+import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.scenes.Entity;
 import naitsirc98.beryl.scenes.Scene;
 import naitsirc98.beryl.scenes.SceneManager;
@@ -33,24 +34,27 @@ public class Main extends BerylApplication {
     protected void setConfiguration() {
         BerylConfiguration.DEBUG.set(true);
         BerylConfiguration.INTERNAL_DEBUG.set(true);
+        // BerylConfiguration.INITIAL_TIME_VALUE.set(4000.0);
+        BerylConfiguration.WINDOW_RESIZABLE.set(false);
+        BerylConfiguration.GRAPHICS_API.set(GraphicsAPI.VULKAN);
     }
 
     @Override
     protected void onStart() {
 
-        int count = RAND.nextInt(9) + 2;
+        int count = RAND.nextInt(1) + 2;
 
         for(int i = 0;i < count;i++) {
-            addScene(RAND);
+            addScene();
         }
 
     }
 
-    private void addScene(Random rand) {
+    private void addScene() {
 
         Scene scene = new Scene();
 
-        int count = rand.nextInt(5000) + 5000;
+        int count = RAND.nextInt(5000) + 5000;
 
         for(int i = 0;i < count;i++) {
             Entity entity = scene.newEntity(String.valueOf(i));
@@ -86,6 +90,16 @@ public class Main extends BerylApplication {
                 }
 
                 scene().destroy(name);
+
+            } else if(RAND.nextFloat() < 0.085f) {
+
+                String name = String.valueOf(RAND.nextInt(count));
+
+                if(scene().exists(name)) {
+                    return;
+                }
+
+                scene().newEntity(name).add(MyBehaviour.class).setCount(count);
             }
 
         }

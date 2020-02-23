@@ -1,7 +1,5 @@
 package naitsirc98.beryl.input;
 
-import org.jetbrains.annotations.NotNull;
-
 import java.util.EnumMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -73,7 +71,6 @@ public class StatesArray<T extends Enum<T>> implements Iterable<Map.Entry<T, Sta
         return withState(REPEAT);
     }
 
-    @NotNull
     @Override
     public Iterator<Map.Entry<T, State>> iterator() {
         return states.entrySet().iterator();

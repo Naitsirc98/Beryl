@@ -37,12 +37,39 @@ public final class Time extends BerylSystem {
     }
 
     /**
+     * Returns the minutes passed since the application started.
+     *
+     * @return minutes passed since the application started
+     */
+    public static float minutes() {
+        return time() / 60.0f;
+    }
+
+    /**
+     * Returns the hours passed since the application started.
+     *
+     * @return hours passed since the application started
+     */
+    public static float hours() {
+        return time() / 3600.0f;
+    }
+
+    /**
      * Returns the time in seconds since the application started.
      *
      * @return seconds passed since the application started
      */
     public static float time() {
         return (float)glfwGetTime();
+    }
+
+    /**
+     * Returns a {@link String} in the format hh:mm:ss.
+     *
+     * @return {@link String} format of this instant
+     */
+    public static String format() {
+        return String.format("%02d:%02d:%02d", (int) hours(), (int) minutes() % 60, (int) seconds() % 60);
     }
 
     /**

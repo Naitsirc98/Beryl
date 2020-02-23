@@ -1,9 +1,7 @@
 package naitsirc98.beryl.graphics.window;
 
+import naitsirc98.beryl.core.Beryl;
 import naitsirc98.beryl.core.BerylConfiguration;
-import naitsirc98.beryl.events.EventManager;
-import naitsirc98.beryl.events.window.WindowMovedEvent;
-import naitsirc98.beryl.events.window.WindowResizedEvent;
 import naitsirc98.beryl.graphics.GraphicsAPI;
 import naitsirc98.beryl.util.Size;
 import naitsirc98.beryl.util.Sizec;
@@ -30,7 +28,7 @@ public final class WindowFactory {
 
         setWindowHints();
 
-        String title = BerylConfiguration.WINDOW_TITLE.get("");
+        String title = Beryl.APPLICATION_NAME;
         DisplayMode displayMode = BerylConfiguration.WINDOW_DISPLAY_MODE.get(WINDOWED);
         Sizec defaultSize = BerylConfiguration.WINDOW_SIZE.get(new Size(DEFAULT_WIDTH, DEFAULT_HEIGHT));
 
@@ -42,6 +40,9 @@ public final class WindowFactory {
     }
 
     private void setWindowHints() {
+
+        glfwDefaultWindowHints();
+
         glfwWindowHint(GLFW_VISIBLE, asGLFWBoolean(BerylConfiguration.WINDOW_VISIBLE.get(true)));
         glfwWindowHint(GLFW_RESIZABLE, asGLFWBoolean(BerylConfiguration.WINDOW_RESIZABLE.get(true)));
         glfwWindowHint(GLFW_FOCUS_ON_SHOW, asGLFWBoolean(BerylConfiguration.WINDOW_FOCUS_ON_SHOW.get(true)));
@@ -64,7 +65,6 @@ public final class WindowFactory {
     private void setVulkanWindowHints() {
 
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-
     }
 
     private void setOpenGLWindowHints() {

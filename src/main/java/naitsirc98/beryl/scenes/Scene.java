@@ -84,6 +84,10 @@ public final class Scene {
         return entityManager.find(name);
     }
 
+    public boolean exists(String name) {
+        return entityManager.exists(name);
+    }
+
     public int entityCount() {
         return entityManager.entityCount();
     }

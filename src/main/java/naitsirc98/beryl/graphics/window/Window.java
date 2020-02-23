@@ -21,6 +21,7 @@ import static org.lwjgl.system.MemoryStack.stackPush;
 /**
  * A class to represent the window. This is basically a wrapper of a {@code GLFWWindow} handle
  */
+@Destructor(method = "destroy")
 public final class Window implements LongHandle {
 
     @Singleton
@@ -474,7 +475,6 @@ public final class Window implements LongHandle {
     /**
      * Destroys this window
      * */
-    @Destructor
     private void destroy() {
         callbacks.destroy();
         glfwDestroyWindow(handle);

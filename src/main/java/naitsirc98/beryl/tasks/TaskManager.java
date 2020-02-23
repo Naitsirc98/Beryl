@@ -68,7 +68,7 @@ public final class TaskManager extends BerylSystem {
         taskProcessor.shutdown();
         taskThread.shutdown();
 
-        Log.info("[TASK-MANAGER]: waiting for " + taskCount() + " tasks to complete...");
+        Log.info("[TASK-MANAGER]: Waiting for " + taskCount() + " tasks to complete...");
 
         try {
             taskThread.awaitTermination(Long.MAX_VALUE, MILLISECONDS);

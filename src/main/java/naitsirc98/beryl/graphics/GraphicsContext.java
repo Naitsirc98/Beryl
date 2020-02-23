@@ -1,7 +1,8 @@
 package naitsirc98.beryl.graphics;
 
-import naitsirc98.beryl.graphics.window.WindowFactory;
+import org.lwjgl.system.NativeResource;
 
-public interface GraphicsContext {
+public interface GraphicsContext extends NativeResource {
 
+    void init();
 }

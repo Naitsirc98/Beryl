@@ -90,7 +90,7 @@ public final class ImageFactory {
 
         stbi_set_flip_vertically_on_load(flipY);
 
-        if(pixelFormat != null && pixelFormat.dataType().isDecimal()) {
+        if(pixelFormat != null && pixelFormat.dataType().decimal()) {
             return stbi_loadf(filename, width, height, channels, desiredChannels);
         }
 
