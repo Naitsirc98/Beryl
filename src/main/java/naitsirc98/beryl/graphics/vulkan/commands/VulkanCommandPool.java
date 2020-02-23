@@ -1,6 +1,5 @@
 package naitsirc98.beryl.graphics.vulkan.commands;
 
-import naitsirc98.beryl.graphics.vulkan.devices.VulkanDevice;
 import naitsirc98.beryl.util.Destructor;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
@@ -8,6 +7,7 @@ import org.lwjgl.system.NativeResource;
 import org.lwjgl.vulkan.*;
 
 import java.nio.LongBuffer;
+import java.util.function.Consumer;
 
 import static naitsirc98.beryl.graphics.vulkan.util.VulkanUtils.pointers;
 import static naitsirc98.beryl.graphics.vulkan.util.VulkanUtils.vkCall;
@@ -19,16 +19,22 @@ public class VulkanCommandPool implements NativeResource {
 
     private final long vkCommandPool;
     private final int queueFamily;
-    private final VulkanDevice device;
+    private final VkQueue queue;
+    private final VkDevice logicalDevice;
 
-    public VulkanCommandPool(VulkanDevice device, int queueFamily) {
-        this.device = device;
+    public VulkanCommandPool(VkDevice logicalDevice, VkQueue queue, int queueFamily) {
+        this.logicalDevice = logicalDevice;
+        this.queue = queue;
         this.queueFamily = queueFamily;
         vkCommandPool = createVkCommandPool();
     }
 
     public long vkCommandPool() {
         return vkCommandPool;
+    }
+
+    public VkQueue queue() {
+        return queue;
     }
 
     public VkCommandBuffer newPrimaryCommandBuffer() {
@@ -52,14 +58,12 @@ public class VulkanCommandPool implements NativeResource {
         try(MemoryStack stack = stackPush()) {
 
             VkCommandBufferAllocateInfo allocInfo = VkCommandBufferAllocateInfo.callocStack(stack)
-            .sType(VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO)
-            .level(level)
-            .commandPool(vkCommandPool)
-            .commandBufferCount(count);
+                .sType(VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO)
+                .level(level)
+                .commandPool(vkCommandPool)
+                .commandBufferCount(count);
 
             PointerBuffer pCommandBuffers = stack.mallocPointer(count);
-
-            VkDevice logicalDevice =  device.logicalDevice().vkDevice();
 
             vkCall(vkAllocateCommandBuffers(logicalDevice, allocInfo, pCommandBuffers));
 
@@ -73,17 +77,52 @@ public class VulkanCommandPool implements NativeResource {
         }
     }
 
-    public void destroy(VkCommandBuffer commandBuffer) {
-        vkFreeCommandBuffers(device.logicalDevice().vkDevice(), vkCommandPool, commandBuffer);
+    public void freeCommandBuffer(VkCommandBuffer commandBuffer) {
+        vkFreeCommandBuffers(logicalDevice, vkCommandPool, commandBuffer);
     }
 
-    public void destroy(VkCommandBuffer... commandBuffers) {
-        vkFreeCommandBuffers(device.logicalDevice().vkDevice(), vkCommandPool, pointers(commandBuffers));
+    public void freeCommandBuffer(VkCommandBuffer... commandBuffers) {
+        vkFreeCommandBuffers(logicalDevice, vkCommandPool, pointers(commandBuffers));
+    }
+
+    public void execute(Consumer<VkCommandBuffer> commandBufferConsumer) {
+
+        try(MemoryStack stack = stackPush()) {
+
+            VkCommandBuffer commandBuffer = newPrimaryCommandBuffer();
+
+            beginCommandBufferTmp(commandBuffer, stack);
+
+            commandBufferConsumer.accept(commandBuffer);
+
+            endCommandBufferTmp(commandBuffer, stack);
+
+            freeCommandBuffer(commandBuffer);
+        }
+    }
+
+    private void endCommandBufferTmp(VkCommandBuffer commandBuffer, MemoryStack stack) {
+
+        vkEndCommandBuffer(commandBuffer);
+
+        VkSubmitInfo.Buffer submitInfo = VkSubmitInfo.callocStack(1, stack)
+            .sType(VK_STRUCTURE_TYPE_SUBMIT_INFO)
+            .pCommandBuffers(stack.pointers(commandBuffer));
+
+        vkQueueSubmit(queue, submitInfo, VK_NULL_HANDLE);
+
+        vkQueueWaitIdle(queue);
+    }
+
+    private void beginCommandBufferTmp(VkCommandBuffer commandBuffer, MemoryStack stack) {
+        vkBeginCommandBuffer(commandBuffer, VkCommandBufferBeginInfo.callocStack(stack)
+                .sType(VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO)
+                .flags(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT));
     }
 
     @Override
     public void free() {
-        vkDestroyCommandPool(device.logicalDevice().vkDevice(), vkCommandPool, null);
+        vkDestroyCommandPool(logicalDevice, vkCommandPool, null);
     }
 
     private long createVkCommandPool() {
@@ -96,7 +135,7 @@ public class VulkanCommandPool implements NativeResource {
 
             LongBuffer pCommandPool = stack.mallocLong(1);
 
-            vkCall(vkCreateCommandPool(device.logicalDevice().vkDevice(), poolInfo, null, pCommandPool));
+            vkCall(vkCreateCommandPool(logicalDevice, poolInfo, null, pCommandPool));
 
             return pCommandPool.get(0);
         }

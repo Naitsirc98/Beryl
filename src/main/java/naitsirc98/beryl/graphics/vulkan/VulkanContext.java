@@ -3,6 +3,7 @@ package naitsirc98.beryl.graphics.vulkan;
 import naitsirc98.beryl.core.Beryl;
 import naitsirc98.beryl.core.BerylConfiguration;
 import naitsirc98.beryl.graphics.GraphicsContext;
+import naitsirc98.beryl.graphics.vulkan.commands.VulkanCommandPool;
 import naitsirc98.beryl.graphics.vulkan.devices.VulkanDevice;
 import naitsirc98.beryl.graphics.vulkan.swapchain.VulkanSwapchain;
 import naitsirc98.beryl.util.Destructor;
@@ -19,29 +20,62 @@ import static org.lwjgl.vulkan.KHRSurface.vkDestroySurfaceKHR;
 import static org.lwjgl.vulkan.VK10.vkDestroyInstance;
 
 @Destructor
-public class VulkanContext implements GraphicsContext {
+public final class VulkanContext implements GraphicsContext {
 
     public static final boolean VULKAN_DEBUG_MESSAGES_ENABLED = BerylConfiguration.VULKAN_ENABLE_DEBUG_MESSAGES.get(Beryl.DEBUG);
     public static final Set<String> VALIDATION_LAYERS = BerylConfiguration.VULKAN_VALIDATION_LAYERS.get(defaultValidationLayers());
     public static final Set<String> DEVICE_EXTENSIONS = BerylConfiguration.VULKAN_DEVICE_EXTENSIONS.get(defaultDeviceExtensions());
 
 
-    private final VkInstance vkInstance;
-    private final VulkanDebugMessenger debugMessenger;
-    private final long surface;
-    private final VulkanDevice device;
-    private final VulkanSwapchain swapchain;
+    private VkInstance vkInstance;
+    private VulkanDebugMessenger debugMessenger;
+    private long surface;
+    private VulkanDevice device;
+    private VulkanCommandPool graphicsCommandPool;
+    private VulkanSwapchain swapchain;
 
     private VulkanContext() {
+
+    }
+
+    @Override
+    public void init() {
         vkInstance = newVkInstance();
         debugMessenger = newVulkanDebugMessenger(vkInstance);
         surface = newVulkanSurface(vkInstance);
         device = new VulkanDevice(vkInstance, surface);
+        graphicsCommandPool = createGraphicsCommandPool();
         swapchain = new VulkanSwapchain(device);
+    }
+
+    public VkInstance vkInstance() {
+        return vkInstance;
+    }
+
+    public VulkanDebugMessenger debugMessenger() {
+        return debugMessenger;
+    }
+
+    public long surface() {
+        return surface;
+    }
+
+    public VulkanDevice device() {
+        return device;
+    }
+
+    public VulkanCommandPool graphicsCommandPool() {
+        return graphicsCommandPool;
+    }
+
+    public VulkanSwapchain getSwapchain() {
+        return swapchain;
     }
 
     @Override
     public void free() {
+
+        graphicsCommandPool.free();
 
         swapchain.free();
 
@@ -56,5 +90,12 @@ public class VulkanContext implements GraphicsContext {
         }
 
         vkDestroyInstance(vkInstance, null);
+    }
+
+    private VulkanCommandPool createGraphicsCommandPool() {
+        return new VulkanCommandPool(
+                device.logicalDevice().vkDevice(),
+                device.logicalDevice().graphicsQueue(),
+                device.physicalDevice().queueFamilyIndices().graphicsFamily());
     }
 }

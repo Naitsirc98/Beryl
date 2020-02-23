@@ -4,6 +4,5 @@ import org.lwjgl.system.NativeResource;
 
 public interface GraphicsContext extends NativeResource {
 
-
-
+    void init();
 }

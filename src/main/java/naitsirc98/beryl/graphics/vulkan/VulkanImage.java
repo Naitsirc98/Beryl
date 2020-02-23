@@ -1,5 +1,6 @@
 package naitsirc98.beryl.graphics.vulkan;
 
+import naitsirc98.beryl.graphics.Graphics;
 import naitsirc98.beryl.graphics.vulkan.devices.VulkanDevice;
 import naitsirc98.beryl.graphics.vulkan.devices.VulkanLogicalDevice;
 import naitsirc98.beryl.logging.Log;
@@ -85,12 +86,18 @@ public class VulkanImage implements VulkanImageBase {
 
             setupImageMemoryBarrier(barrier.get(0), oldLayout, newLayout, stages);
 
-            doTransition(barrier);
+            Graphics.vulkan().graphicsCommandPool()
+                    .execute(commandBuffer -> doTransition(barrier, stages.get(0), stages.get(1), commandBuffer));
         }
     }
 
-    private void doTransition(VkImageMemoryBarrier.Buffer barrier) {
-        // TODO
+    private void doTransition(VkImageMemoryBarrier.Buffer barrier, int srcStage, int dstStage, VkCommandBuffer commandBuffer) {
+        vkCmdPipelineBarrier(commandBuffer,
+                srcStage, dstStage,
+                0,
+                null,
+                null,
+                barrier);
     }
 
     private VkImageMemoryBarrier.Buffer newImageMemoryBarrier(MemoryStack stack) {

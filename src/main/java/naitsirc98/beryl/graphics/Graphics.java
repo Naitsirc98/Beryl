@@ -50,6 +50,7 @@ public final class Graphics extends BerylSystem {
         Log.trace("Creating Graphics Context...");
 
         graphicsContext = createGraphicsContext();
+        graphicsContext.init();
 
         Log.trace(GraphicsAPI.get()  + " Context created");
     }
