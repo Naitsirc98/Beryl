@@ -68,7 +68,7 @@ public final class VulkanContext implements GraphicsContext {
         return graphicsCommandPool;
     }
 
-    public VulkanSwapchain getSwapchain() {
+    public VulkanSwapchain swapchain() {
         return swapchain;
     }
 

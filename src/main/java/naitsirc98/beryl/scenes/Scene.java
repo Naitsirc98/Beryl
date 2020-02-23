@@ -3,6 +3,8 @@ package naitsirc98.beryl.scenes;
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.scenes.components.behaviours.Behaviour;
 import naitsirc98.beryl.scenes.components.behaviours.BehaviourManager;
+import naitsirc98.beryl.scenes.components.math.Transform;
+import naitsirc98.beryl.scenes.components.math.TransformManager;
 
 import java.util.ArrayDeque;
 import java.util.HashMap;
@@ -18,17 +20,35 @@ import static naitsirc98.beryl.util.TypeUtils.newInstance;
 public final class Scene {
     
     private final EntityManager entityManager;
+
+    // === Component Managers
     private final BehaviourManager behaviours;
+    private final TransformManager transforms;
+
     private final Map<Class<? extends Component>, ComponentManager<?>> componentManagers;
+    // ===
+
     private final Queue<Runnable> taskQueue;
 
+    private boolean started;
+
     public Scene() {
+
         entityManager = new EntityManager(this);
-        // Create Component Managers
+
+        // === Component Managers
         behaviours = newInstance(BehaviourManager.class, this);
+        transforms = newInstance(TransformManager.class, this);
+
         componentManagers = createComponentManagersMap();
-        // ---
+        // ===
+
         taskQueue = new ArrayDeque<>();
+    }
+
+    void start() {
+        processTasks();
+        started = true;
     }
 
     void update() {
@@ -56,6 +76,10 @@ public final class Scene {
         processTasks();
         entityManager.destroy();
         componentManagers.values().forEach(ComponentManager::removeAll);
+    }
+
+    public boolean started() {
+        return started;
     }
 
     public void submit(Runnable task) {
@@ -93,7 +117,7 @@ public final class Scene {
     }
 
     public int componentCount() {
-        return componentManagers.values().stream().mapToInt(cm -> cm.size()).sum();
+        return componentManagers.values().stream().mapToInt(ComponentManager::size).sum();
     }
 
     public Stream<Entity> entities() {
@@ -189,6 +213,7 @@ public final class Scene {
         Map<Class<? extends Component>, ComponentManager<?>> components = new HashMap<>();
 
         components.put(Behaviour.class, behaviours);
+        components.put(Transform.class, transforms);
 
         return components;
     }

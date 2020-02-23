@@ -10,6 +10,7 @@ import naitsirc98.beryl.scenes.Entity;
 import naitsirc98.beryl.scenes.Scene;
 import naitsirc98.beryl.scenes.SceneManager;
 import naitsirc98.beryl.scenes.components.behaviours.Behaviour;
+import naitsirc98.beryl.scenes.components.math.Transform;
 
 import java.util.Random;
 
@@ -58,6 +59,7 @@ public class Main extends BerylApplication {
 
         for(int i = 0;i < count;i++) {
             Entity entity = scene.newEntity(String.valueOf(i));
+            entity.add(Transform.class).dynamic(true).position(i, i*2, i*3);
             entity.add(MyBehaviour.class).setCount(count);
         }
 
@@ -76,6 +78,8 @@ public class Main extends BerylApplication {
 
         @Override
         protected void onUpdate() {
+
+            requires(Transform.class).translate(RAND.nextFloat(), 0, 0);
 
             if(Input.isKeyTyped(KEY_W)) {
                 Log.trace("Hey!");
@@ -99,7 +103,9 @@ public class Main extends BerylApplication {
                     return;
                 }
 
-                scene().newEntity(name).add(MyBehaviour.class).setCount(count);
+                Entity entity = scene().newEntity(name);
+                entity.add(MyBehaviour.class).setCount(count);
+                entity.add(Transform.class).position(RAND.nextFloat(), RAND.nextFloat(), RAND.nextFloat());
             }
 
         }

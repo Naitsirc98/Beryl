@@ -1,14 +1,12 @@
 package naitsirc98.beryl.core;
 
 import naitsirc98.beryl.events.EventManager;
-import naitsirc98.beryl.graphics.Graphics;
 import naitsirc98.beryl.graphics.GraphicsAPI;
 import naitsirc98.beryl.graphics.window.Window;
 import naitsirc98.beryl.input.Input;
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.scenes.SceneManager;
 import naitsirc98.beryl.util.Version;
-import org.lwjgl.system.CallbackI;
 import org.lwjgl.system.Configuration;
 
 import java.util.concurrent.atomic.AtomicBoolean;

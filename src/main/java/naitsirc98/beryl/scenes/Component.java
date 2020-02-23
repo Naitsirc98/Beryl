@@ -87,6 +87,10 @@ public abstract class Component<SELF extends Component> extends SceneObject {
         return entity.requires(componentClass);
     }
 
+    protected ComponentManager<SELF> manager() {
+        return manager;
+    }
+
     @Override
     public Scene scene() {
         return entity().scene();

@@ -145,6 +145,9 @@ public final class SceneManager extends BerylSystem {
     }
 
     private void update(Scene scene) {
+        if(!scene.started()) {
+            scene.start();
+        }
         scene.update();
         scene.processTasks();
         scene.lateUpdate();
