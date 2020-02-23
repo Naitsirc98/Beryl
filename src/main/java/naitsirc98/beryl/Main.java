@@ -34,6 +34,7 @@ public class Main extends BerylApplication {
         BerylConfiguration.DEBUG.set(true);
         BerylConfiguration.INTERNAL_DEBUG.set(true);
         BerylConfiguration.INITIAL_TIME_VALUE.set(4000.0);
+        BerylConfiguration.WINDOW_RESIZABLE.set(false);
         // BerylConfiguration.GRAPHICS_API.set(GraphicsAPI.OPENGL);
     }
 

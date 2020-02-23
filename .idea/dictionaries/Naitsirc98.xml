@@ -1,8 +1,11 @@
 <component name="ProjectDictionaryState">
   <dictionary name="Naitsirc98">
     <words>
+      <w>framebuffers</w>
       <w>msaa</w>
       <w>opengl</w>
+      <w>subpass</w>
+      <w>subpasses</w>
       <w>swapchain</w>
       <w>vulkan</w>
     </words>

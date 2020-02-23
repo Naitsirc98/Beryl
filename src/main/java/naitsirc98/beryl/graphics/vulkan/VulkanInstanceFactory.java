@@ -13,7 +13,7 @@ import static naitsirc98.beryl.graphics.vulkan.VulkanContext.VALIDATION_LAYERS;
 import static naitsirc98.beryl.graphics.vulkan.VulkanContext.VULKAN_DEBUG_MESSAGES_ENABLED;
 import static naitsirc98.beryl.graphics.vulkan.VulkanDebugMessenger.newVulkanDebugMessengerCreateInfo;
 import static naitsirc98.beryl.graphics.vulkan.VulkanExtensions.requiredExtensions;
-import static naitsirc98.beryl.graphics.vulkan.VulkanUtils.*;
+import static naitsirc98.beryl.graphics.vulkan.util.VulkanUtils.*;
 import static naitsirc98.beryl.graphics.vulkan.VulkanValidationLayers.validationLayersSupported;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.vulkan.VK10.*;

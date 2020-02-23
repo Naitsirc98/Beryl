@@ -8,8 +8,8 @@ import org.lwjgl.system.NativeResource;
 import org.lwjgl.vulkan.*;
 
 import static naitsirc98.beryl.graphics.vulkan.VulkanContext.*;
-import static naitsirc98.beryl.graphics.vulkan.VulkanUtils.stringPointers;
-import static naitsirc98.beryl.graphics.vulkan.VulkanUtils.vkCall;
+import static naitsirc98.beryl.graphics.vulkan.util.VulkanUtils.stringPointers;
+import static naitsirc98.beryl.graphics.vulkan.util.VulkanUtils.vkCall;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.vulkan.VK10.*;
 

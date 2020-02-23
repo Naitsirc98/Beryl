@@ -12,7 +12,7 @@ import java.util.stream.IntStream;
 
 import static java.util.stream.Collectors.toSet;
 import static naitsirc98.beryl.graphics.vulkan.VulkanContext.DEVICE_EXTENSIONS;
-import static naitsirc98.beryl.graphics.vulkan.VulkanUtils.vkCall;
+import static naitsirc98.beryl.graphics.vulkan.util.VulkanUtils.vkCall;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.memAllocInt;
 import static org.lwjgl.system.MemoryUtil.memFree;

@@ -11,7 +11,7 @@ import org.lwjgl.vulkan.VkInstance;
 import java.nio.LongBuffer;
 
 import static naitsirc98.beryl.graphics.vulkan.VulkanContext.VULKAN_DEBUG_MESSAGES_ENABLED;
-import static naitsirc98.beryl.graphics.vulkan.VulkanUtils.vkCall;
+import static naitsirc98.beryl.graphics.vulkan.util.VulkanUtils.vkCall;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.NULL;
 import static org.lwjgl.vulkan.EXTDebugUtils.*;

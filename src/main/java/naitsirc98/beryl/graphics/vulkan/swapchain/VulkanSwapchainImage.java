@@ -1,9 +1,8 @@
 package naitsirc98.beryl.graphics.vulkan.swapchain;
 
+import naitsirc98.beryl.graphics.vulkan.VulkanImageBase;
 import naitsirc98.beryl.graphics.vulkan.devices.VulkanLogicalDevice;
-import naitsirc98.beryl.util.Destructor;
 import org.lwjgl.system.MemoryStack;
-import org.lwjgl.system.NativeResource;
 import org.lwjgl.vulkan.VkImageViewCreateInfo;
 
 import java.nio.LongBuffer;
@@ -11,8 +10,7 @@ import java.nio.LongBuffer;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.vulkan.VK10.*;
 
-@Destructor
-public final class VulkanSwapchainImage implements NativeResource {
+public final class VulkanSwapchainImage implements VulkanImageBase {
 
     private static final int MIP_LEVELS = 1;
 
@@ -28,21 +26,29 @@ public final class VulkanSwapchainImage implements NativeResource {
         this.vkImageView = createSwapchainImageView();
     }
 
+    @Override
     public long vkImage() {
         return vkImage;
     }
 
-    public int imageFormat() {
-        return imageFormat;
-    }
-
+    @Override
     public long vkImageView() {
         return vkImageView;
     }
 
     @Override
+    public int format() {
+        return imageFormat;
+    }
+
+    @Override
+    public VulkanLogicalDevice logicalDevice() {
+        return logicalDevice;
+    }
+
+    @Override
     public void free() {
-        // VkImage is automatically destroy by the swapchain
+        // VkImage is automatically destroyed by the swapchain
         vkDestroyImageView(logicalDevice.vkDevice(), vkImageView, null);
     }
 

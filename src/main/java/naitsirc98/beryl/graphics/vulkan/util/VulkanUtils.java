@@ -1,4 +1,4 @@
-package naitsirc98.beryl.graphics.vulkan;
+package naitsirc98.beryl.graphics.vulkan.util;
 
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.util.Version;

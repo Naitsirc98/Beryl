@@ -1,24 +1,25 @@
 package naitsirc98.beryl.graphics.vulkan.swapchain;
 
+import naitsirc98.beryl.graphics.vulkan.VulkanImage;
+import naitsirc98.beryl.graphics.vulkan.VulkanImageBase;
 import naitsirc98.beryl.graphics.vulkan.devices.VulkanDevice;
 import naitsirc98.beryl.graphics.vulkan.devices.VulkanLogicalDevice;
 import naitsirc98.beryl.graphics.vulkan.devices.VulkanPhysicalDevice;
 import naitsirc98.beryl.graphics.vulkan.devices.VulkanPhysicalDevice.QueueFamilyIndices;
 import naitsirc98.beryl.graphics.vulkan.devices.VulkanPhysicalDevice.SwapChainSupportDetails;
+import naitsirc98.beryl.graphics.vulkan.renderpasses.VulkanRenderPass;
 import naitsirc98.beryl.graphics.window.Window;
 import naitsirc98.beryl.util.Destructor;
 import naitsirc98.beryl.util.Sizec;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.NativeResource;
-import org.lwjgl.vulkan.VkExtent2D;
-import org.lwjgl.vulkan.VkSurfaceCapabilitiesKHR;
-import org.lwjgl.vulkan.VkSurfaceFormatKHR;
-import org.lwjgl.vulkan.VkSwapchainCreateInfoKHR;
+import org.lwjgl.vulkan.*;
 
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;
 import java.util.Arrays;
 
+import static naitsirc98.beryl.graphics.vulkan.util.VulkanFormatUtils.findDepthFormat;
 import static naitsirc98.beryl.util.DataType.UINT32_MAX;
 import static naitsirc98.beryl.util.Maths.clamp;
 import static org.lwjgl.system.MemoryStack.stackPush;
@@ -34,10 +35,13 @@ public final class VulkanSwapchain implements NativeResource {
     private int swapChainImageFormat;
     private VkExtent2D swapChainExtent;
     private VulkanSwapchainImage[] swapChainImages;
+    private VulkanImageBase depthImage;
+    private VulkanRenderPass renderPass;
 
     public VulkanSwapchain(VulkanDevice device) {
         this.device = device;
         createSwapchain();
+        renderPass = createSwapchainRenderPass();
     }
 
     @Override
@@ -169,6 +173,73 @@ public final class VulkanSwapchain implements NativeResource {
         actualExtent.height(clamp(minExtent.height(), maxExtent.height(), actualExtent.height()));
 
         return actualExtent;
+    }
+
+    private VulkanRenderPass createSwapchainRenderPass() {
+
+        depthImage = createDepthImage();
+
+        // TODO
+
+        return null;
+    }
+
+    private VulkanImageBase createDepthImage() {
+
+        final int depthFormat = findDepthFormat(device.physicalDevice().vkPhysicalDevice());
+
+        VulkanImage depthImage = new VulkanImage(
+                device,
+                getDepthImageInfo(depthFormat),
+                getDepthImageViewInfo(depthFormat),
+                getDepthImageMemoryProperties());
+
+        depthImage.transitionLayout(VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+
+        return depthImage;
+    }
+
+    private VkImageCreateInfo getDepthImageInfo(int depthFormat) {
+
+        VkImageCreateInfo depthImageViewInfo = VkImageCreateInfo.calloc()
+            .sType(VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO)
+            .imageType(VK_IMAGE_TYPE_2D)
+            .mipLevels(1)
+            .arrayLayers(1)
+            .format(depthFormat)
+            .tiling(VK_IMAGE_TILING_OPTIMAL)
+            .initialLayout(VK_IMAGE_LAYOUT_UNDEFINED)
+            .usage(VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)
+            .samples(device.physicalDevice().msaaSamples())
+            .sharingMode(VK_SHARING_MODE_EXCLUSIVE);
+
+        depthImageViewInfo.extent()
+                .width(swapChainExtent.width())
+                .height(swapChainExtent.height())
+                .depth(1);
+
+        return depthImageViewInfo;
+    }
+
+    private VkImageViewCreateInfo getDepthImageViewInfo(int depthFormat) {
+
+        VkImageViewCreateInfo depthImageViewInfo = VkImageViewCreateInfo.calloc()
+            .sType(VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO)
+            .viewType(VK_IMAGE_VIEW_TYPE_2D)
+            .format(depthFormat);
+
+        depthImageViewInfo.subresourceRange()
+                .aspectMask(VK_IMAGE_ASPECT_DEPTH_BIT)
+                .baseMipLevel(0)
+                .levelCount(1)
+                .baseArrayLayer(0)
+                .layerCount(1);
+
+        return depthImageViewInfo;
+    }
+
+    private int getDepthImageMemoryProperties() {
+        return VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
     }
 
 }
