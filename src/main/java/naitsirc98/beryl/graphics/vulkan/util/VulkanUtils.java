@@ -4,6 +4,7 @@ import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.util.Version;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
+import org.lwjgl.system.Pointer;
 
 import java.util.Collection;
 
@@ -37,6 +38,19 @@ public class VulkanUtils {
         values.stream()
                 .map(stack::UTF8)
                 .forEach(buffer::put);
+
+        return buffer.rewind();
+    }
+
+    public static PointerBuffer pointers(Pointer... pointers) {
+
+        MemoryStack stack = stackGet();
+
+        PointerBuffer buffer = stack.mallocPointer(pointers.length);
+
+        for(Pointer pointer : pointers) {
+            buffer.put(pointer);
+        }
 
         return buffer.rewind();
     }
