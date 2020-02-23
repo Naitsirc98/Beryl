@@ -8,6 +8,7 @@ import naitsirc98.beryl.graphics.vulkan.devices.VulkanPhysicalDevice;
 import naitsirc98.beryl.graphics.vulkan.devices.VulkanPhysicalDevice.QueueFamilyIndices;
 import naitsirc98.beryl.graphics.vulkan.devices.VulkanPhysicalDevice.SwapChainSupportDetails;
 import naitsirc98.beryl.graphics.vulkan.renderpasses.VulkanRenderPass;
+import naitsirc98.beryl.graphics.vulkan.renderpasses.VulkanSubPassAttachmentDescriptions;
 import naitsirc98.beryl.graphics.window.Window;
 import naitsirc98.beryl.util.Destructor;
 import naitsirc98.beryl.util.Sizec;
@@ -30,6 +31,9 @@ import static org.lwjgl.vulkan.VK10.*;
 @Destructor
 public final class VulkanSwapchain implements NativeResource {
 
+    private static final int COLOR_ATTACHMENT_INDEX = 0;
+    private static final int DEPTH_ATTACHMENT_INDEX = 1;
+
     private final VulkanDevice device;
     private long swapchain;
     private int swapChainImageFormat;
@@ -46,6 +50,10 @@ public final class VulkanSwapchain implements NativeResource {
 
     @Override
     public void free() {
+
+        depthImage.free();
+
+        renderPass.free();
 
         Arrays.stream(swapChainImages).forEach(VulkanSwapchainImage::free);
 
@@ -175,13 +183,90 @@ public final class VulkanSwapchain implements NativeResource {
         return actualExtent;
     }
 
-    private VulkanRenderPass createSwapchainRenderPass() {
+    protected VulkanRenderPass createSwapchainRenderPass() {
 
         depthImage = createDepthImage();
 
-        // TODO
+        VulkanRenderPass renderPass = new VulkanRenderPass(
+                device.logicalDevice(),
+                getSwapchainSubpasses(),
+                getSwapchainSubpassAttachments(),
+                getSwapchainSubpassDependencies());
 
-        return null;
+        createSwapchainFramebuffers(renderPass);
+
+        return renderPass;
+    }
+
+    protected void createSwapchainFramebuffers(VulkanRenderPass renderPass) {
+
+        try(MemoryStack stack = stackPush()) {
+
+            LongBuffer framebufferAttachments = stack.mallocLong(2);
+
+            framebufferAttachments.put(DEPTH_ATTACHMENT_INDEX, depthImage.vkImageView());
+
+            renderPass.createFramebuffers(
+                    swapChainExtent.width(),
+                    swapChainExtent.height(),
+                    swapChainImages.length,
+                    index -> framebufferAttachments.put(COLOR_ATTACHMENT_INDEX, swapChainImages[index].vkImageView()));
+        }
+    }
+
+    protected VulkanSubPassAttachmentDescriptions getSwapchainSubpassAttachments() {
+
+        VkAttachmentDescription.Buffer colorAttachment = VkAttachmentDescription.create(1)
+            .format(swapChainImageFormat)
+            .samples(VK_SAMPLE_COUNT_1_BIT)
+            .loadOp(VK_ATTACHMENT_LOAD_OP_DONT_CARE)
+            .storeOp(VK_ATTACHMENT_STORE_OP_STORE)
+            .stencilLoadOp(VK_ATTACHMENT_LOAD_OP_DONT_CARE)
+            .stencilStoreOp(VK_ATTACHMENT_STORE_OP_DONT_CARE)
+            .initialLayout(VK_IMAGE_LAYOUT_UNDEFINED)
+            .finalLayout(VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+
+        VkAttachmentDescription depthAttachment = VkAttachmentDescription.create()
+            .format(findDepthFormat(device.physicalDevice().vkPhysicalDevice()))
+            .samples(device.physicalDevice().msaaSamples())
+            .loadOp(VK_ATTACHMENT_LOAD_OP_CLEAR)
+            .storeOp(VK_ATTACHMENT_STORE_OP_DONT_CARE)
+            .stencilLoadOp(VK_ATTACHMENT_LOAD_OP_DONT_CARE)
+            .stencilStoreOp(VK_ATTACHMENT_STORE_OP_DONT_CARE)
+            .initialLayout(VK_IMAGE_LAYOUT_UNDEFINED)
+            .finalLayout(VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+
+        return new VulkanSubPassAttachmentDescriptions(colorAttachment, null, depthAttachment);
+    }
+
+    protected VkSubpassDescription.Buffer getSwapchainSubpasses() {
+        return VkSubpassDescription.create(1)
+                .pipelineBindPoint(VK_PIPELINE_BIND_POINT_GRAPHICS)
+                .colorAttachmentCount(1)
+                .pColorAttachments(getColorAttachmentReference())
+                .pDepthStencilAttachment(getDepthAttachmentReference());
+    }
+
+    protected VkAttachmentReference.Buffer getColorAttachmentReference() {
+        return VkAttachmentReference.create(1)
+            .attachment(COLOR_ATTACHMENT_INDEX)
+            .layout(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+    }
+
+    protected VkAttachmentReference getDepthAttachmentReference() {
+        return VkAttachmentReference.create()
+            .attachment(DEPTH_ATTACHMENT_INDEX)
+            .layout(VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+    }
+
+    protected VkSubpassDependency.Buffer getSwapchainSubpassDependencies() {
+        return VkSubpassDependency.create(1)
+            .srcSubpass(VK_SUBPASS_EXTERNAL)
+            .dstSubpass(0)
+            .srcStageMask(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT)
+            .srcAccessMask(0)
+            .dstStageMask(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT)
+            .dstAccessMask(VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT);
     }
 
     private VulkanImageBase createDepthImage() {
