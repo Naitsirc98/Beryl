@@ -58,25 +58,21 @@ public class VulkanLogicalDevice implements NativeResource {
             VkDeviceQueueCreateInfo.Buffer queueCreateInfos = VkDeviceQueueCreateInfo.callocStack(uniqueQueueFamilies.length, stack);
 
             for(int i = 0;i < uniqueQueueFamilies.length;i++) {
-                VkDeviceQueueCreateInfo queueCreateInfo = queueCreateInfos.get(i);
-                queueCreateInfo.sType(VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO);
-                queueCreateInfo.queueFamilyIndex(uniqueQueueFamilies[i]);
-                queueCreateInfo.pQueuePriorities(stack.floats(1.0f));
+                queueCreateInfos.get(i)
+                    .sType(VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO)
+                    .queueFamilyIndex(uniqueQueueFamilies[i])
+                    .pQueuePriorities(stack.floats(1.0f));
             }
 
-            VkPhysicalDeviceFeatures deviceFeatures = VkPhysicalDeviceFeatures.callocStack(stack);
-            deviceFeatures.samplerAnisotropy(true);
-            deviceFeatures.sampleRateShading(true); // Enable sample shading feature for the device
+            VkPhysicalDeviceFeatures deviceFeatures = VkPhysicalDeviceFeatures.callocStack(stack)
+                .samplerAnisotropy(true)
+                .sampleRateShading(true); // Enable sample shading feature for the device
 
-            VkDeviceCreateInfo createInfo = VkDeviceCreateInfo.callocStack(stack);
-
-            createInfo.sType(VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO);
-            createInfo.pQueueCreateInfos(queueCreateInfos);
-            // queueCreateInfoCount is automatically set
-
-            createInfo.pEnabledFeatures(deviceFeatures);
-
-            createInfo.ppEnabledExtensionNames(stringPointers(DEVICE_EXTENSIONS));
+            VkDeviceCreateInfo createInfo = VkDeviceCreateInfo.callocStack(stack)
+                .sType(VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO)
+                .pQueueCreateInfos(queueCreateInfos)
+                .pEnabledFeatures(deviceFeatures)
+                .ppEnabledExtensionNames(stringPointers(DEVICE_EXTENSIONS));
 
             if(VULKAN_DEBUG_MESSAGES_ENABLED) {
                 createInfo.ppEnabledLayerNames(stringPointers(VALIDATION_LAYERS));

@@ -70,7 +70,7 @@ public class VulkanImage implements VulkanImageBase {
 
         vkDestroyImageView(device.logicalDevice().vkDevice(), vkImageView, null);
 
-        vkDestroyImageView(device.logicalDevice().vkDevice(), vkImage, null);
+        vkDestroyImage(device.logicalDevice().vkDevice(), vkImage, null);
 
         vkFreeMemory(device.logicalDevice().vkDevice(), vkImageMemory, null);
     }

@@ -19,7 +19,7 @@ import static org.lwjgl.vulkan.VK10.*;
 @Destructor
 public class VulkanRenderPass implements NativeResource {
 
-    private final long renderPass;
+    private final long vkRenderPass;
     private final VulkanLogicalDevice logicalDevice;
     private final VkSubpassDescription.Buffer subPasses;
     private final VulkanSubPassAttachmentDescriptions subPassAttachmentDescriptions;
@@ -35,7 +35,7 @@ public class VulkanRenderPass implements NativeResource {
         this.subPasses = subPasses;
         this.subPassAttachmentDescriptions = subPassAttachmentDescriptions;
         this.subpassDependencies = subpassDependencies;
-        renderPass = createRenderPass();
+        vkRenderPass = createVkRenderPass();
     }
 
     @Override
@@ -43,10 +43,12 @@ public class VulkanRenderPass implements NativeResource {
         for(long framebuffer : framebuffers) {
             vkDestroyFramebuffer(logicalDevice.vkDevice(), framebuffer, null);
         }
+
+        vkDestroyRenderPass(logicalDevice.vkDevice(), vkRenderPass, null);
     }
 
     public long vkRenderPass() {
-        return renderPass;
+        return vkRenderPass;
     }
 
     public VkSubpassDescription.Buffer subpasses() {
@@ -76,7 +78,7 @@ public class VulkanRenderPass implements NativeResource {
             // Lets allocate the create info struct once and just update the pAttachments field each iteration
             VkFramebufferCreateInfo framebufferInfo = VkFramebufferCreateInfo.callocStack(stack);
             framebufferInfo.sType(VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO);
-            framebufferInfo.renderPass(renderPass);
+            framebufferInfo.renderPass(vkRenderPass);
             framebufferInfo.width(width);
             framebufferInfo.height(height);
             framebufferInfo.layers(1);
@@ -92,7 +94,7 @@ public class VulkanRenderPass implements NativeResource {
         }
     }
 
-    private long createRenderPass() {
+    private long createVkRenderPass() {
 
         try(MemoryStack stack = stackPush()) {
 

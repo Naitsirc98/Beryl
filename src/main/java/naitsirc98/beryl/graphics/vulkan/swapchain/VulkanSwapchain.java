@@ -228,7 +228,7 @@ public final class VulkanSwapchain implements NativeResource {
 
         VkAttachmentDescription depthAttachment = VkAttachmentDescription.create()
             .format(findDepthFormat(device.physicalDevice().vkPhysicalDevice()))
-            .samples(device.physicalDevice().msaaSamples())
+            .samples(VK_SAMPLE_COUNT_1_BIT)
             .loadOp(VK_ATTACHMENT_LOAD_OP_CLEAR)
             .storeOp(VK_ATTACHMENT_STORE_OP_DONT_CARE)
             .stencilLoadOp(VK_ATTACHMENT_LOAD_OP_DONT_CARE)
@@ -295,7 +295,7 @@ public final class VulkanSwapchain implements NativeResource {
             .tiling(VK_IMAGE_TILING_OPTIMAL)
             .initialLayout(VK_IMAGE_LAYOUT_UNDEFINED)
             .usage(VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)
-            .samples(device.physicalDevice().msaaSamples())
+            .samples(VK_SAMPLE_COUNT_1_BIT)
             .sharingMode(VK_SHARING_MODE_EXCLUSIVE);
 
         depthImageViewInfo.extent()
