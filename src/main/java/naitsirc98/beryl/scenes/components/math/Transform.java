@@ -16,7 +16,6 @@ public final class Transform extends Component<Transform> {
     private Matrix3f normalMatrix;
     private List<Transform> children;
     private boolean modified;
-    private boolean dynamic;
 
     private Transform() {
 
@@ -33,7 +32,6 @@ public final class Transform extends Component<Transform> {
         normalMatrix = new Matrix3f();
         children = new ArrayList<>(0);
         modified = true;
-        dynamic = false;
     }
 
     public Transform identity() {
@@ -47,15 +45,6 @@ public final class Transform extends Component<Transform> {
         modelMatrix.identity();
         normalMatrix.identity();
         modify();
-        return this;
-    }
-
-    public boolean dynamic() {
-        return dynamic;
-    }
-
-    public Transform dynamic(boolean dynamic) {
-        this.dynamic = dynamic;
         return this;
     }
 
@@ -204,8 +193,7 @@ public final class Transform extends Component<Transform> {
     }
 
     private void modify() {
-        if(!modified) {
-            manager().markModified(this);
+        if(!modified()) {
             modified = true;
         }
     }
@@ -247,27 +235,35 @@ public final class Transform extends Component<Transform> {
     }
 
     void update() {
-        if(modified) {
-            modelMatrix.translation(position).rotate(rotation).scale(scale);
-            // normalMatrix = transpose(inverse(mat3(model)))
-            modelMatrix.get3x3(normalMatrix).invert().transpose();
-            modified = false;
-        }
+        modelMatrix.translation(position).rotate(rotation).scale(scale);
+        // normalMatrix = transpose(inverse(mat3(model)))
+        modelMatrix.get3x3(normalMatrix).invert().transpose();
+        modified = false;
     }
 
     private void updateChildrenPosition(float newX, float newY, float newZ) {
+        if(children.isEmpty()) {
+            return;
+        }
+
         final float deltaX = newX - position.x;
         final float deltaY = newY - position.y;
         final float deltaZ = newZ - position.z;
+
         for(Transform child : children) {
             child.translate(deltaX, deltaY, deltaZ);
         }
     }
 
     private void updateChildrenScale(float newX, float newY, float newZ) {
+        if(children.isEmpty()) {
+            return;
+        }
+
         final float deltaX = newX - scale.x;
         final float deltaY = newY - scale.y;
         final float deltaZ = newZ - scale.z;
+
         for(Transform child : children) {
             final Vector3fc s = child.scale;
             child.scale(s.x() + deltaX, s.y() + deltaY, s.z() + deltaZ);
@@ -275,10 +271,15 @@ public final class Transform extends Component<Transform> {
     }
 
     private void updateChildrenRotation(float radians, float newX, float newY, float newZ) {
+        if(children.isEmpty()) {
+            return;
+        }
+
         final float deltaRads = radians - angle();
         final float deltaX = newX - rotationAxis.x;
         final float deltaY = newY - rotationAxis.y;
         final float deltaZ = newZ - rotationAxis.z;
+
         for(Transform child : children) {
             child.rotate(child.angle() + deltaRads, deltaX, deltaY, deltaZ);
         }

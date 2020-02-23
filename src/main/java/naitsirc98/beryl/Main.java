@@ -43,7 +43,7 @@ public class Main extends BerylApplication {
     @Override
     protected void onStart() {
 
-        int count = RAND.nextInt(1) + 2;
+        int count = 1; // RAND.nextInt(1) + 2;
 
         for(int i = 0;i < count;i++) {
             addScene();
@@ -55,11 +55,11 @@ public class Main extends BerylApplication {
 
         Scene scene = new Scene();
 
-        int count = RAND.nextInt(5000) + 5000;
+        int count = 50000;// RAND.nextInt(5000) + 5000;
 
         for(int i = 0;i < count;i++) {
             Entity entity = scene.newEntity(String.valueOf(i));
-            entity.add(Transform.class).dynamic(true).position(i, i*2, i*3);
+            entity.add(Transform.class).position(i, i*2, i*3);
             entity.add(MyBehaviour.class).setCount(count);
         }
 
@@ -79,11 +79,19 @@ public class Main extends BerylApplication {
         @Override
         protected void onUpdate() {
 
-            requires(Transform.class).translate(RAND.nextFloat(), 0, 0);
+            //if(RAND.nextInt() % 20 == 0) {
+                requires(Transform.class).translate(RAND.nextFloat(), 0, 0);
+            //}
 
             if(Input.isKeyTyped(KEY_W)) {
                 Log.trace("Hey!");
             }
+
+            // addOrRemoveRandomly();
+
+        }
+
+        private void addOrRemoveRandomly() {
 
             if(RAND.nextFloat() < 0.05f) {
 
@@ -107,7 +115,6 @@ public class Main extends BerylApplication {
                 entity.add(MyBehaviour.class).setCount(count);
                 entity.add(Transform.class).position(RAND.nextFloat(), RAND.nextFloat(), RAND.nextFloat());
             }
-
         }
 
         public void setCount(int count) {

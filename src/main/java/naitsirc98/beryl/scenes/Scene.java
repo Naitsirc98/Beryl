@@ -65,6 +65,7 @@ public final class Scene {
     void lateUpdate() {
         // TODO
         behaviours.lateUpdate();
+        transforms.update();
     }
 
     void render() {
