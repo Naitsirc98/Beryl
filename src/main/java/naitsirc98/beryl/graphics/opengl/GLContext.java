@@ -15,12 +15,12 @@ public class GLContext implements GraphicsContext, LongHandle {
 
     public static final boolean OPENGL_DEBUG_MESSAGES_ENABLED = BerylConfiguration.OPENGL_ENABLE_DEBUG_MESSAGES.get(Beryl.DEBUG);
 
-    private final long glContextHandle;
+    private final long glContext;
     private final GLDebugMessenger debugMessenger;
     private final GLCapabilities capabilities;
 
     public GLContext() {
-        glContextHandle = Window.get().handle();
+        glContext = Window.get().handle();
         makeCurrent();
         capabilities = GL.createCapabilities();
         debugMessenger = newGLDebugMessenger();
@@ -28,11 +28,11 @@ public class GLContext implements GraphicsContext, LongHandle {
 
     @Override
     public long handle() {
-        return glContextHandle;
+        return glContext;
     }
 
     private void makeCurrent() {
-        glfwMakeContextCurrent(glContextHandle);
+        glfwMakeContextCurrent(glContext);
     }
 
     @Override

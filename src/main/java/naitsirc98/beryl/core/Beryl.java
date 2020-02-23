@@ -7,6 +7,11 @@ import naitsirc98.beryl.scenes.SceneManager;
 import naitsirc98.beryl.util.Version;
 import org.lwjgl.system.Configuration;
 
+import java.time.Instant;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.TemporalField;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.lang.String.format;
@@ -22,7 +27,7 @@ public final class Beryl {
     public static final boolean INTERNAL_DEBUG = BerylConfiguration.INTERNAL_DEBUG.get(false);
     public static final boolean DEBUG = BerylConfiguration.DEBUG.get(INTERNAL_DEBUG);
 
-    public static final String APPLICATION_NAME = BerylConfiguration.APPLICATION_NAME.get("");
+    public static final String APPLICATION_NAME = BerylConfiguration.APPLICATION_NAME.get(NAME + " Application");
     public static final Version APPLICATION_VERSION = BerylConfiguration.APPLICATION_VERSION.get(() -> new Version(1, 0, 0));
 
     public static final boolean MEMORY_USAGE_REPORT = BerylConfiguration.MEMORY_USAGE_REPORT.get(DEBUG);
@@ -180,7 +185,7 @@ public final class Beryl {
     private String buildDebugReport(int fps, int ups, float deltaTime) {
 
         StringBuilder builder = new StringBuilder(
-                format("FPS: %d | UPS: %d | DeltaTime: %.5fs | Time: %.3fs", fps, ups, deltaTime, Time.time()));
+                format("FPS: %d | UPS: %d | DeltaTime: %.5fs | Time: %s", fps, ups, deltaTime, Time.format()));
 
         builder.append("\n\t");
         if(MEMORY_USAGE_REPORT) {

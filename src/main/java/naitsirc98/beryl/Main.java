@@ -39,19 +39,19 @@ public class Main extends BerylApplication {
     @Override
     protected void onStart() {
 
-        int count = RAND.nextInt(9) + 2;
+        int count = RAND.nextInt(1) + 2;
 
         for(int i = 0;i < count;i++) {
-            addScene(RAND);
+            addScene();
         }
 
     }
 
-    private void addScene(Random rand) {
+    private void addScene() {
 
         Scene scene = new Scene();
 
-        int count = rand.nextInt(5000) + 5000;
+        int count = RAND.nextInt(5000) + 5000;
 
         for(int i = 0;i < count;i++) {
             Entity entity = scene.newEntity(String.valueOf(i));

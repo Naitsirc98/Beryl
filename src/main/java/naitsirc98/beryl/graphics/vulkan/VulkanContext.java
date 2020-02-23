@@ -39,6 +39,8 @@ public class VulkanContext implements GraphicsContext {
     @Override
     public void free() {
 
+        device.waitIdle();
+
         device.free();
 
         vkDestroySurfaceKHR(vkInstance, surface, null);

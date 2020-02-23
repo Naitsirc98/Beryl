@@ -11,6 +11,7 @@ import static java.util.stream.Collectors.toSet;
 import static naitsirc98.beryl.graphics.vulkan.VulkanLogicalDevice.newVulkanLogicalDevice;
 import static naitsirc98.beryl.graphics.vulkan.VulkanPhysicalDevice.pickPhysicalDevice;
 import static org.lwjgl.vulkan.KHRSwapchain.VK_KHR_SWAPCHAIN_EXTENSION_NAME;
+import static org.lwjgl.vulkan.VK10.vkDeviceWaitIdle;
 
 @Destructor
 public class VulkanDevice implements NativeResource {
@@ -33,5 +34,9 @@ public class VulkanDevice implements NativeResource {
     @Override
     public void free() {
         logicalDevice.free();
+    }
+
+    public void waitIdle() {
+        vkDeviceWaitIdle(logicalDevice.vkDevice());
     }
 }
