@@ -22,12 +22,16 @@ import static org.lwjgl.vulkan.VK10.*;
 @Destructor
 public class VulkanPhysicalDevice implements NativeResource {
 
+    // TODO: pick best physical device, not the first matching the requirements
+
     static VulkanPhysicalDevice pickPhysicalDevice(VkInstance vkInstance, long surface) {
         return new VulkanPhysicalDevice(vkInstance, surface);
     }
 
     private final long surface;
     private final VkPhysicalDevice vkPhysicalDevice;
+    private final VkPhysicalDeviceProperties properties;
+    private final VkPhysicalDeviceFeatures features;
     private final QueueFamilyIndices queueFamilyIndices;
     private final SwapChainSupportDetails swapChainSupportDetails;
     private final int msaaSamples;
@@ -40,10 +44,23 @@ public class VulkanPhysicalDevice implements NativeResource {
         queueFamilyIndices = selection.queueFamilyIndices;
         swapChainSupportDetails = selection.swapChainSupportDetails;
         msaaSamples = selection.msaaSamples;
+
+        properties = getPhysicalDeviceProperties(vkPhysicalDevice);
+        features = getPhysicalDeviceFeatures(vkPhysicalDevice);
+
+        Log.trace("[VULKAN]: Physical Device: " + properties().deviceNameString());
     }
 
     public VkPhysicalDevice vkPhysicalDevice() {
         return vkPhysicalDevice;
+    }
+
+    public VkPhysicalDeviceProperties properties() {
+        return properties;
+    }
+
+    public VkPhysicalDeviceFeatures features() {
+        return features;
     }
 
     public QueueFamilyIndices queueFamilyIndices() {
@@ -60,6 +77,8 @@ public class VulkanPhysicalDevice implements NativeResource {
 
     @Override
     public void free() {
+        properties.free();
+        features.free();
         swapChainSupportDetails.free();
     }
 
@@ -205,6 +224,18 @@ public class VulkanPhysicalDevice implements NativeResource {
 
             return VK_SAMPLE_COUNT_1_BIT;
         }
+    }
+
+    private VkPhysicalDeviceFeatures getPhysicalDeviceFeatures(VkPhysicalDevice physicalDevice) {
+        VkPhysicalDeviceFeatures features = VkPhysicalDeviceFeatures.malloc();
+        vkGetPhysicalDeviceFeatures(physicalDevice, features);
+        return features;
+    }
+
+    private VkPhysicalDeviceProperties getPhysicalDeviceProperties(VkPhysicalDevice physicalDevice) {
+        VkPhysicalDeviceProperties properties = VkPhysicalDeviceProperties.malloc();
+        vkGetPhysicalDeviceProperties(physicalDevice, properties);
+        return properties;
     }
 
     @Destructor

@@ -29,7 +29,6 @@ public enum DataType implements ByteSize {
     public static final long UINT64_MAX = 0xFFFFFFFFFFFFFFFFL;
 
 
-
     private final byte bytes;
     private final boolean signed;
 
