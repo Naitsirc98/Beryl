@@ -69,7 +69,7 @@ public final class Time extends BerylSystem {
      * @return {@link String} format of this instant
      */
     public static String format() {
-        return String.format("%02d:%02d:%02d", (int) hours(), (int) minutes() % 60, (int) seconds());
+        return String.format("%02d:%02d:%02d", (int) hours(), (int) minutes() % 60, (int) seconds() % 60);
     }
 
     /**

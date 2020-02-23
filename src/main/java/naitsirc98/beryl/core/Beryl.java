@@ -85,8 +85,8 @@ public final class Beryl {
 
         final Time time = systems.time;
 
-        float lastFrame = 0.0f;
-        float lastDebugReport = 0.0f;
+        float lastFrame = Time.time();
+        float lastDebugReport = Time.time();
         float deltaTime;
 
         int framesPerSecond = 0;

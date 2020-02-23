@@ -33,6 +33,7 @@ public class Main extends BerylApplication {
     protected void setConfiguration() {
         BerylConfiguration.DEBUG.set(true);
         BerylConfiguration.INTERNAL_DEBUG.set(true);
+        BerylConfiguration.INITIAL_TIME_VALUE.set(4000.0);
         // BerylConfiguration.GRAPHICS_API.set(GraphicsAPI.OPENGL);
     }
 
@@ -87,6 +88,16 @@ public class Main extends BerylApplication {
                 }
 
                 scene().destroy(name);
+
+            } else if(RAND.nextFloat() < 0.085f) {
+
+                String name = String.valueOf(RAND.nextInt(count));
+
+                if(scene().exists(name)) {
+                    return;
+                }
+
+                scene().newEntity(name).add(MyBehaviour.class).setCount(count);
             }
 
         }

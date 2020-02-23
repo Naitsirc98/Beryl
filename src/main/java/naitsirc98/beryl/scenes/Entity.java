@@ -111,7 +111,7 @@ public final class Entity extends SceneObject implements Iterable<Component> {
 
         components.put(componentClass, component);
 
-        scene.add(component);
+        doLater(() -> scene.add(component));
 
         return component;
     }
