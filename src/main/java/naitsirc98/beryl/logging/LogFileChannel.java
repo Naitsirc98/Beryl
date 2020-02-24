@@ -21,6 +21,7 @@ public class LogFileChannel implements LogChannel {
 
     private final BufferedWriter bufferedWriter;
     private final EnumSet<Log.Level> acceptedLevels;
+    private boolean colored = true;
 
 
     public LogFileChannel(Path path, OpenOption... openOptions) {
@@ -58,5 +59,15 @@ public class LogFileChannel implements LogChannel {
     @Override
     public boolean accept(Log.Level level) {
         return acceptedLevels.contains(level);
+    }
+
+    @Override
+    public boolean colored() {
+        return colored;
+    }
+
+    public LogFileChannel colored(boolean colored) {
+        this.colored = colored;
+        return this;
     }
 }

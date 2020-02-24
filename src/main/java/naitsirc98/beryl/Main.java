@@ -6,12 +6,16 @@ import naitsirc98.beryl.core.BerylConfiguration;
 import naitsirc98.beryl.graphics.GraphicsAPI;
 import naitsirc98.beryl.input.Input;
 import naitsirc98.beryl.logging.Log;
+import naitsirc98.beryl.logging.LogChannel;
+import naitsirc98.beryl.logging.LogFileChannel;
 import naitsirc98.beryl.scenes.Entity;
 import naitsirc98.beryl.scenes.Scene;
 import naitsirc98.beryl.scenes.SceneManager;
 import naitsirc98.beryl.scenes.components.behaviours.Behaviour;
 import naitsirc98.beryl.scenes.components.math.Transform;
 
+import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Random;
 
 import static naitsirc98.beryl.input.Key.KEY_W;
@@ -38,6 +42,10 @@ public class Main extends BerylApplication {
         // BerylConfiguration.INITIAL_TIME_VALUE.set(4000.0);
         BerylConfiguration.WINDOW_RESIZABLE.set(false);
         BerylConfiguration.GRAPHICS_API.set(GraphicsAPI.VULKAN);
+        BerylConfiguration.LOG_CHANNELS.set(Arrays.asList(
+                LogChannel.stdout(),
+                new LogFileChannel(Paths.get("beryl.log")).colored(false)
+        ));
     }
 
     @Override
