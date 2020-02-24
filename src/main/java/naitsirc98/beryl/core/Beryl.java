@@ -1,7 +1,6 @@
 package naitsirc98.beryl.core;
 
 import naitsirc98.beryl.events.EventManager;
-import naitsirc98.beryl.graphics.Graphics;
 import naitsirc98.beryl.graphics.GraphicsAPI;
 import naitsirc98.beryl.graphics.Renderer;
 import naitsirc98.beryl.graphics.window.Window;
@@ -160,11 +159,6 @@ public final class Beryl {
             application.onRender();
 
             renderer.end(stack);
-
-            // For now just simulate some rendering delay
-            for(int i = 0;i < 10000;i++) {
-                Math.sin(i);
-            }
         }
     }
 
