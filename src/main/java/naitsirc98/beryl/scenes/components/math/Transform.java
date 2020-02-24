@@ -1,5 +1,6 @@
 package naitsirc98.beryl.scenes.components.math;
 
+import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.scenes.Component;
 import org.joml.*;
 
@@ -167,6 +168,12 @@ public final class Transform extends Component<Transform> {
     }
 
     public boolean addChild(Transform child) {
+
+        if(child == null) {
+            Log.error("Cannot add a null child");
+            return false;
+        }
+
         if(!children.contains(child)) {
             return children.add(child);
         }
@@ -174,6 +181,12 @@ public final class Transform extends Component<Transform> {
     }
 
     public void addChild(Transform child, int index) {
+
+        if(child == null) {
+            Log.error("Cannot add a null child");
+            return;
+        }
+
         if(children.contains(child) && children.indexOf(child) != index) {
             children.remove(index);
         }

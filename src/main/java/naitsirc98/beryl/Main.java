@@ -43,7 +43,7 @@ public class Main extends BerylApplication {
     @Override
     protected void onStart() {
 
-        int count = 1; // RAND.nextInt(1) + 2;
+        int count = 3; // RAND.nextInt(1) + 2;
 
         for(int i = 0;i < count;i++) {
             addScene();
@@ -55,7 +55,7 @@ public class Main extends BerylApplication {
 
         Scene scene = new Scene();
 
-        int count = 50000;// RAND.nextInt(5000) + 5000;
+        int count = RAND.nextInt(5000) + 10000;
 
         for(int i = 0;i < count;i++) {
             Entity entity = scene.newEntity(String.valueOf(i));
@@ -79,15 +79,15 @@ public class Main extends BerylApplication {
         @Override
         protected void onUpdate() {
 
-            //if(RAND.nextInt() % 20 == 0) {
+            if(RAND.nextInt() % 20 == 0) {
                 requires(Transform.class).translate(RAND.nextFloat(), 0, 0);
-            //}
+            }
 
             if(Input.isKeyTyped(KEY_W)) {
                 Log.trace("Hey!");
             }
 
-            // addOrRemoveRandomly();
+            addOrRemoveRandomly();
 
         }
 

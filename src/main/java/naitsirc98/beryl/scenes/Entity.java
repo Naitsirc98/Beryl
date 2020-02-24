@@ -98,11 +98,10 @@ public final class Entity extends SceneObject implements Iterable<Component> {
      * @return the added component, or the previous component of the given class if it was already added.
      */
     public synchronized <T extends Component> T add(Class<T> componentClass) {
-
         assertNonNull(componentClass);
 
         if(has(componentClass)) {
-            return get(componentClass);
+            return getComponent(componentClass);
         }
 
         T component = newInstanceUnsafe(componentClass);
@@ -117,13 +116,22 @@ public final class Entity extends SceneObject implements Iterable<Component> {
     }
 
     /**
-     * Returns the component of the specified class.
+     * Returns a component of the specified class. It will be created if no component of the given class already exists.
      *
      * @param componentClass the component class
-     * @return the component, or null if there is no component of the given class in this entity
+     * @return the component
      */
-    public <T> T get(Class<T> componentClass) {
+    public <T extends Component> T get(Class<T> componentClass) {
         assertNonNull(componentClass);
+
+        if(has(componentClass)) {
+            return getComponent(componentClass);
+        }
+
+        return add(componentClass);
+    }
+
+    private <T extends Component> T getComponent(Class<T> componentClass) {
         return componentClass.cast(components.get(componentClass));
     }
 

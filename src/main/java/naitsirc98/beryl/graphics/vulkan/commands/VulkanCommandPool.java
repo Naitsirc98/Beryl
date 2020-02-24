@@ -81,7 +81,7 @@ public class VulkanCommandPool implements NativeResource {
         vkFreeCommandBuffers(logicalDevice, vkCommandPool, commandBuffer);
     }
 
-    public void freeCommandBuffer(VkCommandBuffer... commandBuffers) {
+    public void freeCommandBuffers(VkCommandBuffer... commandBuffers) {
         vkFreeCommandBuffers(logicalDevice, vkCommandPool, pointers(commandBuffers));
     }
 

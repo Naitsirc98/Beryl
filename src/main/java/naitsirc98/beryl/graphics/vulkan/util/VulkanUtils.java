@@ -13,16 +13,18 @@ import static org.lwjgl.vulkan.VK10.*;
 
 public class VulkanUtils {
 
-    public static void vkCall(int vkResult) {
+    public static boolean vkCall(int vkResult) {
         if(vkResult != VK_SUCCESS) {
-            Log.log(Log.Level.ERROR, getErrorName(vkResult));
+            Log.log(Log.Level.ERROR, getVulkanErrorName(vkResult));
         }
+        return vkResult == VK_SUCCESS;
     }
 
-    public static void vkCall(int vkResult, Log.Level levelIfFail) {
+    public static boolean vkCall(int vkResult, Log.Level levelIfFail) {
         if(vkResult != VK_SUCCESS) {
-            Log.log(levelIfFail, getErrorName(vkResult));
+            Log.log(levelIfFail, getVulkanErrorName(vkResult));
         }
+        return vkResult == VK_SUCCESS;
     }
 
     public static int makeVersion(Version version) {
@@ -55,7 +57,7 @@ public class VulkanUtils {
         return buffer.rewind();
     }
 
-    public static String getErrorName(int errorCode) {
+    public static String getVulkanErrorName(int errorCode) {
         switch(errorCode) {
             case VK_NOT_READY:
                 return "VK_NOT_READY";

@@ -3,12 +3,15 @@ package naitsirc98.beryl.graphics.opengl;
 import naitsirc98.beryl.core.Beryl;
 import naitsirc98.beryl.core.BerylConfiguration;
 import naitsirc98.beryl.graphics.GraphicsContext;
+import naitsirc98.beryl.graphics.Renderer;
+import naitsirc98.beryl.graphics.opengl.renderers.GLRenderer;
 import naitsirc98.beryl.graphics.window.Window;
 import naitsirc98.beryl.util.LongHandle;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GLCapabilities;
 
 import static naitsirc98.beryl.graphics.opengl.GLDebugMessenger.newGLDebugMessenger;
+import static naitsirc98.beryl.util.TypeUtils.newInstance;
 import static org.lwjgl.glfw.GLFW.glfwMakeContextCurrent;
 
 public class GLContext implements GraphicsContext, LongHandle {
@@ -18,6 +21,7 @@ public class GLContext implements GraphicsContext, LongHandle {
     private long glContext;
     private GLDebugMessenger debugMessenger;
     private GLCapabilities capabilities;
+    private GLRenderer renderer;
 
     private GLContext() {
 
@@ -29,6 +33,12 @@ public class GLContext implements GraphicsContext, LongHandle {
         makeCurrent();
         capabilities = GL.createCapabilities();
         debugMessenger = newGLDebugMessenger();
+        renderer = newInstance(GLRenderer.class, glContext);
+    }
+
+    @Override
+    public Renderer renderer() {
+        return renderer;
     }
 
     @Override
@@ -46,6 +56,8 @@ public class GLContext implements GraphicsContext, LongHandle {
 
     @Override
     public void free() {
+
+        renderer.free();
 
         if(OPENGL_DEBUG_MESSAGES_ENABLED) {
             debugMessenger.free();

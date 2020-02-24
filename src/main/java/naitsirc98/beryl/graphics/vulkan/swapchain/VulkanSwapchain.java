@@ -18,7 +18,6 @@ import org.lwjgl.vulkan.*;
 
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;
-import java.util.Arrays;
 
 import static naitsirc98.beryl.graphics.vulkan.util.VulkanFormatUtils.findDepthFormat;
 import static naitsirc98.beryl.util.DataType.UINT32_MAX;
@@ -37,7 +36,7 @@ public class VulkanSwapchain implements NativeResource {
     private static final int DEPTH_ATTACHMENT_INDEX = 1;
 
     private final VulkanDevice device;
-    private long swapchain;
+    private long vkSwapchain;
     private int swapChainImageFormat;
     private VkExtent2D swapChainExtent;
     private VulkanSwapchainImage[] swapChainImages;
@@ -50,6 +49,35 @@ public class VulkanSwapchain implements NativeResource {
         renderPass = createSwapchainRenderPass();
     }
 
+    public long vkSwapchain() {
+        return vkSwapchain;
+    }
+
+    public VulkanDevice device() {
+        return device;
+    }
+
+    public int swapChainImageFormat() {
+        return swapChainImageFormat;
+    }
+
+    public VkExtent2D swapChainExtent() {
+        return swapChainExtent;
+    }
+
+    public VulkanSwapchainImage[] swapChainImages() {
+        return swapChainImages;
+    }
+
+    public VulkanImageBase depthImage() {
+        return depthImage;
+    }
+
+    public VulkanRenderPass renderPass() {
+        return renderPass;
+    }
+
+
     @Override
     public void free() {
 
@@ -57,11 +85,18 @@ public class VulkanSwapchain implements NativeResource {
 
         renderPass.free();
 
-        Arrays.stream(swapChainImages).forEach(VulkanSwapchainImage::free);
+        freeSwapchainImages();
 
         swapChainExtent.free();
 
-        vkDestroySwapchainKHR(device.logicalDevice().vkDevice(), swapchain, null);
+        vkDestroySwapchainKHR(device.logicalDevice().vkDevice(), vkSwapchain, null);
+    }
+
+    private void freeSwapchainImages() {
+        for(int i = 0;i < swapChainImages.length;i++) {
+            swapChainImages[i].free();
+            swapChainImages[i] = null;
+        }
     }
 
     private void createSwapchain() {
@@ -121,13 +156,13 @@ public class VulkanSwapchain implements NativeResource {
                 throw new RuntimeException("Failed to create swap chain");
             }
 
-            swapchain = pSwapChain.get(0);
+            vkSwapchain = pSwapChain.get(0);
 
             swapChainImageFormat = surfaceFormat.format();
 
             swapChainExtent = VkExtent2D.malloc().set(extent);
 
-            getSwapchainImages(swapchain, imageCount, stack);
+            getSwapchainImages(vkSwapchain, imageCount, stack);
 
         }
     }
@@ -140,7 +175,9 @@ public class VulkanSwapchain implements NativeResource {
 
         vkGetSwapchainImagesKHR(device.logicalDevice().vkDevice(), swapchain, imageCount, pSwapchainImages);
 
-        swapChainImages = new VulkanSwapchainImage[imageCount.get(0)];
+        if(swapChainImages == null || swapChainImages.length != imageCount.get(0)) {
+            swapChainImages = new VulkanSwapchainImage[imageCount.get(0)];
+        }
 
         for(int i = 0;i < pSwapchainImages.capacity();i++) {
             swapChainImages[i] = new VulkanSwapchainImage(device.logicalDevice(), pSwapchainImages.get(i), swapChainImageFormat);
@@ -252,7 +289,7 @@ public class VulkanSwapchain implements NativeResource {
     protected VkAttachmentReference.Buffer getColorAttachmentReference() {
         return VkAttachmentReference.create(1)
             .attachment(COLOR_ATTACHMENT_INDEX)
-            .layout(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+            .layout(VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
     }
 
     protected VkAttachmentReference getDepthAttachmentReference() {

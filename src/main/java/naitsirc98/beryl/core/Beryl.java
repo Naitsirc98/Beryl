@@ -1,13 +1,16 @@
 package naitsirc98.beryl.core;
 
 import naitsirc98.beryl.events.EventManager;
+import naitsirc98.beryl.graphics.Graphics;
 import naitsirc98.beryl.graphics.GraphicsAPI;
+import naitsirc98.beryl.graphics.Renderer;
 import naitsirc98.beryl.graphics.window.Window;
 import naitsirc98.beryl.input.Input;
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.scenes.SceneManager;
 import naitsirc98.beryl.util.Version;
 import org.lwjgl.system.Configuration;
+import org.lwjgl.system.MemoryStack;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -15,6 +18,7 @@ import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
 import static naitsirc98.beryl.util.SystemInfo.*;
 import static naitsirc98.beryl.util.TypeUtils.initSingleton;
+import static org.lwjgl.system.MemoryStack.stackPush;
 
 public final class Beryl {
 
@@ -61,6 +65,7 @@ public final class Beryl {
 
     private final BerylApplication application;
     private final BerylSystemManager systems;
+    private Renderer renderer;
     private float updateDelay;
     private int updatesPerSecond;
 
@@ -86,6 +91,8 @@ public final class Beryl {
         Log.info("Starting Application...");
 
         application.start();
+
+        renderer = systems.graphics.renderer();
 
         final Time time = systems.time;
 
@@ -144,13 +151,20 @@ public final class Beryl {
 
     private void render() {
 
-        systems.sceneManager.render();
+        try(MemoryStack stack = stackPush()) {
 
-        application.onRender();
+            renderer.begin(stack);
 
-        // For now just simulate some rendering delay
-        for(int i = 0;i < 10000;i++) {
-            Math.sin(i);
+            systems.sceneManager.render();
+
+            application.onRender();
+
+            renderer.end(stack);
+
+            // For now just simulate some rendering delay
+            for(int i = 0;i < 10000;i++) {
+                Math.sin(i);
+            }
         }
     }
 
