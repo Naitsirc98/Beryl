@@ -14,6 +14,10 @@ public enum GraphicsAPI {
         return currentGraphicsAPI;
     }
 
+    public static <T> T chooseByAPI(T valueIfVulkan, T valueIfOpenGL) {
+        return get() == VULKAN ? valueIfVulkan : valueIfOpenGL;
+    }
+
     private int versionMajor;
     private int versionMinor;
 
