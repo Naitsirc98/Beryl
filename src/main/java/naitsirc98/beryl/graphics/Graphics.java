@@ -3,6 +3,7 @@ package naitsirc98.beryl.graphics;
 import naitsirc98.beryl.core.BerylConfiguration;
 import naitsirc98.beryl.core.BerylSystem;
 import naitsirc98.beryl.graphics.opengl.GLContext;
+import naitsirc98.beryl.graphics.rendering.Renderer;
 import naitsirc98.beryl.graphics.vulkan.VulkanContext;
 import naitsirc98.beryl.graphics.window.Window;
 import naitsirc98.beryl.graphics.window.WindowFactory;

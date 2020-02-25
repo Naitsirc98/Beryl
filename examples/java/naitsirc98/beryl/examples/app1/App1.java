@@ -8,6 +8,7 @@ import naitsirc98.beryl.graphics.window.Window;
 import naitsirc98.beryl.scenes.Entity;
 import naitsirc98.beryl.scenes.Scene;
 import naitsirc98.beryl.scenes.SceneManager;
+import naitsirc98.beryl.scenes.components.camera.Camera;
 import naitsirc98.beryl.scenes.components.math.Transform;
 
 import java.util.Random;
@@ -62,6 +63,7 @@ public class App1 extends BerylApplication {
             if(lastOne != null && i%2 == 0) {
                 entity.get(Transform.class).addChild(lastOne.get(Transform.class));
             }
+            entity.add(Camera.class).lookAt(i, RAND.nextFloat());
             entity.add(MyBehaviour.class).setCount(count);
             lastOne = entity;
         }

@@ -1,6 +1,6 @@
 package naitsirc98.beryl.graphics.vulkan.renderers;
 
-import naitsirc98.beryl.graphics.Renderer;
+import naitsirc98.beryl.graphics.rendering.Renderer;
 import naitsirc98.beryl.graphics.vulkan.commands.VulkanCommandPool;
 import naitsirc98.beryl.graphics.vulkan.swapchain.FrameManager;
 import naitsirc98.beryl.graphics.vulkan.swapchain.VulkanSwapchain;

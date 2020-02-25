@@ -1,19 +1,16 @@
 package naitsirc98.beryl.scenes.components.behaviours;
 
-import naitsirc98.beryl.scenes.ComponentManager;
 import naitsirc98.beryl.scenes.Scene;
+import naitsirc98.beryl.scenes.components.AbstractComponentManager;
 import naitsirc98.beryl.scenes.components.ComponentContainer;
 
 /**
  * The Behaviour Manager updates the {@link Behaviour} instances of a scene
  */
-public class BehaviourManager extends ComponentManager<Behaviour> {
-
-    private final ComponentContainer.Default<Behaviour> components;
+public class BehaviourManager extends AbstractComponentManager<Behaviour> {
 
     private BehaviourManager(Scene scene) {
         super(scene);
-        components = new ComponentContainer.Default<>();
     }
 
     /**
@@ -48,25 +45,5 @@ public class BehaviourManager extends ComponentManager<Behaviour> {
         if(!component.started()) {
             component.start();
         }
-    }
-
-    @Override
-    protected void disable(Behaviour component) {
-        components.disable(component);
-    }
-
-    @Override
-    protected void remove(Behaviour component) {
-        components.remove(component);
-    }
-
-    @Override
-    protected void removeAll() {
-        components.clear();
-    }
-
-    @Override
-    protected int size() {
-        return components.size();
     }
 }

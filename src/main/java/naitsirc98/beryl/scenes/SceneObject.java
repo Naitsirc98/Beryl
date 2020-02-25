@@ -78,8 +78,8 @@ public abstract class SceneObject {
      *
      * */
     void delete() {
-        destroyState = DELETED;
         onDestroy();
+        destroyState = DELETED;
     }
 
     /**

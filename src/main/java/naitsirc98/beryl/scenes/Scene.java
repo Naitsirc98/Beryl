@@ -3,6 +3,8 @@ package naitsirc98.beryl.scenes;
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.scenes.components.behaviours.Behaviour;
 import naitsirc98.beryl.scenes.components.behaviours.BehaviourManager;
+import naitsirc98.beryl.scenes.components.camera.Camera;
+import naitsirc98.beryl.scenes.components.camera.CameraManager;
 import naitsirc98.beryl.scenes.components.math.Transform;
 import naitsirc98.beryl.scenes.components.math.TransformManager;
 
@@ -22,8 +24,9 @@ public final class Scene {
     private final EntityManager entityManager;
 
     // === Component Managers
-    private final BehaviourManager behaviours;
+    private final CameraManager cameras;
     private final TransformManager transforms;
+    private final BehaviourManager behaviours;
 
     private final Map<Class<? extends Component>, ComponentManager<?>> componentManagers;
     // ===
@@ -37,8 +40,9 @@ public final class Scene {
         entityManager = new EntityManager(this);
 
         // === Component Managers
-        behaviours = newInstance(BehaviourManager.class, this);
+        cameras = newInstance(CameraManager.class, this);
         transforms = newInstance(TransformManager.class, this);
+        behaviours = newInstance(BehaviourManager.class, this);
 
         componentManagers = createComponentManagersMap();
         // ===
@@ -66,6 +70,7 @@ public final class Scene {
         // TODO
         behaviours.lateUpdate();
         transforms.update();
+        cameras.update();
     }
 
     void render() {
@@ -91,6 +96,20 @@ public final class Scene {
         }
 
         taskQueue.add(task);
+    }
+
+    public Camera camera() {
+        return cameras.mainCamera();
+    }
+
+    public void camera(Camera camera) {
+
+        if(camera != null && camera.scene() != this) {
+            Log.error("Cannot set a camera from another scene");
+            return;
+        }
+
+        cameras.mainCamera(camera);
     }
 
     public Entity newEntity() {
@@ -143,6 +162,11 @@ public final class Scene {
             return;
         }
 
+        if(entity.scene() != this) {
+            Log.error("Cannot destroy an Entity from another scene");
+            return;
+        }
+
         entity.markDestroyed();
 
         submit(() -> destroyEntity(entity));
@@ -155,6 +179,11 @@ public final class Scene {
     public void destroyNow(Entity entity) {
 
         if(entity == null || entity.destroyed()) {
+            return;
+        }
+
+        if(entity.scene() != this) {
+            Log.error("Cannot destroy an Entity from another scene");
             return;
         }
 
@@ -180,6 +209,11 @@ public final class Scene {
             return;
         }
 
+        if(component.scene() != this) {
+            Log.error("Cannot destroy a Component from another scene");
+            return;
+        }
+
         component.markDestroyed();
 
         submit(() -> destroyComponent(component));
@@ -188,6 +222,11 @@ public final class Scene {
     void destroyNow(Component component) {
 
         if(component == null || component.destroyed()) {
+            return;
+        }
+
+        if(component.scene() != this) {
+            Log.error("Cannot destroy a Component from another scene");
             return;
         }
 
@@ -212,6 +251,7 @@ public final class Scene {
 
         components.put(Behaviour.class, behaviours);
         components.put(Transform.class, transforms);
+        components.put(Camera.class, cameras);
 
         return components;
     }

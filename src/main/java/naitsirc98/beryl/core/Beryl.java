@@ -2,12 +2,13 @@ package naitsirc98.beryl.core;
 
 import naitsirc98.beryl.events.EventManager;
 import naitsirc98.beryl.graphics.GraphicsAPI;
-import naitsirc98.beryl.graphics.Renderer;
+import naitsirc98.beryl.graphics.rendering.Renderer;
 import naitsirc98.beryl.graphics.window.Window;
 import naitsirc98.beryl.input.Input;
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.scenes.SceneManager;
 import naitsirc98.beryl.util.Version;
+import org.joml.Math;
 import org.lwjgl.system.Configuration;
 import org.lwjgl.system.MemoryStack;
 
@@ -76,6 +77,8 @@ public final class Beryl {
     private void init() {
 
         setLWJGLConfiguration();
+
+        setJOMLConfiguration();
 
         application.onInit();
 
@@ -186,6 +189,13 @@ public final class Beryl {
         Configuration.GLFW_CHECK_THREAD0.set(INTERNAL_DEBUG);
         Configuration.DISABLE_CHECKS.set(!INTERNAL_DEBUG);
         Configuration.DISABLE_FUNCTION_CHECKS.set(!INTERNAL_DEBUG);
+    }
+
+    private void setJOMLConfiguration() {
+        System.setProperty("joml.debug", String.valueOf(INTERNAL_DEBUG));
+        System.setProperty("joml.fastmath", String.valueOf(BerylConfiguration.FAST_MATH.get(true)));
+        System.setProperty("joml.sinLookup", String.valueOf(BerylConfiguration.FAST_MATH.get(true)));
+        System.setProperty("joml.format", String.valueOf(false));
     }
 
     private String buildDebugReport(int fps, int ups, float deltaTime) {

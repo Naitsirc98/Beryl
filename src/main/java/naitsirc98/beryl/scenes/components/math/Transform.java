@@ -416,10 +416,7 @@ public final class Transform extends Component<Transform> {
     }
 
     private void modify() {
-        assertNotDeleted();
-        if(!modified()) {
-            modified = true;
-        }
+        modified = true;
     }
 
     @Override

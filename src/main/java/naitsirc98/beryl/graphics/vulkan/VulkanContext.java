@@ -3,7 +3,7 @@ package naitsirc98.beryl.graphics.vulkan;
 import naitsirc98.beryl.core.Beryl;
 import naitsirc98.beryl.core.BerylConfiguration;
 import naitsirc98.beryl.graphics.GraphicsContext;
-import naitsirc98.beryl.graphics.Renderer;
+import naitsirc98.beryl.graphics.rendering.Renderer;
 import naitsirc98.beryl.graphics.vulkan.commands.VulkanCommandPool;
 import naitsirc98.beryl.graphics.vulkan.devices.VulkanDevice;
 import naitsirc98.beryl.graphics.vulkan.renderers.VulkanRenderer;

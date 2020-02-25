@@ -3,7 +3,7 @@ package naitsirc98.beryl.graphics.opengl;
 import naitsirc98.beryl.core.Beryl;
 import naitsirc98.beryl.core.BerylConfiguration;
 import naitsirc98.beryl.graphics.GraphicsContext;
-import naitsirc98.beryl.graphics.Renderer;
+import naitsirc98.beryl.graphics.rendering.Renderer;
 import naitsirc98.beryl.graphics.opengl.renderers.GLRenderer;
 import naitsirc98.beryl.graphics.window.Window;
 import naitsirc98.beryl.util.LongHandle;

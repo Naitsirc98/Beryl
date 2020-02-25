@@ -1,6 +1,6 @@
 package naitsirc98.beryl.graphics.opengl.renderers;
 
-import naitsirc98.beryl.graphics.Renderer;
+import naitsirc98.beryl.graphics.rendering.Renderer;
 import naitsirc98.beryl.graphics.window.Window;
 import naitsirc98.beryl.util.Sizec;
 import org.lwjgl.system.MemoryStack;
