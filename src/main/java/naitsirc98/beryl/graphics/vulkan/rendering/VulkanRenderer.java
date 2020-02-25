@@ -1,4 +1,4 @@
-package naitsirc98.beryl.graphics.vulkan.renderers;
+package naitsirc98.beryl.graphics.vulkan.rendering;
 
 import naitsirc98.beryl.graphics.rendering.Renderer;
 import naitsirc98.beryl.graphics.vulkan.commands.VulkanCommandPool;

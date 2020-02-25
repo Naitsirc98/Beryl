@@ -8,10 +8,10 @@ import naitsirc98.beryl.input.Input;
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.scenes.SceneManager;
 import naitsirc98.beryl.util.Version;
-import org.joml.Math;
 import org.lwjgl.system.Configuration;
 import org.lwjgl.system.MemoryStack;
 
+import java.lang.ref.WeakReference;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.lang.String.format;

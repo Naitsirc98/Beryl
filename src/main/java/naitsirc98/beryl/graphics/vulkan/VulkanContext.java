@@ -4,13 +4,15 @@ import naitsirc98.beryl.core.Beryl;
 import naitsirc98.beryl.core.BerylConfiguration;
 import naitsirc98.beryl.graphics.GraphicsContext;
 import naitsirc98.beryl.graphics.rendering.Renderer;
+import naitsirc98.beryl.graphics.rendering.RenderingPath;
 import naitsirc98.beryl.graphics.vulkan.commands.VulkanCommandPool;
 import naitsirc98.beryl.graphics.vulkan.devices.VulkanDevice;
-import naitsirc98.beryl.graphics.vulkan.renderers.VulkanRenderer;
+import naitsirc98.beryl.graphics.vulkan.rendering.VulkanRenderer;
 import naitsirc98.beryl.graphics.vulkan.swapchain.VulkanSwapchain;
 import naitsirc98.beryl.util.Destructor;
 import org.lwjgl.vulkan.VkInstance;
 
+import java.util.Map;
 import java.util.Set;
 
 import static naitsirc98.beryl.graphics.vulkan.VulkanDebugMessenger.newVulkanDebugMessenger;
@@ -56,6 +58,11 @@ public final class VulkanContext implements GraphicsContext {
     @Override
     public Renderer renderer() {
         return renderer;
+    }
+
+    @Override
+    public Map<Integer, RenderingPath> renderingPaths() {
+        return null;
     }
 
     public VkInstance vkInstance() {

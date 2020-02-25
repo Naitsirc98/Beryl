@@ -4,11 +4,14 @@ import naitsirc98.beryl.core.Beryl;
 import naitsirc98.beryl.core.BerylConfiguration;
 import naitsirc98.beryl.graphics.GraphicsContext;
 import naitsirc98.beryl.graphics.rendering.Renderer;
-import naitsirc98.beryl.graphics.opengl.renderers.GLRenderer;
+import naitsirc98.beryl.graphics.opengl.rendering.GLRenderer;
+import naitsirc98.beryl.graphics.rendering.RenderingPath;
 import naitsirc98.beryl.graphics.window.Window;
 import naitsirc98.beryl.util.LongHandle;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GLCapabilities;
+
+import java.util.Map;
 
 import static naitsirc98.beryl.graphics.opengl.GLDebugMessenger.newGLDebugMessenger;
 import static naitsirc98.beryl.util.TypeUtils.newInstance;
@@ -39,6 +42,11 @@ public class GLContext implements GraphicsContext, LongHandle {
     @Override
     public Renderer renderer() {
         return renderer;
+    }
+
+    @Override
+    public Map<Integer, RenderingPath> renderingPaths() {
+        return null;
     }
 
     @Override

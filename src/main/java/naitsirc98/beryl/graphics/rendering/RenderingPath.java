@@ -1,7 +1,13 @@
 package naitsirc98.beryl.graphics.rendering;
 
-public interface RenderingPath {
+public abstract class RenderingPath {
 
-    void render();
+    boolean initialized;
 
+    protected abstract void init();
+
+    protected abstract void terminate();
+
+    // TODO
+    public abstract void render();
 }

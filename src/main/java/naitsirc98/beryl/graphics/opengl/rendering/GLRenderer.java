@@ -1,4 +1,4 @@
-package naitsirc98.beryl.graphics.opengl.renderers;
+package naitsirc98.beryl.graphics.opengl.rendering;
 
 import naitsirc98.beryl.graphics.rendering.Renderer;
 import naitsirc98.beryl.graphics.window.Window;
