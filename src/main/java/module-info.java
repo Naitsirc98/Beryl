@@ -26,5 +26,6 @@ module Beryl {
     requires java.logging;
 
     requires jdk.unsupported;
+    requires kotlin.stdlib;
 
 }
