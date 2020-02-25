@@ -37,6 +37,7 @@ public abstract class Component<SELF extends Component> extends SceneObject {
      * @return the entity
      */
     public Entity entity() {
+        assertNotDeleted();
         return entity;
     }
 
@@ -46,6 +47,7 @@ public abstract class Component<SELF extends Component> extends SceneObject {
      * @return this component's name
      * */
     public String name() {
+        assertNotDeleted();
         return entity.name();
     }
 
@@ -55,6 +57,7 @@ public abstract class Component<SELF extends Component> extends SceneObject {
      * @return this component's tag
      * */
     public String tag() {
+        assertNotDeleted();
         return entity.tag();
     }
 
@@ -64,6 +67,7 @@ public abstract class Component<SELF extends Component> extends SceneObject {
      * @return true if this component is already managed by its scene, false otherwise
      * */
     public final boolean active() {
+        assertNotDeleted();
         return manager != null;
     }
 
@@ -74,6 +78,7 @@ public abstract class Component<SELF extends Component> extends SceneObject {
      * @return the component or null if it does not exists
      */
     protected final <T extends Component> T get(Class<T> componentClass) {
+        assertNotDeleted();
         return entity.get(componentClass);
     }
 
@@ -84,25 +89,30 @@ public abstract class Component<SELF extends Component> extends SceneObject {
      * @return the component
      */
     protected final <T extends Component> T requires(Class<T> componentClass) {
+        assertNotDeleted();
         return entity.requires(componentClass);
     }
 
     protected ComponentManager<SELF> manager() {
+        assertNotDeleted();
         return manager;
     }
 
     @Override
     public Scene scene() {
+        assertNotDeleted();
         return entity().scene();
     }
 
     @Override
     public boolean enabled() {
+        assertNotDeleted();
         return entity.enabled() && enabled;
     }
 
     @Override
     public final SELF enable() {
+        assertNotDeleted();
         if(!enabled() && active()) {
             manager.enable(self());
             onEnable();
@@ -112,6 +122,7 @@ public abstract class Component<SELF extends Component> extends SceneObject {
 
     @Override
     public final SELF disable() {
+        assertNotDeleted();
         if(enabled() && active()) {
             manager.disable(self());
             onDisable();
@@ -134,6 +145,7 @@ public abstract class Component<SELF extends Component> extends SceneObject {
 
     @Override
     public final void destroy() {
+        assertNotDeleted();
         if(active()) {
             entity.destroy(this);
         }
@@ -141,6 +153,7 @@ public abstract class Component<SELF extends Component> extends SceneObject {
 
     @Override
     public void destroyNow() {
+        assertNotDeleted();
         if(active()) {
             entity.destroyNow(this);
         }

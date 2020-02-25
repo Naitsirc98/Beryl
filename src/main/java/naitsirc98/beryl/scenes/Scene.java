@@ -75,7 +75,7 @@ public final class Scene {
     void terminate() {
         // TODO
         processTasks();
-        entityManager.destroy();
+        entityManager.remove();
         componentManagers.values().forEach(ComponentManager::removeAll);
     }
 
@@ -158,13 +158,12 @@ public final class Scene {
             return;
         }
 
-        entity.markDestroyed();
-
         destroyEntity(entity);
     }
 
     private void destroyEntity(Entity entity) {
-        entityManager.destroy(entity);
+        entityManager.remove(entity);
+        entity.delete();
     }
 
     @SuppressWarnings("unchecked")
@@ -192,15 +191,13 @@ public final class Scene {
             return;
         }
 
-        component.markDestroyed();
-
         destroyComponent(component);
     }
 
     @SuppressWarnings("unchecked")
     void destroyComponent(Component component) {
         managerOf(component.type()).remove(component);
-        component.onDestroy();
+        component.delete();
     }
 
     @SuppressWarnings("unchecked")

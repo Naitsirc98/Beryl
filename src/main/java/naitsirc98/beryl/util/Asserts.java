@@ -10,10 +10,10 @@ import java.util.Objects;
  * */
 public final class Asserts {
 
-    private static final boolean ENABLED = BerylConfiguration.ENABLE_ASSERTS.get(Beryl.INTERNAL_DEBUG);
+    public static final boolean ASSERTS_ENABLED = BerylConfiguration.ENABLE_ASSERTS.get(Beryl.INTERNAL_DEBUG);
 
     public static void assertTrue(boolean condition) {
-        if(ENABLED) {
+        if(ASSERTS_ENABLED) {
             if(!condition) {
                 throw new AssertionException("Assert condition was false");
             }
@@ -21,13 +21,13 @@ public final class Asserts {
     }
 
     public static void assertFalse(boolean condition) {
-        if(ENABLED) {
+        if(ASSERTS_ENABLED) {
             assertTrue(!condition);
         }
     }
 
     public static <T> T assertEquals(T actual, T expected) {
-        if(ENABLED) {
+        if(ASSERTS_ENABLED) {
             if(Objects.equals(actual, expected)) {
                 return actual;
             }
@@ -37,7 +37,7 @@ public final class Asserts {
     }
 
     public static <T> T assertNotEquals(T actual, T other) {
-        if(ENABLED) {
+        if(ASSERTS_ENABLED) {
             if(Objects.equals(actual, other)) {
                 throw new AssertionException(actual, other, false);
             }
@@ -47,21 +47,21 @@ public final class Asserts {
     }
 
     public static <T> T assertNull(T object) {
-        if(ENABLED) {
+        if(ASSERTS_ENABLED) {
             return assertEquals(object, null);
         }
         return object;
     }
 
     public static <T> T assertNonNull(T object) {
-        if(ENABLED) {
+        if(ASSERTS_ENABLED) {
             return assertNotEquals(object, null);
         }
         return object;
     }
 
     public static <T> T assertOfType(Object object, Class<T> clazz) {
-        if(ENABLED) {
+        if(ASSERTS_ENABLED) {
             return clazz.cast(object);
         }
         return clazz.cast(object);

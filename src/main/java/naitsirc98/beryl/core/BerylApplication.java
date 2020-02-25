@@ -1,5 +1,6 @@
 package naitsirc98.beryl.core;
 
+import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.util.Singleton;
 
 import java.util.function.Consumer;
@@ -47,7 +48,7 @@ public class BerylApplication {
     }
 
     protected void onError(Throwable error) {
-
+        Log.error(error.getMessage(), error);
     }
 
     protected void onTerminate() {

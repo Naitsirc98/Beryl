@@ -13,6 +13,7 @@ public class Behaviour extends Component<Behaviour> {
     protected final void init() {
         super.init();
         started = false;
+        onInit();
     }
 
     /**
@@ -21,6 +22,7 @@ public class Behaviour extends Component<Behaviour> {
      * @return true if {@link Behaviour#onStart()} has been called, false otherwise
      */
     public boolean started() {
+        assertNotDeleted();
         return started;
     }
 
@@ -30,7 +32,14 @@ public class Behaviour extends Component<Behaviour> {
     }
 
     /**
-     * Gets called whenever this behaviour starts. This is executed the first time this behaviour gets updated
+     * Gets called whenever this behaviour is initialized.
+     * */
+    protected void onInit() {
+
+    }
+
+    /**
+     * Gets called whenever this behaviour starts. This is executed the first time this behaviour is updated.
      */
     protected void onStart() {
 

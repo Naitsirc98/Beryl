@@ -3,8 +3,10 @@ package naitsirc98.beryl.graphics.vulkan;
 import naitsirc98.beryl.core.Beryl;
 import naitsirc98.beryl.core.BerylConfiguration;
 import naitsirc98.beryl.graphics.GraphicsContext;
+import naitsirc98.beryl.graphics.Renderer;
 import naitsirc98.beryl.graphics.vulkan.commands.VulkanCommandPool;
 import naitsirc98.beryl.graphics.vulkan.devices.VulkanDevice;
+import naitsirc98.beryl.graphics.vulkan.renderers.VulkanRenderer;
 import naitsirc98.beryl.graphics.vulkan.swapchain.VulkanSwapchain;
 import naitsirc98.beryl.util.Destructor;
 import org.lwjgl.vulkan.VkInstance;
@@ -12,10 +14,11 @@ import org.lwjgl.vulkan.VkInstance;
 import java.util.Set;
 
 import static naitsirc98.beryl.graphics.vulkan.VulkanDebugMessenger.newVulkanDebugMessenger;
-import static naitsirc98.beryl.graphics.vulkan.devices.VulkanDevice.defaultDeviceExtensions;
 import static naitsirc98.beryl.graphics.vulkan.VulkanInstanceFactory.newVkInstance;
 import static naitsirc98.beryl.graphics.vulkan.VulkanSurface.newVulkanSurface;
 import static naitsirc98.beryl.graphics.vulkan.VulkanValidationLayers.defaultValidationLayers;
+import static naitsirc98.beryl.graphics.vulkan.devices.VulkanDevice.defaultDeviceExtensions;
+import static naitsirc98.beryl.util.TypeUtils.newInstance;
 import static org.lwjgl.vulkan.KHRSurface.vkDestroySurfaceKHR;
 import static org.lwjgl.vulkan.VK10.vkDestroyInstance;
 
@@ -33,6 +36,7 @@ public final class VulkanContext implements GraphicsContext {
     private VulkanDevice device;
     private VulkanCommandPool graphicsCommandPool;
     private VulkanSwapchain swapchain;
+    private VulkanRenderer renderer;
 
     private VulkanContext() {
 
@@ -46,6 +50,12 @@ public final class VulkanContext implements GraphicsContext {
         device = new VulkanDevice(vkInstance, surface);
         graphicsCommandPool = createGraphicsCommandPool();
         swapchain = new VulkanSwapchain(device);
+        renderer = newInstance(VulkanRenderer.class, swapchain, graphicsCommandPool);
+    }
+
+    @Override
+    public Renderer renderer() {
+        return renderer;
     }
 
     public VkInstance vkInstance() {
@@ -75,11 +85,13 @@ public final class VulkanContext implements GraphicsContext {
     @Override
     public void free() {
 
+        device.waitIdle();
+
+        renderer.free();
+
         graphicsCommandPool.free();
 
         swapchain.free();
-
-        device.waitIdle();
 
         device.free();
 

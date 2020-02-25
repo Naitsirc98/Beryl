@@ -35,4 +35,12 @@ public interface LogChannel {
     default boolean accept(Log.Level level) {
         return true;
     }
+
+    /**
+     * Tells whether this log channel should print messages with level ansi colors applied or not
+     *
+     * */
+    default boolean colored() {
+        return true;
+    }
 }

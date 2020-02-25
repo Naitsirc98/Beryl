@@ -28,7 +28,7 @@ public final class Log extends BerylSystem {
     private static final int MSG_QUEUE_TERMINATION_WAIT_TIME = Integer.MAX_VALUE;
     private static final int MSG_QUEUE_POLL_WAIT_TIME = 1000 / 60;
 
-    private static final String PATTERN = "%s%s[%s]: %s\n%s";
+    private static final String PATTERN = "%s[%s]: %s\n";
 
     private static final DateTimeFormatter DEFAULT_DATETIME_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/YYYY HH:mm:ss");
 
@@ -227,6 +227,7 @@ public final class Log extends BerylSystem {
     protected void terminate() {
         running.set(false);
         executor.shutdown();
+        Log.info("Terminating logging system...");
         try {
             executor.awaitTermination(MSG_QUEUE_TERMINATION_WAIT_TIME, SECONDS);
         } catch (InterruptedException e) {
@@ -271,19 +272,23 @@ public final class Log extends BerylSystem {
         final String bakedMessage = bakeMessage(message.level, message.contents);
         channels.parallelStream()
                 .filter(channel -> channel.accept(message.level))
-                .forEach(channel -> writeMessage(channel, bakedMessage));
+                .forEach(channel -> writeMessage(channel, message.level, bakedMessage));
     }
 
-    private void writeMessage(LogChannel channel, String bakedMessage) {
+    private void writeMessage(LogChannel channel, Level level, String bakedMessage) {
         try {
-            channel.write(bakedMessage);
+            channel.write(channel.colored() ? colored(level, bakedMessage) : bakedMessage);
         } catch (Exception e) {
             Logger.getLogger(Log.class.getName()).log(java.util.logging.Level.SEVERE, "Error while writing to channel", e);
         }
     }
 
+    private String colored(Level level, String bakedMessage) {
+        return colorOf(level) + bakedMessage + ANSIColor.RESET.code;
+    }
+
     private String bakeMessage(Level level, Object msg) {
-        return String.format(PATTERN, colorOf(level), timestamp(), level.name(), msg, ANSIColor.RESET.code);
+        return String.format(PATTERN, timestamp(), level.name(), msg);
     }
 
     private String colorOf(Level level) {
@@ -348,7 +353,7 @@ public final class Log extends BerylSystem {
         private final Level level;
         private final Object contents;
 
-        public Message(Level level, Object contents) {
+        private Message(Level level, Object contents) {
             this.level = level;
             this.contents = contents;
         }

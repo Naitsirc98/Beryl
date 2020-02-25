@@ -8,6 +8,8 @@ import naitsirc98.beryl.scenes.SceneManager;
 import naitsirc98.beryl.tasks.TaskManager;
 
 import java.util.Objects;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -47,14 +49,18 @@ public class BerylSystemManager {
 
     public void terminate() {
         // Terminate systems in reverse order
-        reverseOrder(systems).forEach(BerylSystem::terminate);
+        for(int i = systems.length - 1;i >= 0;i--) {
+            terminate(systems[i]);
+        }
     }
 
-    private Stream<BerylSystem> reverseOrder(BerylSystem[] systems) {
-        return IntStream.range(0, systems.length)
-                .boxed()
-                .map(index -> systems[systems.length - index - 1])
-                .filter(Objects::nonNull);
+    private void terminate(BerylSystem system) {
+        try {
+            system.terminate();
+        } catch(Throwable e) {
+            Logger.getLogger(BerylSystemManager.class.getSimpleName())
+                    .log(Level.SEVERE, "Failed to terminate system " + system, e);
+        }
     }
 
     private <T extends BerylSystem> T createSystem(Class<T> clazz) {
