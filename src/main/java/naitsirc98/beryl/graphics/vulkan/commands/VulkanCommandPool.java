@@ -12,6 +12,8 @@ import java.util.function.Consumer;
 import static naitsirc98.beryl.graphics.vulkan.util.VulkanUtils.pointers;
 import static naitsirc98.beryl.graphics.vulkan.util.VulkanUtils.vkCall;
 import static org.lwjgl.system.MemoryStack.stackPush;
+import static org.lwjgl.system.MemoryUtil.memAllocPointer;
+import static org.lwjgl.system.MemoryUtil.memFree;
 import static org.lwjgl.vulkan.VK10.*;
 
 @Destructor

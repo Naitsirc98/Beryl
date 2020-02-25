@@ -8,7 +8,7 @@ import naitsirc98.beryl.graphics.vulkan.devices.VulkanPhysicalDevice;
 import naitsirc98.beryl.graphics.vulkan.devices.VulkanPhysicalDevice.QueueFamilyIndices;
 import naitsirc98.beryl.graphics.vulkan.devices.VulkanPhysicalDevice.SwapChainSupportDetails;
 import naitsirc98.beryl.graphics.vulkan.renderpasses.VulkanRenderPass;
-import naitsirc98.beryl.graphics.vulkan.renderpasses.VulkanSubPassAttachmentDescriptions;
+import naitsirc98.beryl.graphics.vulkan.renderpasses.VulkanSubPassAttachments;
 import naitsirc98.beryl.graphics.window.Window;
 import naitsirc98.beryl.util.Destructor;
 import naitsirc98.beryl.util.Sizec;
@@ -163,7 +163,6 @@ public class VulkanSwapchain implements NativeResource {
             swapChainExtent = VkExtent2D.malloc().set(extent);
 
             getSwapchainImages(vkSwapchain, imageCount, stack);
-
         }
     }
 
@@ -253,7 +252,7 @@ public class VulkanSwapchain implements NativeResource {
         }
     }
 
-    protected VulkanSubPassAttachmentDescriptions getSwapchainSubpassAttachments() {
+    protected VulkanSubPassAttachments getSwapchainSubpassAttachments() {
 
         VkAttachmentDescription.Buffer colorAttachment = VkAttachmentDescription.create(1)
             .format(swapChainImageFormat)
@@ -275,7 +274,7 @@ public class VulkanSwapchain implements NativeResource {
             .initialLayout(VK_IMAGE_LAYOUT_UNDEFINED)
             .finalLayout(VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
 
-        return new VulkanSubPassAttachmentDescriptions(colorAttachment, null, depthAttachment);
+        return new VulkanSubPassAttachments(colorAttachment, null, depthAttachment);
     }
 
     protected VkSubpassDescription.Buffer getSwapchainSubpasses() {
@@ -289,7 +288,7 @@ public class VulkanSwapchain implements NativeResource {
     protected VkAttachmentReference.Buffer getColorAttachmentReference() {
         return VkAttachmentReference.create(1)
             .attachment(COLOR_ATTACHMENT_INDEX)
-            .layout(VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+            .layout(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
     }
 
     protected VkAttachmentReference getDepthAttachmentReference() {

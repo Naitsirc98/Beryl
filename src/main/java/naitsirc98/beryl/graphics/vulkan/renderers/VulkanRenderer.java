@@ -26,7 +26,7 @@ public class VulkanRenderer implements Renderer {
     private final VkQueue graphicsQueue;
     private final VkQueue presentationQueue;
     private final VulkanCommandPool commandPool;
-    private final VkCommandBuffer[] primaryCommandBuffers;
+    private final VkCommandBuffer[] commandBuffers;
     private boolean framebufferResize;
     private int currentSwapchainImageIndex;
 
@@ -37,7 +37,7 @@ public class VulkanRenderer implements Renderer {
         presentationQueue = swapchain.depthImage().logicalDevice().presentationQueue();
         this.commandPool = commandPool;
         final int swapchainImagesCount = swapchain.swapChainImages().length;
-        primaryCommandBuffers = commandPool.newPrimaryCommandBuffers(swapchainImagesCount);
+        commandBuffers = commandPool.newPrimaryCommandBuffers(swapchainImagesCount);
         this.frameManager = new FrameManager(logicalDevice, swapchainImagesCount);
     }
 
@@ -85,7 +85,7 @@ public class VulkanRenderer implements Renderer {
 
         submitInfo.pSignalSemaphores(stack.longs(frame.renderFinishedSemaphore));
 
-        submitInfo.pCommandBuffers(stack.pointers(primaryCommandBuffers[currentSwapchainImageIndex]));
+        submitInfo.pCommandBuffers(stack.pointers(currentCommandBuffer()));
 
         vkResetFences(logicalDevice, frame.fence);
 
@@ -113,11 +113,17 @@ public class VulkanRenderer implements Renderer {
         } else if(presentResult != VK_SUCCESS) {
             Log.fatal("Failed to present swap chain image: " + getVulkanErrorName(presentResult));
         }
+
+        frameManager.endFrame();
+    }
+
+    public VkCommandBuffer currentCommandBuffer() {
+        return commandBuffers[currentSwapchainImageIndex];
     }
 
     @Override
     public void free() {
-        commandPool.freeCommandBuffers(primaryCommandBuffers);
+        commandPool.freeCommandBuffers(commandBuffers);
         frameManager.free();
     }
 }

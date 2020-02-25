@@ -1,7 +1,5 @@
 package naitsirc98.beryl.graphics.vulkan;
 
-import naitsirc98.beryl.core.Beryl;
-import naitsirc98.beryl.core.BerylConfiguration;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkLayerProperties;
 
@@ -20,6 +18,10 @@ public class VulkanValidationLayers {
         return availableValidationLayers().containsAll(VALIDATION_LAYERS);
     }
 
+    public static Set<String> defaultValidationLayers() {
+        return Stream.of("VK_LAYER_KHRONOS_validation").collect(toSet());
+    }
+
     private static Set<String> availableValidationLayers() {
 
         try(MemoryStack stack = stackPush()) {
@@ -36,10 +38,6 @@ public class VulkanValidationLayers {
                     .map(VkLayerProperties::layerNameString)
                     .collect(toSet());
         }
-    }
-
-    static Set<String> defaultValidationLayers() {
-        return Stream.of("VK_LAYER_KHRONOS_validation").collect(toSet());
     }
 
 }

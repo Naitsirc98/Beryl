@@ -22,13 +22,13 @@ public class VulkanRenderPass implements NativeResource {
     private final long vkRenderPass;
     private final VulkanLogicalDevice logicalDevice;
     private final VkSubpassDescription.Buffer subPasses;
-    private final VulkanSubPassAttachmentDescriptions subPassAttachmentDescriptions;
+    private final VulkanSubPassAttachments subPassAttachmentDescriptions;
     private final VkSubpassDependency.Buffer subpassDependencies;
     private long[] framebuffers;
 
     public VulkanRenderPass(VulkanLogicalDevice logicalDevice,
                             VkSubpassDescription.Buffer subPasses,
-                            VulkanSubPassAttachmentDescriptions subPassAttachmentDescriptions,
+                            VulkanSubPassAttachments subPassAttachmentDescriptions,
                             VkSubpassDependency.Buffer subpassDependencies) {
 
         this.logicalDevice = logicalDevice;
@@ -55,7 +55,7 @@ public class VulkanRenderPass implements NativeResource {
         return subPasses;
     }
 
-    public VulkanSubPassAttachmentDescriptions subPassAttachmentDescriptions() {
+    public VulkanSubPassAttachments subPassAttachmentDescriptions() {
         return subPassAttachmentDescriptions;
     }
 

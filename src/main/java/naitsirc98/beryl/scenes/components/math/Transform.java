@@ -6,15 +6,23 @@ import org.joml.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
+/**
+ * A Transform contains the position, scale and rotation of a {@link naitsirc98.beryl.scenes.SceneObject}.
+ * 
+ * A Transform may have children, which will be updated when the parent Transform changes.
+ * 
+ */
 public final class Transform extends Component<Transform> {
 
     private Vector3f position;
     private Quaternionf rotation;
-    private Vector3f rotationAxis;
+    private AxisAngle4f rotationAxis;
     private Vector3f scale;
     private Matrix4f modelMatrix;
     private Matrix3f normalMatrix;
+    private Transform parent;
     private List<Transform> children;
     private boolean modified;
 
@@ -27,21 +35,26 @@ public final class Transform extends Component<Transform> {
         super.init();
         position = new Vector3f();
         rotation = new Quaternionf();
-        rotationAxis = new Vector3f();
+        rotationAxis = rotation.get(new AxisAngle4f());
         scale = new Vector3f(1.0f);
         modelMatrix = new Matrix4f();
         normalMatrix = new Matrix3f();
         children = new ArrayList<>(0);
-        modified = true;
+        identity();
     }
 
+    /**
+     * Sets this transform to the identity transform.
+     *
+     * @return this transform
+     */
     public Transform identity() {
         updateChildrenPosition(0, 0, 0);
         updateChildrenScale(1, 1, 1);
         updateChildrenRotation(0, 0, 0, 0);
         position.set(0.0f);
         rotation.identity();
-        rotationAxis.set(0.0f);
+        rotation.get(rotationAxis);
         scale.set(1.0f);
         modelMatrix.identity();
         normalMatrix.identity();
@@ -49,14 +62,32 @@ public final class Transform extends Component<Transform> {
         return this;
     }
 
+    /**
+     * Tells whether this transform is modified or not. A modified transform needs to update its matrices.
+     *
+     * @return true if this transform has been modified, false otherwise
+     */
     public boolean modified() {
         return modified;
     }
 
+    /**
+     * Returns the position
+     *
+     * @return the position
+     */
     public Vector3fc position() {
         return position;
     }
 
+    /**
+     * Sets the position of this transform
+     *
+     * @param x the x coordinate
+     * @param y the y coordinate
+     * @param z the z coordinate
+     * @return this transform
+     */
     public Transform position(float x, float y, float z) {
         updateChildrenPosition(x, y, z);
         position.set(x, y, z);
@@ -64,10 +95,24 @@ public final class Transform extends Component<Transform> {
         return this;
     }
 
+    /**
+     * Sets the position of this transform. The given vector is copied.
+     *
+     * @param position the position vector
+     * @return this transform
+     */
     public Transform position(Vector3fc position) {
         return position(position.x(), position.y(), position.z());
     }
 
+    /**
+     * Translates this transform.
+     *
+     * @param x the x coordinate
+     * @param y the y coordinate
+     * @param z the z coordinate
+     * @return this transform
+     */
     public Transform translate(float x, float y, float z) {
         updateChildrenPosition(position.x + x, position.y + y, position.z + z);
         position.add(x, y, z);
@@ -75,26 +120,33 @@ public final class Transform extends Component<Transform> {
         return this;
     }
 
+    /**
+     * Translates this transform. The given vector is copied.
+     *
+     * @param translation the translation vector
+     * @return this transform
+     */
     public Transform translate(Vector3fc translation) {
         return translate(translation.x(), translation.y(), translation.z());
     }
 
+    /**
+     * Returns the scale of this transform
+     *
+     * @return the scale
+     */
     public Vector3fc scale() {
         return scale;
     }
 
-    public float scaleX() {
-        return scale.x;
-    }
-
-    public float scaleY() {
-        return scale.y;
-    }
-
-    public float scaleZ() {
-        return scale.z;
-    }
-
+    /**
+     * Scales this transform.
+     *
+     * @param x the x scale
+     * @param y the y scale
+     * @param z the z scale
+     * @return this transform
+     */
     public Transform scale(float x, float y, float z) {
         updateChildrenScale(x, y, z);
         scale.set(x, y, z);
@@ -102,42 +154,107 @@ public final class Transform extends Component<Transform> {
         return this;
     }
 
+    /**
+     * Scales this transform. The given vector is copied.
+     *
+     * @param scale the scale
+     * @return this transform
+     */
     public Transform scale(Vector3fc scale) {
         return scale(scale.x(), scale.y(), scale.z());
     }
 
+    /**
+     * Scales this transform. All axis will be scale by the given value.
+     *
+     * @param xyz the xyz scale
+     * @return this transform
+     */
     public Transform scale(float xyz) {
         return scale(xyz, xyz, xyz);
     }
 
+    /**
+     * Returns the rotation of this transform.
+     *
+     * @return the rotation
+     */
     public Quaternionfc rotation() {
         return rotation;
     }
 
+    /**
+     * Returns the rotation angle of this transform.
+     *
+     * @return the rotation angle, in radians
+     */
     public float angle() {
         return rotation.angle();
     }
 
-    public Vector3fc rotationAxis() {
+    /**
+     * Returns the rotation axis of this transform.
+     *
+     * @return the rotation axis
+     */
+    public AxisAngle4f rotationAxis() {
         return rotationAxis;
     }
 
+    /**
+     * Rotates this transform by the given angle and by the given rotation axis. The rotation axis must be normalized.
+     *
+     * @param radians the rotation angle, in radians
+     * @param x       the x rotation axis coordinate
+     * @param y       the y rotation axis coordinate
+     * @param z       the z rotation axis coordinate
+     * @return this transform
+     */
     public Transform rotate(float radians, float x, float y, float z) {
         updateChildrenRotation(radians, x, y, z);
-        rotation.setAngleAxis(radians, x, y, z);
-        rotationAxis.set(rotation.x, rotation.y, rotation.z);
+        rotationAxis.set(radians, x, y, z);
+        rotation.set(rotationAxis);
         modify();
         return this;
     }
 
+    /**
+     * Rotates this transform by the given angle and by the given rotation axis. The rotation axis must be normalized.
+     *
+     * @param radians the rotation angle, in radians
+     * @param axis    the rotation axis
+     * @return this transform
+     */
     public Transform rotate(float radians, Vector3fc axis) {
         return rotate(radians, axis.x(), axis.y(), axis.z());
     }
 
+    /**
+     * Rotates this transform by the given angle and by the given rotation axis. The rotation axis must be normalized.
+     *
+     * @param rotationAxis  the rotation axis
+     * @return this transform
+     */
+    public Transform rotate(AxisAngle4f rotationAxis) {
+        return rotate(rotationAxis.angle, rotationAxis.x, rotationAxis.y, rotationAxis.z);
+    }
+
+    /**
+     * Rotates this transform by the given quaternion. The given quaternion is copied.
+     *
+     * @param rotation the quaternion representing the desired rotation
+     * @return this transform
+     */
     public Transform rotate(Quaternionfc rotation) {
         return rotate(rotation.angle(), rotation.x(), rotation.y(), rotation.z());
     }
 
+    /**
+     * Rotate this transform by the given angle in the x coordinate.
+     *
+     * @param radians the rotation angle, in radians
+     * @return this transform
+     */
     public Transform rotateX(float radians) {
         updateChildrenRotation(radians, 1, 0, 0);
         rotation.rotateX(radians);
@@ -145,6 +262,12 @@ public final class Transform extends Component<Transform> {
         return this;
     }
 
+    /**
+     * Rotate this transform by the given angle in the y coordinate.
+     *
+     * @param radians the rotation angle, in radians
+     * @return this transform
+     */
     public Transform rotateY(float radians) {
         updateChildrenRotation(radians, 0, 1, 0);
         rotation.rotateY(radians);
@@ -152,6 +275,12 @@ public final class Transform extends Component<Transform> {
         return this;
     }
 
+    /**
+     * Rotate this transform by the given angle in the z coordinate.
+     *
+     * @param radians the rotation angle, in radians
+     * @return this transform
+     */
     public Transform rotateZ(float radians) {
         updateChildrenRotation(radians, 0, 0, 1);
         rotation.rotateZ(radians);
@@ -159,14 +288,39 @@ public final class Transform extends Component<Transform> {
         return this;
     }
 
+    /**
+     * Returns the model matrix of this transform. If this transform is modified, then this matrix need to be updated.
+     *
+     * @return the model matrix.
+     */
     public Matrix4fc modelMatrix() {
         return modelMatrix;
     }
 
+    /**
+     * Returns the normal matrix of this transform. If this transform is modified, then this matrix need to be updated.
+     *
+     * @return the normal matrix.
+     */
     public Matrix3fc normalMatrix() {
         return normalMatrix;
     }
 
+    /**
+     * Returns the parent of this transform.
+     *
+     * @return the parent transform
+     * */
+    public Transform parent() {
+        return parent;
+    }
+
+    /**
+     * Adds a child transform to this transform.
+     *
+     * @param child the child transform
+     * @return true if the given child transform has been added, false otherwise.
+     */
     public boolean addChild(Transform child) {
 
         if(child == null) {
@@ -174,35 +328,59 @@ public final class Transform extends Component<Transform> {
             return false;
         }
 
-        if(!children.contains(child)) {
-            return children.add(child);
+        if(child.parent == this) {
+            return false;
         }
-        return false;
+
+        if(child.parent != null) {
+            Log.error("The given transform already has a parent");
+            return false;
+        }
+
+        if(child.scene() != scene()) {
+            Log.error("Cannot add a transform child from another scene");
+            return false;
+        }
+
+        return children.add(child);
     }
 
-    public void addChild(Transform child, int index) {
+    /**
+     * Tells whether the specified transform is child of this transform or not.
+     *
+     * @return true if the given transform is a child of this transform, false otherwise
+     * */
+    public boolean hasChild(Transform child) {
 
         if(child == null) {
-            Log.error("Cannot add a null child");
-            return;
+            return false;
         }
 
-        if(children.contains(child) && children.indexOf(child) != index) {
-            children.remove(index);
-        }
-        children.add(index, child);
+        return child.parent == this;
     }
 
-    public Transform child(int index) {
-        return children.get(index);
-    }
-
+    /**
+     * Removes the given child transform from this transform.
+     *
+     * @param child the child transform
+     * @return true if the child transform was removed, false otherwise
+     */
     public boolean removeChild(Transform child) {
+
+        if(!hasChild(child)) {
+            return false;
+        }
+
         return children.remove(child);
     }
 
-    public Transform removeChild(int index) {
-        return children.remove(index);
+    /**
+     * Returns a stream with all the children of this transform.
+     *
+     * @return this transform's children as stream
+     * */
+    public Stream<Transform> children() {
+        return children.stream();
     }
 
     private void modify() {
@@ -233,13 +411,23 @@ public final class Transform extends Component<Transform> {
 
     @Override
     protected void onDestroy() {
+
+        if(parent != null) {
+            removeChild(this);
+        }
+        parent = null;
+
+        for(Transform child : children) {
+            child.parent = null;
+        }
+        children = null;
+
         position = null;
         rotation = null;
         scale = null;
         modelMatrix = null;
         normalMatrix = null;
         rotationAxis = null;
-        children = null;
     }
 
     @Override
@@ -247,6 +435,9 @@ public final class Transform extends Component<Transform> {
         return Transform.class;
     }
 
+    /**
+     * Updates this transform's matrices
+     */
     void update() {
         modelMatrix.translation(position).rotate(rotation).scale(scale);
         // normalMatrix = transpose(inverse(mat3(model)))
@@ -264,7 +455,9 @@ public final class Transform extends Component<Transform> {
         final float deltaZ = newZ - position.z;
 
         for(Transform child : children) {
-            child.translate(deltaX, deltaY, deltaZ);
+            if(child.enabled()) {
+                child.translate(deltaX, deltaY, deltaZ);
+            }
         }
     }
 
@@ -278,8 +471,10 @@ public final class Transform extends Component<Transform> {
         final float deltaZ = newZ - scale.z;
 
         for(Transform child : children) {
-            final Vector3fc s = child.scale;
-            child.scale(s.x() + deltaX, s.y() + deltaY, s.z() + deltaZ);
+            if(child.enabled()) {
+                final Vector3fc s = child.scale;
+                child.scale(s.x() + deltaX, s.y() + deltaY, s.z() + deltaZ);
+            }
         }
     }
 
@@ -294,7 +489,9 @@ public final class Transform extends Component<Transform> {
         final float deltaZ = newZ - rotationAxis.z;
 
         for(Transform child : children) {
-            child.rotate(child.angle() + deltaRads, deltaX, deltaY, deltaZ);
+            if(child.enabled()) {
+                child.rotate(child.angle() + deltaRads, deltaX, deltaY, deltaZ);
+            }
         }
     }
 }
