@@ -6,6 +6,8 @@ import naitsirc98.beryl.core.BerylSystem;
 import naitsirc98.beryl.util.ANSIColor;
 import naitsirc98.beryl.util.Singleton;
 
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -207,7 +209,7 @@ public final class Log extends BerylSystem {
     private Log() {
         levelMask = Beryl.DEBUG ? EnumSet.allOf(Level.class) : EnumSet.of(Level.WARNING, Level.ERROR, Level.FATAL);
         levelColors = new EnumMap<>(Level.class);
-        channels = new ArrayList<>(1);
+        channels = new ArrayList<>(2);
         messageQueue = new LinkedBlockingDeque<>();
         running = new AtomicBoolean(false);
         executor = newSingleThreadExecutor();
@@ -306,7 +308,9 @@ public final class Log extends BerylSystem {
     }
 
     private void setChannels() {
-        channels.addAll(BerylConfiguration.LOG_CHANNELS.get(Collections.singleton(LogChannel.stdout())));
+        channels.addAll(BerylConfiguration.LOG_CHANNELS.get(Arrays.asList(
+                LogChannel.stdout(),
+                new LogFileChannel(Paths.get("beryl.log"), Level.FATAL, StandardOpenOption.CREATE))));
     }
 
     private void setLevelColors() {

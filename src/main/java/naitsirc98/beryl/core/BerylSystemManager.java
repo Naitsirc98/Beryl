@@ -7,11 +7,8 @@ import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.scenes.SceneManager;
 import naitsirc98.beryl.tasks.TaskManager;
 
-import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 import static java.util.Arrays.stream;
 import static naitsirc98.beryl.util.TypeUtils.initSingleton;
@@ -42,9 +39,29 @@ public class BerylSystemManager {
         };
     }
 
-    public void init() {
+    public void init() throws Throwable {
         // Initialize systems in order
-        stream(systems).forEach(BerylSystem::init);
+        Throwable error = null;
+        for(int i = 0;i < systems.length;i++) {
+            error = initialize(systems[i]);
+        }
+        if(error != null) {
+            throw error;
+        }
+    }
+
+    private Throwable initialize(BerylSystem system) {
+        try {
+            if(system != null) {
+                system.init();
+                system.initialized = true;
+            }
+        } catch(Throwable e) {
+            Logger.getLogger(BerylSystemManager.class.getSimpleName())
+                    .log(Level.SEVERE, "Failed to initialize system " + system, e);
+            return e;
+        }
+        return null;
     }
 
     public void terminate() {
@@ -56,7 +73,9 @@ public class BerylSystemManager {
 
     private void terminate(BerylSystem system) {
         try {
-            system.terminate();
+            if(system != null && system.initialized) {
+                system.terminate();
+            }
         } catch(Throwable e) {
             Logger.getLogger(BerylSystemManager.class.getSimpleName())
                     .log(Level.SEVERE, "Failed to terminate system " + system, e);

@@ -66,7 +66,9 @@ public final class Graphics extends BerylSystem {
 
     @Override
     protected void terminate() {
-        graphicsContext.free();
+        if(graphicsContext != null) {
+            graphicsContext.free();
+        }
         delete(window);
     }
 

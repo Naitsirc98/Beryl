@@ -74,7 +74,7 @@ public final class Beryl {
         systems = new BerylSystemManager();
     }
 
-    private void init() {
+    private void init() throws Throwable {
 
         setLWJGLConfiguration();
 

@@ -21,7 +21,7 @@ public class LogFileChannel implements LogChannel {
 
     private final BufferedWriter bufferedWriter;
     private final EnumSet<Log.Level> acceptedLevels;
-    private boolean colored = true;
+    private boolean colored;
 
 
     public LogFileChannel(Path path, OpenOption... openOptions) {
@@ -29,7 +29,7 @@ public class LogFileChannel implements LogChannel {
     }
 
     public LogFileChannel(Path path, Log.Level minLevel, OpenOption... openOptions) {
-        this(path, EnumSet.range(requireNonNull(minLevel), Log.Level.ERROR), openOptions);
+        this(path, EnumSet.range(requireNonNull(minLevel), Log.Level.FATAL), openOptions);
     }
 
     public LogFileChannel(Path path, EnumSet<Log.Level> acceptedLevels, OpenOption... openOptions) {

@@ -10,7 +10,6 @@ import naitsirc98.beryl.util.Rectc;
 import naitsirc98.beryl.util.Sizec;
 import org.joml.*;
 
-import static java.util.Objects.requireNonNull;
 import static naitsirc98.beryl.scenes.components.camera.ProjectionType.PERSPECTIVE;
 import static naitsirc98.beryl.util.Asserts.assertNonNull;
 import static naitsirc98.beryl.util.Maths.*;
@@ -90,7 +89,10 @@ public final class Camera extends Component<Camera> {
 		farPlane = DEFAULT_FAR_PLANE;
 		sensitivity = DEFAULT_SENSITIVITY;
 		exposure = DEFAULT_EXPOSURE;
+
 		// TODO: renderingPath
+		renderingPath = () -> { };
+
 		viewMatrix = new Matrix4f();
 		projectionMatrix = new Matrix4f();
 		projectionViewMatrix = new Matrix4f();

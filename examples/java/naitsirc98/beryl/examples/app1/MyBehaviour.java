@@ -5,6 +5,7 @@ import naitsirc98.beryl.input.MouseButton;
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.scenes.Entity;
 import naitsirc98.beryl.scenes.components.behaviours.Behaviour;
+import naitsirc98.beryl.scenes.components.camera.Camera;
 import naitsirc98.beryl.scenes.components.math.Transform;
 
 import java.util.Random;
@@ -23,7 +24,11 @@ class MyBehaviour extends Behaviour {
     protected void onUpdate() {
 
         if(RAND.nextInt() % 20 == 0) {
-            requires(Transform.class).translate(RAND.nextFloat(), 0, 0);
+            get(Transform.class).translate(RAND.nextFloat(), 0, 0);
+        }
+
+        if(RAND.nextInt() % 50 == 0) {
+            get(Camera.class).lookAt(RAND.nextFloat(), RAND.nextFloat());
         }
 
         if(sceneModificationEnabled) {

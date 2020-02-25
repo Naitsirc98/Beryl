@@ -48,7 +48,12 @@ public class BerylApplication {
     }
 
     protected void onError(Throwable error) {
-        Log.error(error.getMessage(), error);
+        Log.error("An unexpected error has crashed the Application" + errorMessage(error), error);
+    }
+
+    private String errorMessage(Throwable error) {
+        String message = error.getMessage();
+        return message == null ? "" : message;
     }
 
     protected void onTerminate() {
