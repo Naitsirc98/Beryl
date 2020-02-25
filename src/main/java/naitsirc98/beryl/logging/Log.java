@@ -227,6 +227,7 @@ public final class Log extends BerylSystem {
     protected void terminate() {
         running.set(false);
         executor.shutdown();
+        Log.info("Terminating logging system...");
         try {
             executor.awaitTermination(MSG_QUEUE_TERMINATION_WAIT_TIME, SECONDS);
         } catch (InterruptedException e) {

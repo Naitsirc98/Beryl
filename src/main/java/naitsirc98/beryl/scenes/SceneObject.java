@@ -1,18 +1,25 @@
 package naitsirc98.beryl.scenes;
 
+import naitsirc98.beryl.logging.Log;
+
+import static naitsirc98.beryl.util.Asserts.ASSERTS_ENABLED;
+
 /**
  * The base class for all the objects that live in a scene
  */
 public abstract class SceneObject {
 
-    private boolean destroyed;
+    private static final byte MARK_DESTROYED = 1;
+    private static final byte DELETED = 2;
+
+    private byte destroyState;
 
     /**
      * Initializes this SceneObject
      *
      * */
     void init() {
-        destroyed = false;
+        destroyState = 0;
     }
 
     /**
@@ -44,20 +51,42 @@ public abstract class SceneObject {
     public abstract SceneObject disable();
 
     /**
-     * Tells whether this object is destroyed, or not. It does not necessarily mean that it is completely removed from the scene,
-     * but that this object is going to be destroyed soon.
+     * Tells whether this object is destroyed, or not. It means that it will be deleted and removed from the scene in the next
+     * task processing pass.
      *
-     * @return true if this object is destroyed (or is going to be destroyed), false otherwise
+     * @return true if this object is marked as destroyed, false otherwise
      */
     public boolean destroyed() {
-        return destroyed;
+        return destroyState == MARK_DESTROYED;
+    }
+
+    /***
+     * Tells whether this object has been totally destroyed or not. An object is deleted if it is removed from
+     * the scene and {@link SceneObject#onDestroy()} has been called.
+     *
+     * A deleted scene object is considered to be a {@code null} reference, so it is not usable anymore.
+     *
+     * @return true if this object is completely destroyed, false otherwise
+     */
+    public boolean deleted() {
+        return destroyState == DELETED;
+    }
+
+    /**
+     * Deletes this object. This will call the {@link SceneObject#onDestroy()} method.
+     *
+     *
+     * */
+    void delete() {
+        destroyState = DELETED;
+        onDestroy();
     }
 
     /**
      * Marks this object as destroyed. It will be destroyed as soon as possible.
      */
     final void markDestroyed() {
-        destroyed = true;
+        destroyState = MARK_DESTROYED;
     }
 
     /**
@@ -81,6 +110,15 @@ public abstract class SceneObject {
      * @param task the task to be executed
      */
     protected final void doLater(Runnable task) {
+        assertNotDeleted();
         scene().submit(task);
+    }
+
+    protected final void assertNotDeleted() {
+        if(ASSERTS_ENABLED) {
+            if(deleted()) {
+                Log.fatal("SceneObject " + toString() + " is deleted");
+            }
+        }
     }
 }

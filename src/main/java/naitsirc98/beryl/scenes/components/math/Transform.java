@@ -49,6 +49,8 @@ public final class Transform extends Component<Transform> {
      * @return this transform
      */
     public Transform identity() {
+        assertNotDeleted();
+
         updateChildrenPosition(0, 0, 0);
         updateChildrenScale(1, 1, 1);
         updateChildrenRotation(0, 0, 0, 0);
@@ -68,6 +70,7 @@ public final class Transform extends Component<Transform> {
      * @return true if this transform has been modified, false otherwise
      */
     public boolean modified() {
+        assertNotDeleted();
         return modified;
     }
 
@@ -77,6 +80,7 @@ public final class Transform extends Component<Transform> {
      * @return the position
      */
     public Vector3fc position() {
+        assertNotDeleted();
         return position;
     }
 
@@ -89,6 +93,7 @@ public final class Transform extends Component<Transform> {
      * @return this transform
      */
     public Transform position(float x, float y, float z) {
+        assertNotDeleted();
         updateChildrenPosition(x, y, z);
         position.set(x, y, z);
         modify();
@@ -102,6 +107,7 @@ public final class Transform extends Component<Transform> {
      * @return this transform
      */
     public Transform position(Vector3fc position) {
+        assertNotDeleted();
         return position(position.x(), position.y(), position.z());
     }
 
@@ -114,6 +120,7 @@ public final class Transform extends Component<Transform> {
      * @return this transform
      */
     public Transform translate(float x, float y, float z) {
+        assertNotDeleted();
         updateChildrenPosition(position.x + x, position.y + y, position.z + z);
         position.add(x, y, z);
         modify();
@@ -127,6 +134,7 @@ public final class Transform extends Component<Transform> {
      * @return this transform
      */
     public Transform translate(Vector3fc translation) {
+        assertNotDeleted();
         return translate(translation.x(), translation.y(), translation.z());
     }
 
@@ -136,6 +144,7 @@ public final class Transform extends Component<Transform> {
      * @return the scale
      */
     public Vector3fc scale() {
+        assertNotDeleted();
         return scale;
     }
 
@@ -148,6 +157,7 @@ public final class Transform extends Component<Transform> {
      * @return this transform
      */
     public Transform scale(float x, float y, float z) {
+        assertNotDeleted();
         updateChildrenScale(x, y, z);
         scale.set(x, y, z);
         modify();
@@ -161,6 +171,7 @@ public final class Transform extends Component<Transform> {
      * @return this transform
      */
     public Transform scale(Vector3fc scale) {
+        assertNotDeleted();
         return scale(scale.x(), scale.y(), scale.z());
     }
 
@@ -171,6 +182,7 @@ public final class Transform extends Component<Transform> {
      * @return this transform
      */
     public Transform scale(float xyz) {
+        assertNotDeleted();
         return scale(xyz, xyz, xyz);
     }
 
@@ -180,6 +192,7 @@ public final class Transform extends Component<Transform> {
      * @return the rotation
      */
     public Quaternionfc rotation() {
+        assertNotDeleted();
         return rotation;
     }
 
@@ -189,6 +202,7 @@ public final class Transform extends Component<Transform> {
      * @return the rotation angle, in radians
      */
     public float angle() {
+        assertNotDeleted();
         return rotation.angle();
     }
 
@@ -198,6 +212,7 @@ public final class Transform extends Component<Transform> {
      * @return the rotation axis
      */
     public AxisAngle4f rotationAxis() {
+        assertNotDeleted();
         return rotationAxis;
     }
 
@@ -211,6 +226,7 @@ public final class Transform extends Component<Transform> {
      * @return this transform
      */
     public Transform rotate(float radians, float x, float y, float z) {
+        assertNotDeleted();
         updateChildrenRotation(radians, x, y, z);
         rotationAxis.set(radians, x, y, z);
         rotation.set(rotationAxis);
@@ -226,6 +242,7 @@ public final class Transform extends Component<Transform> {
      * @return this transform
      */
     public Transform rotate(float radians, Vector3fc axis) {
+        assertNotDeleted();
         return rotate(radians, axis.x(), axis.y(), axis.z());
     }
 
@@ -236,6 +253,7 @@ public final class Transform extends Component<Transform> {
      * @return this transform
      */
     public Transform rotate(AxisAngle4f rotationAxis) {
+        assertNotDeleted();
         return rotate(rotationAxis.angle, rotationAxis.x, rotationAxis.y, rotationAxis.z);
     }
 
@@ -246,6 +264,7 @@ public final class Transform extends Component<Transform> {
      * @return this transform
      */
     public Transform rotate(Quaternionfc rotation) {
+        assertNotDeleted();
         return rotate(rotation.angle(), rotation.x(), rotation.y(), rotation.z());
     }
 
@@ -256,6 +275,7 @@ public final class Transform extends Component<Transform> {
      * @return this transform
      */
     public Transform rotateX(float radians) {
+        assertNotDeleted();
         updateChildrenRotation(radians, 1, 0, 0);
         rotation.rotateX(radians);
         modify();
@@ -269,6 +289,7 @@ public final class Transform extends Component<Transform> {
      * @return this transform
      */
     public Transform rotateY(float radians) {
+        assertNotDeleted();
         updateChildrenRotation(radians, 0, 1, 0);
         rotation.rotateY(radians);
         modify();
@@ -282,6 +303,7 @@ public final class Transform extends Component<Transform> {
      * @return this transform
      */
     public Transform rotateZ(float radians) {
+        assertNotDeleted();
         updateChildrenRotation(radians, 0, 0, 1);
         rotation.rotateZ(radians);
         modify();
@@ -294,6 +316,7 @@ public final class Transform extends Component<Transform> {
      * @return the model matrix.
      */
     public Matrix4fc modelMatrix() {
+        assertNotDeleted();
         return modelMatrix;
     }
 
@@ -303,6 +326,7 @@ public final class Transform extends Component<Transform> {
      * @return the normal matrix.
      */
     public Matrix3fc normalMatrix() {
+        assertNotDeleted();
         return normalMatrix;
     }
 
@@ -312,6 +336,7 @@ public final class Transform extends Component<Transform> {
      * @return the parent transform
      * */
     public Transform parent() {
+        assertNotDeleted();
         return parent;
     }
 
@@ -322,6 +347,7 @@ public final class Transform extends Component<Transform> {
      * @return true if the given child transform has been added, false otherwise.
      */
     public boolean addChild(Transform child) {
+        assertNotDeleted();
 
         if(child == null) {
             Log.error("Cannot add a null child");
@@ -329,6 +355,7 @@ public final class Transform extends Component<Transform> {
         }
 
         if(child.parent == this) {
+            Log.trace("The given transform is already a child of this transform");
             return false;
         }
 
@@ -342,6 +369,8 @@ public final class Transform extends Component<Transform> {
             return false;
         }
 
+        child.parent = this;
+
         return children.add(child);
     }
 
@@ -351,6 +380,7 @@ public final class Transform extends Component<Transform> {
      * @return true if the given transform is a child of this transform, false otherwise
      * */
     public boolean hasChild(Transform child) {
+        assertNotDeleted();
 
         if(child == null) {
             return false;
@@ -366,6 +396,7 @@ public final class Transform extends Component<Transform> {
      * @return true if the child transform was removed, false otherwise
      */
     public boolean removeChild(Transform child) {
+        assertNotDeleted();
 
         if(!hasChild(child)) {
             return false;
@@ -380,10 +411,12 @@ public final class Transform extends Component<Transform> {
      * @return this transform's children as stream
      * */
     public Stream<Transform> children() {
+        assertNotDeleted();
         return children.stream();
     }
 
     private void modify() {
+        assertNotDeleted();
         if(!modified()) {
             modified = true;
         }
@@ -413,7 +446,7 @@ public final class Transform extends Component<Transform> {
     protected void onDestroy() {
 
         if(parent != null) {
-            removeChild(this);
+            parent.removeChild(this);
         }
         parent = null;
 

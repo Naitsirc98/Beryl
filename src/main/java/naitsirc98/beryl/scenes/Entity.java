@@ -98,6 +98,7 @@ public final class Entity extends SceneObject implements Iterable<Component> {
      * @return the added component, or the previous component of the given class if it was already added.
      */
     public synchronized <T extends Component> T add(Class<T> componentClass) {
+        assertNotDeleted();
         assertNonNull(componentClass);
 
         if(has(componentClass)) {
@@ -122,6 +123,7 @@ public final class Entity extends SceneObject implements Iterable<Component> {
      * @return the component
      */
     public <T extends Component> T get(Class<T> componentClass) {
+        assertNotDeleted();
         assertNonNull(componentClass);
 
         if(has(componentClass)) {
@@ -132,6 +134,7 @@ public final class Entity extends SceneObject implements Iterable<Component> {
     }
 
     private <T extends Component> T getComponent(Class<T> componentClass) {
+        assertNotDeleted();
         return componentClass.cast(components.get(componentClass));
     }
 
@@ -143,6 +146,7 @@ public final class Entity extends SceneObject implements Iterable<Component> {
      * @throws NoSuchElementException if there is no component of the specified class in this entity
      */
     public <T extends Component> T requires(Class<T> componentClass) {
+        assertNotDeleted();
         assertNonNull(componentClass);
 
         if(has(componentClass)) {
@@ -158,6 +162,7 @@ public final class Entity extends SceneObject implements Iterable<Component> {
      * @param componentClass the component class
      */
     public void destroy(Class<? extends Component> componentClass) {
+        assertNotDeleted();
         destroy(get(componentClass));
     }
 
@@ -167,6 +172,7 @@ public final class Entity extends SceneObject implements Iterable<Component> {
      * @param component the component
      */
     public void destroy(Component component) {
+        assertNotDeleted();
 
         if(component == null || component.destroyed() || component.entity() != this) {
             return;
@@ -183,6 +189,7 @@ public final class Entity extends SceneObject implements Iterable<Component> {
      * @param component the component
      */
     public void destroyNow(Component component) {
+        assertNotDeleted();
 
         if(component == null || component.destroyed() || component.entity() != this) {
             return;
@@ -199,6 +206,7 @@ public final class Entity extends SceneObject implements Iterable<Component> {
      * @return true if it contains a component of the specified class, false otherwise
      */
     public boolean has(Class<? extends Component> componentClass) {
+        assertNotDeleted();
         return components.containsKey(componentClass);
     }
 
@@ -209,6 +217,7 @@ public final class Entity extends SceneObject implements Iterable<Component> {
      * @return true if it contains the component, false otherwise
      */
     public boolean has(Component component) {
+        assertNotDeleted();
         return components.containsValue(component);
     }
 
@@ -218,6 +227,7 @@ public final class Entity extends SceneObject implements Iterable<Component> {
      * @return the component count
      */
     public int componentCount() {
+        assertNotDeleted();
         return components.size();
     }
 
@@ -227,6 +237,7 @@ public final class Entity extends SceneObject implements Iterable<Component> {
      * @return all the components of this entity
      */
     public Stream<Component> components() {
+        assertNotDeleted();
         return components.values().stream();
     }
 
@@ -237,6 +248,7 @@ public final class Entity extends SceneObject implements Iterable<Component> {
      * @return the entities of the given type in this entity
      */
     public Stream<Component> components(Class<? extends Component> type) {
+        assertNotDeleted();
         return this.components.values().stream().filter(c -> c.type().equals(type));
     }
 
@@ -270,6 +282,7 @@ public final class Entity extends SceneObject implements Iterable<Component> {
 
     @Override
     public Entity enable() {
+        assertNotDeleted();
         if(!enabled) {
             enabled = true;
             components.values().forEach(Component::enable);
@@ -279,6 +292,7 @@ public final class Entity extends SceneObject implements Iterable<Component> {
 
     @Override
     public Entity disable() {
+        assertNotDeleted();
         if(enabled) {
             enabled = false;
             components.values().forEach(Component::disable);
@@ -288,16 +302,19 @@ public final class Entity extends SceneObject implements Iterable<Component> {
 
     @Override
     public void destroy() {
+        assertNotDeleted();
         scene.destroy(this);
     }
 
     @Override
     public void destroyNow() {
+        assertNotDeleted();
         scene.destroyNow(this);
     }
 
     @Override
     public Iterator<Component> iterator() {
+        assertNotDeleted();
         return components.values().iterator();
     }
 

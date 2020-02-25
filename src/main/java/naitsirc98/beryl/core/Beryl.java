@@ -55,7 +55,6 @@ public final class Beryl {
             beryl.init();
             beryl.run();
         } catch (Throwable error) {
-            Log.error(error.getMessage(), error);
             beryl.error(error);
         } finally {
             beryl.terminate();

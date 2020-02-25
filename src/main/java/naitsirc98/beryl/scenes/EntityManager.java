@@ -91,11 +91,11 @@ public final class EntityManager implements Iterable<Entity> {
     }
 
     /**
-     * Destroys the given entity
+     * Removes the given entity
      *
      * @param entity the entity
      */
-    public void destroy(Entity entity) {
+    public void remove(Entity entity) {
 
         if(!entity.name().equals(UNNAMED)) {
             nameTable.remove(entity.name());
@@ -107,8 +107,6 @@ public final class EntityManager implements Iterable<Entity> {
 
         entities.set(entity.index(), null);
         freeIndices.add(entity.index());
-
-        entity.onDestroy();
     }
 
     /**
@@ -183,7 +181,7 @@ public final class EntityManager implements Iterable<Entity> {
     /**
      * Destroy all entities
      */
-    void destroy() {
+    void remove() {
 
         entities().forEach(Entity::onDestroy);
 

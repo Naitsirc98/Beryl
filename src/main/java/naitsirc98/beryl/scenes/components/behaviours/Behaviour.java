@@ -21,6 +21,7 @@ public class Behaviour extends Component<Behaviour> {
      * @return true if {@link Behaviour#onStart()} has been called, false otherwise
      */
     public boolean started() {
+        assertNotDeleted();
         return started;
     }
 

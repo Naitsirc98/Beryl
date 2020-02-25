@@ -11,9 +11,7 @@ import naitsirc98.beryl.scenes.Scene;
 import naitsirc98.beryl.scenes.SceneManager;
 import naitsirc98.beryl.scenes.components.behaviours.Behaviour;
 import naitsirc98.beryl.scenes.components.math.Transform;
-import org.lwjgl.system.CustomBuffer;
 
-import java.nio.*;
 import java.util.Random;
 
 import static naitsirc98.beryl.input.Key.KEY_W;
@@ -59,10 +57,16 @@ public class Main extends BerylApplication {
 
         int count = RAND.nextInt(5000) + 10000;
 
+        Entity lastOne = null;
+
         for(int i = 0;i < count;i++) {
             Entity entity = scene.newEntity(String.valueOf(i));
             entity.add(Transform.class).position(i, i*2, i*3);
+            if(lastOne != null && i%2 == 0) {
+                entity.get(Transform.class).addChild(lastOne.get(Transform.class));
+            }
             entity.add(MyBehaviour.class).setCount(count);
+            lastOne = entity;
         }
 
         SceneManager.addScene(scene);
