@@ -3,22 +3,26 @@ package naitsirc98.beryl.graphics.opengl.shaders;
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.util.Destructor;
 import naitsirc98.beryl.util.IntHandle;
+import org.joml.Matrix4fc;
+import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.NativeResource;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 import static org.lwjgl.opengl.GL20.*;
+import static org.lwjgl.system.MemoryStack.stackPush;
 
 @Destructor
 public final class GLShaderProgram implements IntHandle, NativeResource {
 
     private final int handle;
     private Set<GLShader> shaders;
+    private Map<String, Integer> uniformLocations;
 
     public GLShaderProgram() {
         handle = glCreateProgram();
         shaders = new HashSet<>();
+        uniformLocations = new WeakHashMap<>();
     }
 
     @Override
@@ -71,9 +75,21 @@ public final class GLShaderProgram implements IntHandle, NativeResource {
         return builder.toString();
     }
 
+    public int uniformLocation(String name) {
+        return uniformLocations.computeIfAbsent(name, k -> glGetUniformLocation(handle, name));
+    }
+
+    public GLShaderProgram uniformMatrix4f(String name, boolean transpose, Matrix4fc value) {
+        try(MemoryStack stack = stackPush()) {
+            glUniformMatrix4fv(uniformLocation(name), transpose, value.get(stack.mallocFloat(16)));
+        }
+        return this;
+    }
+
     @Override
     public void free() {
         glDeleteProgram(handle);
         shaders = null;
+        uniformLocations = null;
     }
 }

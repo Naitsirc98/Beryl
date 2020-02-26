@@ -21,7 +21,7 @@ public final class GLSimpleRenderingPath extends RenderingPath {
     private static final Path VERTEX_SHADER_PATH;
     private static final Path FRAGMENT_SHADER_PATH;
 
-    private static final String UNIFORM_NAME_MODEL_VIEW_PROJECTION = null;
+    private static final String UNIFORM_NAME_MODEL_VIEW_PROJECTION = "u_ProjectionViewModel";
 
     static {
 
