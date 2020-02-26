@@ -67,6 +67,21 @@ public final class GrowableBuffer implements NativeResource {
         return data.position();
     }
 
+    public GrowableBuffer rewind() {
+        data.rewind();
+        return this;
+    }
+
+    public GrowableBuffer reset() {
+        data.reset();
+        return this;
+    }
+
+    public GrowableBuffer clear() {
+        data.position(0);
+        return this;
+    }
+
     public GrowableBuffer fill(int value) {
         memSet(data, value);
         return this;
