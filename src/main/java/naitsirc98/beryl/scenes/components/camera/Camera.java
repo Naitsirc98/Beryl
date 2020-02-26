@@ -1,5 +1,6 @@
 package naitsirc98.beryl.scenes.components.camera;
 
+import naitsirc98.beryl.graphics.opengl.rendering.GLSimpleRenderingPath;
 import naitsirc98.beryl.graphics.rendering.RenderingPath;
 import naitsirc98.beryl.graphics.window.Window;
 import naitsirc98.beryl.logging.Log;
@@ -91,7 +92,7 @@ public final class Camera extends Component<Camera> {
 		exposure = DEFAULT_EXPOSURE;
 
 		// TODO: renderingPath
-		renderingPath = () -> { };
+		renderingPath = new GLSimpleRenderingPath();
 
 		viewMatrix = new Matrix4f();
 		projectionMatrix = new Matrix4f();

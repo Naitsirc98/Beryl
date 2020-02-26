@@ -77,7 +77,7 @@ public final class Scene {
         // TODO
         Camera camera = camera();
         if(camera != null) {
-            camera().renderingPath().render();
+            camera().renderingPath().render(camera);
         }
     }
 
