@@ -67,6 +67,16 @@ public final class Asserts {
         return clazz.cast(object);
     }
 
+    public static <T> T assertThat(T object, boolean condition) {
+        if(ASSERTS_ENABLED) {
+            if(!condition) {
+                throw new AssertionException();
+            }
+            return object;
+        }
+        return object;
+    }
+
     private Asserts() {}
 
     public static class AssertionException extends IllegalStateException {

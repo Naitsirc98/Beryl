@@ -8,6 +8,7 @@
       <w>subpasses</w>
       <w>swapchain</w>
       <w>tesselation</w>
+      <w>texcoords</w>
       <w>vulkan</w>
     </words>
   </dictionary>
