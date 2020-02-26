@@ -259,6 +259,11 @@ public final class GrowableBuffer implements NativeResource {
         return data == null;
     }
 
+    // Make this GrowableBuffer to not free the internal buffer. This is useful if you want to 'unwrap' the internal buffer.
+    public void release() {
+        data = null;
+    }
+
     @Override
     public void free() {
         memFree(data);
