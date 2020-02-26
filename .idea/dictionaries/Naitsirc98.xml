@@ -1,7 +1,9 @@
 <component name="ProjectDictionaryState">
   <dictionary name="Naitsirc98">
     <words>
+      <w>calloc</w>
       <w>framebuffers</w>
+      <w>growable</w>
       <w>msaa</w>
       <w>opengl</w>
       <w>subpass</w>
