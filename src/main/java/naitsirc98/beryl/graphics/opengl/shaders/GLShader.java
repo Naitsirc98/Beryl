@@ -4,8 +4,6 @@ import naitsirc98.beryl.graphics.ShaderStage;
 import naitsirc98.beryl.graphics.opengl.GLObject;
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.util.Destructor;
-import naitsirc98.beryl.util.IntHandle;
-import org.lwjgl.system.NativeResource;
 
 import java.io.IOException;
 import java.nio.file.Files;

@@ -8,7 +8,7 @@ import static org.lwjgl.opengl.GL15.glDeleteBuffers;
 import static org.lwjgl.opengl.GL45.glCreateBuffers;
 import static org.lwjgl.opengl.GL45.glNamedBufferData;
 
-public abstract class GLBuffer implements GLObject {
+public class GLBuffer implements GLObject {
 
     private final int handle;
 

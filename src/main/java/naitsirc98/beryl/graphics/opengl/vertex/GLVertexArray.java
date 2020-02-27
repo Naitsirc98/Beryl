@@ -4,10 +4,6 @@ import naitsirc98.beryl.graphics.opengl.GLObject;
 import naitsirc98.beryl.meshes.vertices.VertexAttribute;
 import naitsirc98.beryl.meshes.vertices.VertexAttributeList;
 import naitsirc98.beryl.meshes.vertices.VertexAttributeList.VertexAttributeListIterator;
-import naitsirc98.beryl.meshes.vertices.VertexLayout;
-import naitsirc98.beryl.util.DataType;
-
-import java.util.Iterator;
 
 import static naitsirc98.beryl.graphics.opengl.GLUtils.toGL;
 import static org.lwjgl.opengl.GL30.glDeleteVertexArrays;
@@ -40,6 +36,10 @@ public final class GLVertexArray implements GLObject {
         while(it.hasNext()) {
             setVertexAttribute(binding, it.next(), it.location(), it.offset(), attributes.stride());
         }
+    }
+
+    public void bind() {
+        glBindVertexArray(handle);
     }
 
     private void setVertexAttribute(int binding, VertexAttribute attribute, int location, int offset, int stride) {

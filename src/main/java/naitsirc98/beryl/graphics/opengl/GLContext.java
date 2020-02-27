@@ -3,10 +3,13 @@ package naitsirc98.beryl.graphics.opengl;
 import naitsirc98.beryl.core.Beryl;
 import naitsirc98.beryl.core.BerylConfiguration;
 import naitsirc98.beryl.graphics.GraphicsContext;
+import naitsirc98.beryl.graphics.opengl.vertex.GLVertexData;
+import naitsirc98.beryl.graphics.opengl.vertex.GLVertexDataBuilder;
 import naitsirc98.beryl.graphics.rendering.Renderer;
 import naitsirc98.beryl.graphics.opengl.rendering.GLRenderer;
 import naitsirc98.beryl.graphics.rendering.RenderingPath;
 import naitsirc98.beryl.graphics.window.Window;
+import naitsirc98.beryl.meshes.vertices.VertexData;
 import naitsirc98.beryl.util.LongHandle;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GLCapabilities;
@@ -46,6 +49,11 @@ public class GLContext implements GraphicsContext, LongHandle {
 
     @Override
     public Map<Integer, RenderingPath> renderingPaths() {
+        return null;
+    }
+
+    @Override
+    public GLVertexDataBuilder newVertexDataBuilder() {
         return null;
     }
 
