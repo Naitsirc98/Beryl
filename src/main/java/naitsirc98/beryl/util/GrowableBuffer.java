@@ -272,43 +272,43 @@ public final class GrowableBuffer implements NativeResource {
     }
 
     private void checkCapacityByte() {
-        if(size() >= capacity()) {
+        if(size() > capacity()) {
             reallocToFit(INT8.sizeof());
         }
     }
 
     private void checkCapacityChar() {
-        if(size() + INT16.sizeof() >= capacity()) {
+        if(size() + INT16.sizeof() > capacity()) {
             reallocToFit(INT16.sizeof());
         }
     }
 
     private void checkCapacityShort() {
-        if(size() + INT16.sizeof() >= capacity()) {
+        if(size() + INT16.sizeof() > capacity()) {
             reallocToFit(INT16.sizeof());
         }
     }
 
     private void checkCapacityInt() {
-        if(size() + INT32.sizeof() >= capacity()) {
+        if(size() + INT32.sizeof() > capacity()) {
             reallocToFit(INT32.sizeof());
         }
     }
 
     private void checkCapacityLong() {
-        if(size() + INT64.sizeof() >= capacity()) {
+        if(size() + INT64.sizeof() > capacity()) {
             reallocToFit(INT64.sizeof());
         }
     }
 
     private void checkCapacityFloat() {
-        if(size() + FLOAT32.sizeof() >= capacity()) {
+        if(size() + FLOAT32.sizeof() > capacity()) {
             reallocToFit(FLOAT32.sizeof());
         }
     }
 
     private void checkCapacityDouble() {
-        if(size() + DOUBLE.sizeof() >= capacity()) {
+        if(size() + DOUBLE.sizeof() > capacity()) {
             reallocToFit(DOUBLE.sizeof());
         }
     }

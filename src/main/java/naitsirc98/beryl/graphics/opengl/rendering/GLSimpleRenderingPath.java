@@ -4,20 +4,13 @@ import naitsirc98.beryl.graphics.opengl.shaders.GLShader;
 import naitsirc98.beryl.graphics.opengl.shaders.GLShaderProgram;
 import naitsirc98.beryl.graphics.rendering.RenderingPath;
 import naitsirc98.beryl.logging.Log;
+import naitsirc98.beryl.resources.Resources;
 import naitsirc98.beryl.scenes.components.camera.Camera;
 
-import java.io.File;
-import java.net.URI;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.stream.Stream;
 
-import static java.lang.ClassLoader.getSystemClassLoader;
 import static naitsirc98.beryl.graphics.ShaderStage.FRAGMENT_STAGE;
 import static naitsirc98.beryl.graphics.ShaderStage.VERTEX_STAGE;
-import static org.lwjgl.opengl.GL45.GL_TRIANGLES;
-import static org.lwjgl.opengl.GL45.glDrawArrays;
 
 public final class GLSimpleRenderingPath extends RenderingPath {
 
@@ -31,13 +24,9 @@ public final class GLSimpleRenderingPath extends RenderingPath {
         Path vertexPath = null;
         Path fragmentPath = null;
 
-        File file = new File(getSystemClassLoader().getResource("shaders/simple/").toExternalForm());
-
-        System.out.println(Arrays.toString(file.list()));
-
         try {
-            vertexPath = Paths.get(new URI(getSystemClassLoader().getResource("shaders/simple/simple.vert").toExternalForm()));
-            fragmentPath = Paths.get(new URI(getSystemClassLoader().getResource("shaders/simple/simple.frag").toExternalForm()));
+            vertexPath = Resources.getPath("shaders/simple/simple.vert");
+            fragmentPath = Resources.getPath("shaders/simple/simple.frag");
         } catch (Exception e) {
             Log.fatal("Failed to get shader files for RenderingPath", e);
         }
@@ -63,11 +52,6 @@ public final class GLSimpleRenderingPath extends RenderingPath {
 
     @Override
     public void render(Camera camera) {
-
-        shader.use();
-
         // TODO
-
-        glDrawArrays(GL_TRIANGLES, 0, 36);
     }
 }

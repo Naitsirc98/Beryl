@@ -18,4 +18,5 @@ public abstract class VertexData implements NativeResource {
 
     public abstract VertexData data(ByteBuffer data);
 
+    public abstract VertexData indices(ByteBuffer indices);
 }
