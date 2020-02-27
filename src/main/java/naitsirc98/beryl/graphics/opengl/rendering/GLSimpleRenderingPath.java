@@ -7,14 +7,14 @@ import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.scenes.components.camera.Camera;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import static java.lang.ClassLoader.getSystemClassLoader;
 import static naitsirc98.beryl.graphics.ShaderStage.FRAGMENT_STAGE;
 import static naitsirc98.beryl.graphics.ShaderStage.VERTEX_STAGE;
-import static org.lwjgl.opengl.GL45.*;
+import static org.lwjgl.opengl.GL45.GL_TRIANGLES;
+import static org.lwjgl.opengl.GL45.glDrawArrays;
 
 public final class GLSimpleRenderingPath extends RenderingPath {
 
@@ -29,9 +29,9 @@ public final class GLSimpleRenderingPath extends RenderingPath {
         Path fragmentPath = null;
 
         try {
-            vertexPath = Paths.get(new URI(getSystemClassLoader().getResource("shaders/simple.vert").getFile()));
-            fragmentPath = Paths.get(new URI(getSystemClassLoader().getResource("shaders/simple.vert").getFile()));
-        } catch (URISyntaxException e) {
+            vertexPath = Paths.get(new URI(GLSimpleRenderingPath.class.getResource("/shaders/simple.vert").toExternalForm()));
+            fragmentPath = Paths.get(new URI(GLSimpleRenderingPath.class.getResource("/shaders/simple.frag").toExternalForm()));
+        } catch (Exception e) {
             Log.fatal("Failed to get shader files for RenderingPath", e);
         }
 
