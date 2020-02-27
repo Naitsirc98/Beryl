@@ -6,9 +6,12 @@ import naitsirc98.beryl.graphics.rendering.RenderingPath;
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.scenes.components.camera.Camera;
 
+import java.io.File;
 import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.stream.Stream;
 
 import static java.lang.ClassLoader.getSystemClassLoader;
 import static naitsirc98.beryl.graphics.ShaderStage.FRAGMENT_STAGE;
@@ -28,9 +31,13 @@ public final class GLSimpleRenderingPath extends RenderingPath {
         Path vertexPath = null;
         Path fragmentPath = null;
 
+        File file = new File(getSystemClassLoader().getResource("shaders/simple/").toExternalForm());
+
+        System.out.println(Arrays.toString(file.list()));
+
         try {
-            vertexPath = Paths.get(new URI(GLSimpleRenderingPath.class.getResource("/shaders/simple.vert").toExternalForm()));
-            fragmentPath = Paths.get(new URI(GLSimpleRenderingPath.class.getResource("/shaders/simple.frag").toExternalForm()));
+            vertexPath = Paths.get(new URI(getSystemClassLoader().getResource("shaders/simple/simple.vert").toExternalForm()));
+            fragmentPath = Paths.get(new URI(getSystemClassLoader().getResource("shaders/simple/simple.frag").toExternalForm()));
         } catch (Exception e) {
             Log.fatal("Failed to get shader files for RenderingPath", e);
         }

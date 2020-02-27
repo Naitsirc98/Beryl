@@ -23,7 +23,7 @@
             <resource>
                 <directory>src/main/resources</directory>
                 <includes>
-                    <include>shaders/*</include>
+                    <include>shaders/**</include>
                 </includes>
                 <filtering>true</filtering>
             </resource>
