@@ -1,9 +1,9 @@
-package naitsirc98.beryl.meshes;
+package naitsirc98.beryl.meshes.vertices;
 
 import java.util.Arrays;
 import java.util.stream.Stream;
 
-import static naitsirc98.beryl.meshes.VertexAttribute.*;
+import static naitsirc98.beryl.meshes.vertices.VertexAttribute.*;
 import static naitsirc98.beryl.util.Asserts.*;
 
 public final class VertexLayout {

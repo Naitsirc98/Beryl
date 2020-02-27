@@ -1,4 +1,4 @@
-package naitsirc98.beryl.meshes;
+package naitsirc98.beryl.meshes.vertices;
 
 import org.joml.Vector2f;
 import org.joml.Vector2fc;

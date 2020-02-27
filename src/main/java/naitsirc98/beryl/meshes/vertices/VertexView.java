@@ -1,4 +1,4 @@
-package naitsirc98.beryl.meshes;
+package naitsirc98.beryl.meshes.vertices;
 
 import naitsirc98.beryl.util.GrowableBuffer;
 
@@ -6,6 +6,7 @@ import java.nio.ByteBuffer;
 import java.util.Iterator;
 
 import static java.util.Objects.requireNonNull;
+import static naitsirc98.beryl.util.Asserts.assertTrue;
 import static naitsirc98.beryl.util.TypeUtils.newInstance;
 
 public final class VertexView<T extends Vertex> implements Iterable<Vertex>, Iterator<Vertex> {
@@ -40,6 +41,7 @@ public final class VertexView<T extends Vertex> implements Iterable<Vertex>, Ite
 
     @Override
     public Vertex next() {
+        assertTrue(hasNext());
 
         if(position > 0) {
             vertex.get(position - 1, data);

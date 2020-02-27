@@ -1,4 +1,4 @@
-package naitsirc98.beryl.meshes;
+package naitsirc98.beryl.meshes.vertices;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -16,6 +16,10 @@ public final class VertexAttributeList implements Iterable<VertexAttribute> {
 
     public int stride() {
         return stride;
+    }
+
+    public int count() {
+        return attributes.size();
     }
 
     public boolean instancing() {
@@ -36,7 +40,7 @@ public final class VertexAttributeList implements Iterable<VertexAttribute> {
     }
 
     @Override
-    public Iterator<VertexAttribute> iterator() {
+    public VertexAttributeListIterator iterator() {
         return new VertexAttributeListIterator();
     }
 
@@ -60,6 +64,7 @@ public final class VertexAttributeList implements Iterable<VertexAttribute> {
 
         private final Iterator<VertexAttribute> iterator;
         private VertexAttribute previous;
+        private int location;
         private int offset;
 
         private VertexAttributeListIterator() {
@@ -78,11 +83,16 @@ public final class VertexAttributeList implements Iterable<VertexAttribute> {
 
             if(previous != null) {
                 offset += previous.sizeof();
+                ++location;
             }
 
             previous = attribute;
 
             return attribute;
+        }
+
+        public int location() {
+            return location;
         }
 
         public int offset() {

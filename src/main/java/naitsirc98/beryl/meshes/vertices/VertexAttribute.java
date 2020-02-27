@@ -1,4 +1,4 @@
-package naitsirc98.beryl.meshes;
+package naitsirc98.beryl.meshes.vertices;
 
 import naitsirc98.beryl.util.ByteSize;
 import naitsirc98.beryl.util.DataType;

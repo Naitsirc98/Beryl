@@ -1,6 +1,7 @@
 package naitsirc98.beryl.graphics.opengl.shaders;
 
 import naitsirc98.beryl.graphics.ShaderStage;
+import naitsirc98.beryl.graphics.opengl.GLObject;
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.util.Destructor;
 import naitsirc98.beryl.util.IntHandle;
@@ -13,7 +14,7 @@ import java.nio.file.Path;
 import static org.lwjgl.opengl.GL45.*;
 
 @Destructor
-public final class GLShader implements IntHandle, NativeResource {
+public final class GLShader implements GLObject {
 
     private final int handle;
     private final ShaderStage stage;
