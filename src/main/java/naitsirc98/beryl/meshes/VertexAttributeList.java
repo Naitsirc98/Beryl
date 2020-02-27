@@ -2,13 +2,13 @@ package naitsirc98.beryl.meshes;
 
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 import java.util.stream.Stream;
 
 public final class VertexAttributeList implements Iterable<VertexAttribute> {
 
-    private final List<VertexAttribute> attributes;
+    private final ArrayList<VertexAttribute> attributes;
     private int stride;
+    private boolean instancing;
 
     public VertexAttributeList() {
         attributes = new ArrayList<>(3);
@@ -16,6 +16,14 @@ public final class VertexAttributeList implements Iterable<VertexAttribute> {
 
     public int stride() {
         return stride;
+    }
+
+    public boolean instancing() {
+        return instancing;
+    }
+
+    void instancing(boolean instancing) {
+        this.instancing = instancing;
     }
 
     public VertexAttribute get(int location) {
@@ -34,6 +42,18 @@ public final class VertexAttributeList implements Iterable<VertexAttribute> {
 
     public Stream<VertexAttribute> attributes() {
         return attributes.stream();
+    }
+
+    public VertexAttributeList copy() {
+
+        VertexAttributeList copy = new VertexAttributeList();
+
+        copy.attributes.addAll(attributes);
+        copy.attributes.trimToSize();
+        copy.stride = stride;
+        copy.instancing = instancing;
+
+        return copy;
     }
 
     public final class VertexAttributeListIterator implements Iterator<VertexAttribute> {
@@ -63,6 +83,10 @@ public final class VertexAttributeList implements Iterable<VertexAttribute> {
             previous = attribute;
 
             return attribute;
+        }
+
+        public int offset() {
+            return offset;
         }
     }
 }

@@ -4,6 +4,7 @@ import org.lwjgl.system.NativeResource;
 
 import java.nio.ByteBuffer;
 
+import static java.util.Objects.requireNonNull;
 import static naitsirc98.beryl.util.Asserts.assertThat;
 import static naitsirc98.beryl.util.Asserts.assertTrue;
 import static naitsirc98.beryl.util.DataType.*;
@@ -15,7 +16,7 @@ public final class GrowableBuffer implements NativeResource {
     private static final float DEFAULT_RESIZE_FACTOR = 1.5f;
 
     public static GrowableBuffer makeGrowable(ByteBuffer buffer) {
-        return new GrowableBuffer(buffer);
+        return new GrowableBuffer(requireNonNull(buffer));
     }
 
     public static GrowableBuffer malloc() {
@@ -38,7 +39,7 @@ public final class GrowableBuffer implements NativeResource {
     private float resizeFactor;
 
     private GrowableBuffer(ByteBuffer data) {
-        this.data = data;
+        this.data = assertThat(data, data.isDirect());
         this.resizeFactor = DEFAULT_RESIZE_FACTOR;
     }
 
