@@ -9,7 +9,11 @@ import naitsirc98.beryl.graphics.vulkan.commands.VulkanCommandPool;
 import naitsirc98.beryl.graphics.vulkan.devices.VulkanDevice;
 import naitsirc98.beryl.graphics.vulkan.rendering.VulkanRenderer;
 import naitsirc98.beryl.graphics.vulkan.swapchain.VulkanSwapchain;
+import naitsirc98.beryl.graphics.vulkan.vertex.VulkanVertexDataBuilder;
+import naitsirc98.beryl.meshes.vertices.VertexData;
+import naitsirc98.beryl.meshes.vertices.VertexLayout;
 import naitsirc98.beryl.util.Destructor;
+import org.lwjgl.vulkan.VkDevice;
 import org.lwjgl.vulkan.VkInstance;
 
 import java.util.Map;
@@ -65,6 +69,11 @@ public final class VulkanContext implements GraphicsContext {
         return null;
     }
 
+    @Override
+    public VertexData.Builder newVertexDataBuilder(VertexLayout layout) {
+        return new VulkanVertexDataBuilder(layout);
+    }
+
     public VkInstance vkInstance() {
         return vkInstance;
     }
@@ -79,6 +88,10 @@ public final class VulkanContext implements GraphicsContext {
 
     public VulkanDevice device() {
         return device;
+    }
+
+    public VkDevice vkLogicalDevice() {
+        return device.logicalDevice().vkDevice();
     }
 
     public VulkanCommandPool graphicsCommandPool() {

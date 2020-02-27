@@ -10,6 +10,7 @@ import naitsirc98.beryl.graphics.opengl.rendering.GLRenderer;
 import naitsirc98.beryl.graphics.rendering.RenderingPath;
 import naitsirc98.beryl.graphics.window.Window;
 import naitsirc98.beryl.meshes.vertices.VertexData;
+import naitsirc98.beryl.meshes.vertices.VertexLayout;
 import naitsirc98.beryl.util.LongHandle;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GLCapabilities;
@@ -53,8 +54,8 @@ public class GLContext implements GraphicsContext, LongHandle {
     }
 
     @Override
-    public GLVertexDataBuilder newVertexDataBuilder() {
-        return null;
+    public GLVertexDataBuilder newVertexDataBuilder(VertexLayout layout) {
+        return new GLVertexDataBuilder(layout);
     }
 
     @Override

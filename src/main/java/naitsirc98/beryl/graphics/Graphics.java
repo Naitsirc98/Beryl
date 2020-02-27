@@ -18,6 +18,10 @@ public final class Graphics extends BerylSystem {
     @Singleton
     private static Graphics instance;
 
+    public static GraphicsContext graphicsContext() {
+        return instance.graphicsContext;
+    }
+
     public static VulkanContext vulkan() {
         return (VulkanContext) instance.graphicsContext;
     }

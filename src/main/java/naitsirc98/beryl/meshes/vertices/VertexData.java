@@ -1,5 +1,6 @@
 package naitsirc98.beryl.meshes.vertices;
 
+import naitsirc98.beryl.graphics.Graphics;
 import org.lwjgl.system.NativeResource;
 
 import java.nio.ByteBuffer;
@@ -7,6 +8,10 @@ import java.nio.ByteBuffer;
 import static java.util.Objects.requireNonNull;
 
 public abstract class VertexData implements NativeResource {
+
+    public static Builder builder(VertexLayout layout) {
+        return Graphics.graphicsContext().newVertexDataBuilder(layout);
+    }
 
     private final VertexLayout layout;
 
@@ -24,7 +29,7 @@ public abstract class VertexData implements NativeResource {
 
         protected final VertexLayout layout;
 
-        public Builder(VertexLayout layout) {
+        protected Builder(VertexLayout layout) {
             this.layout = requireNonNull(layout);
         }
 
