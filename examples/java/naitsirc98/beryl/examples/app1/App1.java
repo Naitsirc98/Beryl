@@ -4,14 +4,24 @@ import naitsirc98.beryl.core.Beryl;
 import naitsirc98.beryl.core.BerylApplication;
 import naitsirc98.beryl.core.BerylConfiguration;
 import naitsirc98.beryl.graphics.GraphicsAPI;
+import naitsirc98.beryl.graphics.opengl.vertex.GLVertexData;
 import naitsirc98.beryl.graphics.window.Window;
+import naitsirc98.beryl.meshes.Mesh;
+import naitsirc98.beryl.meshes.vertices.VertexData;
+import naitsirc98.beryl.meshes.vertices.VertexLayout;
 import naitsirc98.beryl.scenes.Entity;
 import naitsirc98.beryl.scenes.Scene;
 import naitsirc98.beryl.scenes.SceneManager;
 import naitsirc98.beryl.scenes.components.camera.Camera;
 import naitsirc98.beryl.scenes.components.math.Transform;
+import naitsirc98.beryl.util.GrowableBuffer;
 
+import java.nio.ByteBuffer;
 import java.util.Random;
+
+import static naitsirc98.beryl.meshes.vertices.VertexLayout.VERTEX_LAYOUT_3D;
+import static naitsirc98.beryl.util.DataType.FLOAT32;
+import static org.lwjgl.system.MemoryUtil.memAlloc;
 
 public class App1 extends BerylApplication {
 
@@ -67,6 +77,18 @@ public class App1 extends BerylApplication {
             entity.add(MyBehaviour.class).setCount(count);
             lastOne = entity;
         }
+
+        Entity model = scene.newEntity("Model");
+
+        GrowableBuffer vertices = GrowableBuffer.calloc(6 * 3 * FLOAT32.sizeof()).resizeFactor(1);
+
+        vertices.putFloat(-0.5f).putFloat(-0.5f).putFloat(0.0f); // left
+        vertices.putFloat(0.5f).putFloat(-0.5f).putFloat(0.0f); // right
+        vertices.putFloat(0.0f).putFloat(0.5f).putFloat(0.0f); // top
+
+        vertices.trim();
+
+        Mesh mesh = new Mesh(VertexData.builder(VERTEX_LAYOUT_3D).vertices(0, vertices.data()).build());
 
         SceneManager.addScene(scene);
     }

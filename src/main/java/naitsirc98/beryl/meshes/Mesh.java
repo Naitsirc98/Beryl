@@ -12,7 +12,8 @@ public class Mesh {
         this.vertexData = vertexData;
     }
 
-    public final VertexData vertexData() {
-        return vertexData;
+    @SuppressWarnings("unchecked")
+    public final <T extends VertexData> T vertexData() {
+        return (T) vertexData;
     }
 }

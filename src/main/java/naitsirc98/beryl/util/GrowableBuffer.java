@@ -48,7 +48,7 @@ public final class GrowableBuffer implements NativeResource {
     }
 
     public GrowableBuffer resizeFactor(float resizeFactor) {
-        this.resizeFactor = assertThat(resizeFactor, resizeFactor > 1);
+        this.resizeFactor = assertThat(resizeFactor, resizeFactor >= 1);
         return this;
     }
 

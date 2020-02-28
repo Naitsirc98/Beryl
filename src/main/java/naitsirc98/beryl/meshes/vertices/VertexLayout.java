@@ -41,6 +41,10 @@ public final class VertexLayout {
 
         public Builder(int bindings) {
             attributes = new VertexAttributeList[bindings];
+
+            for(int i = 0;i < bindings;i++) {
+                attributes[i] = new VertexAttributeList();
+            }
         }
 
         public Builder(VertexLayout other) {
