@@ -19,9 +19,6 @@ public final class VulkanVertexData extends VertexData {
         vertexBuffers = VulkanBufferFactory.newVertexBuffers(getVertexBufferSizes(vertices));
     }
 
-    @Override
-    public void bind() { }
-
     public void bind(VkCommandBuffer commandBuffer) {
 
         vkCmdBindVertexBuffers(commandBuffer, 0, vertexBuffers.vkBuffers(), vertexBuffers.memoryOffsets());

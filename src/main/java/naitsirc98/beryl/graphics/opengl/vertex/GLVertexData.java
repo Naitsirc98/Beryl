@@ -32,7 +32,6 @@ public final class GLVertexData extends VertexData {
         indexBuffer = null;
     }
 
-    @Override
     public void bind() {
         vertexArray.bind();
     }

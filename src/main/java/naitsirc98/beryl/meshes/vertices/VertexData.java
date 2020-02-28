@@ -23,8 +23,6 @@ public abstract class VertexData implements NativeResource {
         return layout;
     }
 
-    public abstract void bind();
-
     public static abstract class Builder {
 
         protected final VertexLayout layout;
