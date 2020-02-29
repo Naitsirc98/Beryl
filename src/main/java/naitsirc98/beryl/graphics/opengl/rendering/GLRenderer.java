@@ -26,6 +26,7 @@ public final class GLRenderer implements Renderer {
     public void begin(MemoryStack stack) {
         Sizec framebufferSize = Window.get().framebufferSize();
         glViewport(0, 0, framebufferSize.width(), framebufferSize.height());
+        glBindFramebuffer(GL_FRAMEBUFFER, DEFAULT_FRAMEBUFFER);
     }
 
     @Override

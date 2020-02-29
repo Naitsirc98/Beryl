@@ -47,7 +47,7 @@ public final class Input extends BerylSystem {
      * @return return true if this key is pressed, false otherwise
      */
     public static boolean isKeyPressed(Key key) {
-        return instance.keyStates.isPressed(key);
+        return instance.keyStates.isPressed(key) || isKeyRepeat(key);
     }
 
     /**

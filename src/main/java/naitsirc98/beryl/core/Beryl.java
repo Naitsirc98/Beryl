@@ -11,7 +11,6 @@ import naitsirc98.beryl.util.Version;
 import org.lwjgl.system.Configuration;
 import org.lwjgl.system.MemoryStack;
 
-import java.lang.ref.WeakReference;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.lang.String.format;
@@ -103,6 +102,8 @@ public final class Beryl {
 
         int framesPerSecond = 0;
 
+        setup();
+
         while(application.running()) {
 
             final float now = Time.time();
@@ -125,6 +126,19 @@ public final class Beryl {
                 lastDebugReport = Time.time();
             }
         }
+    }
+
+    private void setup() {
+        update0();
+        if(BerylConfiguration.WINDOW_VISIBLE.get(true)) {
+            Window.get().show();
+        }
+    }
+
+    private void update0() {
+        systems.eventManager.processEvents();
+        systems.input.update();
+        systems.sceneManager.update();
     }
 
     private void update(float deltaTime) {
@@ -207,7 +221,8 @@ public final class Beryl {
         if(SHOW_DEBUG_INFO_ON_WINDOW_TITLE) {
             Window.get().title(APPLICATION_NAME + " | [DEBUG INFO]: "
                     + builder.toString()
-                    + " | Memory used: " + getMemoryUsed() / 1024 / 1024 + " MB");
+                    + " | Memory used: " + getMemoryUsed() / 1024 / 1024 + " MB"
+                    + " | Total memory: " + getTotalMemory() / 1024 / 1024 + " MB");
         }
 
         builder.append("\n\t");

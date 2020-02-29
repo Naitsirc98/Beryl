@@ -47,6 +47,7 @@ public final class GrowableBuffer implements NativeResource {
         return resizeFactor;
     }
 
+    // A resize factor of 1 means that it will allocate enough memory for an element added each time
     public GrowableBuffer resizeFactor(float resizeFactor) {
         this.resizeFactor = assertThat(resizeFactor, resizeFactor >= 1);
         return this;
@@ -272,7 +273,7 @@ public final class GrowableBuffer implements NativeResource {
     }
 
     private void checkCapacityByte() {
-        if(size() > capacity()) {
+        if(size() + INT8.sizeof() > capacity()) {
             reallocToFit(INT8.sizeof());
         }
     }

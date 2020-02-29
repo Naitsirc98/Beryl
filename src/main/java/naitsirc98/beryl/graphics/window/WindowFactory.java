@@ -42,8 +42,8 @@ public final class WindowFactory {
     private void setWindowHints() {
 
         glfwDefaultWindowHints();
+        glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
 
-        glfwWindowHint(GLFW_VISIBLE, asGLFWBoolean(BerylConfiguration.WINDOW_VISIBLE.get(true)));
         glfwWindowHint(GLFW_RESIZABLE, asGLFWBoolean(BerylConfiguration.WINDOW_RESIZABLE.get(true)));
         glfwWindowHint(GLFW_FOCUS_ON_SHOW, asGLFWBoolean(BerylConfiguration.WINDOW_FOCUS_ON_SHOW.get(true)));
 

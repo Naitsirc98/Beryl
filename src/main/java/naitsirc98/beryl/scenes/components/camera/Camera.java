@@ -6,9 +6,7 @@ import naitsirc98.beryl.graphics.window.Window;
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.scenes.Component;
 import naitsirc98.beryl.scenes.components.math.Transform;
-import naitsirc98.beryl.util.Rect;
-import naitsirc98.beryl.util.Rectc;
-import naitsirc98.beryl.util.Sizec;
+import naitsirc98.beryl.util.*;
 import org.joml.*;
 
 import static naitsirc98.beryl.scenes.components.camera.ProjectionType.PERSPECTIVE;
@@ -32,8 +30,8 @@ public final class Camera extends Component<Camera> {
 
 	// Projection type (2D/3D)
 	private ProjectionType projectionType;
-	// Viewport rect
-	private Rect viewport;
+	// Viewport
+	private Viewport viewport;
 	// Axis vectors
 	private Vector3f forward;
 	private Vector3f up;
@@ -76,7 +74,7 @@ public final class Camera extends Component<Camera> {
 
 		projectionType = PERSPECTIVE;
 		Sizec windowSize = Window.get().size();
-		viewport = new Rect(0, 0, windowSize.width(), windowSize.height());
+		viewport = new Viewport(0, 0, windowSize.width(), windowSize.height());
 		forward = new Vector3f(0, 0, -1);
 		up = new Vector3f(0, 1, 0);
 		right = new Vector3f(1, 0, 0);
@@ -105,7 +103,7 @@ public final class Camera extends Component<Camera> {
 	}
 
 	public boolean modified() {
-		return modified;
+		return modified || transform().modified();
 	}
 
 	private void modify() {
@@ -222,14 +220,14 @@ public final class Camera extends Component<Camera> {
 		return this;
 	}
 
-	public Rectc viewport() {
+	public Viewportc viewport() {
 		assertNotDeleted();
 		return viewport;
 	}
 
-	public void viewport(Rectc viewport) {
+	public void viewport(Viewportc viewport) {
 		assertNotDeleted();
-		this.viewport.set(viewport.left(), viewport.right(), viewport.top(), viewport.bottom());
+		this.viewport.set(viewport.x(), viewport.y(), viewport.width(), viewport.height());
 		modify();
 	}
 
@@ -425,8 +423,6 @@ public final class Camera extends Component<Camera> {
 		final float yaw = radians(this.yaw);
 		final float pitch = radians(this.pitch);
 		final Vector3f forward = this.forward;
-		final Vector3f up = this.up;
-		final Vector3f right = this.right;
 		
 		// Calculate the new front vector
 		forward.x = cos(yaw) * cos(pitch);

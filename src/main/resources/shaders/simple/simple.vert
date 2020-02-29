@@ -1,21 +1,16 @@
-#version 330 core
-#extension GL_ARB_separate_shader_objects : enable
+#version 410 core
+// #extension GL_ARB_separate_shader_objects : enable
+
+uniform mat4 u_MVP;
+
+layout(location = 0) in vec3 in_Position;
+layout(location = 1) in vec3 in_Normal;
+layout(location = 2) in vec2 in_TexCoords;
+
 
 layout(location = 0) out vec3 out_FragColor;
 
-vec2 positions[3] = vec2[](
-    vec2(0.0, -0.5),
-    vec2(0.5, 0.5),
-    vec2(-0.5, 0.5)
-);
-
-vec3 colors[3] = vec3[](
-    vec3(1.0, 0.0, 0.0),
-    vec3(0.0, 1.0, 0.0),
-    vec3(0.0, 0.0, 1.0)
-);
-
 void main() {
-    gl_Position = vec4(positions[gl_VertexID], 0.0, 1.0);
-    out_FragColor = colors[gl_VertexID];
+    out_FragColor = vec3(1, 1, 0.5);
+    gl_Position = u_MVP * vec4(in_Position, 1.0f);
 }

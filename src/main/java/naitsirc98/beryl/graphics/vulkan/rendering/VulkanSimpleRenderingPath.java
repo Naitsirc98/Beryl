@@ -2,6 +2,9 @@ package naitsirc98.beryl.graphics.vulkan.rendering;
 
 import naitsirc98.beryl.graphics.rendering.RenderingPath;
 import naitsirc98.beryl.scenes.components.camera.Camera;
+import naitsirc98.beryl.scenes.components.meshes.MeshView;
+
+import java.util.List;
 
 public class VulkanSimpleRenderingPath extends RenderingPath {
 
@@ -17,7 +20,7 @@ public class VulkanSimpleRenderingPath extends RenderingPath {
     }
 
     @Override
-    public void render(Camera camera) {
+    public void render(Camera camera, List<MeshView> meshViews) {
 
     }
 

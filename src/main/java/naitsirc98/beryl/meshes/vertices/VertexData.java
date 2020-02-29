@@ -9,6 +9,8 @@ import static java.util.Objects.requireNonNull;
 
 public abstract class VertexData implements NativeResource {
 
+    // TODO: vertexCount and indexCount
+
     public static Builder builder(VertexLayout layout) {
         return Graphics.graphicsContext().newVertexDataBuilder(layout);
     }

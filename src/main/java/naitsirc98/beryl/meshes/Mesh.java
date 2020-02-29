@@ -1,6 +1,7 @@
 package naitsirc98.beryl.meshes;
 
 import naitsirc98.beryl.meshes.vertices.VertexData;
+import naitsirc98.beryl.scenes.components.math.Transform;
 
 public class Mesh {
 

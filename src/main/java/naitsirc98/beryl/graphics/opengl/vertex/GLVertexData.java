@@ -9,8 +9,23 @@ public final class GLVertexData extends VertexData {
     private GLBuffer[] vertexBuffers;
     private GLBuffer indexBuffer;
 
-    protected GLVertexData(VertexLayout layout, GLBuffer[] vertexBuffers, GLBuffer indices) {
+    protected GLVertexData(VertexLayout layout, GLBuffer[] vertexBuffers, GLBuffer indexBuffer) {
         super(layout);
+        this.vertexBuffers = vertexBuffers;
+        this.indexBuffer = indexBuffer;
+        vertexArray = new GLVertexArray();
+
+        for(int i = 0;i < layout.bindings();i++) {
+            vertexArray.addVertexBuffer(i, layout.attributes(i), vertexBuffers[i]);
+        }
+
+        if(indexBuffer != null) {
+            vertexArray.setIndexBuffer(indexBuffer);
+        }
+    }
+
+    public void bind() {
+        vertexArray.bind();
     }
 
     @Override
@@ -30,9 +45,5 @@ public final class GLVertexData extends VertexData {
         vertexArray = null;
         vertexBuffers = null;
         indexBuffer = null;
-    }
-
-    public void bind() {
-        vertexArray.bind();
     }
 }
