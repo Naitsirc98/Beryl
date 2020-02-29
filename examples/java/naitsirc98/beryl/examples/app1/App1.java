@@ -78,7 +78,7 @@ public class App1 extends BerylApplication {
             lastOne = entity;
         }*/
 
-        Mesh mesh = new Mesh(VertexData.builder(VERTEX_LAYOUT_3D).vertices(0, getCubeVertices()).build());
+        Mesh mesh = new Mesh(VertexData.builder(VERTEX_LAYOUT_3D).vertices(getCubeVertices()).build());
 
         for(int i = 0;i < 10;i++) {
 

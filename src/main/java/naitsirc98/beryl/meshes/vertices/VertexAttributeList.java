@@ -1,12 +1,15 @@
 package naitsirc98.beryl.meshes.vertices;
 
+import naitsirc98.beryl.util.ByteSize;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.stream.Stream;
 
-public final class VertexAttributeList implements Iterable<VertexAttribute> {
+public final class VertexAttributeList implements ByteSize, Iterable<VertexAttribute> {
 
     private final ArrayList<VertexAttribute> attributes;
+    private int offset;
     private int stride;
     private boolean instancing;
 
@@ -18,8 +21,17 @@ public final class VertexAttributeList implements Iterable<VertexAttribute> {
         return stride;
     }
 
+    public int offset() {
+        return offset;
+    }
+
     public int count() {
         return attributes.size();
+    }
+
+    @Override
+    public int sizeof() {
+        return attributes.stream().mapToInt(VertexAttribute::sizeof).sum();
     }
 
     public boolean instancing() {
@@ -69,6 +81,7 @@ public final class VertexAttributeList implements Iterable<VertexAttribute> {
 
         private VertexAttributeListIterator() {
             iterator = attributes.iterator();
+            offset = VertexAttributeList.this.offset;
         }
 
         @Override

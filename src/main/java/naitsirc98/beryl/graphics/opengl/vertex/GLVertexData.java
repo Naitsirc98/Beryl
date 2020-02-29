@@ -10,8 +10,10 @@ public final class GLVertexData extends VertexData {
     private GLBuffer[] vertexBuffers;
     private GLBuffer indexBuffer;
 
-    protected GLVertexData(VertexLayout layout, GLBuffer[] vertexBuffers, GLBuffer indexBuffer) {
-        super(layout);
+    protected GLVertexData(VertexLayout layout, int vertexCount, int indexCount,
+                           GLBuffer[] vertexBuffers, GLBuffer indexBuffer) {
+
+        super(layout, vertexCount, indexCount);
         this.vertexBuffers = vertexBuffers;
         this.indexBuffer = indexBuffer;
         vertexArray = new GLVertexArray();
@@ -47,4 +49,5 @@ public final class GLVertexData extends VertexData {
         vertexBuffers = null;
         indexBuffer = null;
     }
+
 }

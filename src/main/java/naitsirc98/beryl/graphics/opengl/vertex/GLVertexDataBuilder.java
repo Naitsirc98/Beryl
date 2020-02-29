@@ -4,24 +4,26 @@ import naitsirc98.beryl.graphics.opengl.GLBuffer;
 import naitsirc98.beryl.meshes.vertices.VertexData;
 import naitsirc98.beryl.meshes.vertices.VertexLayout;
 
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 import static org.lwjgl.opengl.GL15.GL_DYNAMIC_DRAW;
 import static org.lwjgl.opengl.GL15.GL_STATIC_DRAW;
 
 public final class GLVertexDataBuilder extends VertexData.Builder {
 
-    private final GLBuffer[] vertexBuffers;
+    private ByteBuffer[] vertices;
     private ByteBuffer indices;
 
     public GLVertexDataBuilder(VertexLayout layout) {
         super(layout);
-        vertexBuffers = createVertexBuffers();
+        vertices = new ByteBuffer[layout.bindings()];
     }
 
     @Override
     public GLVertexDataBuilder vertices(int binding, ByteBuffer vertices) {
-        vertexBuffers[binding].data(vertices, GL_DYNAMIC_DRAW);
+        this.vertices[binding] = vertices;
         return this;
     }
 
@@ -38,10 +40,12 @@ public final class GLVertexDataBuilder extends VertexData.Builder {
 
         if(indices != null && indices.hasRemaining()) {
             indexBuffer = new GLBuffer();
-            indexBuffer.data(indices, GL_STATIC_DRAW);
+            indexBuffer.data(indices);
         }
 
-        return new GLVertexData(layout, vertexBuffers, indexBuffer);
+        final int indexCount = indices == null ? 0 : indices.remaining();
+
+        return new GLVertexData(layout, getVertexCount(vertices), indexCount, createVertexBuffers(), indexBuffer);
     }
 
 
@@ -49,6 +53,7 @@ public final class GLVertexDataBuilder extends VertexData.Builder {
         GLBuffer[] vertexBuffers = new GLBuffer[layout.bindings()];
         for(int i = 0;i < vertexBuffers.length;i++) {
             vertexBuffers[i] = new GLBuffer();
+            vertexBuffers[i].data(vertices[i]);
         }
         return vertexBuffers;
     }

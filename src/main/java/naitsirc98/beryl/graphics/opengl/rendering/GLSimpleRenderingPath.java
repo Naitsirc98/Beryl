@@ -58,18 +58,22 @@ public final class GLSimpleRenderingPath extends RenderingPath {
 
     @Override
     protected void init() {
+
         shader = new GLShaderProgram()
                 .attach(new GLShader(VERTEX_STAGE).source(VERTEX_SHADER_PATH).compile())
                 .attach(new GLShader(FRAGMENT_STAGE).source(FRAGMENT_SHADER_PATH).compile())
                 .link();
+
         uniformBuffer = new GLUniformBuffer(UNIFORM_BUFFER_NAME, shader, UNIFORM_BUFFER_BINDING);
         uniformBuffer.storage(UNIFORM_BUFFER_SIZE);
+
         projectionViewModelMatrix = new Matrix4f();
     }
 
     @Override
     protected void terminate() {
         shader.free();
+        uniformBuffer.free();
     }
 
     @Override
@@ -88,7 +92,7 @@ public final class GLSimpleRenderingPath extends RenderingPath {
 
         try(MemoryStack stack = stackPush()) {
 
-            FloatBuffer uniformBufferData = stack.mallocFloat(16);
+            FloatBuffer uboData = stack.mallocFloat(16);
 
             for(MeshView meshView : meshViews) {
 
@@ -96,9 +100,9 @@ public final class GLSimpleRenderingPath extends RenderingPath {
 
                 vertexData.bind();
 
-                uniformBuffer.update(projectionView.mul(meshView.transform().modelMatrix(), mvp).get(uniformBufferData));
+                uniformBuffer.update(projectionView.mul(meshView.modelMatrix(), mvp).get(uboData));
 
-                glDrawArrays(GL_TRIANGLES, 0, 36);
+                glDrawArrays(GL_TRIANGLES, 0, vertexData.vertexCount());
             }
         }
     }

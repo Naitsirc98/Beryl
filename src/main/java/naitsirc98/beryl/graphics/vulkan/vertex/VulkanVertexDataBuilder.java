@@ -7,22 +7,28 @@ import java.nio.ByteBuffer;
 
 public class VulkanVertexDataBuilder extends VertexData.Builder {
 
+    private ByteBuffer[] vertices;
+    private ByteBuffer indices;
+
     public VulkanVertexDataBuilder(VertexLayout layout) {
         super(layout);
+        vertices = new ByteBuffer[layout.bindings()];
     }
 
     @Override
-    public VertexData.Builder vertices(int binding, ByteBuffer vertices) {
-        return null;
+    public VulkanVertexDataBuilder vertices(int binding, ByteBuffer vertices) {
+        this.vertices[binding] = vertices;
+        return this;
     }
 
     @Override
-    public VertexData.Builder indices(ByteBuffer indices) {
-        return null;
+    public VulkanVertexDataBuilder indices(ByteBuffer indices) {
+        this.indices = indices;
+        return this;
     }
 
     @Override
-    public VertexData build() {
-        return null;
+    public VulkanVertexData build() {
+        return new VulkanVertexData(layout, getVertexCount(vertices), vertices, indices);
     }
 }

@@ -3,6 +3,8 @@ package naitsirc98.beryl.scenes.components.meshes;
 import naitsirc98.beryl.meshes.Mesh;
 import naitsirc98.beryl.scenes.Component;
 import naitsirc98.beryl.scenes.components.math.Transform;
+import org.joml.Matrix3fc;
+import org.joml.Matrix4fc;
 
 public final class MeshView extends Component<MeshView> {
 
@@ -26,8 +28,11 @@ public final class MeshView extends Component<MeshView> {
         return this;
     }
 
-    public final Transform transform() {
-        return requires(Transform.class);
+    public final Matrix4fc modelMatrix() {
+        return requires(Transform.class).modelMatrix();
+    }
+    public final Matrix3fc normalMatrix() {
+        return requires(Transform.class).normalMatrix();
     }
 
     @Override
