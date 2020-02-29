@@ -14,7 +14,7 @@ public final class SPIRVCompiler {
 
     private static final String ENTRY_POINT = "main";
 
-    public static SPIRVBytecode compileShaderAbsoluteFile(Path path, ShaderStage stage) {
+    public static SPIRVBytecode compileShaderFile(Path path, ShaderStage stage) {
         try {
             String source = new String(Files.readAllBytes(path));
             return compileShader(path.toString(), source, stage);

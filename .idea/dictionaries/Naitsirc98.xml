@@ -7,7 +7,10 @@
       <w>framebuffers</w>
       <w>growable</w>
       <w>msaa</w>
+      <w>multisample</w>
       <w>opengl</w>
+      <w>rasterization</w>
+      <w>spirv</w>
       <w>subpass</w>
       <w>subpasses</w>
       <w>swapchain</w>

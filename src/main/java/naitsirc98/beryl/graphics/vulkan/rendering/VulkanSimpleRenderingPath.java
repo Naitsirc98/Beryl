@@ -8,7 +8,7 @@ import java.util.List;
 
 public final class VulkanSimpleRenderingPath extends RenderingPath {
 
-
+    private long graphicsPipeline;
 
     private VulkanSimpleRenderingPath() {
 

@@ -43,6 +43,7 @@ public class App1 extends BerylApplication {
         BerylConfiguration.INTERNAL_DEBUG.set(true);
         // BerylConfiguration.INITIAL_TIME_VALUE.set(4000.0);
         BerylConfiguration.WINDOW_RESIZABLE.set(false);
+        BerylConfiguration.SHOW_DEBUG_INFO.set(true);
         BerylConfiguration.GRAPHICS_API.set(GraphicsAPI.OPENGL);
     }
 
@@ -80,12 +81,12 @@ public class App1 extends BerylApplication {
 
         Mesh mesh = new Mesh(VertexData.builder(VERTEX_LAYOUT_3D).vertices(getCubeVertices()).build());
 
-        for(int i = 0;i < 10;i++) {
+        for(int i = 0;i < 10000;i++) {
 
             final float angle = RAND.nextFloat();
 
             Entity model = scene.newEntity();
-            model.add(Transform.class).position(RAND.nextInt(10), -RAND.nextInt(10), -RAND.nextInt(10));
+            model.add(Transform.class).position(RAND.nextInt(100), -RAND.nextInt(100), -RAND.nextInt(100));
             model.add(MeshView.class).mesh(mesh);
             model.add(MutableBehaviour.class).onUpdate(thisBehaviour -> {
                 Transform transform = thisBehaviour.get(Transform.class);

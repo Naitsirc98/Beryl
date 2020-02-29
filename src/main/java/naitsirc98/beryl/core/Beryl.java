@@ -27,7 +27,9 @@ public final class Beryl {
     public static final boolean INTERNAL_DEBUG = BerylConfiguration.INTERNAL_DEBUG.get(false);
     public static final boolean DEBUG = BerylConfiguration.DEBUG.get(INTERNAL_DEBUG);
 
-    private static final boolean SHOW_DEBUG_INFO_ON_WINDOW_TITLE = BerylConfiguration.SHOW_DEBUG_INFO_ON_WINDOW_TITLE.get(DEBUG);
+    public static final boolean SHOW_DEBUG_INFO = BerylConfiguration.SHOW_DEBUG_INFO.get(DEBUG);
+
+    private static final boolean SHOW_DEBUG_INFO_ON_WINDOW_TITLE = BerylConfiguration.SHOW_DEBUG_INFO_ON_WINDOW_TITLE.get(SHOW_DEBUG_INFO);
 
     public static final String APPLICATION_NAME = BerylConfiguration.APPLICATION_NAME.get(NAME + " Application");
     public static final Version APPLICATION_VERSION = BerylConfiguration.APPLICATION_VERSION.get(() -> new Version(1, 0, 0));
@@ -117,7 +119,7 @@ public final class Beryl {
 
             ++time.frames;
 
-            if(DEBUG && Time.time() - lastDebugReport >= 1.0f) {
+            if(SHOW_DEBUG_INFO && Time.time() - lastDebugReport >= 1.0f) {
                 Log.debug(buildDebugReport(framesPerSecond, updatesPerSecond, deltaTime));
                 time.ups = updatesPerSecond;
                 time.fps = framesPerSecond;
