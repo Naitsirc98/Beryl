@@ -2,6 +2,7 @@ package naitsirc98.beryl.core;
 
 import naitsirc98.beryl.events.EventManager;
 import naitsirc98.beryl.graphics.Graphics;
+import naitsirc98.beryl.graphics.rendering.RenderingPaths;
 import naitsirc98.beryl.input.Input;
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.scenes.SceneManager;
@@ -22,6 +23,7 @@ public class BerylSystemManager {
     final EventManager eventManager;
     final Input input;
     final Graphics graphics;
+    final RenderingPaths renderingPaths;
     final TaskManager taskManager;
     final SceneManager sceneManager;
     private final BerylSystem[] systems;
@@ -34,6 +36,7 @@ public class BerylSystemManager {
                 eventManager = createSystem(EventManager.class),
                 input = createSystem(Input.class),
                 graphics = createSystem(Graphics.class),
+                renderingPaths = createSystem(RenderingPaths.class),
                 taskManager = createSystem(TaskManager.class),
                 sceneManager = createSystem(SceneManager.class)
         };

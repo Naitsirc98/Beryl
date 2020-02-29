@@ -7,6 +7,7 @@ import java.util.List;
 
 public abstract class RenderingPath {
 
+
     boolean initialized;
 
     protected abstract void init();

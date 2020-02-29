@@ -14,18 +14,20 @@ import static naitsirc98.beryl.graphics.GraphicsAPI.VULKAN;
 
 public final class RenderingPaths extends BerylSystem {
 
-    public static final int RPATH_SIMPLE = 0;
-    public static final int RPATH_DEFAULT = RPATH_SIMPLE;
+    // Built-in RenderingPath IDs
+    public static final int RPATH_SIMPLE3D = 0;
+    public static final int RPATH_DEFAULT = RPATH_SIMPLE3D;
+    // ---
 
     @Singleton
     private static RenderingPaths instance;
 
 
-    public static RenderingPath defaultPath() {
+    public static RenderingPath defaultRenderingPath() {
         return instance.renderingPaths.get(instance.defaultPathID);
     }
 
-    public static void defaultPath(int id) {
+    public static void defaultRenderingPath(int id) {
         if(!instance.renderingPaths.containsKey(id)) {
             Log.error(id + " is not a valid RenderingPath ID");
             return;
@@ -55,6 +57,7 @@ public final class RenderingPaths extends BerylSystem {
     @Override
     protected void init() {
         renderingPaths.putAll(getStandardRenderingPaths());
+        renderingPaths.values().forEach(RenderingPath::init);
     }
 
     private Map<? extends Integer,? extends RenderingPath> getStandardRenderingPaths() {

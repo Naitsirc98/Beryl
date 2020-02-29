@@ -44,8 +44,8 @@ public final class GLSimpleRenderingPath extends RenderingPath {
     private GLShaderProgram shader;
     private Matrix4f projectionViewModelMatrix;
 
-    {
-        init();
+    private GLSimpleRenderingPath() {
+
     }
 
     @Override
