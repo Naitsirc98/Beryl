@@ -10,6 +10,7 @@ import naitsirc98.beryl.meshes.vertices.VertexData;
 import naitsirc98.beryl.scenes.Entity;
 import naitsirc98.beryl.scenes.Scene;
 import naitsirc98.beryl.scenes.SceneManager;
+import naitsirc98.beryl.scenes.components.behaviours.MutableBehaviour;
 import naitsirc98.beryl.scenes.components.camera.Camera;
 import naitsirc98.beryl.scenes.components.math.Transform;
 import naitsirc98.beryl.scenes.components.meshes.MeshView;
@@ -20,6 +21,7 @@ import java.util.Random;
 
 import static naitsirc98.beryl.meshes.vertices.VertexLayout.VERTEX_LAYOUT_3D;
 import static naitsirc98.beryl.util.DataType.FLOAT32;
+import static naitsirc98.beryl.util.Maths.radians;
 
 public class App1 extends BerylApplication {
 
@@ -81,6 +83,10 @@ public class App1 extends BerylApplication {
         Entity model = scene.newEntity("Model");
         model.add(Transform.class).position(0, 0, -5);
         model.add(MeshView.class).mesh(mesh);
+        model.add(MutableBehaviour.class).onUpdate(thisBehaviour -> {
+            Transform transform = thisBehaviour.scene().entity("Model").get(Transform.class);
+            transform.rotateY(radians(0.5f));
+        });
 
         Entity camera = scene.newEntity("Camera");
         camera.add(Transform.class);

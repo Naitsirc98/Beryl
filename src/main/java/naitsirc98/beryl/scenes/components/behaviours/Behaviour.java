@@ -10,7 +10,7 @@ public class Behaviour extends Component<Behaviour> {
     private boolean started;
 
     @Override
-    protected final void init() {
+    protected void init() {
         super.init();
         started = false;
         onInit();

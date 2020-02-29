@@ -64,7 +64,6 @@ public final class RenderingPaths extends BerylSystem {
         return GraphicsAPI.get() == VULKAN ? vulkan().renderingPaths() : opengl().renderingPaths();
     }
 
-
     @Override
     protected void terminate() {
         for(RenderingPath renderingPath : renderingPaths.values()) {

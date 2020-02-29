@@ -5,14 +5,11 @@ import naitsirc98.beryl.graphics.window.Window;
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.scenes.components.behaviours.Behaviour;
 import naitsirc98.beryl.scenes.components.camera.Camera;
-import naitsirc98.beryl.scenes.components.math.Transform;
 
 import static naitsirc98.beryl.graphics.window.CursorType.DISABLED;
 import static naitsirc98.beryl.graphics.window.CursorType.NORMAL;
-import static naitsirc98.beryl.input.Input.isKeyPressed;
-import static naitsirc98.beryl.input.Input.isKeyTyped;
+import static naitsirc98.beryl.input.Input.*;
 import static naitsirc98.beryl.input.Key.*;
-import static naitsirc98.beryl.util.Maths.radians;
 
 public class CameraController extends Behaviour {
 
@@ -71,13 +68,8 @@ public class CameraController extends Behaviour {
             Window.get().fullscreen();
         }
 
-        // camera.lookAt(mouseX(), mouseY());
-        // camera.zoom(scrollY());
-
-        Transform modelTransform = scene().entity("Model").get(Transform.class);
-
-        // modelTransform.translate(0, 0, -0.4f);
-        modelTransform.rotateY(radians(0.5f));
+        camera.lookAt(mouseX(), mouseY());
+        camera.zoom(scrollY());
      }
 
     @Override
