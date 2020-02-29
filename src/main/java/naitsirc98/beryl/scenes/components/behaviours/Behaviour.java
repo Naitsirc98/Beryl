@@ -9,6 +9,10 @@ public class Behaviour extends Component<Behaviour> {
 
     private boolean started;
 
+    protected Behaviour() {
+
+    }
+
     @Override
     protected void init() {
         super.init();
@@ -76,7 +80,7 @@ public class Behaviour extends Component<Behaviour> {
     }
 
     @Override
-    public Class<? extends Component> type() {
+    public final Class<? extends Component> type() {
         return Behaviour.class;
     }
 

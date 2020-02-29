@@ -73,7 +73,7 @@ public final class EventManager extends BerylSystem {
      *
      * @param event the event
      */
-    public static void submitLater(Event event) {
+    public static void triggerLater(Event event) {
         instance.backEventQueue.add(assertNonNull(event));
     }
 
@@ -143,12 +143,15 @@ public final class EventManager extends BerylSystem {
 
     private void processEventQueue() {
 
-        if(frontEventQueue.isEmpty()) {
+        final Queue<Event> eventQueue = frontEventQueue;
+        final EventDispatcher dispatcher = this.dispatcher;
+
+        if(eventQueue.isEmpty()) {
             return;
         }
 
-        while(!frontEventQueue.isEmpty()) {
-            final Event event = frontEventQueue.poll();
+        while(!eventQueue.isEmpty()) {
+            final Event event = eventQueue.poll();
             dispatcher.dispatch(event);
         }
     }

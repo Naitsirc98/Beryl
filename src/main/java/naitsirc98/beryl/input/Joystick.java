@@ -67,13 +67,13 @@ public enum Joystick implements GLFWWrapper {
         return Gamepad.of(this);
     }
 
-    public StatesArray<Button> buttons() {
-        return buttons(new StatesArray<>(Button.class));
+    public StateTable<Button> buttons() {
+        return buttons(new StateTable<>(Button.class));
     }
 
-    public StatesArray<Button> buttons(StatesArray<Button> statesArray) {
+    public StateTable<Button> buttons(StateTable<Button> stateTable) {
 
-        statesArray.clear();
+        stateTable.clear();
 
         ByteBuffer states = glfwGetJoystickButtons(glfwHandle);
 
@@ -82,19 +82,19 @@ public enum Joystick implements GLFWWrapper {
         }
 
         for(int i = 0;i < states.limit();i++) {
-            statesArray.set(asJoystickButton(i), asState(states.get(i)));
+            stateTable.set(asJoystickButton(i), asState(states.get(i)));
         }
 
-        return statesArray;
+        return stateTable;
     }
 
-    public StatesArray<Hat> hats() {
-        return hats(new StatesArray<>(Hat.class));
+    public StateTable<Hat> hats() {
+        return hats(new StateTable<>(Hat.class));
     }
 
-    public StatesArray<Hat> hats(StatesArray<Hat> statesArray) {
+    public StateTable<Hat> hats(StateTable<Hat> stateTable) {
 
-        statesArray.clear();
+        stateTable.clear();
 
         ByteBuffer states = glfwGetJoystickHats(glfwHandle);
 
@@ -103,10 +103,10 @@ public enum Joystick implements GLFWWrapper {
         }
 
         for(int i = 0;i < states.limit();i++) {
-            statesArray.set(asJoystickHat(i), asState(states.get(i)));
+            stateTable.set(asJoystickHat(i), asState(states.get(i)));
         }
 
-        return statesArray;
+        return stateTable;
     }
 
     public String joystickName() {

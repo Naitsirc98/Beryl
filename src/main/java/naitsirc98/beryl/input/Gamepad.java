@@ -24,13 +24,13 @@ public class Gamepad implements GLFWWrapper {
     }
 
     private final Joystick joystick;
-    private final StatesArray<Joystick.Button> buttons;
+    private final StateTable<Joystick.Button> buttons;
     private final EnumMap<Joystick.Axis, Float> axes;
 
     Gamepad(Joystick joystick) {
         assertTrue(joystick.isGamepad());
         this.joystick = joystick;
-        buttons = new StatesArray<>(Joystick.Button.class);
+        buttons = new StateTable<>(Joystick.Button.class);
         axes = new EnumMap<>(Joystick.Axis.class);
         update();
     }
@@ -65,7 +65,7 @@ public class Gamepad implements GLFWWrapper {
         return joystick().isPresent();
     }
 
-    public StatesArray<Joystick.Button> buttons() {
+    public StateTable<Joystick.Button> buttons() {
         return buttons;
     }
 

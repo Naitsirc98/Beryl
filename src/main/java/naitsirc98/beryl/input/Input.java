@@ -182,16 +182,16 @@ public final class Input extends BerylSystem {
     }
 
 
-    private final StatesArray<Key> keyStates;
-    private final StatesArray<MouseButton> mouseButtonStates;
+    private final StateTable<Key> keyStates;
+    private final StateTable<MouseButton> mouseButtonStates;
     private final EnumMap<Joystick, Gamepad> gamepads;
     private final GLFWJoystickCallback joystickCallback;
     private float mouseX, mouseY;
     private float mouseScrollX, mouseScrollY;
 
     private Input() {
-        keyStates = new StatesArray<>(Key.class);
-        mouseButtonStates = new StatesArray<>(MouseButton.class);
+        keyStates = new StateTable<>(Key.class);
+        mouseButtonStates = new StateTable<>(MouseButton.class);
         gamepads = new EnumMap<>(Joystick.class);
         joystickCallback = GLFWJoystickCallback.create(this::onJoystickEvent);
     }
@@ -253,6 +253,8 @@ public final class Input extends BerylSystem {
 
         EventManager.pushEventCallback(KeyRepeatEvent.class, e -> keyStates.set(e.key(), State.REPEAT));
 
+        EventManager.pushEventCallback(KeyTypedEvent.class, e -> keyStates.set(e.key(), State.TYPE));
+
         EventManager.pushEventCallback(KeyReleasedEvent.class, e -> {
 
             final Key key = e.key();
@@ -261,10 +263,9 @@ public final class Input extends BerylSystem {
             // When this happens, we need to trigger a key typed event and clear the state to RELEASE afterwards
             if(keyStates.stateOf(key) != State.TYPE) {
                 // Trigger a typed event
-                keyStates.set(key, State.TYPE);
                 EventManager.triggerEvent(new KeyTypedEvent(key, e.modifiers()));
                 // Reset state to RELEASE in the next event pass
-                EventManager.submitLater(new KeyReleasedEvent(key, e.modifiers()));
+                EventManager.triggerLater(new KeyReleasedEvent(key, e.modifiers()));
 
             } else {
                 keyStates.set(key, State.RELEASE);
@@ -288,7 +289,7 @@ public final class Input extends BerylSystem {
                 mouseButtonStates.set(button, State.CLICK);
                 EventManager.triggerEvent(new MouseButtonClickedEvent(button, e.modifiers()));
                 // Reset in the next event pass
-                EventManager.submitLater(new MouseButtonReleasedEvent(button, e.modifiers()));
+                EventManager.triggerLater(new MouseButtonReleasedEvent(button, e.modifiers()));
             } else {
                 mouseButtonStates.set(button, State.RELEASE);
             }
@@ -303,7 +304,7 @@ public final class Input extends BerylSystem {
             mouseScrollX = e.getXOffset();
             mouseScrollY = e.getYOffset();
 
-            EventManager.submitLater(new ClearMouseScrollEvent());
+            EventManager.triggerLater(new ClearMouseScrollEvent());
         });
     }
 

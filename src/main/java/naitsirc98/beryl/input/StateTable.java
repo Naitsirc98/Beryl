@@ -8,25 +8,25 @@ import java.util.Set;
 import static java.util.stream.Collectors.toSet;
 import static naitsirc98.beryl.input.State.*;
 
-public class StatesArray<T extends Enum<T>> implements Iterable<Map.Entry<T, State>> {
+public class StateTable<T extends Enum<T>> implements Iterable<Map.Entry<T, State>> {
 
     private final EnumMap<T, State> states;
 
-    public StatesArray(Class<T> type) {
+    public StateTable(Class<T> type) {
         states = new EnumMap<>(type);
     }
 
-    public StatesArray(Class<T> type, StatesArray<T> other) {
+    public StateTable(Class<T> type, StateTable<T> other) {
         this(type);
         other.forEach(entry -> set(entry.getKey(), entry.getValue()));
     }
 
-    public StatesArray<T> clear() {
+    public StateTable<T> clear() {
         states.clear();
         return this;
     }
 
-    public StatesArray<T> set(T key, State state) {
+    public StateTable<T> set(T key, State state) {
         states.put(key, state);
         return this;
     }

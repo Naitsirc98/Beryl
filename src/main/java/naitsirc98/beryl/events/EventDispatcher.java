@@ -8,7 +8,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-class EventDispatcher {
+final class EventDispatcher {
 
     private final ExecutorService threadPool;
     private final Map<Class<? extends Event>, List<EventCallback<?>>> eventCallbacks;

@@ -1,6 +1,7 @@
 package naitsirc98.beryl.examples.app1;
 
 
+import naitsirc98.beryl.core.Time;
 import naitsirc98.beryl.graphics.window.Window;
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.scenes.components.behaviours.Behaviour;

@@ -12,6 +12,10 @@ public final class MutableBehaviour extends Behaviour {
     private Stage onDisable;
     private Stage onDestroy;
 
+    private MutableBehaviour() {
+
+    }
+
     public MutableBehaviour onInit(Stage onInit) {
         this.onInit = onInit;
         return this;
