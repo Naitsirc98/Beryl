@@ -45,7 +45,7 @@ public final class GLVertexDataBuilder extends VertexData.Builder {
 
         final int indexCount = indices == null ? 0 : indices.remaining();
 
-        return new GLVertexData(layout, getVertexCount(vertices), indexCount, createVertexBuffers(), indexBuffer);
+        return new GLVertexData(layout, firstVertex, getVertexCount(vertices), indexCount, createVertexBuffers(), indexBuffer);
     }
 
 

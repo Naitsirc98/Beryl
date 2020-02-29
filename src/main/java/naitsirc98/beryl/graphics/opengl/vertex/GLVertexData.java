@@ -10,10 +10,10 @@ public final class GLVertexData extends VertexData {
     private GLBuffer[] vertexBuffers;
     private GLBuffer indexBuffer;
 
-    protected GLVertexData(VertexLayout layout, int vertexCount, int indexCount,
+    protected GLVertexData(VertexLayout layout, int firstVertex, int vertexCount, int indexCount,
                            GLBuffer[] vertexBuffers, GLBuffer indexBuffer) {
 
-        super(layout, vertexCount, indexCount);
+        super(layout, firstVertex, vertexCount, indexCount);
         this.vertexBuffers = vertexBuffers;
         this.indexBuffer = indexBuffer;
         vertexArray = new GLVertexArray();

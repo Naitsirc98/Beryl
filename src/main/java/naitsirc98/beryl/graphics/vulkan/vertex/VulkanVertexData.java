@@ -14,8 +14,8 @@ public final class VulkanVertexData extends VertexData {
     private VulkanBufferGroup vertexBuffers;
     private VulkanBuffer indexBuffer;
 
-    protected VulkanVertexData(VertexLayout layout, int vertexCount, ByteBuffer[] vertices, ByteBuffer indices) {
-        super(layout, vertexCount, indices == null ? 0 : indices.remaining());
+    protected VulkanVertexData(VertexLayout layout, int firstVertex, int vertexCount, ByteBuffer[] vertices, ByteBuffer indices) {
+        super(layout, firstVertex, vertexCount, indices == null ? 0 : indices.remaining());
         vertexBuffers = VulkanBufferFactory.newVertexBuffers(getVertexBufferSizes(vertices));
     }
 

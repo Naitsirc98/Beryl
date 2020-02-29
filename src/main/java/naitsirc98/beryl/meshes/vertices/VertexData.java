@@ -15,17 +15,23 @@ public abstract class VertexData implements NativeResource {
     }
 
     protected final VertexLayout layout;
+    protected int firstVertex;
     protected int vertexCount;
     protected int indexCount;
 
-    protected VertexData(VertexLayout layout, int vertexCount, int indexCount) {
+    protected VertexData(VertexLayout layout, int firstVertex, int vertexCount, int indexCount) {
         this.layout = layout;
+        this.firstVertex = firstVertex;
         this.vertexCount = vertexCount;
         this.indexCount = indexCount;
     }
 
     public final VertexLayout layout() {
         return layout;
+    }
+
+    public final int firstVertex() {
+        return firstVertex;
     }
 
     public final int vertexCount() {
@@ -40,10 +46,16 @@ public abstract class VertexData implements NativeResource {
     public static abstract class Builder {
 
         protected final VertexLayout layout;
+        protected int firstVertex;
         private int bindingIndex;
 
         protected Builder(VertexLayout layout) {
             this.layout = requireNonNull(layout);
+        }
+
+        public final Builder firstVertex(int firstVertex) {
+            this.firstVertex = firstVertex;
+            return this;
         }
 
         public final Builder vertices(ByteBuffer vertices) {

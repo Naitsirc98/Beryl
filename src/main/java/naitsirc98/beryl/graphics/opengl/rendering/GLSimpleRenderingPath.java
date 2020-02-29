@@ -102,7 +102,7 @@ public final class GLSimpleRenderingPath extends RenderingPath {
 
                 uniformBuffer.update(projectionView.mul(meshView.modelMatrix(), mvp).get(uboData));
 
-                glDrawArrays(GL_TRIANGLES, 0, vertexData.vertexCount());
+                glDrawArrays(GL_TRIANGLES, vertexData.firstVertex(), vertexData.vertexCount());
             }
         }
     }

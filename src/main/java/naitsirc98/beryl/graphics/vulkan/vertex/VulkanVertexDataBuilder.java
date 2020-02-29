@@ -29,6 +29,6 @@ public class VulkanVertexDataBuilder extends VertexData.Builder {
 
     @Override
     public VulkanVertexData build() {
-        return new VulkanVertexData(layout, getVertexCount(vertices), vertices, indices);
+        return new VulkanVertexData(layout, firstVertex, getVertexCount(vertices), vertices, indices);
     }
 }
