@@ -80,13 +80,19 @@ public class App1 extends BerylApplication {
 
         Mesh mesh = new Mesh(VertexData.builder(VERTEX_LAYOUT_3D).vertices(0, getCubeVertices()).build());
 
-        Entity model = scene.newEntity("Model");
-        model.add(Transform.class).position(0, 0, -5);
-        model.add(MeshView.class).mesh(mesh);
-        model.add(MutableBehaviour.class).onUpdate(thisBehaviour -> {
-            Transform transform = thisBehaviour.scene().entity("Model").get(Transform.class);
-            transform.rotateY(radians(0.5f));
-        });
+        for(int i = 0;i < 10;i++) {
+
+            final float angle = RAND.nextFloat();
+
+            Entity model = scene.newEntity();
+            model.add(Transform.class).position(RAND.nextInt(10), -RAND.nextInt(10), -RAND.nextInt(10));
+            model.add(MeshView.class).mesh(mesh);
+            model.add(MutableBehaviour.class).onUpdate(thisBehaviour -> {
+                Transform transform = thisBehaviour.get(Transform.class);
+                transform.rotateY(radians(angle));
+            });
+
+        }
 
         Entity camera = scene.newEntity("Camera");
         camera.add(Transform.class);

@@ -1,5 +1,6 @@
 package naitsirc98.beryl.graphics.opengl.vertex;
 
+import naitsirc98.beryl.graphics.opengl.GLBuffer;
 import naitsirc98.beryl.meshes.vertices.VertexData;
 import naitsirc98.beryl.meshes.vertices.VertexLayout;
 

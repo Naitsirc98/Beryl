@@ -77,7 +77,7 @@ public abstract class Component<SELF extends Component> extends SceneObject {
      * @param componentClass the component class
      * @return the component or null if it does not exists
      */
-    protected final <T extends Component> T get(Class<T> componentClass) {
+    public final <T extends Component> T get(Class<T> componentClass) {
         assertNotDeleted();
         return entity.get(componentClass);
     }
@@ -88,7 +88,7 @@ public abstract class Component<SELF extends Component> extends SceneObject {
      * @param componentClass the component class
      * @return the component
      */
-    protected final <T extends Component> T requires(Class<T> componentClass) {
+    public final <T extends Component> T requires(Class<T> componentClass) {
         assertNotDeleted();
         return entity.requires(componentClass);
     }

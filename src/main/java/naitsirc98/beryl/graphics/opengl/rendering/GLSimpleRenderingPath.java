@@ -2,6 +2,7 @@ package naitsirc98.beryl.graphics.opengl.rendering;
 
 import naitsirc98.beryl.graphics.opengl.shaders.GLShader;
 import naitsirc98.beryl.graphics.opengl.shaders.GLShaderProgram;
+import naitsirc98.beryl.graphics.opengl.shaders.GLUniformBuffer;
 import naitsirc98.beryl.graphics.opengl.vertex.GLVertexData;
 import naitsirc98.beryl.graphics.rendering.RenderingPath;
 import naitsirc98.beryl.logging.Log;
@@ -10,20 +11,26 @@ import naitsirc98.beryl.scenes.components.camera.Camera;
 import naitsirc98.beryl.scenes.components.meshes.MeshView;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
+import org.lwjgl.system.MemoryStack;
 
+import java.nio.FloatBuffer;
 import java.nio.file.Path;
 import java.util.List;
 
 import static naitsirc98.beryl.graphics.ShaderStage.FRAGMENT_STAGE;
 import static naitsirc98.beryl.graphics.ShaderStage.VERTEX_STAGE;
-import static org.lwjgl.opengl.GL11.*;
+import static naitsirc98.beryl.util.DataType.FLOAT32;
+import static org.lwjgl.opengl.GL46.*;
+import static org.lwjgl.system.MemoryStack.stackPush;
 
 public final class GLSimpleRenderingPath extends RenderingPath {
 
     private static final Path VERTEX_SHADER_PATH;
     private static final Path FRAGMENT_SHADER_PATH;
 
-    private static final String UNIFORM_NAME_MODEL_VIEW_PROJECTION = "u_ProjectionViewModel";
+    private static final String UNIFORM_BUFFER_NAME = "ModelViewProjectionMatrix";
+    private static final int UNIFORM_BUFFER_BINDING = 0;
+    private static final int UNIFORM_BUFFER_SIZE = 16 * FLOAT32.sizeof();
 
     static {
 
@@ -42,6 +49,7 @@ public final class GLSimpleRenderingPath extends RenderingPath {
     }
 
     private GLShaderProgram shader;
+    private GLUniformBuffer uniformBuffer;
     private Matrix4f projectionViewModelMatrix;
 
     private GLSimpleRenderingPath() {
@@ -54,6 +62,8 @@ public final class GLSimpleRenderingPath extends RenderingPath {
                 .attach(new GLShader(VERTEX_STAGE).source(VERTEX_SHADER_PATH).compile())
                 .attach(new GLShader(FRAGMENT_STAGE).source(FRAGMENT_SHADER_PATH).compile())
                 .link();
+        uniformBuffer = new GLUniformBuffer(UNIFORM_BUFFER_NAME, shader, UNIFORM_BUFFER_BINDING);
+        uniformBuffer.storage(UNIFORM_BUFFER_SIZE);
         projectionViewModelMatrix = new Matrix4f();
     }
 
@@ -71,20 +81,25 @@ public final class GLSimpleRenderingPath extends RenderingPath {
 
         shader.use();
 
+        uniformBuffer.bind();
+
         Matrix4fc projectionView = camera.projectionViewMatrix();
         Matrix4f mvp = projectionViewModelMatrix;
 
-        for(MeshView meshView : meshViews) {
+        try(MemoryStack stack = stackPush()) {
 
-            GLVertexData vertexData = meshView.mesh().vertexData();
+            FloatBuffer uniformBufferData = stack.mallocFloat(16);
 
-            Matrix4fc modelMatrix = meshView.transform().modelMatrix();
+            for(MeshView meshView : meshViews) {
 
-            shader.uniformMatrix4f("u_MVP", false, projectionView.mul(modelMatrix, mvp));
+                GLVertexData vertexData = meshView.mesh().vertexData();
 
-            vertexData.bind();
+                vertexData.bind();
 
-            glDrawArrays(GL_TRIANGLES, 0, 36);
+                uniformBuffer.update(projectionView.mul(meshView.transform().modelMatrix(), mvp).get(uniformBufferData));
+
+                glDrawArrays(GL_TRIANGLES, 0, 36);
+            }
         }
     }
 }

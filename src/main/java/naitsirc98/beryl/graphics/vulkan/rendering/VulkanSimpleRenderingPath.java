@@ -6,8 +6,13 @@ import naitsirc98.beryl.scenes.components.meshes.MeshView;
 
 import java.util.List;
 
-public class VulkanSimpleRenderingPath extends RenderingPath {
+public final class VulkanSimpleRenderingPath extends RenderingPath {
 
+
+
+    private VulkanSimpleRenderingPath() {
+
+    }
 
     @Override
     protected void init() {
@@ -15,12 +20,12 @@ public class VulkanSimpleRenderingPath extends RenderingPath {
     }
 
     @Override
-    protected void terminate() {
+    public void render(Camera camera, List<MeshView> meshViews) {
 
     }
 
     @Override
-    public void render(Camera camera, List<MeshView> meshViews) {
+    protected void terminate() {
 
     }
 

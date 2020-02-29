@@ -8,6 +8,7 @@ import naitsirc98.beryl.graphics.rendering.RenderingPath;
 import naitsirc98.beryl.graphics.vulkan.commands.VulkanCommandPool;
 import naitsirc98.beryl.graphics.vulkan.devices.VulkanDevice;
 import naitsirc98.beryl.graphics.vulkan.rendering.VulkanRenderer;
+import naitsirc98.beryl.graphics.vulkan.rendering.VulkanSimpleRenderingPath;
 import naitsirc98.beryl.graphics.vulkan.swapchain.VulkanSwapchain;
 import naitsirc98.beryl.graphics.vulkan.vertex.VulkanVertexDataBuilder;
 import naitsirc98.beryl.meshes.vertices.VertexData;
@@ -16,9 +17,12 @@ import naitsirc98.beryl.util.Destructor;
 import org.lwjgl.vulkan.VkDevice;
 import org.lwjgl.vulkan.VkInstance;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
 
+import static naitsirc98.beryl.graphics.rendering.RenderingPaths.RPATH_SIMPLE3D;
 import static naitsirc98.beryl.graphics.vulkan.VulkanDebugMessenger.newVulkanDebugMessenger;
 import static naitsirc98.beryl.graphics.vulkan.VulkanInstanceFactory.newVkInstance;
 import static naitsirc98.beryl.graphics.vulkan.VulkanSurface.newVulkanSurface;
@@ -66,7 +70,12 @@ public final class VulkanContext implements GraphicsContext {
 
     @Override
     public Map<Integer, RenderingPath> renderingPaths() {
-        return null;
+
+        Map<Integer, RenderingPath> renderingPaths = new HashMap<>();
+
+        renderingPaths.put(RPATH_SIMPLE3D, newInstance(VulkanSimpleRenderingPath.class));
+
+        return renderingPaths;
     }
 
     @Override
