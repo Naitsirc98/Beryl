@@ -45,7 +45,7 @@ public class GLContext implements GraphicsContext, LongHandle {
     }
 
     @Override
-    public Renderer renderer() {
+    public GLRenderer renderer() {
         return renderer;
     }
 

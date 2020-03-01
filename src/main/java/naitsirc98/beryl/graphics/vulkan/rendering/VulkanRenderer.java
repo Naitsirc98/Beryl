@@ -119,6 +119,10 @@ public class VulkanRenderer implements Renderer {
         frameManager.endFrame();
     }
 
+    public int currentSwapchainImageIndex() {
+        return currentSwapchainImageIndex;
+    }
+
     public VkCommandBuffer currentCommandBuffer() {
         return commandBuffers[currentSwapchainImageIndex];
     }

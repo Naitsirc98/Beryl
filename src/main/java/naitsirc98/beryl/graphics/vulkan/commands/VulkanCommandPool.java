@@ -131,8 +131,9 @@ public class VulkanCommandPool implements NativeResource {
         try(MemoryStack stack = stackPush()) {
 
             VkCommandPoolCreateInfo poolInfo = VkCommandPoolCreateInfo.callocStack(stack)
-                .sType(VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO)
-                .queueFamilyIndex(queueFamily);
+                    .sType(VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO)
+                    .queueFamilyIndex(queueFamily)
+                    .flags(VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
 
             LongBuffer pCommandPool = stack.mallocLong(1);
 

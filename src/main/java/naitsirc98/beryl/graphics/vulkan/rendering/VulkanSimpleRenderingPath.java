@@ -5,21 +5,30 @@ import naitsirc98.beryl.graphics.rendering.RenderingPath;
 import naitsirc98.beryl.graphics.vulkan.pipelines.VulkanGraphicsPipeline;
 import naitsirc98.beryl.graphics.vulkan.pipelines.VulkanPipelineLayout;
 import naitsirc98.beryl.graphics.vulkan.pipelines.VulkanShaderModule;
+import naitsirc98.beryl.graphics.vulkan.swapchain.VulkanSwapchain;
+import naitsirc98.beryl.graphics.vulkan.vertex.VulkanVertexData;
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.meshes.vertices.VertexLayout;
 import naitsirc98.beryl.resources.Resources;
 import naitsirc98.beryl.scenes.components.camera.Camera;
 import naitsirc98.beryl.scenes.components.meshes.MeshView;
+import org.joml.Matrix4f;
+import org.joml.Matrix4fc;
+import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
 
+import java.nio.ByteBuffer;
 import java.nio.file.Path;
 import java.util.List;
 
 import static naitsirc98.beryl.graphics.ShaderStage.FRAGMENT_STAGE;
 import static naitsirc98.beryl.graphics.ShaderStage.VERTEX_STAGE;
+import static naitsirc98.beryl.graphics.vulkan.util.VulkanUtils.vkCall;
 import static naitsirc98.beryl.graphics.vulkan.vertex.VulkanVertexInputUtils.vertexInputAttributesStack;
 import static naitsirc98.beryl.graphics.vulkan.vertex.VulkanVertexInputUtils.vertexInputBindingsStack;
 import static naitsirc98.beryl.util.types.DataType.FLOAT32;
+import static org.lwjgl.system.MemoryStack.stackPush;
+import static org.lwjgl.system.MemoryUtil.memAddress;
 import static org.lwjgl.vulkan.VK10.*;
 
 public final class VulkanSimpleRenderingPath extends RenderingPath {
@@ -50,6 +59,9 @@ public final class VulkanSimpleRenderingPath extends RenderingPath {
 
     private VulkanPipelineLayout pipelineLayout;
     private VulkanGraphicsPipeline graphicsPipeline;
+    private Matrix4f projectionViewModelMatrix;
+    private VulkanRenderer renderer;
+    private VulkanSwapchain swapchain;
 
     private VulkanSimpleRenderingPath() {
 
@@ -57,19 +69,96 @@ public final class VulkanSimpleRenderingPath extends RenderingPath {
 
     @Override
     protected void init() {
+        swapchain = Graphics.vulkan().swapchain();
         createPipelineLayout();
         createGraphicsPipeline();
+        projectionViewModelMatrix = new Matrix4f();
+        renderer = Graphics.vulkan().renderer();
     }
 
     @Override
     public void render(Camera camera, List<MeshView> meshViews) {
 
+        try(MemoryStack stack = stackPush()) {
+
+            VkCommandBuffer commandBuffer = renderer.currentCommandBuffer();
+
+            begin(commandBuffer, stack);
+
+            Matrix4fc projectionView = camera.projectionViewMatrix();
+            Matrix4f mvp = projectionViewModelMatrix;
+            final long pipelineLayout = this.pipelineLayout.handle();
+
+            ByteBuffer pushConstantData = stack.malloc(PUSH_CONSTANT_SIZE);
+            final long pushConstantDataAddress = memAddress(pushConstantData);
+
+            for(MeshView meshView : meshViews) {
+
+                VulkanVertexData vertexData = meshView.mesh().vertexData();
+
+                vertexData.bind(commandBuffer);
+
+                projectionView.mul(meshView.modelMatrix(), mvp).get(pushConstantData);
+
+                nvkCmdPushConstants(
+                        commandBuffer,
+                        pipelineLayout,
+                        VK_SHADER_STAGE_VERTEX_BIT,
+                        0,
+                        PUSH_CONSTANT_SIZE,
+                        pushConstantDataAddress);
+
+                if(vertexData.indexCount() == 0) {
+                    vkCmdDraw(commandBuffer, vertexData.vertexCount(), 1, 0, 0);
+                } else {
+                    vkCmdDrawIndexed(commandBuffer, vertexData.indexCount(), 1, 0, 0, 0);
+                }
+            }
+
+            end(commandBuffer);
+        }
+    }
+
+    private void end(VkCommandBuffer commandBuffer) {
+        vkCmdEndRenderPass(commandBuffer);
+        vkCall(vkEndCommandBuffer(commandBuffer));
+    }
+
+    private void begin(VkCommandBuffer commandBuffer, MemoryStack stack) {
+
+        VkCommandBufferBeginInfo beginInfo = VkCommandBufferBeginInfo.callocStack(stack)
+                .sType(VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO);
+
+        VkRenderPassBeginInfo renderPassInfo = VkRenderPassBeginInfo.callocStack(stack)
+                .sType(VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO)
+                .renderPass(swapchain.renderPass().handle())
+                .renderArea(VkRect2D.callocStack(stack)
+                        .offset(VkOffset2D.callocStack(stack).set(0, 0))
+                        .extent(swapchain.extent()))
+                .framebuffer(currentFramebuffer());
+
+        VkClearValue.Buffer clearValues = VkClearValue.callocStack(2, stack);
+        clearValues.get(0).color().float32(stack.floats(0.0f, 0.0f, 0.0f, 1.0f));
+        clearValues.get(1).depthStencil().set(1.0f, 0);
+
+        renderPassInfo.pClearValues(clearValues);
+
+        vkCall(vkBeginCommandBuffer(commandBuffer, beginInfo));
+
+        vkCmdBeginRenderPass(commandBuffer, renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+        vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline.handle());
+    }
+
+    private long currentFramebuffer() {
+        return swapchain.renderPass().framebuffers().get(renderer.currentSwapchainImageIndex());
     }
 
     @Override
     protected void terminate() {
         pipelineLayout.free();
         graphicsPipeline.free();
+        projectionViewModelMatrix = null;
     }
 
     private void createPipelineLayout() {
@@ -80,18 +169,16 @@ public final class VulkanSimpleRenderingPath extends RenderingPath {
 
     private void createGraphicsPipeline() {
 
-        final long swapchainRenderPass = Graphics.vulkan().swapchain().renderPass().handle();
-
         VulkanShaderModule vertexShaderModule = new VulkanShaderModule(VERTEX_SHADER_PATH, VERTEX_STAGE);
         VulkanShaderModule fragmentShaderModule = new VulkanShaderModule(FRAGMENT_SHADER_PATH, FRAGMENT_STAGE);
 
-        graphicsPipeline = new VulkanGraphicsPipeline.Builder(pipelineLayout.handle(), swapchainRenderPass, RENDER_SUBPASS)
+        graphicsPipeline = new VulkanGraphicsPipeline.Builder(pipelineLayout.handle(), swapchain.renderPass().handle(), RENDER_SUBPASS)
                 .addShaderModules(vertexShaderModule, fragmentShaderModule)
                 .vertexInputState(vertexInputBindingsStack(VERTEX_LAYOUT), vertexInputAttributesStack(VERTEX_LAYOUT))
                 .inputAssemblyState(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, false)
                 .viewports(getViewports())
                 .scissors(getScissors())
-                .addDynamicStates(VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR)
+                // .addDynamicStates(VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR)
                 .rasterizationState(getRasterizationStage())
                 .multisampleState(getMultisampleState())
                 .depthStencilState(getDepthStencilState())

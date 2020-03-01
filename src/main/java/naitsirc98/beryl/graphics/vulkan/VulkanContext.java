@@ -69,7 +69,7 @@ public final class VulkanContext implements GraphicsContext {
     }
 
     @Override
-    public Renderer renderer() {
+    public VulkanRenderer renderer() {
         return renderer;
     }
 
