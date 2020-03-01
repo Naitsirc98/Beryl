@@ -2,26 +2,23 @@ package naitsirc98.beryl.graphics.vulkan;
 
 import naitsirc98.beryl.logging.Log;
 import org.lwjgl.system.MemoryStack;
-import org.lwjgl.system.NativeResource;
 import org.lwjgl.vulkan.VkDebugUtilsMessengerCallbackDataEXT;
 import org.lwjgl.vulkan.VkDebugUtilsMessengerCallbackEXT;
 import org.lwjgl.vulkan.VkDebugUtilsMessengerCreateInfoEXT;
-import org.lwjgl.vulkan.VkInstance;
 
 import java.nio.LongBuffer;
 
 import static naitsirc98.beryl.graphics.vulkan.VulkanContext.VULKAN_DEBUG_MESSAGES_ENABLED;
 import static naitsirc98.beryl.graphics.vulkan.util.VulkanUtils.vkCall;
 import static org.lwjgl.system.MemoryStack.stackPush;
-import static org.lwjgl.system.MemoryUtil.NULL;
 import static org.lwjgl.vulkan.EXTDebugUtils.*;
 import static org.lwjgl.vulkan.VK10.*;
 
 
-public class VulkanDebugMessenger implements NativeResource {
+public class VulkanDebugMessenger implements VulkanObject.Long {
 
-    static VulkanDebugMessenger newVulkanDebugMessenger(VkInstance vkInstance) {
-        return VULKAN_DEBUG_MESSAGES_ENABLED ? new VulkanDebugMessenger(vkInstance) : null;
+    static VulkanDebugMessenger newVulkanDebugMessenger() {
+        return VULKAN_DEBUG_MESSAGES_ENABLED ? new VulkanDebugMessenger() : null;
     }
 
     public static int vulkanDebugCallback(int messageSeverity, int messageType, long pCallbackData, long pUserData) {
@@ -42,14 +39,23 @@ public class VulkanDebugMessenger implements NativeResource {
             .pfnUserCallback(VulkanDebugMessenger::vulkanDebugCallback);
     }
 
-    private final VkInstance vkInstance;
     private final VkDebugUtilsMessengerCallbackEXT debugCallback;
-    private final long debugMessengerHandle;
+    private final long vkDebugMessenger;
 
-    private VulkanDebugMessenger(VkInstance vkInstance) {
-        this.vkInstance = vkInstance;
+    private VulkanDebugMessenger() {
         debugCallback = VkDebugUtilsMessengerCallbackEXT.create(VulkanDebugMessenger::vulkanDebugCallback);
-        debugMessengerHandle = createDebugMessenger();
+        vkDebugMessenger = createDebugMessenger();
+    }
+
+    @Override
+    public long handle() {
+        return vkDebugMessenger;
+    }
+
+    @Override
+    public void free() {
+        debugCallback.free();
+        destroyDebugMessenger();
     }
 
     private long createDebugMessenger() {
@@ -64,16 +70,10 @@ public class VulkanDebugMessenger implements NativeResource {
         }
     }
 
-    @Override
-    public void free() {
-        debugCallback.free();
-        destroyDebugMessenger();
-    }
-
     private int createDebugMessenger(VkDebugUtilsMessengerCreateInfoEXT createInfo, LongBuffer pDebugMessenger) {
 
-        if(vkGetInstanceProcAddr(vkInstance, "vkCreateDebugUtilsMessengerEXT") != NULL) {
-            return vkCreateDebugUtilsMessengerEXT(vkInstance, createInfo, null, pDebugMessenger);
+        if(vkGetInstanceProcAddr(vkInstance(), "vkCreateDebugUtilsMessengerEXT") != NULL) {
+            return vkCreateDebugUtilsMessengerEXT(vkInstance(), createInfo, null, pDebugMessenger);
         }
 
         return VK_ERROR_EXTENSION_NOT_PRESENT;
@@ -81,8 +81,8 @@ public class VulkanDebugMessenger implements NativeResource {
 
     private void destroyDebugMessenger() {
 
-        if(vkGetInstanceProcAddr(vkInstance, "vkDestroyDebugUtilsMessengerEXT") != NULL) {
-            vkDestroyDebugUtilsMessengerEXT(vkInstance, debugMessengerHandle, null);
+        if(vkGetInstanceProcAddr(vkInstance(), "vkDestroyDebugUtilsMessengerEXT") != NULL) {
+            vkDestroyDebugUtilsMessengerEXT(vkInstance(), vkDebugMessenger, null);
         }
     }
 

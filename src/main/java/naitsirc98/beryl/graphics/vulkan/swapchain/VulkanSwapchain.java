@@ -2,7 +2,7 @@ package naitsirc98.beryl.graphics.vulkan.swapchain;
 
 import naitsirc98.beryl.graphics.vulkan.VulkanImage;
 import naitsirc98.beryl.graphics.vulkan.VulkanImageBase;
-import naitsirc98.beryl.graphics.vulkan.devices.VulkanDevice;
+import naitsirc98.beryl.graphics.vulkan.VulkanObject;
 import naitsirc98.beryl.graphics.vulkan.devices.VulkanLogicalDevice;
 import naitsirc98.beryl.graphics.vulkan.devices.VulkanPhysicalDevice;
 import naitsirc98.beryl.graphics.vulkan.devices.VulkanPhysicalDevice.QueueFamilyIndices;
@@ -13,7 +13,6 @@ import naitsirc98.beryl.graphics.window.Window;
 import naitsirc98.beryl.util.Destructor;
 import naitsirc98.beryl.util.Sizec;
 import org.lwjgl.system.MemoryStack;
-import org.lwjgl.system.NativeResource;
 import org.lwjgl.vulkan.*;
 
 import java.nio.IntBuffer;
@@ -28,14 +27,13 @@ import static org.lwjgl.vulkan.KHRSwapchain.*;
 import static org.lwjgl.vulkan.VK10.*;
 
 @Destructor
-public class VulkanSwapchain implements NativeResource {
+public class VulkanSwapchain implements VulkanObject.Long {
 
     // TODO: add MSAA support
 
     private static final int COLOR_ATTACHMENT_INDEX = 0;
     private static final int DEPTH_ATTACHMENT_INDEX = 1;
 
-    private final VulkanDevice device;
     private long vkSwapchain;
     private int swapChainImageFormat;
     private VkExtent2D swapChainExtent;
@@ -43,18 +41,14 @@ public class VulkanSwapchain implements NativeResource {
     private VulkanImageBase depthImage;
     private VulkanRenderPass renderPass;
 
-    public VulkanSwapchain(VulkanDevice device) {
-        this.device = device;
+    public VulkanSwapchain() {
         createSwapchain();
         renderPass = createSwapchainRenderPass();
     }
 
-    public long vkSwapchain() {
+    @Override
+    public long handle() {
         return vkSwapchain;
-    }
-
-    public VulkanDevice device() {
-        return device;
     }
 
     public int swapChainImageFormat() {
@@ -89,7 +83,7 @@ public class VulkanSwapchain implements NativeResource {
 
         swapChainExtent.free();
 
-        vkDestroySwapchainKHR(device.logicalDevice().vkDevice(), vkSwapchain, null);
+        vkDestroySwapchainKHR(logicalDevice().handle(), vkSwapchain, null);
     }
 
     private void freeSwapchainImages() {
@@ -103,9 +97,9 @@ public class VulkanSwapchain implements NativeResource {
 
         try(MemoryStack stack = stackPush()) {
 
-            VulkanPhysicalDevice physicalDevice = device.physicalDevice();
-            VulkanLogicalDevice logicalDevice = device.logicalDevice();
-            long surface = device.surface();
+            VulkanPhysicalDevice physicalDevice = physicalDevice();
+            VulkanLogicalDevice logicalDevice = logicalDevice();
+            long surface = surface().handle();
 
             SwapChainSupportDetails swapChainSupport = physicalDevice.swapChainSupportDetails();
 
@@ -152,7 +146,7 @@ public class VulkanSwapchain implements NativeResource {
 
             LongBuffer pSwapChain = stack.longs(VK_NULL_HANDLE);
 
-            if(vkCreateSwapchainKHR(logicalDevice.vkDevice(), createInfo, null, pSwapChain) != VK_SUCCESS) {
+            if(vkCreateSwapchainKHR(logicalDevice.handle(), createInfo, null, pSwapChain) != VK_SUCCESS) {
                 throw new RuntimeException("Failed to create swap chain");
             }
 
@@ -168,18 +162,18 @@ public class VulkanSwapchain implements NativeResource {
 
     private void getSwapchainImages(long swapchain, IntBuffer imageCount, MemoryStack stack) {
 
-        vkGetSwapchainImagesKHR(device.logicalDevice().vkDevice(), swapchain, imageCount, null);
+        vkGetSwapchainImagesKHR(logicalDevice().handle(), swapchain, imageCount, null);
 
         LongBuffer pSwapchainImages = stack.mallocLong(imageCount.get(0));
 
-        vkGetSwapchainImagesKHR(device.logicalDevice().vkDevice(), swapchain, imageCount, pSwapchainImages);
+        vkGetSwapchainImagesKHR(logicalDevice().handle(), swapchain, imageCount, pSwapchainImages);
 
         if(swapChainImages == null || swapChainImages.length != imageCount.get(0)) {
             swapChainImages = new VulkanSwapchainImage[imageCount.get(0)];
         }
 
         for(int i = 0;i < pSwapchainImages.capacity();i++) {
-            swapChainImages[i] = new VulkanSwapchainImage(device.logicalDevice(), pSwapchainImages.get(i), swapChainImageFormat);
+            swapChainImages[i] = new VulkanSwapchainImage(pSwapchainImages.get(i), swapChainImageFormat);
         }
     }
 
@@ -226,7 +220,7 @@ public class VulkanSwapchain implements NativeResource {
         depthImage = createDepthImage();
 
         VulkanRenderPass renderPass = new VulkanRenderPass(
-                device.logicalDevice(),
+                logicalDevice(),
                 getSwapchainSubpasses(),
                 getSwapchainSubpassAttachments(),
                 getSwapchainSubpassDependencies());
@@ -265,7 +259,7 @@ public class VulkanSwapchain implements NativeResource {
             .finalLayout(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
         VkAttachmentDescription depthAttachment = VkAttachmentDescription.create()
-            .format(findDepthFormat(device.physicalDevice().vkPhysicalDevice()))
+            .format(findDepthFormat(physicalDevice().handle()))
             .samples(VK_SAMPLE_COUNT_1_BIT)
             .loadOp(VK_ATTACHMENT_LOAD_OP_CLEAR)
             .storeOp(VK_ATTACHMENT_STORE_OP_DONT_CARE)
@@ -309,10 +303,9 @@ public class VulkanSwapchain implements NativeResource {
 
     private VulkanImageBase createDepthImage() {
 
-        final int depthFormat = findDepthFormat(device.physicalDevice().vkPhysicalDevice());
+        final int depthFormat = findDepthFormat(physicalDevice().handle());
 
         VulkanImage depthImage = new VulkanImage(
-                device,
                 getDepthImageInfo(depthFormat),
                 getDepthImageViewInfo(depthFormat),
                 getDepthImageMemoryProperties());

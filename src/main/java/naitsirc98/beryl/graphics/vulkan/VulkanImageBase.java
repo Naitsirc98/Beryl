@@ -1,19 +1,12 @@
 package naitsirc98.beryl.graphics.vulkan;
 
-import naitsirc98.beryl.graphics.vulkan.devices.VulkanLogicalDevice;
-import naitsirc98.beryl.util.Destructor;
-import org.lwjgl.system.NativeResource;
-import org.lwjgl.vulkan.VkImageCreateInfo;
+public interface VulkanImageBase extends VulkanObject.Long {
 
-@Destructor
-public interface VulkanImageBase extends NativeResource {
-
-    long vkImage();
+    default long vkImage() {
+        return handle();
+    }
 
     long vkImageView();
 
-    VulkanLogicalDevice logicalDevice();
-
     int format();
-
 }

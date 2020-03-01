@@ -1,8 +1,6 @@
 package naitsirc98.beryl.graphics.vulkan;
 
 import naitsirc98.beryl.graphics.Graphics;
-import naitsirc98.beryl.graphics.vulkan.devices.VulkanDevice;
-import naitsirc98.beryl.graphics.vulkan.devices.VulkanLogicalDevice;
 import naitsirc98.beryl.logging.Log;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
@@ -17,15 +15,13 @@ import static org.lwjgl.vulkan.VK10.*;
 
 public class VulkanImage implements VulkanImageBase {
 
-    private final long vkImage;
-    private final long vkImageMemory;
-    private final long vkImageView;
-    private final VkImageCreateInfo imageInfo;
-    private final VkImageViewCreateInfo imageViewInfo;
-    private final VulkanDevice device;
+    private long vkImage;
+    private long vkImageMemory;
+    private long vkImageView;
+    private VkImageCreateInfo imageInfo;
+    private VkImageViewCreateInfo imageViewInfo;
 
-    public VulkanImage(VulkanDevice device, VkImageCreateInfo imageInfo, VkImageViewCreateInfo imageViewInfo, int memoryProperties) {
-        this.device = device;
+    public VulkanImage(VkImageCreateInfo imageInfo, VkImageViewCreateInfo imageViewInfo, int memoryProperties) {
         this.imageInfo = imageInfo;
         this.imageViewInfo = imageViewInfo;
         vkImage = createVkImage();
@@ -35,7 +31,7 @@ public class VulkanImage implements VulkanImageBase {
     }
 
     @Override
-    public long vkImage() {
+    public long handle() {
         return vkImage;
     }
 
@@ -46,11 +42,6 @@ public class VulkanImage implements VulkanImageBase {
 
     public long getVkImageMemory() {
         return vkImageMemory;
-    }
-
-    @Override
-    public VulkanLogicalDevice logicalDevice() {
-        return device.logicalDevice();
     }
 
     @Override
@@ -69,11 +60,11 @@ public class VulkanImage implements VulkanImageBase {
 
         imageInfo.free();
 
-        vkDestroyImageView(device.logicalDevice().vkDevice(), vkImageView, null);
+        vkDestroyImageView(logicalDevice().handle(), vkImageView, null);
 
-        vkDestroyImage(device.logicalDevice().vkDevice(), vkImage, null);
+        vkDestroyImage(logicalDevice().handle(), vkImage, null);
 
-        vkFreeMemory(device.logicalDevice().vkDevice(), vkImageMemory, null);
+        vkFreeMemory(logicalDevice().handle(), vkImageMemory, null);
     }
 
     public void transitionLayout(int oldLayout, int newLayout) {
@@ -183,7 +174,7 @@ public class VulkanImage implements VulkanImageBase {
 
             LongBuffer pImage = stack.mallocLong(1);
 
-            vkCall(vkCreateImage(device.logicalDevice().vkDevice(), imageInfo, null, pImage));
+            vkCall(vkCreateImage(logicalDevice().handle(), imageInfo, null, pImage));
 
             return pImage.get(0);
         }
@@ -194,7 +185,7 @@ public class VulkanImage implements VulkanImageBase {
         try(MemoryStack stack = stackPush()) {
 
             VkMemoryRequirements memRequirements = VkMemoryRequirements.mallocStack(stack);
-            vkGetImageMemoryRequirements(device.logicalDevice().vkDevice(), vkImage, memRequirements);
+            vkGetImageMemoryRequirements(logicalDevice().handle(), vkImage, memRequirements);
 
             VkMemoryAllocateInfo allocInfo = VkMemoryAllocateInfo.callocStack(stack);
             allocInfo.sType(VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO);
@@ -203,20 +194,20 @@ public class VulkanImage implements VulkanImageBase {
 
             LongBuffer pImageMemory = stack.mallocLong(1);
 
-            vkCall(vkAllocateMemory(device.logicalDevice().vkDevice(), allocInfo, null, pImageMemory));
+            vkCall(vkAllocateMemory(logicalDevice().handle(), allocInfo, null, pImageMemory));
 
             return pImageMemory.get(0);
         }
     }
 
     private void bindImageMemory() {
-        vkBindImageMemory(device.logicalDevice().vkDevice(), vkImage, vkImageMemory, 0);
+        vkBindImageMemory(logicalDevice().handle(), vkImage, vkImageMemory, 0);
     }
 
     private int findMemoryType(int typeFilter, int properties) {
 
         VkPhysicalDeviceMemoryProperties memProperties = VkPhysicalDeviceMemoryProperties.mallocStack();
-        vkGetPhysicalDeviceMemoryProperties(device.physicalDevice().vkPhysicalDevice(), memProperties);
+        vkGetPhysicalDeviceMemoryProperties(physicalDevice().handle(), memProperties);
 
         for(int i = 0;i < memProperties.memoryTypeCount();i++) {
             if((typeFilter & (1 << i)) != 0 && (memProperties.memoryTypes(i).propertyFlags() & properties) == properties) {
@@ -237,7 +228,7 @@ public class VulkanImage implements VulkanImageBase {
 
             LongBuffer pImageView = stack.mallocLong(1);
 
-            vkCall(vkCreateImageView(device.logicalDevice().vkDevice(), imageViewInfo, null, pImageView));
+            vkCall(vkCreateImageView(logicalDevice().handle(), imageViewInfo, null, pImageView));
 
             return pImageView.get(0);
         }

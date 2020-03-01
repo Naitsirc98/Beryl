@@ -1,10 +1,10 @@
 package naitsirc98.beryl.graphics.vulkan.devices;
 
+import naitsirc98.beryl.graphics.vulkan.VulkanObject;
 import naitsirc98.beryl.graphics.vulkan.devices.VulkanPhysicalDevice.QueueFamilyIndices;
 import naitsirc98.beryl.util.Destructor;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
-import org.lwjgl.system.NativeResource;
 import org.lwjgl.vulkan.*;
 
 import static naitsirc98.beryl.graphics.vulkan.VulkanContext.*;
@@ -14,23 +14,20 @@ import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.vulkan.VK10.*;
 
 @Destructor
-public class VulkanLogicalDevice implements NativeResource {
-
-    public static VulkanLogicalDevice newVulkanLogicalDevice(VulkanPhysicalDevice physicalDevice) {
-        return new VulkanLogicalDevice(physicalDevice);
-    }
+public class VulkanLogicalDevice implements VulkanObject.Vk<VkDevice> {
 
     private final VkDevice vkDevice;
     private final VkQueue graphicsQueue;
     private final VkQueue presentationQueue;
 
-    private VulkanLogicalDevice(VulkanPhysicalDevice physicalDevice) {
-        vkDevice = createVkDevice(physicalDevice);
-        graphicsQueue = createVkQueue(physicalDevice.queueFamilyIndices().graphicsFamily());
-        presentationQueue = createVkQueue(physicalDevice.queueFamilyIndices().presentationFamily());
+    public VulkanLogicalDevice() {
+        vkDevice = createVkDevice();
+        graphicsQueue = createVkQueue(physicalDevice().queueFamilyIndices().graphicsFamily());
+        presentationQueue = createVkQueue(physicalDevice().queueFamilyIndices().presentationFamily());
     }
 
-    public VkDevice vkDevice() {
+    @Override
+    public VkDevice handle() {
         return vkDevice;
     }
 
@@ -42,16 +39,20 @@ public class VulkanLogicalDevice implements NativeResource {
         return presentationQueue;
     }
 
+    public void waitIdle() {
+        vkDeviceWaitIdle(vkDevice);
+    }
+
     @Override
     public void free() {
         vkDestroyDevice(vkDevice, null);
     }
 
-    private VkDevice createVkDevice(VulkanPhysicalDevice physicalDevice) {
+    private VkDevice createVkDevice() {
 
         try(MemoryStack stack = stackPush()) {
 
-            QueueFamilyIndices queueFamilyIndices = physicalDevice.queueFamilyIndices();
+            QueueFamilyIndices queueFamilyIndices = physicalDevice().queueFamilyIndices();
 
             int[] uniqueQueueFamilies = queueFamilyIndices.unique();
 
@@ -80,9 +81,9 @@ public class VulkanLogicalDevice implements NativeResource {
 
             PointerBuffer pDevice = stack.pointers(VK_NULL_HANDLE);
 
-            vkCall(vkCreateDevice(physicalDevice.vkPhysicalDevice(), createInfo, null, pDevice));
+            vkCall(vkCreateDevice(physicalDevice().handle(), createInfo, null, pDevice));
 
-            return new VkDevice(pDevice.get(0), physicalDevice.vkPhysicalDevice(), createInfo);
+            return new VkDevice(pDevice.get(0), physicalDevice().handle(), createInfo);
         }
     }
 

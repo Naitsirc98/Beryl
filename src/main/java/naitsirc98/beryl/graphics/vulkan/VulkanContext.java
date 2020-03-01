@@ -6,7 +6,8 @@ import naitsirc98.beryl.graphics.GraphicsContext;
 import naitsirc98.beryl.graphics.rendering.Renderer;
 import naitsirc98.beryl.graphics.rendering.RenderingPath;
 import naitsirc98.beryl.graphics.vulkan.commands.VulkanCommandPool;
-import naitsirc98.beryl.graphics.vulkan.devices.VulkanDevice;
+import naitsirc98.beryl.graphics.vulkan.devices.VulkanLogicalDevice;
+import naitsirc98.beryl.graphics.vulkan.devices.VulkanPhysicalDevice;
 import naitsirc98.beryl.graphics.vulkan.rendering.VulkanRenderer;
 import naitsirc98.beryl.graphics.vulkan.rendering.VulkanSimpleRenderingPath;
 import naitsirc98.beryl.graphics.vulkan.swapchain.VulkanSwapchain;
@@ -14,21 +15,20 @@ import naitsirc98.beryl.graphics.vulkan.vertex.VulkanVertexDataBuilder;
 import naitsirc98.beryl.meshes.vertices.VertexData;
 import naitsirc98.beryl.meshes.vertices.VertexLayout;
 import naitsirc98.beryl.util.Destructor;
-import org.lwjgl.vulkan.VkDevice;
 import org.lwjgl.vulkan.VkInstance;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
 
+import static java.util.stream.Collectors.toSet;
 import static naitsirc98.beryl.graphics.rendering.RenderingPaths.RPATH_SIMPLE3D;
 import static naitsirc98.beryl.graphics.vulkan.VulkanDebugMessenger.newVulkanDebugMessenger;
 import static naitsirc98.beryl.graphics.vulkan.VulkanInstanceFactory.newVkInstance;
-import static naitsirc98.beryl.graphics.vulkan.VulkanSurface.newVulkanSurface;
 import static naitsirc98.beryl.graphics.vulkan.VulkanValidationLayers.defaultValidationLayers;
-import static naitsirc98.beryl.graphics.vulkan.devices.VulkanDevice.defaultDeviceExtensions;
 import static naitsirc98.beryl.util.TypeUtils.newInstance;
-import static org.lwjgl.vulkan.KHRSurface.vkDestroySurfaceKHR;
+import static org.lwjgl.vulkan.KHRSwapchain.VK_KHR_SWAPCHAIN_EXTENSION_NAME;
 import static org.lwjgl.vulkan.VK10.vkDestroyInstance;
 
 @Destructor
@@ -38,11 +38,16 @@ public final class VulkanContext implements GraphicsContext {
     public static final Set<String> VALIDATION_LAYERS = BerylConfiguration.VULKAN_VALIDATION_LAYERS.get(defaultValidationLayers());
     public static final Set<String> DEVICE_EXTENSIONS = BerylConfiguration.VULKAN_DEVICE_EXTENSIONS.get(defaultDeviceExtensions());
 
+    private static Set<String> defaultDeviceExtensions() {
+        return Stream.of(VK_KHR_SWAPCHAIN_EXTENSION_NAME)
+                .collect(toSet());
+    }
 
     private VkInstance vkInstance;
     private VulkanDebugMessenger debugMessenger;
-    private long surface;
-    private VulkanDevice device;
+    private VulkanSurface surface;
+    private VulkanPhysicalDevice physicalDevice;
+    private VulkanLogicalDevice logicalDevice;
     private VulkanCommandPool graphicsCommandPool;
     private VulkanSwapchain swapchain;
     private VulkanRenderer renderer;
@@ -54,11 +59,12 @@ public final class VulkanContext implements GraphicsContext {
     @Override
     public void init() {
         vkInstance = newVkInstance();
-        debugMessenger = newVulkanDebugMessenger(vkInstance);
-        surface = newVulkanSurface(vkInstance);
-        device = new VulkanDevice(vkInstance, surface);
+        debugMessenger = newVulkanDebugMessenger();
+        surface = new VulkanSurface();
+        physicalDevice = new VulkanPhysicalDevice();
+        logicalDevice = new VulkanLogicalDevice();
         graphicsCommandPool = createGraphicsCommandPool();
-        swapchain = new VulkanSwapchain(device);
+        swapchain = new VulkanSwapchain();
         renderer = newInstance(VulkanRenderer.class, swapchain, graphicsCommandPool);
     }
 
@@ -90,16 +96,16 @@ public final class VulkanContext implements GraphicsContext {
         return debugMessenger;
     }
 
-    public long surface() {
+    public VulkanSurface surface() {
         return surface;
     }
 
-    public VulkanDevice device() {
-        return device;
+    public VulkanPhysicalDevice physicalDevice() {
+        return physicalDevice;
     }
 
-    public VkDevice vkLogicalDevice() {
-        return device.logicalDevice().vkDevice();
+    public VulkanLogicalDevice logicalDevice() {
+        return logicalDevice;
     }
 
     public VulkanCommandPool graphicsCommandPool() {
@@ -113,7 +119,7 @@ public final class VulkanContext implements GraphicsContext {
     @Override
     public void free() {
 
-        device.waitIdle();
+        logicalDevice.waitIdle();
 
         renderer.free();
 
@@ -121,21 +127,32 @@ public final class VulkanContext implements GraphicsContext {
 
         swapchain.free();
 
-        device.free();
+        logicalDevice.free();
 
-        vkDestroySurfaceKHR(vkInstance, surface, null);
+        physicalDevice.free();
+
+        surface.free();
 
         if(VULKAN_DEBUG_MESSAGES_ENABLED) {
             debugMessenger.free();
         }
 
         vkDestroyInstance(vkInstance, null);
+
+        vkInstance = null;
+        renderer = null;
+        graphicsCommandPool = null;
+        swapchain = null;
+        logicalDevice = null;
+        physicalDevice = null;
+        surface = null;
+        debugMessenger = null;
     }
 
     private VulkanCommandPool createGraphicsCommandPool() {
         return new VulkanCommandPool(
-                device.logicalDevice().vkDevice(),
-                device.logicalDevice().graphicsQueue(),
-                device.physicalDevice().queueFamilyIndices().graphicsFamily());
+                logicalDevice.handle(),
+                logicalDevice.graphicsQueue(),
+                physicalDevice.queueFamilyIndices().graphicsFamily());
     }
 }

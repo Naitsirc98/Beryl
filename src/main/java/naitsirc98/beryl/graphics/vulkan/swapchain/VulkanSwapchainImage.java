@@ -1,7 +1,6 @@
 package naitsirc98.beryl.graphics.vulkan.swapchain;
 
 import naitsirc98.beryl.graphics.vulkan.VulkanImageBase;
-import naitsirc98.beryl.graphics.vulkan.devices.VulkanLogicalDevice;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkImageViewCreateInfo;
 
@@ -14,20 +13,18 @@ public final class VulkanSwapchainImage implements VulkanImageBase {
 
     private static final int MIP_LEVELS = 1;
 
-    private final VulkanLogicalDevice logicalDevice;
     private final long vkImage;
     private final long vkImageView;
     private final int imageFormat;
 
-    public VulkanSwapchainImage(VulkanLogicalDevice logicalDevice, long vkImage, int imageFormat) {
-        this.logicalDevice = logicalDevice;
+    public VulkanSwapchainImage(long vkImage, int imageFormat) {
         this.vkImage = vkImage;
         this.imageFormat = imageFormat;
         this.vkImageView = createSwapchainImageView();
     }
 
     @Override
-    public long vkImage() {
+    public long handle() {
         return vkImage;
     }
 
@@ -42,14 +39,9 @@ public final class VulkanSwapchainImage implements VulkanImageBase {
     }
 
     @Override
-    public VulkanLogicalDevice logicalDevice() {
-        return logicalDevice;
-    }
-
-    @Override
     public void free() {
         // VkImage is automatically destroyed by the swapchain
-        vkDestroyImageView(logicalDevice.vkDevice(), vkImageView, null);
+        vkDestroyImageView(logicalDevice().handle(), vkImageView, null);
     }
 
     private long createSwapchainImageView() {
@@ -69,7 +61,7 @@ public final class VulkanSwapchainImage implements VulkanImageBase {
 
             LongBuffer pImageView = stack.mallocLong(1);
 
-            if(vkCreateImageView(logicalDevice.vkDevice(), viewInfo, null, pImageView) != VK_SUCCESS) {
+            if(vkCreateImageView(logicalDevice().handle(), viewInfo, null, pImageView) != VK_SUCCESS) {
                 throw new RuntimeException("Failed to create texture image view");
             }
 

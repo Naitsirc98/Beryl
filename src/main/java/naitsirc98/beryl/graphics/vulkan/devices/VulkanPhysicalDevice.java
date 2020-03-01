@@ -1,5 +1,6 @@
 package naitsirc98.beryl.graphics.vulkan.devices;
 
+import naitsirc98.beryl.graphics.vulkan.VulkanObject;
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.util.Destructor;
 import org.lwjgl.PointerBuffer;
@@ -20,15 +21,10 @@ import static org.lwjgl.vulkan.KHRSurface.*;
 import static org.lwjgl.vulkan.VK10.*;
 
 @Destructor
-public class VulkanPhysicalDevice implements NativeResource {
+public class VulkanPhysicalDevice implements VulkanObject.Vk<VkPhysicalDevice> {
 
     // TODO: pick best physical device, not the first matching the requirements
 
-    static VulkanPhysicalDevice pickPhysicalDevice(VkInstance vkInstance, long surface) {
-        return new VulkanPhysicalDevice(vkInstance, surface);
-    }
-
-    private final long surface;
     private final VkPhysicalDevice vkPhysicalDevice;
     private final VkPhysicalDeviceProperties properties;
     private final VkPhysicalDeviceFeatures features;
@@ -36,10 +32,9 @@ public class VulkanPhysicalDevice implements NativeResource {
     private final SwapChainSupportDetails swapChainSupportDetails;
     private final int msaaSamples;
 
-    private VulkanPhysicalDevice(VkInstance vkInstance, long surface) {
-        this.surface = surface;
+    public VulkanPhysicalDevice() {
 
-        PhysicalDeviceSelection selection = findSuitablePhysicalDevice(vkInstance);
+        PhysicalDeviceSelection selection = findSuitablePhysicalDevice();
         vkPhysicalDevice = selection.vkPhysicalDevice;
         queueFamilyIndices = selection.queueFamilyIndices;
         swapChainSupportDetails = selection.swapChainSupportDetails;
@@ -51,7 +46,8 @@ public class VulkanPhysicalDevice implements NativeResource {
         Log.trace("[VULKAN]: Physical Device: " + properties().deviceNameString());
     }
 
-    public VkPhysicalDevice vkPhysicalDevice() {
+    @Override
+    public VkPhysicalDevice handle() {
         return vkPhysicalDevice;
     }
 
@@ -82,13 +78,13 @@ public class VulkanPhysicalDevice implements NativeResource {
         swapChainSupportDetails.free();
     }
 
-    private PhysicalDeviceSelection findSuitablePhysicalDevice(VkInstance vkInstance) {
+    private PhysicalDeviceSelection findSuitablePhysicalDevice() {
 
         try(MemoryStack stack = stackPush()) {
 
             IntBuffer deviceCount = stack.ints(0);
 
-            vkEnumeratePhysicalDevices(vkInstance, deviceCount, null);
+            vkEnumeratePhysicalDevices(vkInstance(), deviceCount, null);
 
             if(deviceCount.get(0) == 0) {
                 Log.fatal("Failed to find GPUs with Vulkan support");
@@ -97,14 +93,14 @@ public class VulkanPhysicalDevice implements NativeResource {
 
             PointerBuffer ppPhysicalDevices = stack.mallocPointer(deviceCount.get(0));
 
-            vkEnumeratePhysicalDevices(vkInstance, deviceCount, ppPhysicalDevices);
+            vkEnumeratePhysicalDevices(vkInstance(), deviceCount, ppPhysicalDevices);
 
             VkPhysicalDevice physicalDevice = null;
             QueueFamilyIndices queueFamilyIndices = null;
 
             for(int i = 0;i < ppPhysicalDevices.capacity();i++) {
 
-                physicalDevice = new VkPhysicalDevice(ppPhysicalDevices.get(i), vkInstance);
+                physicalDevice = new VkPhysicalDevice(ppPhysicalDevices.get(i), vkInstance());
 
                 queueFamilyIndices = findQueueFamilies(physicalDevice);
 
@@ -146,7 +142,7 @@ public class VulkanPhysicalDevice implements NativeResource {
                     indices.graphicsFamily = i;
                 }
 
-                vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice, i, surface, presentSupport);
+                vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice, i, surface().handle(), presentSupport);
 
                 if(presentSupport.get(0) == VK_TRUE) {
                     indices.presentationFamily = i;
@@ -256,12 +252,12 @@ public class VulkanPhysicalDevice implements NativeResource {
             capabilities = VkSurfaceCapabilitiesKHR.mallocStack(stack);
 
             IntBuffer formatsCount = stack.mallocInt(1);
-            vkCall(vkGetPhysicalDeviceSurfaceFormatsKHR(vkPhysicalDevice, surface, formatsCount, null));
+            vkCall(vkGetPhysicalDeviceSurfaceFormatsKHR(vkPhysicalDevice, surface().handle(), formatsCount, null));
 
             formats = VkSurfaceFormatKHR.mallocStack(formatsCount.get(0), stack);
 
             IntBuffer presentModesCount = stack.mallocInt(1);
-            vkCall(vkGetPhysicalDeviceSurfacePresentModesKHR(vkPhysicalDevice, surface, presentModesCount, null));
+            vkCall(vkGetPhysicalDeviceSurfacePresentModesKHR(vkPhysicalDevice, surface().handle(), presentModesCount, null));
 
             presentModes = stack.mallocInt(presentModesCount.get(0));
 
@@ -280,12 +276,12 @@ public class VulkanPhysicalDevice implements NativeResource {
             try(MemoryStack stack = stackPush()) {
 
                 IntBuffer formatsCount = stack.mallocInt(1);
-                vkCall(vkGetPhysicalDeviceSurfaceFormatsKHR(vkPhysicalDevice, surface, formatsCount, null));
+                vkCall(vkGetPhysicalDeviceSurfaceFormatsKHR(vkPhysicalDevice, surface().handle(), formatsCount, null));
 
                 formats = VkSurfaceFormatKHR.malloc(formatsCount.get(0));
 
                 IntBuffer presentModesCount = stack.mallocInt(1);
-                vkCall(vkGetPhysicalDeviceSurfacePresentModesKHR(vkPhysicalDevice, surface, presentModesCount, null));
+                vkCall(vkGetPhysicalDeviceSurfacePresentModesKHR(vkPhysicalDevice, surface().handle(), presentModesCount, null));
 
                 presentModes = memAllocInt(presentModesCount.get(0));
 
@@ -295,11 +291,11 @@ public class VulkanPhysicalDevice implements NativeResource {
 
         private void init(VkPhysicalDevice vkPhysicalDevice, IntBuffer formatsCount, IntBuffer presentModesCount) {
 
-            vkCall(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(vkPhysicalDevice, surface, capabilities));
+            vkCall(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(vkPhysicalDevice, surface().handle(), capabilities));
 
-            vkCall(vkGetPhysicalDeviceSurfaceFormatsKHR(vkPhysicalDevice, surface, formatsCount, formats));
+            vkCall(vkGetPhysicalDeviceSurfaceFormatsKHR(vkPhysicalDevice, surface().handle(), formatsCount, formats));
 
-            vkCall(vkGetPhysicalDeviceSurfacePresentModesKHR(vkPhysicalDevice, surface, presentModesCount, presentModes));
+            vkCall(vkGetPhysicalDeviceSurfacePresentModesKHR(vkPhysicalDevice, surface().handle(), presentModesCount, presentModes));
         }
 
         public VkSurfaceCapabilitiesKHR capabilities() {

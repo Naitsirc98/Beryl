@@ -22,7 +22,7 @@ public class VulkanMemoryUtils {
         try(MemoryStack stack = stackPush()) {
 
             VkMemoryRequirements memoryRequirements = VkMemoryRequirements.callocStack(stack);
-            vkGetBufferMemoryRequirements(Graphics.vulkan().vkLogicalDevice(), vkBuffer, memoryRequirements);
+            vkGetBufferMemoryRequirements(Graphics.vulkan().logicalDevice().handle(), vkBuffer, memoryRequirements);
 
             return allocateMemory(memoryRequirements.size(), memoryRequirements.memoryTypeBits(), desiredMemoryProperties);
         }
@@ -38,7 +38,7 @@ public class VulkanMemoryUtils {
                     .memoryTypeIndex(findVulkanMemoryType(memoryTypeBits, desiredMemoryProperties));
 
             LongBuffer pMemory = stack.mallocLong(1);
-            vkCall(vkAllocateMemory(Graphics.vulkan().vkLogicalDevice(), allocateInfo, null, pMemory));
+            vkCall(vkAllocateMemory(Graphics.vulkan().logicalDevice().handle(), allocateInfo, null, pMemory));
 
             return pMemory.get(0);
         }
@@ -49,7 +49,7 @@ public class VulkanMemoryUtils {
         try(MemoryStack stack = stackPush()) {
 
             VkPhysicalDeviceMemoryProperties memProperties = VkPhysicalDeviceMemoryProperties.mallocStack();
-            vkGetPhysicalDeviceMemoryProperties(vulkan().device().physicalDevice().vkPhysicalDevice(), memProperties);
+            vkGetPhysicalDeviceMemoryProperties(vulkan().physicalDevice().handle(), memProperties);
 
             for(int i = 0;i < memProperties.memoryTypeCount();i++) {
                 if(isSuitableMemoryType(i, memoryTypeBits, memProperties.memoryTypes(i).propertyFlags(), desiredProperties)) {
