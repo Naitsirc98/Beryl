@@ -58,9 +58,6 @@ public class VulkanDescriptorSetLayout implements VulkanObject.Long {
         private List<VkDescriptorSetLayoutBinding> bindings;
 
         public Builder() {
-
-            stackPush();
-
             bindings = new ArrayList<>(4);
         }
 
