@@ -29,7 +29,7 @@ public class VulkanBufferGroup implements VulkanObject.Custom<LongBuffer> {
         this.bufferType = bufferType;
         vkBuffers = createVkBuffers(bufferSizes);
         memoryOffsets = getMemoryOffsets(bufferSizes);
-        vkMemory = allocateMemory(getTotalSize(bufferSizes), getMemoryTypeBits(), desiredMemoryProperties);
+        vkMemory = allocateMemory(getMemoryRequirements(), desiredMemoryProperties);
         bindBuffersToMemory();
     }
 
@@ -114,15 +114,14 @@ public class VulkanBufferGroup implements VulkanObject.Custom<LongBuffer> {
         return memoryOffsets;
     }
 
-    private int getMemoryTypeBits() {
-        try(MemoryStack stack = stackPush()) {
-            VkMemoryRequirements memoryRequirements = VkMemoryRequirements.callocStack(stack);
-            vkGetBufferMemoryRequirements(logicalDevice().handle(), vkBuffers.get(0), memoryRequirements);
-            return memoryRequirements.memoryTypeBits();
-        }
-    }
+    private VkMemoryRequirements.Buffer getMemoryRequirements() {
 
-    private long getTotalSize(long[] bufferSizes) {
-        return LongStream.of(bufferSizes).sum();
+        VkMemoryRequirements.Buffer memoryRequirements = VkMemoryRequirements.create(vkBuffers.capacity());
+
+        for(int i = 0;i < memoryRequirements.capacity();i++) {
+            vkGetBufferMemoryRequirements(logicalDevice().handle(), vkBuffers.get(i), memoryRequirements.get(i));
+        }
+
+        return memoryRequirements;
     }
 }

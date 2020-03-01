@@ -13,7 +13,6 @@ import static naitsirc98.beryl.graphics.Graphics.vulkan;
 import static naitsirc98.beryl.graphics.vulkan.util.VulkanUtils.vkCall;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.vulkan.VK10.*;
-import static org.lwjgl.vulkan.VK10.vkAllocateMemory;
 
 public class VulkanMemoryUtils {
 
@@ -21,21 +20,27 @@ public class VulkanMemoryUtils {
 
         try(MemoryStack stack = stackPush()) {
 
-            VkMemoryRequirements memoryRequirements = VkMemoryRequirements.callocStack(stack);
-            vkGetBufferMemoryRequirements(Graphics.vulkan().logicalDevice().handle(), vkBuffer, memoryRequirements);
+            VkMemoryRequirements.Buffer memoryRequirements = VkMemoryRequirements.callocStack(1, stack);
+            vkGetBufferMemoryRequirements(Graphics.vulkan().logicalDevice().handle(), vkBuffer, memoryRequirements.get(0));
 
-            return allocateMemory(memoryRequirements.size(), memoryRequirements.memoryTypeBits(), desiredMemoryProperties);
+            return allocateMemory(memoryRequirements, desiredMemoryProperties);
         }
     }
 
-    public static long allocateMemory(long size, int memoryTypeBits, int desiredMemoryProperties) {
+    public static long allocateMemory(VkMemoryRequirements.Buffer memoryRequirements, int desiredMemoryProperties) {
 
         try(MemoryStack stack = stackPush()) {
+
+            long size = 0;
+
+            for(int i = 0;i < memoryRequirements.capacity();i++) {
+                size += memoryRequirements.size();
+            }
 
             VkMemoryAllocateInfo allocateInfo = VkMemoryAllocateInfo.callocStack(stack)
                     .sType(VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO)
                     .allocationSize(size)
-                    .memoryTypeIndex(findVulkanMemoryType(memoryTypeBits, desiredMemoryProperties));
+                    .memoryTypeIndex(findVulkanMemoryType(memoryRequirements.memoryTypeBits(), desiredMemoryProperties));
 
             LongBuffer pMemory = stack.mallocLong(1);
             vkCall(vkAllocateMemory(Graphics.vulkan().logicalDevice().handle(), allocateInfo, null, pMemory));

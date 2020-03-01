@@ -65,7 +65,7 @@ public final class VulkanContext implements GraphicsContext {
         logicalDevice = new VulkanLogicalDevice();
         graphicsCommandPool = createGraphicsCommandPool();
         swapchain = new VulkanSwapchain();
-        renderer = newInstance(VulkanRenderer.class, swapchain, graphicsCommandPool);
+        renderer = newInstance(VulkanRenderer.class);
     }
 
     @Override
