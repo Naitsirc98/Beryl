@@ -16,18 +16,18 @@ import static org.lwjgl.vulkan.VK10.*;
 
 public class VulkanMemoryUtils {
 
-    public static long allocateMemoryFor(long vkBuffer, int desiredMemoryProperties) {
+    public static long allocateVkBufferMemory(long vkBuffer, int desiredMemoryProperties) {
 
         try(MemoryStack stack = stackPush()) {
 
             VkMemoryRequirements.Buffer memoryRequirements = VkMemoryRequirements.callocStack(1, stack);
             vkGetBufferMemoryRequirements(Graphics.vulkan().logicalDevice().handle(), vkBuffer, memoryRequirements.get(0));
 
-            return allocateMemory(memoryRequirements, desiredMemoryProperties);
+            return allocateVkBufferMemory(memoryRequirements, desiredMemoryProperties);
         }
     }
 
-    public static long allocateMemory(VkMemoryRequirements.Buffer memoryRequirements, int desiredMemoryProperties) {
+    public static long allocateVkBufferMemory(VkMemoryRequirements.Buffer memoryRequirements, int desiredMemoryProperties) {
 
         try(MemoryStack stack = stackPush()) {
 

@@ -1,12 +1,19 @@
 package naitsirc98.beryl.graphics.vulkan.vertex;
 
+import naitsirc98.beryl.graphics.Graphics;
 import naitsirc98.beryl.meshes.vertices.VertexData;
 import naitsirc98.beryl.meshes.vertices.VertexLayout;
+import org.lwjgl.system.MemoryStack;
+import org.lwjgl.vulkan.VkBufferCreateInfo;
 import org.lwjgl.vulkan.VkCommandBuffer;
 
 import java.nio.ByteBuffer;
+import java.nio.LongBuffer;
 import java.util.Arrays;
 
+import static naitsirc98.beryl.graphics.vulkan.util.VulkanUtils.vkCall;
+import static naitsirc98.beryl.graphics.vulkan.vertex.VulkanBufferUtils.setVulkanBufferData;
+import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.vulkan.VK10.*;
 
 public final class VulkanVertexData extends VertexData {
@@ -17,6 +24,8 @@ public final class VulkanVertexData extends VertexData {
     protected VulkanVertexData(VertexLayout layout, int firstVertex, int vertexCount, ByteBuffer[] vertices, ByteBuffer indices) {
         super(layout, firstVertex, vertexCount, indices == null ? 0 : indices.remaining());
         vertexBuffers = VulkanBufferFactory.newVertexBuffers(getVertexBufferSizes(vertices));
+        setVertexBuffersData(vertices);
+        // TODO: setIndexBufferData(indices);
     }
 
     public void bind(VkCommandBuffer commandBuffer) {
@@ -42,5 +51,11 @@ public final class VulkanVertexData extends VertexData {
 
     private long[] getVertexBufferSizes(ByteBuffer[] vertices) {
         return Arrays.stream(vertices).mapToLong(ByteBuffer::limit).toArray();
+    }
+
+    private void setVertexBuffersData(ByteBuffer[] vertices) {
+        for(int i = 0;i < vertices.length;i++) {
+            setVulkanBufferData(vertexBuffers.handle().get(i), vertices[i]);
+        }
     }
 }

@@ -1,17 +1,14 @@
 package naitsirc98.beryl.graphics.vulkan.vertex;
 
-import naitsirc98.beryl.graphics.Graphics;
 import naitsirc98.beryl.graphics.vulkan.VulkanObject;
 import org.lwjgl.system.MemoryStack;
-import org.lwjgl.system.NativeResource;
 import org.lwjgl.vulkan.VkBufferCreateInfo;
 import org.lwjgl.vulkan.VkDevice;
 import org.lwjgl.vulkan.VkMemoryRequirements;
 
 import java.nio.LongBuffer;
-import java.util.stream.LongStream;
 
-import static naitsirc98.beryl.graphics.vulkan.util.VulkanMemoryUtils.allocateMemory;
+import static naitsirc98.beryl.graphics.vulkan.util.VulkanMemoryUtils.allocateVkBufferMemory;
 import static naitsirc98.beryl.graphics.vulkan.util.VulkanUtils.vkCall;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.memAllocLong;
@@ -29,7 +26,7 @@ public class VulkanBufferGroup implements VulkanObject.Custom<LongBuffer> {
         this.bufferType = bufferType;
         vkBuffers = createVkBuffers(bufferSizes);
         memoryOffsets = getMemoryOffsets(bufferSizes);
-        vkMemory = allocateMemory(getMemoryRequirements(), desiredMemoryProperties);
+        vkMemory = allocateVkBufferMemory(getMemoryRequirements(), desiredMemoryProperties);
         bindBuffersToMemory();
     }
 

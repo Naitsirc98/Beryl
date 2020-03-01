@@ -22,7 +22,7 @@ public class VulkanBuffer implements VulkanObject.Long {
         this.size = size;
         this.type = type;
         vkBuffer = createVkBuffer();
-        this.vkMemory = VulkanMemoryUtils.allocateMemoryFor(vkBuffer, desiredMemoryProperties);
+        this.vkMemory = VulkanMemoryUtils.allocateVkBufferMemory(vkBuffer, desiredMemoryProperties);
         vkBindBufferMemory(logicalDevice().handle(), vkBuffer, vkMemory, 0);
     }
 

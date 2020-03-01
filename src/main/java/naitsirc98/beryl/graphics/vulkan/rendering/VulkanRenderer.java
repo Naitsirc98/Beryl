@@ -56,6 +56,7 @@ public class VulkanRenderer implements Renderer {
                 frame.imageAvailableSemaphore, VK_NULL_HANDLE, pImageIndex);
 
         if(vkResult == VK_ERROR_OUT_OF_DATE_KHR) {
+            Log.warning("Swap chain is out of date");
             // TODO
             // recreateSwapChain();
             return;
@@ -110,6 +111,7 @@ public class VulkanRenderer implements Renderer {
 
         if(presentResult == VK_ERROR_OUT_OF_DATE_KHR || presentResult == VK_SUBOPTIMAL_KHR || framebufferResize) {
             framebufferResize = false;
+            Log.warning("Swapchain recreation needed");
             // TODO
             // recreateSwapChain();
         } else if(presentResult != VK_SUCCESS) {

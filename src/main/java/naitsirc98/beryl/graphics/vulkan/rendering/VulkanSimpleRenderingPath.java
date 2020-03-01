@@ -94,10 +94,6 @@ public final class VulkanSimpleRenderingPath extends RenderingPath {
 
             for(MeshView meshView : meshViews) {
 
-                VulkanVertexData vertexData = meshView.mesh().vertexData();
-
-                vertexData.bind(commandBuffer);
-
                 projectionView.mul(meshView.modelMatrix(), mvp).get(pushConstantData);
 
                 nvkCmdPushConstants(
@@ -107,6 +103,10 @@ public final class VulkanSimpleRenderingPath extends RenderingPath {
                         0,
                         PUSH_CONSTANT_SIZE,
                         pushConstantDataAddress);
+
+                VulkanVertexData vertexData = meshView.mesh().vertexData();
+
+                vertexData.bind(commandBuffer);
 
                 if(vertexData.indexCount() == 0) {
                     vkCmdDraw(commandBuffer, vertexData.vertexCount(), 1, 0, 0);
@@ -138,7 +138,7 @@ public final class VulkanSimpleRenderingPath extends RenderingPath {
                 .framebuffer(currentFramebuffer());
 
         VkClearValue.Buffer clearValues = VkClearValue.callocStack(2, stack);
-        clearValues.get(0).color().float32(stack.floats(0.0f, 0.0f, 0.0f, 1.0f));
+        clearValues.get(0).color().float32(stack.floats(0.1f, 0.1f, 0.1f, 1.0f));
         clearValues.get(1).depthStencil().set(1.0f, 0);
 
         renderPassInfo.pClearValues(clearValues);
@@ -146,6 +146,15 @@ public final class VulkanSimpleRenderingPath extends RenderingPath {
         vkCall(vkBeginCommandBuffer(commandBuffer, beginInfo));
 
         vkCmdBeginRenderPass(commandBuffer, renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+        VkViewport.Buffer viewport = VkViewport.callocStack(1, stack);
+        viewport.get(0).set(0, 0, 1280, 720, 0, 1);
+        vkCmdSetViewport(commandBuffer, 0, viewport);
+
+        VkRect2D.Buffer scissor = VkRect2D.callocStack(1, stack);
+        scissor.offset(VkOffset2D.callocStack(stack).set(0, 0));
+        scissor.extent(VkExtent2D.callocStack(stack).set(1280, 720));
+        vkCmdSetScissor(commandBuffer, 0, scissor);
 
         vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline.handle());
     }
@@ -178,7 +187,7 @@ public final class VulkanSimpleRenderingPath extends RenderingPath {
                 .inputAssemblyState(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, false)
                 .viewports(getViewports())
                 .scissors(getScissors())
-                // .addDynamicStates(VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR)
+                .addDynamicStates(VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR)
                 .rasterizationState(getRasterizationStage())
                 .multisampleState(getMultisampleState())
                 .depthStencilState(getDepthStencilState())
