@@ -10,9 +10,7 @@ import naitsirc98.beryl.meshes.vertices.VertexLayout;
 import naitsirc98.beryl.resources.Resources;
 import naitsirc98.beryl.scenes.components.camera.Camera;
 import naitsirc98.beryl.scenes.components.meshes.MeshView;
-import org.lwjgl.vulkan.VkPipelineDepthStencilStateCreateInfo;
-import org.lwjgl.vulkan.VkPipelineMultisampleStateCreateInfo;
-import org.lwjgl.vulkan.VkPipelineRasterizationStateCreateInfo;
+import org.lwjgl.vulkan.*;
 
 import java.nio.file.Path;
 import java.util.List;
@@ -91,6 +89,8 @@ public final class VulkanSimpleRenderingPath extends RenderingPath {
                 .addShaderModules(vertexShaderModule, fragmentShaderModule)
                 .vertexInputState(vertexInputBindingsStack(VERTEX_LAYOUT), vertexInputAttributesStack(VERTEX_LAYOUT))
                 .inputAssemblyState(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, false)
+                .viewports(getViewports())
+                .scissors(getScissors())
                 .addDynamicStates(VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR)
                 .rasterizationState(getRasterizationStage())
                 .multisampleState(getMultisampleState())
@@ -100,6 +100,23 @@ public final class VulkanSimpleRenderingPath extends RenderingPath {
 
         vertexShaderModule.free();
         fragmentShaderModule.free();
+    }
+
+    private VkViewport.Buffer getViewports() {
+        final VkExtent2D swapchainExtent = Graphics.vulkan().swapchain().extent();
+        return VkViewport.callocStack(1)
+                .x(0.0f)
+                .y(0.0f)
+                .width(swapchainExtent.width())
+                .height(swapchainExtent.height())
+                .minDepth(0.0f)
+                .maxDepth(1.0f);
+    }
+
+    private VkRect2D.Buffer getScissors() {
+        return VkRect2D.callocStack(1)
+                .offset(VkOffset2D.callocStack().set(0, 0))
+                .extent(Graphics.vulkan().swapchain().extent());
     }
 
     private int getColorBlendFlags() {

@@ -58,6 +58,7 @@ public class VulkanGraphicsPipeline implements VulkanObject.Long {
         private VkPipelineVertexInputStateCreateInfo vertexInputState;
         private VkPipelineInputAssemblyStateCreateInfo inputAssemblyState;
         private List<Integer> dynamicStates;
+        private VkPipelineViewportStateCreateInfo viewportState;
         private VkPipelineRasterizationStateCreateInfo rasterizationState;
         private VkPipelineMultisampleStateCreateInfo multisampleState;
         private VkPipelineDepthStencilStateCreateInfo depthStencilState;
@@ -76,6 +77,9 @@ public class VulkanGraphicsPipeline implements VulkanObject.Long {
 
             inputAssemblyState = VkPipelineInputAssemblyStateCreateInfo.callocStack()
                     .sType(VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO);
+
+            viewportState = VkPipelineViewportStateCreateInfo.callocStack()
+                    .sType(VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO);
 
             dynamicStates = new ArrayList<>(2);
 
@@ -103,6 +107,16 @@ public class VulkanGraphicsPipeline implements VulkanObject.Long {
         public Builder inputAssemblyState(int topology, boolean primRestartEnable) {
             inputAssemblyState.topology(topology)
                     .primitiveRestartEnable(primRestartEnable);
+            return this;
+        }
+
+        public Builder viewports(VkViewport.Buffer viewports) {
+            viewportState.pViewports(viewports);
+            return this;
+        }
+
+        public Builder scissors(VkRect2D.Buffer scissors) {
+            viewportState.pScissors(scissors);
             return this;
         }
 
@@ -150,6 +164,7 @@ public class VulkanGraphicsPipeline implements VulkanObject.Long {
                     .pStages(getShaderStages())
                     .pVertexInputState(vertexInputState)
                     .pInputAssemblyState(inputAssemblyState)
+                    .pViewportState(viewportState)
                     .pRasterizationState(rasterizationState)
                     .pMultisampleState(multisampleState)
                     .pDepthStencilState(depthStencilState)
@@ -228,6 +243,7 @@ public class VulkanGraphicsPipeline implements VulkanObject.Long {
             shaderModules = null;
             vertexInputState = null;
             inputAssemblyState = null;
+            viewportState = null;
             dynamicStates = null;
             rasterizationState = null;
             multisampleState = null;

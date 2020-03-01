@@ -55,7 +55,7 @@ public class VulkanSwapchain implements VulkanObject.Long {
         return swapChainImageFormat;
     }
 
-    public VkExtent2D swapChainExtent() {
+    public VkExtent2D extent() {
         return swapChainExtent;
     }
 
