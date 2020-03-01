@@ -8,6 +8,7 @@ import java.util.stream.Stream;
 
 public final class VertexAttributeList implements ByteSize, Iterable<VertexAttribute> {
 
+    // TODO: This should be Map<Integer, VertexAttribute> (Location, Attribute) instead
     private final ArrayList<VertexAttribute> attributes;
     private int offset;
     private int stride;
@@ -23,6 +24,10 @@ public final class VertexAttributeList implements ByteSize, Iterable<VertexAttri
 
     public int offset() {
         return offset;
+    }
+
+    public void offset(int offset) {
+        this.offset = offset;
     }
 
     public int count() {

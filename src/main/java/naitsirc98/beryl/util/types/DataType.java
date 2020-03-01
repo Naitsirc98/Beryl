@@ -11,7 +11,6 @@ public enum DataType implements ByteSize {
     INT64(8, true),
     UINT64(8, false),
     FLOAT16(2, true),
-    FLOAT24(3, true),
     FLOAT32(4, true),
     DOUBLE(8, true);
 
@@ -47,6 +46,6 @@ public enum DataType implements ByteSize {
 
 
     public boolean decimal() {
-        return this == FLOAT16 || this == FLOAT24 || this == FLOAT32 || this == DOUBLE;
+        return this == FLOAT16 || this == FLOAT32 || this == DOUBLE;
     }
 }

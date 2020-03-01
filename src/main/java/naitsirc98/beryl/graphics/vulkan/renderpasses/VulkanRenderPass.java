@@ -13,7 +13,8 @@ import java.util.function.Function;
 
 import static naitsirc98.beryl.graphics.vulkan.util.VulkanUtils.vkCall;
 import static org.lwjgl.system.MemoryStack.stackPush;
-import static org.lwjgl.system.MemoryUtil.*;
+import static org.lwjgl.system.MemoryUtil.memAllocLong;
+import static org.lwjgl.system.MemoryUtil.memFree;
 import static org.lwjgl.vulkan.VK10.*;
 
 @Destructor
@@ -49,10 +50,6 @@ public class VulkanRenderPass implements VulkanObject.Long {
         memFree(framebuffers);
 
         vkDestroyRenderPass(logicalDevice().handle(), vkRenderPass, null);
-    }
-
-    public long vkRenderPass() {
-        return vkRenderPass;
     }
 
     public VkSubpassDescription.Buffer subpasses() {

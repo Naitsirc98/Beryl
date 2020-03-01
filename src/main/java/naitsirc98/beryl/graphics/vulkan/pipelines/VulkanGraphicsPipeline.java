@@ -1,6 +1,5 @@
 package naitsirc98.beryl.graphics.vulkan.pipelines;
 
-import naitsirc98.beryl.graphics.ShaderStage;
 import naitsirc98.beryl.graphics.vulkan.VulkanObject;
 import naitsirc98.beryl.util.types.StackBuilder;
 import org.lwjgl.system.MemoryStack;
@@ -9,8 +8,8 @@ import org.lwjgl.vulkan.*;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;
-import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static naitsirc98.beryl.graphics.vulkan.util.VulkanUtils.vkCall;
@@ -80,45 +79,58 @@ public class VulkanGraphicsPipeline implements VulkanObject.Long {
 
             dynamicStates = new ArrayList<>(2);
 
-            rasterizationState = VkPipelineRasterizationStateCreateInfo.callocStack()
-                    .sType(VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO);
-
-            multisampleState = VkPipelineMultisampleStateCreateInfo.callocStack()
-                    .sType(VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO);
-
-            depthStencilState = VkPipelineDepthStencilStateCreateInfo.callocStack()
-                    .sType(VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO);
-
             colorBlendAttachments = new ArrayList<>(1);
         }
 
-        public Builder addShaderModule(Path shaderFile, ShaderStage stage) {
-            shaderModules.add(new VulkanShaderModule(shaderFile, stage));
+        public Builder addShaderModules(VulkanShaderModule... shaderModules) {
+            this.shaderModules.addAll(Arrays.asList(shaderModules));
             return this;
         }
 
-        public VkPipelineVertexInputStateCreateInfo vertexInputState() {
-            return vertexInputState;
+        public Builder addShaderModules(VulkanShaderModule shaderModule) {
+            shaderModules.add(shaderModule);
+            return this;
         }
 
-        public VkPipelineInputAssemblyStateCreateInfo inputAssemblyState() {
-            return inputAssemblyState;
+        public Builder vertexInputState(VkVertexInputBindingDescription.Buffer bindingDescriptions,
+                                        VkVertexInputAttributeDescription.Buffer attributeDescriptions) {
+
+            vertexInputState.pVertexBindingDescriptions(bindingDescriptions)
+                .pVertexAttributeDescriptions(attributeDescriptions);
+            return this;
         }
 
-        public List<Integer> dynamicStates() {
-            return dynamicStates;
+        public Builder inputAssemblyState(int topology, boolean primRestartEnable) {
+            inputAssemblyState.topology(topology)
+                    .primitiveRestartEnable(primRestartEnable);
+            return this;
         }
 
-        public VkPipelineRasterizationStateCreateInfo rasterizationState() {
-            return rasterizationState;
+        public Builder addDynamicStates(int... dynamicStates) {
+            for(int dynamicState : dynamicStates) {
+                this.dynamicStates.add(dynamicState);
+            }
+            return this;
         }
 
-        public VkPipelineMultisampleStateCreateInfo multisampleState() {
-            return multisampleState;
+        public Builder addDynamicStates(int dynamicState) {
+            dynamicStates.add(dynamicState);
+            return this;
         }
 
-        public VkPipelineDepthStencilStateCreateInfo depthStencilState() {
-            return depthStencilState;
+        public Builder rasterizationState(VkPipelineRasterizationStateCreateInfo rasterizationState) {
+            this.rasterizationState = rasterizationState;
+            return this;
+        }
+
+        public Builder multisampleState(VkPipelineMultisampleStateCreateInfo multisampleState) {
+            this.multisampleState = multisampleState;
+            return this;
+        }
+
+        public Builder depthStencilState(VkPipelineDepthStencilStateCreateInfo depthStencilState) {
+            this.depthStencilState = depthStencilState;
+            return this;
         }
 
         public Builder addColorBlendAttachment(boolean enable, int colorWriteMask) {

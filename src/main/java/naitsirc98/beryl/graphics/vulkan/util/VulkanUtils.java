@@ -2,6 +2,7 @@ package naitsirc98.beryl.graphics.vulkan.util;
 
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.util.Version;
+import naitsirc98.beryl.util.types.DataType;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.Pointer;

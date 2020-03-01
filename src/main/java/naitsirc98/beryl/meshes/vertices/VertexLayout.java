@@ -66,6 +66,13 @@ public final class VertexLayout {
             return this;
         }
 
+        public Builder offset(int binding, int offset) {
+            assertTrue(binding >= 0);
+            assertTrue(binding < bindings());
+            attributes[binding].offset(offset);
+            return this;
+        }
+
         public Builder put(int binding, VertexAttribute attribute) {
             assertTrue(binding >= 0);
             assertTrue(binding < bindings());
