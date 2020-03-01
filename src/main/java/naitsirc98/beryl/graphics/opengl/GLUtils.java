@@ -22,7 +22,6 @@ public class GLUtils {
             case UINT32:
                 return GL_UNSIGNED_INT;
             case FLOAT16:
-            case FLOAT24:
             case FLOAT32:
                 return GL_FLOAT;
             case DOUBLE:
