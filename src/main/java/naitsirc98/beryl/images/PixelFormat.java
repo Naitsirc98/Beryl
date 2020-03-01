@@ -1,7 +1,7 @@
 package naitsirc98.beryl.images;
 
-import naitsirc98.beryl.util.ByteSize;
-import naitsirc98.beryl.util.DataType;
+import naitsirc98.beryl.util.types.ByteSize;
+import naitsirc98.beryl.util.types.DataType;
 
 import java.nio.Buffer;
 import java.nio.DoubleBuffer;
@@ -9,7 +9,7 @@ import java.nio.FloatBuffer;
 
 import static naitsirc98.beryl.util.Asserts.assertNonNull;
 import static naitsirc98.beryl.util.Asserts.assertTrue;
-import static naitsirc98.beryl.util.DataType.*;
+import static naitsirc98.beryl.util.types.DataType.*;
 
 public enum PixelFormat implements ByteSize {
 

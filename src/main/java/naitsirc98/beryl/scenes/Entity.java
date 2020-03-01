@@ -9,8 +9,8 @@ import java.util.NoSuchElementException;
 import java.util.stream.Stream;
 
 import static naitsirc98.beryl.util.Asserts.assertNonNull;
-import static naitsirc98.beryl.util.TypeUtils.getOrElse;
-import static naitsirc98.beryl.util.TypeUtils.newInstanceUnsafe;
+import static naitsirc98.beryl.util.types.TypeUtils.getOrElse;
+import static naitsirc98.beryl.util.types.TypeUtils.newInstanceUnsafe;
 
 /**
  * An Entity is a container for {@link Component}. An entity can only have 1 component of 1 component class, but it may contain

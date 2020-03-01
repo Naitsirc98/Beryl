@@ -1,6 +1,7 @@
 package naitsirc98.beryl.graphics.vulkan.swapchain;
 
-import naitsirc98.beryl.util.Destructor;
+import naitsirc98.beryl.graphics.Graphics;
+import naitsirc98.beryl.util.types.Destructor;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.NativeResource;
 import org.lwjgl.vulkan.VkDevice;
@@ -19,13 +20,11 @@ import static org.lwjgl.vulkan.VK10.*;
 @Destructor
 public class FrameManager implements NativeResource {
 
-    private final VkDevice logicalDevice;
     private Frame[] frames;
     private Map<Integer, Frame> inFlight;
     private int currentFrame;
 
-    public FrameManager(VkDevice logicalDevice, int size) {
-        this.logicalDevice = logicalDevice;
+    public FrameManager(int size) {
         frames = createFrames(size);
         inFlight = new HashMap<>();
     }
@@ -71,11 +70,13 @@ public class FrameManager implements NativeResource {
             LongBuffer pRenderFinishedSemaphore = stack.mallocLong(1);
             LongBuffer pFence = stack.mallocLong(1);
 
+            VkDevice device = Graphics.vulkan().logicalDevice().handle();
+
             for(int i = 0;i < size;i++) {
 
-                vkCall(vkCreateSemaphore(logicalDevice, semaphoreInfo, null, pImageAvailableSemaphore), FATAL);
-                vkCall(vkCreateSemaphore(logicalDevice, semaphoreInfo, null, pRenderFinishedSemaphore), FATAL);
-                vkCall(vkCreateFence(logicalDevice, fenceInfo, null, pFence), FATAL);
+                vkCall(vkCreateSemaphore(device, semaphoreInfo, null, pImageAvailableSemaphore), FATAL);
+                vkCall(vkCreateSemaphore(device, semaphoreInfo, null, pRenderFinishedSemaphore), FATAL);
+                vkCall(vkCreateFence(device, fenceInfo, null, pFence), FATAL);
 
                 frames[i] = new Frame(pImageAvailableSemaphore.get(0), pRenderFinishedSemaphore.get(0), pFence.get(0));
             }
@@ -113,9 +114,10 @@ public class FrameManager implements NativeResource {
 
         @Override
         public void free() {
-            vkDestroySemaphore(logicalDevice, imageAvailableSemaphore, null);
-            vkDestroySemaphore(logicalDevice, renderFinishedSemaphore, null);
-            vkDestroyFence(logicalDevice, fence, null);
+            VkDevice device = Graphics.vulkan().logicalDevice().handle();
+            vkDestroySemaphore(device, imageAvailableSemaphore, null);
+            vkDestroySemaphore(device, renderFinishedSemaphore, null);
+            vkDestroyFence(device, fence, null);
         }
     }
 }

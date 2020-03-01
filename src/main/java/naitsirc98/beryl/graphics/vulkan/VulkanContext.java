@@ -14,7 +14,7 @@ import naitsirc98.beryl.graphics.vulkan.swapchain.VulkanSwapchain;
 import naitsirc98.beryl.graphics.vulkan.vertex.VulkanVertexDataBuilder;
 import naitsirc98.beryl.meshes.vertices.VertexData;
 import naitsirc98.beryl.meshes.vertices.VertexLayout;
-import naitsirc98.beryl.util.Destructor;
+import naitsirc98.beryl.util.types.Destructor;
 import org.lwjgl.vulkan.VkInstance;
 
 import java.util.HashMap;
@@ -27,7 +27,7 @@ import static naitsirc98.beryl.graphics.rendering.RenderingPaths.RPATH_SIMPLE3D;
 import static naitsirc98.beryl.graphics.vulkan.VulkanDebugMessenger.newVulkanDebugMessenger;
 import static naitsirc98.beryl.graphics.vulkan.VulkanInstanceFactory.newVkInstance;
 import static naitsirc98.beryl.graphics.vulkan.VulkanValidationLayers.defaultValidationLayers;
-import static naitsirc98.beryl.util.TypeUtils.newInstance;
+import static naitsirc98.beryl.util.types.TypeUtils.newInstance;
 import static org.lwjgl.vulkan.KHRSwapchain.VK_KHR_SWAPCHAIN_EXTENSION_NAME;
 import static org.lwjgl.vulkan.VK10.vkDestroyInstance;
 

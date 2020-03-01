@@ -1,7 +1,9 @@
 package naitsirc98.beryl.graphics.vulkan.rendering;
 
+import naitsirc98.beryl.graphics.Graphics;
 import naitsirc98.beryl.graphics.rendering.Renderer;
 import naitsirc98.beryl.graphics.vulkan.commands.VulkanCommandPool;
+import naitsirc98.beryl.graphics.vulkan.devices.VulkanLogicalDevice;
 import naitsirc98.beryl.graphics.vulkan.swapchain.FrameManager;
 import naitsirc98.beryl.graphics.vulkan.swapchain.VulkanSwapchain;
 import naitsirc98.beryl.logging.Log;
@@ -13,10 +15,9 @@ import java.nio.IntBuffer;
 import static naitsirc98.beryl.graphics.vulkan.util.VulkanUtils.getVulkanErrorName;
 import static naitsirc98.beryl.graphics.vulkan.util.VulkanUtils.vkCall;
 import static naitsirc98.beryl.logging.Log.Level.FATAL;
-import static naitsirc98.beryl.util.DataType.UINT64_MAX;
+import static naitsirc98.beryl.util.types.DataType.UINT64_MAX;
 import static org.lwjgl.vulkan.KHRSwapchain.*;
 import static org.lwjgl.vulkan.VK10.*;
-import static org.lwjgl.vulkan.VK10.vkWaitForFences;
 
 public class VulkanRenderer implements Renderer {
 
@@ -30,15 +31,16 @@ public class VulkanRenderer implements Renderer {
     private boolean framebufferResize;
     private int currentSwapchainImageIndex;
 
-    private VulkanRenderer(VulkanSwapchain swapchain, VulkanCommandPool commandPool) {
-        this.swapchain = swapchain;
-        this.logicalDevice = swapchain.device().logicalDevice().vkDevice();
-        graphicsQueue = swapchain.device().logicalDevice().graphicsQueue();
-        presentationQueue = swapchain.depthImage().logicalDevice().presentationQueue();
-        this.commandPool = commandPool;
+    private VulkanRenderer() {
+        VulkanLogicalDevice logicalDevice = Graphics.vulkan().logicalDevice();
+        this.swapchain = Graphics.vulkan().swapchain();
+        this.logicalDevice = logicalDevice.handle();
+        graphicsQueue = logicalDevice.graphicsQueue();
+        presentationQueue = logicalDevice.presentationQueue();
+        this.commandPool = Graphics.vulkan().graphicsCommandPool();
         final int swapchainImagesCount = swapchain.swapChainImages().length;
         commandBuffers = commandPool.newPrimaryCommandBuffers(swapchainImagesCount);
-        this.frameManager = new FrameManager(logicalDevice, swapchainImagesCount);
+        this.frameManager = new FrameManager(swapchainImagesCount);
     }
 
     @Override
@@ -50,7 +52,7 @@ public class VulkanRenderer implements Renderer {
 
         IntBuffer pImageIndex = stack.mallocInt(1);
 
-        int vkResult = vkAcquireNextImageKHR(logicalDevice, swapchain.vkSwapchain(), UINT64_MAX,
+        int vkResult = vkAcquireNextImageKHR(logicalDevice, swapchain.handle(), UINT64_MAX,
                 frame.imageAvailableSemaphore, VK_NULL_HANDLE, pImageIndex);
 
         if(vkResult == VK_ERROR_OUT_OF_DATE_KHR) {
@@ -100,7 +102,7 @@ public class VulkanRenderer implements Renderer {
         presentInfo.pWaitSemaphores(stack.longs(frame.renderFinishedSemaphore));
 
         presentInfo.swapchainCount(1);
-        presentInfo.pSwapchains(stack.longs(swapchain.vkSwapchain()));
+        presentInfo.pSwapchains(stack.longs(swapchain.handle()));
 
         presentInfo.pImageIndices(stack.ints(currentSwapchainImageIndex));
 

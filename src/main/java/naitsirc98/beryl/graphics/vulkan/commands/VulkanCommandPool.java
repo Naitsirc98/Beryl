@@ -1,6 +1,6 @@
 package naitsirc98.beryl.graphics.vulkan.commands;
 
-import naitsirc98.beryl.util.Destructor;
+import naitsirc98.beryl.util.types.Destructor;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.NativeResource;
@@ -12,7 +12,6 @@ import java.util.function.Consumer;
 import static naitsirc98.beryl.graphics.vulkan.util.VulkanUtils.pointers;
 import static naitsirc98.beryl.graphics.vulkan.util.VulkanUtils.vkCall;
 import static org.lwjgl.system.MemoryStack.stackPush;
-import static org.lwjgl.system.MemoryUtil.memAllocPointer;
 import static org.lwjgl.system.MemoryUtil.memFree;
 import static org.lwjgl.vulkan.VK10.*;
 

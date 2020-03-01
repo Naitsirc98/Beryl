@@ -1,4 +1,4 @@
-package naitsirc98.beryl.util;
+package naitsirc98.beryl.util.geometry;
 
 import static org.joml.Math.max;
 

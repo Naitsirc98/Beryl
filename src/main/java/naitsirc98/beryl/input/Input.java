@@ -11,7 +11,7 @@ import naitsirc98.beryl.events.input.keyboard.KeyRepeatEvent;
 import naitsirc98.beryl.events.input.keyboard.KeyTypedEvent;
 import naitsirc98.beryl.events.input.mouse.*;
 import naitsirc98.beryl.graphics.window.Window;
-import naitsirc98.beryl.util.Singleton;
+import naitsirc98.beryl.util.types.Singleton;
 import org.lwjgl.glfw.GLFWJoystickCallback;
 import org.lwjgl.system.MemoryStack;
 

@@ -16,7 +16,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
 import static naitsirc98.beryl.util.SystemInfo.*;
-import static naitsirc98.beryl.util.TypeUtils.initSingleton;
+import static naitsirc98.beryl.util.types.TypeUtils.initSingleton;
 import static org.lwjgl.system.MemoryStack.stackPush;
 
 public final class Beryl {

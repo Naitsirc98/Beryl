@@ -1,6 +1,7 @@
 package naitsirc98.beryl.graphics.vulkan.vertex;
 
 import naitsirc98.beryl.graphics.Graphics;
+import naitsirc98.beryl.graphics.vulkan.VulkanObject;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.NativeResource;
 import org.lwjgl.vulkan.VkBufferCreateInfo;
@@ -17,7 +18,7 @@ import static org.lwjgl.system.MemoryUtil.memAllocLong;
 import static org.lwjgl.system.MemoryUtil.memFree;
 import static org.lwjgl.vulkan.VK10.*;
 
-public class VulkanBufferGroup implements NativeResource {
+public class VulkanBufferGroup implements VulkanObject.Custom<LongBuffer> {
 
     private LongBuffer vkBuffers;
     private LongBuffer memoryOffsets;
@@ -32,7 +33,8 @@ public class VulkanBufferGroup implements NativeResource {
         bindBuffersToMemory();
     }
 
-    public LongBuffer vkBuffers() {
+    @Override
+    public LongBuffer handle() {
         return vkBuffers;
     }
 
@@ -51,7 +53,7 @@ public class VulkanBufferGroup implements NativeResource {
     @Override
     public void free() {
 
-        final VkDevice device = Graphics.vulkan().vkLogicalDevice();
+        final VkDevice device = logicalDevice().handle();
 
         for(int i = 0;i < vkBuffers.limit();i++) {
             vkDestroyBuffer(device, vkBuffers.get(i), null);
@@ -68,7 +70,7 @@ public class VulkanBufferGroup implements NativeResource {
 
     private void bindBuffersToMemory() {
 
-        final VkDevice device = Graphics.vulkan().vkLogicalDevice();
+        final VkDevice device = logicalDevice().handle();
 
         for(int i = 0;i < vkBuffers.limit();i++) {
             vkBindBufferMemory(device, vkBuffers.get(i), vkMemory, memoryOffsets.get(i));
@@ -86,7 +88,7 @@ public class VulkanBufferGroup implements NativeResource {
                     .usage(bufferType)
                     .sharingMode(VK_SHARING_MODE_EXCLUSIVE);
 
-            final VkDevice device = Graphics.vulkan().vkLogicalDevice();
+            final VkDevice device = logicalDevice().handle();
 
             for(int i = 0;i < bufferSizes.length;i++) {
                 vkBuffers.position(i);
@@ -115,7 +117,7 @@ public class VulkanBufferGroup implements NativeResource {
     private int getMemoryTypeBits() {
         try(MemoryStack stack = stackPush()) {
             VkMemoryRequirements memoryRequirements = VkMemoryRequirements.callocStack(stack);
-            vkGetBufferMemoryRequirements(Graphics.vulkan().vkLogicalDevice(), vkBuffers.get(0), memoryRequirements);
+            vkGetBufferMemoryRequirements(logicalDevice().handle(), vkBuffers.get(0), memoryRequirements);
             return memoryRequirements.memoryTypeBits();
         }
     }

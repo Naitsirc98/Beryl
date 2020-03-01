@@ -10,8 +10,8 @@ import naitsirc98.beryl.graphics.vulkan.devices.VulkanPhysicalDevice.SwapChainSu
 import naitsirc98.beryl.graphics.vulkan.renderpasses.VulkanRenderPass;
 import naitsirc98.beryl.graphics.vulkan.renderpasses.VulkanSubPassAttachments;
 import naitsirc98.beryl.graphics.window.Window;
-import naitsirc98.beryl.util.Destructor;
-import naitsirc98.beryl.util.Sizec;
+import naitsirc98.beryl.util.types.Destructor;
+import naitsirc98.beryl.util.geometry.Sizec;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
 
@@ -19,7 +19,7 @@ import java.nio.IntBuffer;
 import java.nio.LongBuffer;
 
 import static naitsirc98.beryl.graphics.vulkan.util.VulkanFormatUtils.findDepthFormat;
-import static naitsirc98.beryl.util.DataType.UINT32_MAX;
+import static naitsirc98.beryl.util.types.DataType.UINT32_MAX;
 import static naitsirc98.beryl.util.Maths.clamp;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.vulkan.KHRSurface.*;
@@ -220,7 +220,6 @@ public class VulkanSwapchain implements VulkanObject.Long {
         depthImage = createDepthImage();
 
         VulkanRenderPass renderPass = new VulkanRenderPass(
-                logicalDevice(),
                 getSwapchainSubpasses(),
                 getSwapchainSubpassAttachments(),
                 getSwapchainSubpassDependencies());

@@ -10,7 +10,7 @@ import naitsirc98.beryl.graphics.rendering.Renderer;
 import naitsirc98.beryl.graphics.rendering.RenderingPath;
 import naitsirc98.beryl.graphics.window.Window;
 import naitsirc98.beryl.meshes.vertices.VertexLayout;
-import naitsirc98.beryl.util.LongHandle;
+import naitsirc98.beryl.util.handles.LongHandle;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GLCapabilities;
 
@@ -19,7 +19,7 @@ import java.util.Map;
 
 import static naitsirc98.beryl.graphics.opengl.GLDebugMessenger.newGLDebugMessenger;
 import static naitsirc98.beryl.graphics.rendering.RenderingPaths.RPATH_SIMPLE3D;
-import static naitsirc98.beryl.util.TypeUtils.newInstance;
+import static naitsirc98.beryl.util.types.TypeUtils.newInstance;
 import static org.lwjgl.glfw.GLFW.glfwMakeContextCurrent;
 
 public class GLContext implements GraphicsContext, LongHandle {

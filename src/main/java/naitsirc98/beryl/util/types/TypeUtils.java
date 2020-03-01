@@ -1,4 +1,4 @@
-package naitsirc98.beryl.util;
+package naitsirc98.beryl.util.types;
 
 import naitsirc98.beryl.logging.Log;
 import sun.misc.Unsafe;
@@ -22,7 +22,7 @@ public final class TypeUtils {
         try {
             return type.cast(UNSAFE.allocateInstance(type));
         } catch (InstantiationException e) {
-            Log.error("Cannot instanciate unsafe " + type, e);
+            Log.error("Cannot instantiate unsafe " + type, e);
         }
         return null;
     }

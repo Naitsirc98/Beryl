@@ -1,6 +1,6 @@
 package naitsirc98.beryl.graphics.rendering;
 
-import naitsirc98.beryl.util.Destructor;
+import naitsirc98.beryl.util.types.Destructor;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.NativeResource;
 

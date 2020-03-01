@@ -21,10 +21,10 @@ public final class VulkanVertexData extends VertexData {
 
     public void bind(VkCommandBuffer commandBuffer) {
 
-        vkCmdBindVertexBuffers(commandBuffer, 0, vertexBuffers.vkBuffers(), vertexBuffers.memoryOffsets());
+        vkCmdBindVertexBuffers(commandBuffer, 0, vertexBuffers.handle(), vertexBuffers.memoryOffsets());
 
         if(indexBuffer != null) {
-            vkCmdBindIndexBuffer(commandBuffer, indexBuffer.vkBuffer(), 0, VK_INDEX_TYPE_UINT32);
+            vkCmdBindIndexBuffer(commandBuffer, indexBuffer.handle(), 0, VK_INDEX_TYPE_UINT32);
         }
     }
 

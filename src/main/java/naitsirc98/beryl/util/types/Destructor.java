@@ -1,4 +1,4 @@
-package naitsirc98.beryl.util;
+package naitsirc98.beryl.util.types;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

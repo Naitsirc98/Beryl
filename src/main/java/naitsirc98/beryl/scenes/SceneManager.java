@@ -4,13 +4,13 @@ import naitsirc98.beryl.core.Beryl;
 import naitsirc98.beryl.core.BerylConfiguration;
 import naitsirc98.beryl.core.BerylSystem;
 import naitsirc98.beryl.logging.Log;
-import naitsirc98.beryl.util.Singleton;
+import naitsirc98.beryl.util.types.Singleton;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.stream.Stream;
 
-import static naitsirc98.beryl.util.TypeUtils.getOrElse;
+import static naitsirc98.beryl.util.types.TypeUtils.getOrElse;
 
 public final class SceneManager extends BerylSystem {
 

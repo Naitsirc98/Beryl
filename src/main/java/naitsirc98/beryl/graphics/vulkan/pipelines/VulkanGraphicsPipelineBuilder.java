@@ -148,7 +148,7 @@ public final class VulkanGraphicsPipelineBuilder implements NativeResource {
             VulkanShaderModule shaderModule = shaderModules.get(i);
             shaderStages.get(i)
                     .sType(VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO)
-                    .module(shaderModule.vkShaderModule())
+                    .module(shaderModule.handle())
                     .stage(shaderModule.stage().handle())
                     .pName(entryPoint);
         }

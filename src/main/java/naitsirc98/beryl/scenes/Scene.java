@@ -16,7 +16,7 @@ import java.util.stream.Stream;
 import static naitsirc98.beryl.scenes.Entity.UNTAGGED;
 import static naitsirc98.beryl.util.Asserts.assertNonNull;
 import static naitsirc98.beryl.util.Asserts.assertTrue;
-import static naitsirc98.beryl.util.TypeUtils.newInstance;
+import static naitsirc98.beryl.util.types.TypeUtils.newInstance;
 
 public final class Scene {
     

@@ -3,8 +3,8 @@ package naitsirc98.beryl.graphics.window;
 import naitsirc98.beryl.core.Beryl;
 import naitsirc98.beryl.core.BerylConfiguration;
 import naitsirc98.beryl.graphics.GraphicsAPI;
-import naitsirc98.beryl.util.Size;
-import naitsirc98.beryl.util.Sizec;
+import naitsirc98.beryl.util.geometry.Size;
+import naitsirc98.beryl.util.geometry.Sizec;
 import org.lwjgl.glfw.*;
 import org.lwjgl.system.Platform;
 
@@ -13,8 +13,8 @@ import static naitsirc98.beryl.graphics.window.DisplayMode.FULLSCREEN;
 import static naitsirc98.beryl.graphics.window.DisplayMode.WINDOWED;
 import static naitsirc98.beryl.util.Asserts.assertNonNull;
 import static naitsirc98.beryl.util.Asserts.assertNotEquals;
-import static naitsirc98.beryl.util.LongHandle.NULL;
-import static naitsirc98.beryl.util.TypeUtils.initSingleton;
+import static naitsirc98.beryl.util.handles.LongHandle.NULL;
+import static naitsirc98.beryl.util.types.TypeUtils.initSingleton;
 import static org.lwjgl.glfw.GLFW.*;
 
 public final class WindowFactory {

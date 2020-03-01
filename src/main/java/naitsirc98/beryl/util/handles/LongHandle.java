@@ -1,4 +1,4 @@
-package naitsirc98.beryl.util;
+package naitsirc98.beryl.util.handles;
 
 /**
  * Interface for those objects that wraps a long handle

@@ -1,4 +1,4 @@
-package naitsirc98.beryl.util;
+package naitsirc98.beryl.util.types;
 
 public enum DataType implements ByteSize {
 

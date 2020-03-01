@@ -6,7 +6,9 @@ import naitsirc98.beryl.graphics.window.Window;
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.scenes.Component;
 import naitsirc98.beryl.scenes.components.math.Transform;
-import naitsirc98.beryl.util.*;
+import naitsirc98.beryl.util.geometry.Sizec;
+import naitsirc98.beryl.util.geometry.Viewport;
+import naitsirc98.beryl.util.geometry.Viewportc;
 import org.joml.*;
 
 import static naitsirc98.beryl.scenes.components.camera.ProjectionType.PERSPECTIVE;

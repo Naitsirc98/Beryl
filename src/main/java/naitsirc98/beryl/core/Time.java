@@ -1,6 +1,6 @@
 package naitsirc98.beryl.core;
 
-import naitsirc98.beryl.util.Singleton;
+import naitsirc98.beryl.util.types.Singleton;
 
 import static org.lwjgl.glfw.GLFW.*;
 

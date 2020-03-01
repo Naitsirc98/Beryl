@@ -13,7 +13,7 @@ import naitsirc98.beryl.events.window.*;
 import naitsirc98.beryl.input.Key;
 import naitsirc98.beryl.input.KeyModifier;
 import naitsirc98.beryl.input.MouseButton;
-import naitsirc98.beryl.util.Destructor;
+import naitsirc98.beryl.util.types.Destructor;
 import org.lwjgl.glfw.*;
 import org.lwjgl.system.Callback;
 

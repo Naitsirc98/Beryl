@@ -12,8 +12,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static java.util.Arrays.stream;
-import static naitsirc98.beryl.util.TypeUtils.initSingleton;
-import static naitsirc98.beryl.util.TypeUtils.newInstance;
+import static naitsirc98.beryl.util.types.TypeUtils.initSingleton;
+import static naitsirc98.beryl.util.types.TypeUtils.newInstance;
 
 public class BerylSystemManager {
 

@@ -1,7 +1,7 @@
 package naitsirc98.beryl.input;
 
 import naitsirc98.beryl.util.GLFWWrapper;
-import naitsirc98.beryl.util.EnumMapper;
+import naitsirc98.beryl.util.types.EnumMapper;
 
 import static org.lwjgl.glfw.GLFW.*;
 

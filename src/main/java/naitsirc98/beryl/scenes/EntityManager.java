@@ -7,7 +7,7 @@ import java.util.stream.Stream;
 
 import static naitsirc98.beryl.scenes.Entity.UNNAMED;
 import static naitsirc98.beryl.scenes.Entity.UNTAGGED;
-import static naitsirc98.beryl.util.TypeUtils.getOrElse;
+import static naitsirc98.beryl.util.types.TypeUtils.getOrElse;
 
 /**
  * The EntityManager handles the creation, storage, look-up and destruction of entities of a scene

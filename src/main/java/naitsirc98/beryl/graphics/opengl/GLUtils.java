@@ -1,6 +1,6 @@
 package naitsirc98.beryl.graphics.opengl;
 
-import naitsirc98.beryl.util.DataType;
+import naitsirc98.beryl.util.types.DataType;
 
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL11.GL_DOUBLE;

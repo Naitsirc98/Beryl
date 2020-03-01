@@ -2,7 +2,7 @@ package naitsirc98.beryl.graphics.vulkan.devices;
 
 import naitsirc98.beryl.graphics.vulkan.VulkanObject;
 import naitsirc98.beryl.graphics.vulkan.devices.VulkanPhysicalDevice.QueueFamilyIndices;
-import naitsirc98.beryl.util.Destructor;
+import naitsirc98.beryl.util.types.Destructor;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
@@ -14,7 +14,7 @@ import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.vulkan.VK10.*;
 
 @Destructor
-public class VulkanLogicalDevice implements VulkanObject.Vk<VkDevice> {
+public class VulkanLogicalDevice implements VulkanObject.Custom<VkDevice> {
 
     private final VkDevice vkDevice;
     private final VkQueue graphicsQueue;

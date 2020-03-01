@@ -6,7 +6,7 @@ import naitsirc98.beryl.graphics.window.DisplayMode;
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.logging.LogChannel;
 import naitsirc98.beryl.util.ANSIColor;
-import naitsirc98.beryl.util.Sizec;
+import naitsirc98.beryl.util.geometry.Sizec;
 import naitsirc98.beryl.util.Version;
 import org.joml.Vector2ic;
 

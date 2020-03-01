@@ -19,7 +19,7 @@ import java.util.List;
 
 import static naitsirc98.beryl.graphics.ShaderStage.FRAGMENT_STAGE;
 import static naitsirc98.beryl.graphics.ShaderStage.VERTEX_STAGE;
-import static naitsirc98.beryl.util.DataType.FLOAT32;
+import static naitsirc98.beryl.util.types.DataType.FLOAT32;
 import static org.lwjgl.opengl.GL46.*;
 import static org.lwjgl.system.MemoryStack.stackPush;
 

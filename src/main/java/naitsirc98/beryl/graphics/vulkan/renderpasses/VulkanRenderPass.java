@@ -1,9 +1,8 @@
 package naitsirc98.beryl.graphics.vulkan.renderpasses;
 
-import naitsirc98.beryl.graphics.vulkan.devices.VulkanLogicalDevice;
-import naitsirc98.beryl.util.Destructor;
+import naitsirc98.beryl.graphics.vulkan.VulkanObject;
+import naitsirc98.beryl.util.types.Destructor;
 import org.lwjgl.system.MemoryStack;
-import org.lwjgl.system.NativeResource;
 import org.lwjgl.vulkan.VkFramebufferCreateInfo;
 import org.lwjgl.vulkan.VkRenderPassCreateInfo;
 import org.lwjgl.vulkan.VkSubpassDependency;
@@ -14,24 +13,22 @@ import java.util.function.Function;
 
 import static naitsirc98.beryl.graphics.vulkan.util.VulkanUtils.vkCall;
 import static org.lwjgl.system.MemoryStack.stackPush;
+import static org.lwjgl.system.MemoryUtil.*;
 import static org.lwjgl.vulkan.VK10.*;
 
 @Destructor
-public class VulkanRenderPass implements NativeResource {
+public class VulkanRenderPass implements VulkanObject.Long {
 
     private final long vkRenderPass;
-    private final VulkanLogicalDevice logicalDevice;
     private final VkSubpassDescription.Buffer subPasses;
     private final VulkanSubPassAttachments subPassAttachmentDescriptions;
     private final VkSubpassDependency.Buffer subpassDependencies;
-    private long[] framebuffers;
+    private LongBuffer framebuffers;
 
-    public VulkanRenderPass(VulkanLogicalDevice logicalDevice,
-                            VkSubpassDescription.Buffer subPasses,
+    public VulkanRenderPass(VkSubpassDescription.Buffer subPasses,
                             VulkanSubPassAttachments subPassAttachmentDescriptions,
                             VkSubpassDependency.Buffer subpassDependencies) {
 
-        this.logicalDevice = logicalDevice;
         this.subPasses = subPasses;
         this.subPassAttachmentDescriptions = subPassAttachmentDescriptions;
         this.subpassDependencies = subpassDependencies;
@@ -39,12 +36,19 @@ public class VulkanRenderPass implements NativeResource {
     }
 
     @Override
-    public void free() {
-        for(long framebuffer : framebuffers) {
-            vkDestroyFramebuffer(logicalDevice.vkDevice(), framebuffer, null);
-        }
+    public long handle() {
+        return vkRenderPass;
+    }
 
-        vkDestroyRenderPass(logicalDevice.vkDevice(), vkRenderPass, null);
+    @Override
+    public void free() {
+
+        for(int i = 0;i < framebuffers.capacity();i++) {
+            vkDestroyFramebuffer(logicalDevice().handle(), framebuffers.get(i), null);
+        }
+        memFree(framebuffers);
+
+        vkDestroyRenderPass(logicalDevice().handle(), vkRenderPass, null);
     }
 
     public long vkRenderPass() {
@@ -63,7 +67,7 @@ public class VulkanRenderPass implements NativeResource {
         return subpassDependencies;
     }
 
-    public long[] framebuffers() {
+    public LongBuffer framebuffers() {
         return framebuffers;
     }
 
@@ -71,9 +75,7 @@ public class VulkanRenderPass implements NativeResource {
 
         try(MemoryStack stack = stackPush()) {
 
-            framebuffers = new long[count];
-
-            LongBuffer pFramebuffer = stack.mallocLong(1);
+            framebuffers = memAllocLong(count);
 
             // Lets allocate the create info struct once and just update the pAttachments field each iteration
             VkFramebufferCreateInfo framebufferInfo = VkFramebufferCreateInfo.callocStack(stack);
@@ -87,10 +89,10 @@ public class VulkanRenderPass implements NativeResource {
 
                 framebufferInfo.pAttachments(framebufferAttachments.apply(i));
 
-                vkCall(vkCreateFramebuffer(logicalDevice.vkDevice(), framebufferInfo, null, pFramebuffer));
-
-                framebuffers[i] = pFramebuffer.get(0);
+                vkCall(vkCreateFramebuffer(logicalDevice().handle(), framebufferInfo, null, framebuffers.position(i)));
             }
+
+            framebuffers.rewind();
         }
     }
 
@@ -106,7 +108,7 @@ public class VulkanRenderPass implements NativeResource {
 
             LongBuffer pRenderPass = stack.mallocLong(1);
 
-            vkCall(vkCreateRenderPass(logicalDevice.vkDevice(), renderPassInfo, null, pRenderPass));
+            vkCall(vkCreateRenderPass(logicalDevice().handle(), renderPassInfo, null, pRenderPass));
 
             return pRenderPass.get(0);
         }

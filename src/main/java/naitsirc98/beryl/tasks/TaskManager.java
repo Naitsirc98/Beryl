@@ -2,7 +2,7 @@ package naitsirc98.beryl.tasks;
 
 import naitsirc98.beryl.core.BerylSystem;
 import naitsirc98.beryl.logging.Log;
-import naitsirc98.beryl.util.Singleton;
+import naitsirc98.beryl.util.types.Singleton;
 
 import java.util.Optional;
 import java.util.concurrent.BlockingQueue;

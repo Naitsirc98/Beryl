@@ -1,7 +1,7 @@
 package naitsirc98.beryl.core;
 
 import naitsirc98.beryl.logging.Log;
-import naitsirc98.beryl.util.Singleton;
+import naitsirc98.beryl.util.types.Singleton;
 
 import java.util.function.Consumer;
 

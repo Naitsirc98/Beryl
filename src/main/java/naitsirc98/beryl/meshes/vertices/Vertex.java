@@ -1,6 +1,6 @@
 package naitsirc98.beryl.meshes.vertices;
 
-import naitsirc98.beryl.util.ByteSize;
+import naitsirc98.beryl.util.types.ByteSize;
 
 import java.nio.ByteBuffer;
 

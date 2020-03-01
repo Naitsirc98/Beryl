@@ -1,4 +1,4 @@
-package naitsirc98.beryl.util;
+package naitsirc98.beryl.util.geometry;
 
 public final class Viewport implements Viewportc {
 

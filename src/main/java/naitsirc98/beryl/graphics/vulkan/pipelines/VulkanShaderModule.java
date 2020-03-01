@@ -1,10 +1,9 @@
 package naitsirc98.beryl.graphics.vulkan.pipelines;
 
-import naitsirc98.beryl.graphics.Graphics;
 import naitsirc98.beryl.graphics.ShaderStage;
 import naitsirc98.beryl.graphics.shaders.SPIRVBytecode;
+import naitsirc98.beryl.graphics.vulkan.VulkanObject;
 import org.lwjgl.system.MemoryStack;
-import org.lwjgl.system.NativeResource;
 import org.lwjgl.vulkan.VkShaderModuleCreateInfo;
 
 import java.nio.LongBuffer;
@@ -15,7 +14,7 @@ import static naitsirc98.beryl.graphics.vulkan.util.VulkanUtils.vkCall;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.vulkan.VK10.*;
 
-public class VulkanShaderModule implements NativeResource {
+public class VulkanShaderModule implements VulkanObject.Long {
 
     public static final String DEFAULT_ENTRY_POINT = "main";
 
@@ -27,7 +26,8 @@ public class VulkanShaderModule implements NativeResource {
         vkShaderModule = createShaderModule(compileShaderFile(shaderFile, stage));
     }
 
-    public long vkShaderModule() {
+    @Override
+    public long handle() {
         return vkShaderModule;
     }
 
@@ -37,7 +37,7 @@ public class VulkanShaderModule implements NativeResource {
 
     @Override
     public void free() {
-        vkDestroyShaderModule(Graphics.vulkan().vkLogicalDevice(), vkShaderModule, null);
+        vkDestroyShaderModule(logicalDevice().handle(), vkShaderModule, null);
         vkShaderModule = VK_NULL_HANDLE;
     }
 
@@ -53,7 +53,7 @@ public class VulkanShaderModule implements NativeResource {
 
             LongBuffer pShaderModule = stack.mallocLong(1);
 
-            vkCall(vkCreateShaderModule(Graphics.vulkan().vkLogicalDevice(), createInfo, null, pShaderModule));
+            vkCall(vkCreateShaderModule(logicalDevice().handle(), createInfo, null, pShaderModule));
 
             spirvShader.free();
 

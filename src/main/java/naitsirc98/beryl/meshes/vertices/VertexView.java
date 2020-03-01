@@ -7,7 +7,7 @@ import java.util.Iterator;
 
 import static java.util.Objects.requireNonNull;
 import static naitsirc98.beryl.util.Asserts.assertTrue;
-import static naitsirc98.beryl.util.TypeUtils.newInstance;
+import static naitsirc98.beryl.util.types.TypeUtils.newInstance;
 
 public final class VertexView<T extends Vertex> implements Iterable<Vertex>, Iterator<Vertex> {
 

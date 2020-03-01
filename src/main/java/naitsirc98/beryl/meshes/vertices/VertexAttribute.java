@@ -1,10 +1,10 @@
 package naitsirc98.beryl.meshes.vertices;
 
-import naitsirc98.beryl.util.ByteSize;
-import naitsirc98.beryl.util.DataType;
+import naitsirc98.beryl.util.types.ByteSize;
+import naitsirc98.beryl.util.types.DataType;
 
 import static java.util.Objects.requireNonNull;
-import static naitsirc98.beryl.util.DataType.FLOAT32;
+import static naitsirc98.beryl.util.types.DataType.FLOAT32;
 
 public final class VertexAttribute implements ByteSize {
 

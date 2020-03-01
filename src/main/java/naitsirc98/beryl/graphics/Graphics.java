@@ -8,10 +8,10 @@ import naitsirc98.beryl.graphics.vulkan.VulkanContext;
 import naitsirc98.beryl.graphics.window.Window;
 import naitsirc98.beryl.graphics.window.WindowFactory;
 import naitsirc98.beryl.logging.Log;
-import naitsirc98.beryl.util.Singleton;
+import naitsirc98.beryl.util.types.Singleton;
 
 import static naitsirc98.beryl.graphics.GraphicsAPI.VULKAN;
-import static naitsirc98.beryl.util.TypeUtils.*;
+import static naitsirc98.beryl.util.types.TypeUtils.*;
 
 public final class Graphics extends BerylSystem {
 

@@ -2,7 +2,13 @@ package naitsirc98.beryl.graphics.window;
 
 import naitsirc98.beryl.images.Image;
 import naitsirc98.beryl.images.PixelFormat;
-import naitsirc98.beryl.util.*;
+import naitsirc98.beryl.util.geometry.Rect;
+import naitsirc98.beryl.util.geometry.Rectc;
+import naitsirc98.beryl.util.geometry.Size;
+import naitsirc98.beryl.util.geometry.Sizec;
+import naitsirc98.beryl.util.handles.LongHandle;
+import naitsirc98.beryl.util.types.Destructor;
+import naitsirc98.beryl.util.types.Singleton;
 import org.joml.Vector2i;
 import org.joml.Vector2ic;
 import org.lwjgl.glfw.GLFWImage;

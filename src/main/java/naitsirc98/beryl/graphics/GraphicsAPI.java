@@ -1,6 +1,6 @@
 package naitsirc98.beryl.graphics;
 
-import naitsirc98.beryl.util.Singleton;
+import naitsirc98.beryl.util.types.Singleton;
 
 public enum GraphicsAPI {
 

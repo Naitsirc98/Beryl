@@ -2,7 +2,7 @@ package naitsirc98.beryl.graphics.vulkan.devices;
 
 import naitsirc98.beryl.graphics.vulkan.VulkanObject;
 import naitsirc98.beryl.logging.Log;
-import naitsirc98.beryl.util.Destructor;
+import naitsirc98.beryl.util.types.Destructor;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.NativeResource;
@@ -21,7 +21,7 @@ import static org.lwjgl.vulkan.KHRSurface.*;
 import static org.lwjgl.vulkan.VK10.*;
 
 @Destructor
-public class VulkanPhysicalDevice implements VulkanObject.Vk<VkPhysicalDevice> {
+public class VulkanPhysicalDevice implements VulkanObject.Custom<VkPhysicalDevice> {
 
     // TODO: pick best physical device, not the first matching the requirements
 

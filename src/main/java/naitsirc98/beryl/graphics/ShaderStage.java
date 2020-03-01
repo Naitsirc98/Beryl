@@ -1,6 +1,6 @@
 package naitsirc98.beryl.graphics;
 
-import naitsirc98.beryl.util.IntHandle;
+import naitsirc98.beryl.util.handles.IntHandle;
 
 import static naitsirc98.beryl.graphics.GraphicsAPI.chooseByAPI;
 import static org.lwjgl.opengl.GL45.*;

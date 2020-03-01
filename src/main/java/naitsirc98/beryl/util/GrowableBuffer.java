@@ -7,7 +7,7 @@ import java.nio.ByteBuffer;
 import static java.util.Objects.requireNonNull;
 import static naitsirc98.beryl.util.Asserts.assertThat;
 import static naitsirc98.beryl.util.Asserts.assertTrue;
-import static naitsirc98.beryl.util.DataType.*;
+import static naitsirc98.beryl.util.types.DataType.*;
 import static org.lwjgl.system.MemoryUtil.*;
 
 public final class GrowableBuffer implements NativeResource {
