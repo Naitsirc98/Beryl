@@ -13,7 +13,6 @@ import naitsirc98.beryl.resources.Resources;
 import naitsirc98.beryl.scenes.components.camera.Camera;
 import naitsirc98.beryl.scenes.components.meshes.MeshView;
 import org.joml.Matrix4f;
-import org.joml.Matrix4fc;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
 
@@ -28,7 +27,7 @@ import static naitsirc98.beryl.graphics.vulkan.vertex.VulkanVertexInputUtils.ver
 import static naitsirc98.beryl.graphics.vulkan.vertex.VulkanVertexInputUtils.vertexInputBindingsStack;
 import static naitsirc98.beryl.util.types.DataType.FLOAT32;
 import static org.lwjgl.system.MemoryStack.stackPush;
-import static org.lwjgl.system.MemoryUtil.memAddress;
+import static org.lwjgl.system.MemoryUtil.*;
 import static org.lwjgl.vulkan.VK10.*;
 
 public final class VulkanSimpleRenderingPath extends RenderingPath {
@@ -62,6 +61,9 @@ public final class VulkanSimpleRenderingPath extends RenderingPath {
     private Matrix4f projectionViewModelMatrix;
     private VulkanRenderer renderer;
     private VulkanSwapchain swapchain;
+    ByteBuffer pushConstantData;
+    long pushConstantDataAddress;
+
 
     private VulkanSimpleRenderingPath() {
 
@@ -74,6 +76,8 @@ public final class VulkanSimpleRenderingPath extends RenderingPath {
         createGraphicsPipeline();
         projectionViewModelMatrix = new Matrix4f();
         renderer = Graphics.vulkan().renderer();
+        pushConstantData = memAlloc(PUSH_CONSTANT_SIZE);
+        pushConstantDataAddress = memAddress(pushConstantData);
     }
 
     @Override
@@ -85,12 +89,11 @@ public final class VulkanSimpleRenderingPath extends RenderingPath {
 
             begin(commandBuffer, stack);
 
-            Matrix4fc projectionView = camera.projectionViewMatrix();
+            Matrix4f projectionView = new Matrix4f(camera.projectionMatrix());
+            projectionView.m11(-projectionView.m11());
+            projectionView.mul(camera.viewMatrix());
             Matrix4f mvp = projectionViewModelMatrix;
             final long pipelineLayout = this.pipelineLayout.handle();
-
-            ByteBuffer pushConstantData = stack.malloc(PUSH_CONSTANT_SIZE);
-            final long pushConstantDataAddress = memAddress(pushConstantData);
 
             for(MeshView meshView : meshViews) {
 
@@ -147,15 +150,6 @@ public final class VulkanSimpleRenderingPath extends RenderingPath {
 
         vkCmdBeginRenderPass(commandBuffer, renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-        VkViewport.Buffer viewport = VkViewport.callocStack(1, stack);
-        viewport.get(0).set(0, 0, 1280, 720, 0, 1);
-        vkCmdSetViewport(commandBuffer, 0, viewport);
-
-        VkRect2D.Buffer scissor = VkRect2D.callocStack(1, stack);
-        scissor.offset(VkOffset2D.callocStack(stack).set(0, 0));
-        scissor.extent(VkExtent2D.callocStack(stack).set(1280, 720));
-        vkCmdSetScissor(commandBuffer, 0, scissor);
-
         vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline.handle());
     }
 
@@ -168,6 +162,9 @@ public final class VulkanSimpleRenderingPath extends RenderingPath {
         pipelineLayout.free();
         graphicsPipeline.free();
         projectionViewModelMatrix = null;
+        memFree(pushConstantData);
+        pushConstantData = null;
+        pushConstantDataAddress = NULL;
     }
 
     private void createPipelineLayout() {
@@ -187,7 +184,7 @@ public final class VulkanSimpleRenderingPath extends RenderingPath {
                 .inputAssemblyState(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, false)
                 .viewports(getViewports())
                 .scissors(getScissors())
-                .addDynamicStates(VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR)
+                // .addDynamicStates(VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR)
                 .rasterizationState(getRasterizationStage())
                 .multisampleState(getMultisampleState())
                 .depthStencilState(getDepthStencilState())
