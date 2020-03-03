@@ -17,7 +17,6 @@ import org.joml.Matrix4f;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
 
-import java.nio.ByteBuffer;
 import java.nio.file.Path;
 import java.util.List;
 
@@ -28,7 +27,7 @@ import static naitsirc98.beryl.graphics.vulkan.vertex.VulkanVertexInputUtils.ver
 import static naitsirc98.beryl.graphics.vulkan.vertex.VulkanVertexInputUtils.vertexInputBindingsStack;
 import static naitsirc98.beryl.util.types.DataType.FLOAT32;
 import static org.lwjgl.system.MemoryStack.stackPush;
-import static org.lwjgl.system.MemoryUtil.*;
+import static org.lwjgl.system.MemoryUtil.memAddress;
 import static org.lwjgl.vulkan.VK10.*;
 
 public final class VulkanSimpleRenderingPath extends RenderingPath {
@@ -124,12 +123,6 @@ public final class VulkanSimpleRenderingPath extends RenderingPath {
         }
     }
 
-    private void buildCommandBuffer(int index, VkCommandBuffer commandBuffer, ByteBuffer pushConstantData) {
-
-
-
-    }
-
     private void end(VkCommandBuffer commandBuffer) {
         vkCmdEndRenderPass(commandBuffer);
         vkCall(vkEndCommandBuffer(commandBuffer));
@@ -170,9 +163,6 @@ public final class VulkanSimpleRenderingPath extends RenderingPath {
         pipelineLayout.free();
         graphicsPipeline.free();
         projectionViewModelMatrix = null;
-        memFree(pushConstantData);
-        pushConstantData = null;
-        pushConstantDataAddress = NULL;
     }
 
     private void createPipelineLayout() {

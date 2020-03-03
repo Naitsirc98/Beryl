@@ -20,8 +20,8 @@ import java.nio.ByteBuffer;
 import java.util.Random;
 
 import static naitsirc98.beryl.meshes.vertices.VertexLayout.VERTEX_LAYOUT_3D;
-import static naitsirc98.beryl.util.types.DataType.FLOAT32;
 import static naitsirc98.beryl.util.Maths.radians;
+import static naitsirc98.beryl.util.types.DataType.FLOAT32;
 
 public class App1 extends BerylApplication {
 
