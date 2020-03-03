@@ -8,18 +8,29 @@ import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static java.util.Objects.requireNonNull;
 import static java.util.concurrent.Executors.newSingleThreadExecutor;
 
 public class Worker {
 
+    private final String name;
     private final ExecutorService thread;
     private final BlockingQueue<Runnable> taskQueue;
     private final AtomicReference<State> state;
 
     public Worker(String name) {
+        this.name = name;
         thread = newSingleThreadExecutor();
         taskQueue = new LinkedBlockingDeque<>();
         state = new AtomicReference<>(State.IDLE);
+    }
+
+    public String name() {
+        return name;
+    }
+
+    public int taskCount() {
+        return taskQueue.size();
     }
 
     public void submit(Runnable task) {
@@ -28,7 +39,7 @@ public class Worker {
         } else if(state.get() == State.AWAIT) {
             Log.error("Cannot submit a task while the worker is in the await state");
         } else {
-            taskQueue.add(task);
+            taskQueue.add(requireNonNull(task));
         }
     }
 
@@ -86,6 +97,7 @@ public class Worker {
     private void shutdown() {
         thread.shutdownNow();
         waitForThread();
+        taskQueue.clear();
     }
 
     private void waitForThread() {
@@ -94,6 +106,15 @@ public class Worker {
         } catch (InterruptedException e) {
             Log.error("Timeout error while waiting for worker to complete the tasks", e);
         }
+    }
+
+    @Override
+    public String toString() {
+        return "Worker{" +
+                "name='" + name + '\'' +
+                ", tasks=" + taskQueue.size() +
+                ", state=" + state +
+                '}';
     }
 
     public enum State {
