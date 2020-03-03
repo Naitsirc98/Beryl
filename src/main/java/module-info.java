@@ -20,6 +20,7 @@ module Beryl {
     requires org.lwjgl.opengl.natives;
 
     requires org.lwjgl.shaderc;
+    requires org.lwjgl.shaderc.natives;
 
     requires org.joml;
 
