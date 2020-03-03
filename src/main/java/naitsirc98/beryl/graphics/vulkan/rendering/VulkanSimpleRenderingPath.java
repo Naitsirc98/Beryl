@@ -2,7 +2,6 @@ package naitsirc98.beryl.graphics.vulkan.rendering;
 
 import naitsirc98.beryl.graphics.Graphics;
 import naitsirc98.beryl.graphics.rendering.RenderingPath;
-import naitsirc98.beryl.graphics.vulkan.commands.VulkanCommandBuilder;
 import naitsirc98.beryl.graphics.vulkan.commands.VulkanCommandBuilderExecutor;
 import naitsirc98.beryl.graphics.vulkan.pipelines.VulkanGraphicsPipeline;
 import naitsirc98.beryl.graphics.vulkan.pipelines.VulkanPipelineLayout;
@@ -59,7 +58,6 @@ public final class VulkanSimpleRenderingPath extends RenderingPath {
 
     private VulkanPipelineLayout pipelineLayout;
     private VulkanGraphicsPipeline graphicsPipeline;
-    private Matrix4f projectionViewModelMatrix;
     private VulkanRenderer renderer;
     private VulkanSwapchain swapchain;
     private VulkanCommandBuilderExecutor commandBuilderExecutor;
@@ -73,7 +71,6 @@ public final class VulkanSimpleRenderingPath extends RenderingPath {
         swapchain = Graphics.vulkan().swapchain();
         createPipelineLayout();
         createGraphicsPipeline();
-        projectionViewModelMatrix = new Matrix4f();
         renderer = Graphics.vulkan().renderer();
         commandBuilderExecutor = new VulkanCommandBuilderExecutor();
     }
@@ -92,7 +89,8 @@ public final class VulkanSimpleRenderingPath extends RenderingPath {
             projectionView.mul(camera.viewMatrix());
             final long pipelineLayout = this.pipelineLayout.handle();
 
-            final long framebuffer = swapchain.renderPass().framebuffers().get(renderer.currentSwapchainImageIndex());
+            final long framebuffer = swapchain.renderPass()
+                    .framebuffers().get(renderer.currentSwapchainImageIndex());
 
             commandBuilderExecutor.build(meshViews.size(), primaryCommandBuffer,
                     (index, commandBuffer, pushConstantData) -> {
@@ -193,7 +191,6 @@ public final class VulkanSimpleRenderingPath extends RenderingPath {
     protected void terminate() {
         pipelineLayout.free();
         graphicsPipeline.free();
-        projectionViewModelMatrix = null;
     }
 
     private void createPipelineLayout() {
