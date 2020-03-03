@@ -50,9 +50,9 @@ public class VulkanGraphicsPipeline implements VulkanObject.Long {
 
     public static final class Builder extends StackBuilder<VulkanGraphicsPipeline> {
 
-        private final long vkPipelineLayout;
-        private final long vkRenderPass;
-        private final int vkSubpass;
+        private long vkPipelineLayout;
+        private long vkRenderPass;
+        private int vkSubpass;
 
         private List<VulkanShaderModule> shaderModules;
         private VkPipelineVertexInputStateCreateInfo vertexInputState;
@@ -64,11 +64,10 @@ public class VulkanGraphicsPipeline implements VulkanObject.Long {
         private VkPipelineDepthStencilStateCreateInfo depthStencilState;
         private List<VkPipelineColorBlendAttachmentState> colorBlendAttachments;
 
-        public Builder(long vkPipelineLayout, long vkRenderPass, int vkSubpass) {
+        public Builder() {
 
-            this.vkPipelineLayout = vkPipelineLayout;
-            this.vkRenderPass = vkRenderPass;
-            this.vkSubpass = vkSubpass;
+            this.vkPipelineLayout = VK_NULL_HANDLE;
+            this.vkRenderPass = VK_NULL_HANDLE;
 
             shaderModules = new ArrayList<>(2);
 
@@ -84,6 +83,21 @@ public class VulkanGraphicsPipeline implements VulkanObject.Long {
             dynamicStates = new ArrayList<>(2);
 
             colorBlendAttachments = new ArrayList<>(1);
+        }
+
+        public Builder pipelineLayout(long vkPipelineLayout) {
+            this.vkPipelineLayout = vkPipelineLayout;
+            return this;
+        }
+
+        public Builder renderPass(long vkRenderPass) {
+            this.vkRenderPass = vkRenderPass;
+            return this;
+        }
+
+        public Builder subpass(int vkSubpass) {
+            this.vkSubpass = vkSubpass;
+            return this;
         }
 
         public Builder addShaderModules(VulkanShaderModule... shaderModules) {

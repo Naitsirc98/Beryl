@@ -2,6 +2,7 @@ package naitsirc98.beryl.graphics.vulkan.rendering;
 
 import naitsirc98.beryl.graphics.Graphics;
 import naitsirc98.beryl.graphics.rendering.RenderingPath;
+import naitsirc98.beryl.graphics.vulkan.commands.VulkanCommandBuilder;
 import naitsirc98.beryl.graphics.vulkan.commands.VulkanCommandBuilderExecutor;
 import naitsirc98.beryl.graphics.vulkan.pipelines.VulkanGraphicsPipeline;
 import naitsirc98.beryl.graphics.vulkan.pipelines.VulkanPipelineLayout;
@@ -80,7 +81,7 @@ public final class VulkanSimpleRenderingPath extends RenderingPath {
     @Override
     public void render(Camera camera, List<MeshView> meshViews) {
 
-        try(MemoryStack stack = stackPush()) {
+        try (MemoryStack stack = stackPush()) {
 
             VkCommandBuffer primaryCommandBuffer = renderer.currentCommandBuffer();
 
@@ -91,35 +92,67 @@ public final class VulkanSimpleRenderingPath extends RenderingPath {
             projectionView.mul(camera.viewMatrix());
             final long pipelineLayout = this.pipelineLayout.handle();
 
-            commandBuilderExecutor.build(meshViews.size(), primaryCommandBuffer, (index, commandBuffer, pushConstantData) -> {
+            final long framebuffer = swapchain.renderPass().framebuffers().get(renderer.currentSwapchainImageIndex());
 
-                final MeshView meshView = meshViews.get(index);
-
-                projectionView.mul(meshView.modelMatrix(), new Matrix4f()).get(pushConstantData);
-
-                nvkCmdPushConstants(
-                        primaryCommandBuffer,
-                        pipelineLayout,
-                        VK_SHADER_STAGE_VERTEX_BIT,
-                        0,
-                        PUSH_CONSTANT_SIZE,
-                        memAddress(pushConstantData));
-
-                VulkanVertexData vertexData = meshView.mesh().vertexData();
-
-                vertexData.bind(primaryCommandBuffer);
-
-                if(vertexData.indexCount() == 0) {
-                    vkCmdDraw(primaryCommandBuffer, vertexData.vertexCount(), 1, 0, 0);
-                } else {
-                    vkCmdDrawIndexed(primaryCommandBuffer, vertexData.indexCount(), 1, 0, 0, 0);
-                }
-
-            });
+            commandBuilderExecutor.build(meshViews.size(), primaryCommandBuffer,
+                    (index, commandBuffer, pushConstantData) -> {
 
 
+                        VkCommandBufferInheritanceInfo inheritanceInfo = VkCommandBufferInheritanceInfo.callocStack()
+                                .sType(VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO)
+                                .renderPass(swapchain.renderPass().handle())
+                                .framebuffer(framebuffer);
+
+                        beginSecondaryCommandBuffer(commandBuffer, inheritanceInfo);
+
+                        final MeshView meshView = meshViews.get(index);
+
+                        projectionView.mul(meshView.modelMatrix(), new Matrix4f()).get(pushConstantData);
+
+                        nvkCmdPushConstants(
+                                commandBuffer,
+                                pipelineLayout,
+                                VK_SHADER_STAGE_VERTEX_BIT,
+                                0,
+                                PUSH_CONSTANT_SIZE,
+                                memAddress(pushConstantData));
+
+                        VulkanVertexData vertexData = meshView.mesh().vertexData();
+
+                        vertexData.bind(commandBuffer);
+
+                        if (vertexData.indexCount() == 0) {
+                            vkCmdDraw(commandBuffer, vertexData.vertexCount(), 1, 0, 0);
+                        } else {
+                            vkCmdDrawIndexed(commandBuffer, vertexData.indexCount(), 1, 0, 0, 0);
+                        }
+
+                        endSecondaryCommandBuffer(commandBuffer);
+
+                    });
 
             end(primaryCommandBuffer);
+        }
+    }
+
+    private void endSecondaryCommandBuffer(VkCommandBuffer commandBuffer) {
+        vkCall(vkEndCommandBuffer(commandBuffer));
+    }
+
+    private void beginSecondaryCommandBuffer(VkCommandBuffer commandBuffer,
+                                             VkCommandBufferInheritanceInfo inheritanceInfo) {
+
+        try (MemoryStack stack = stackPush()) {
+
+            VkCommandBufferBeginInfo beginInfo = VkCommandBufferBeginInfo.callocStack(stack)
+                    .sType(VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO)
+                    .pInheritanceInfo(inheritanceInfo)
+                    .flags(VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT);
+
+
+            vkCall(vkBeginCommandBuffer(commandBuffer, beginInfo));
+
+            vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline.handle());
         }
     }
 
@@ -150,8 +183,6 @@ public final class VulkanSimpleRenderingPath extends RenderingPath {
         vkCall(vkBeginCommandBuffer(commandBuffer, beginInfo));
 
         vkCmdBeginRenderPass(commandBuffer, renderPassInfo, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
-
-        vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline.handle());
     }
 
     private long currentFramebuffer() {
@@ -176,7 +207,10 @@ public final class VulkanSimpleRenderingPath extends RenderingPath {
         VulkanShaderModule vertexShaderModule = new VulkanShaderModule(VERTEX_SHADER_PATH, VERTEX_STAGE);
         VulkanShaderModule fragmentShaderModule = new VulkanShaderModule(FRAGMENT_SHADER_PATH, FRAGMENT_STAGE);
 
-        graphicsPipeline = new VulkanGraphicsPipeline.Builder(pipelineLayout.handle(), swapchain.renderPass().handle(), RENDER_SUBPASS)
+        graphicsPipeline = new VulkanGraphicsPipeline.Builder()
+                .pipelineLayout(pipelineLayout.handle())
+                .renderPass(swapchain.renderPass().handle())
+                .subpass(0)
                 .addShaderModules(vertexShaderModule, fragmentShaderModule)
                 .vertexInputState(vertexInputBindingsStack(VERTEX_LAYOUT), vertexInputAttributesStack(VERTEX_LAYOUT))
                 .inputAssemblyState(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, false)
@@ -211,7 +245,7 @@ public final class VulkanSimpleRenderingPath extends RenderingPath {
     }
 
     private int getColorBlendFlags() {
-        return    VK_COLOR_COMPONENT_R_BIT
+        return VK_COLOR_COMPONENT_R_BIT
                 | VK_COLOR_COMPONENT_G_BIT
                 | VK_COLOR_COMPONENT_B_BIT
                 | VK_COLOR_COMPONENT_A_BIT;

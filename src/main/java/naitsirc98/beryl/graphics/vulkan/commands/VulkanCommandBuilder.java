@@ -6,7 +6,6 @@ import org.lwjgl.system.NativeResource;
 import org.lwjgl.vulkan.VkCommandBuffer;
 
 import java.nio.ByteBuffer;
-import java.nio.LongBuffer;
 
 import static java.lang.ThreadLocal.withInitial;
 import static org.lwjgl.system.MemoryUtil.*;
@@ -20,18 +19,22 @@ public class VulkanCommandBuilder implements NativeResource {
 
     private static final ThreadLocal<VulkanCommandBuilder> COMMAND_GENERATOR = withInitial(VulkanCommandBuilder::new);
 
-    public static void buildCommandBuffers(int offset, VkCommandBuffer primaryCommandBuffer, VulkanCommandBufferConsumer consumer) {
+    public static void buildCommandBuffers(int offset, int count, VkCommandBuffer primaryCommandBuffer, VulkanCommandBufferConsumer consumer) {
 
-        VulkanCommandBuilder generator = COMMAND_GENERATOR.get();
+        VulkanCommandBuilder generator = COMMAND_GENERATOR.get();//.get();
 
         VkCommandBuffer[] commandBuffers = generator.commandBuffers;
         ByteBuffer pushConstantData = generator.pushConstantData;
 
-        for(int i = offset;i < COMMAND_BUFFERS_COUNT + offset;i++) {
+        for(int i = offset;i < count;i++) {
             consumer.consume(i, commandBuffers[i], pushConstantData);
         }
 
+        generator.pCommandBuffers.limit(count);
+
         vkCmdExecuteCommands(primaryCommandBuffer, generator.pCommandBuffers);
+
+        generator.pCommandBuffers.limit(COMMAND_BUFFERS_COUNT);
     }
 
     private VulkanCommandPool commandPool;
@@ -48,13 +51,13 @@ public class VulkanCommandBuilder implements NativeResource {
 
     private PointerBuffer getCommandBufferPointers() {
 
-        LongBuffer pointers = memAllocLong(COMMAND_BUFFERS_COUNT);
+        PointerBuffer pointers = memAllocPointer(COMMAND_BUFFERS_COUNT);
 
         for(int i = 0;i < COMMAND_BUFFERS_COUNT;i++) {
-            pCommandBuffers.put(i, commandBuffers[i]);
+            pointers.put(i, commandBuffers[i]);
         }
 
-        return pCommandBuffers;
+        return pointers;
     }
 
     private VulkanCommandPool createCommandPool() {
