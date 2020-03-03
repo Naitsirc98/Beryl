@@ -3,7 +3,6 @@ package naitsirc98.beryl.graphics.vulkan;
 import naitsirc98.beryl.core.Beryl;
 import naitsirc98.beryl.core.BerylConfiguration;
 import naitsirc98.beryl.graphics.GraphicsContext;
-import naitsirc98.beryl.graphics.rendering.Renderer;
 import naitsirc98.beryl.graphics.rendering.RenderingPath;
 import naitsirc98.beryl.graphics.vulkan.commands.VulkanCommandPool;
 import naitsirc98.beryl.graphics.vulkan.devices.VulkanLogicalDevice;
@@ -151,7 +150,6 @@ public final class VulkanContext implements GraphicsContext {
 
     private VulkanCommandPool createGraphicsCommandPool() {
         return new VulkanCommandPool(
-                logicalDevice.handle(),
                 logicalDevice.graphicsQueue(),
                 physicalDevice.queueFamilyIndices().graphicsFamily());
     }

@@ -2,6 +2,7 @@ package naitsirc98.beryl.graphics.vulkan.rendering;
 
 import naitsirc98.beryl.graphics.Graphics;
 import naitsirc98.beryl.graphics.rendering.RenderingPath;
+import naitsirc98.beryl.graphics.vulkan.commands.VulkanCommandBuilderExecutor;
 import naitsirc98.beryl.graphics.vulkan.pipelines.VulkanGraphicsPipeline;
 import naitsirc98.beryl.graphics.vulkan.pipelines.VulkanPipelineLayout;
 import naitsirc98.beryl.graphics.vulkan.pipelines.VulkanShaderModule;
@@ -61,9 +62,7 @@ public final class VulkanSimpleRenderingPath extends RenderingPath {
     private Matrix4f projectionViewModelMatrix;
     private VulkanRenderer renderer;
     private VulkanSwapchain swapchain;
-    ByteBuffer pushConstantData;
-    long pushConstantDataAddress;
-
+    private VulkanCommandBuilderExecutor commandBuilderExecutor;
 
     private VulkanSimpleRenderingPath() {
 
@@ -76,8 +75,7 @@ public final class VulkanSimpleRenderingPath extends RenderingPath {
         createGraphicsPipeline();
         projectionViewModelMatrix = new Matrix4f();
         renderer = Graphics.vulkan().renderer();
-        pushConstantData = memAlloc(PUSH_CONSTANT_SIZE);
-        pushConstantDataAddress = memAddress(pushConstantData);
+        commandBuilderExecutor = new VulkanCommandBuilderExecutor();
     }
 
     @Override
@@ -85,41 +83,51 @@ public final class VulkanSimpleRenderingPath extends RenderingPath {
 
         try(MemoryStack stack = stackPush()) {
 
-            VkCommandBuffer commandBuffer = renderer.currentCommandBuffer();
+            VkCommandBuffer primaryCommandBuffer = renderer.currentCommandBuffer();
 
-            begin(commandBuffer, stack);
+            begin(primaryCommandBuffer, stack);
 
             Matrix4f projectionView = new Matrix4f(camera.projectionMatrix());
             projectionView.m11(-projectionView.m11());
             projectionView.mul(camera.viewMatrix());
-            Matrix4f mvp = projectionViewModelMatrix;
             final long pipelineLayout = this.pipelineLayout.handle();
 
-            for(MeshView meshView : meshViews) {
+            commandBuilderExecutor.build(meshViews.size(), primaryCommandBuffer, (index, commandBuffer, pushConstantData) -> {
 
-                projectionView.mul(meshView.modelMatrix(), mvp).get(pushConstantData);
+                final MeshView meshView = meshViews.get(index);
+
+                projectionView.mul(meshView.modelMatrix(), new Matrix4f()).get(pushConstantData);
 
                 nvkCmdPushConstants(
-                        commandBuffer,
+                        primaryCommandBuffer,
                         pipelineLayout,
                         VK_SHADER_STAGE_VERTEX_BIT,
                         0,
                         PUSH_CONSTANT_SIZE,
-                        pushConstantDataAddress);
+                        memAddress(pushConstantData));
 
                 VulkanVertexData vertexData = meshView.mesh().vertexData();
 
-                vertexData.bind(commandBuffer);
+                vertexData.bind(primaryCommandBuffer);
 
                 if(vertexData.indexCount() == 0) {
-                    vkCmdDraw(commandBuffer, vertexData.vertexCount(), 1, 0, 0);
+                    vkCmdDraw(primaryCommandBuffer, vertexData.vertexCount(), 1, 0, 0);
                 } else {
-                    vkCmdDrawIndexed(commandBuffer, vertexData.indexCount(), 1, 0, 0, 0);
+                    vkCmdDrawIndexed(primaryCommandBuffer, vertexData.indexCount(), 1, 0, 0, 0);
                 }
-            }
 
-            end(commandBuffer);
+            });
+
+
+
+            end(primaryCommandBuffer);
         }
+    }
+
+    private void buildCommandBuffer(int index, VkCommandBuffer commandBuffer, ByteBuffer pushConstantData) {
+
+
+
     }
 
     private void end(VkCommandBuffer commandBuffer) {
@@ -148,7 +156,7 @@ public final class VulkanSimpleRenderingPath extends RenderingPath {
 
         vkCall(vkBeginCommandBuffer(commandBuffer, beginInfo));
 
-        vkCmdBeginRenderPass(commandBuffer, renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+        vkCmdBeginRenderPass(commandBuffer, renderPassInfo, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
 
         vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline.handle());
     }
