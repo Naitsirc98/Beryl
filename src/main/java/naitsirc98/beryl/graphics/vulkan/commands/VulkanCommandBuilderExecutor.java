@@ -17,6 +17,8 @@ import static org.lwjgl.vulkan.VK10.vkCmdExecuteCommands;
 
 public class VulkanCommandBuilderExecutor implements NativeResource {
 
+    private static final int COMMAND_BUILDER_COUNT = 8;
+
     private List<VulkanCommandBuilder> commandBuilders;
     private List<Matrix4f> matrices;
     private PointerBuffer[] pCommandBuffers;
@@ -63,7 +65,7 @@ public class VulkanCommandBuilderExecutor implements NativeResource {
 
         assertTrue(remaining == 0);
 
-        commandBuilders.forEach(VulkanCommandBuilder::await);
+        commandBuilders.parallelStream().forEach(VulkanCommandBuilder::await);
 
         vkCmdExecuteCommands(primaryCommandBuffer, pCommandBuffers);
     }
@@ -107,8 +109,8 @@ public class VulkanCommandBuilderExecutor implements NativeResource {
     }
 
     private List<VulkanCommandBuilder> createCommandBuilders() {
-        List<VulkanCommandBuilder> commandBuilders = new ArrayList<>(4);
-        for(int i = 0;i < 4;i++) {
+        List<VulkanCommandBuilder> commandBuilders = new ArrayList<>(COMMAND_BUILDER_COUNT);
+        for(int i = 0;i < COMMAND_BUILDER_COUNT;i++) {
             commandBuilders.add(new VulkanCommandBuilder());
         }
         return commandBuilders;
