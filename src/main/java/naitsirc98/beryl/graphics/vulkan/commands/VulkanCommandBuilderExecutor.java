@@ -4,14 +4,16 @@ import naitsirc98.beryl.graphics.Graphics;
 import naitsirc98.beryl.logging.Log;
 import org.joml.Matrix4f;
 import org.lwjgl.PointerBuffer;
+import org.lwjgl.system.MemoryUtil;
 import org.lwjgl.system.NativeResource;
 import org.lwjgl.vulkan.VkCommandBuffer;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
-import java.util.stream.IntStream;
 
 import static java.util.stream.IntStream.range;
 import static org.joml.Math.min;
@@ -71,18 +73,7 @@ public class VulkanCommandBuilderExecutor implements NativeResource {
 
             commandBuilder.submitRecordTask(() -> {
 
-                final VkCommandBuffer commandBuffer = commandBuilder.commandBuffer();
-                final ByteBuffer pushConstantData = commandBuilder.pushConstantData();
-
-                recorder.beginCommandBuffer(commandBuffer);
-
-                for (int j = 0; j < objectCount; j++) {
-                    recorder.recordCommandBuffer(j + offset, commandBuffer, pushConstantData, matrix);
-                }
-
-                recorder.endCommandBuffer(commandBuffer);
-
-                // recordCommandBuffer(offset, objectCount, commandBuilder, matrix, recorder);
+                recordCommandBuffer(offset, objectCount, commandBuilder, matrix, recorder);
 
                 countDownLatch.countDown();
             });
@@ -115,13 +106,11 @@ public class VulkanCommandBuilderExecutor implements NativeResource {
     @Override
     public void free() {
 
-        commandBuilders.forEach(VulkanCommandBuilder::free);
+        commandBuilders.parallelStream().forEach(VulkanCommandBuilder::free);
         commandBuilders.clear();
         commandBuilders = null;
 
-        for(PointerBuffer pointerBuffer : pCommandBuffers) {
-            memFree(pointerBuffer);
-        }
+        Arrays.stream(pCommandBuffers).parallel().forEach(MemoryUtil::memFree);
         pCommandBuffers = null;
 
         matrices.clear();
@@ -151,10 +140,15 @@ public class VulkanCommandBuilderExecutor implements NativeResource {
     }
 
     private List<VulkanCommandBuilder> createCommandBuilders() {
+
         List<VulkanCommandBuilder> commandBuilders = new ArrayList<>(COMMAND_BUILDER_COUNT);
+
         for(int i = 0;i < COMMAND_BUILDER_COUNT;i++) {
-            commandBuilders.add(new VulkanCommandBuilder());
+            commandBuilders.add(null);
         }
+
+        range(0, COMMAND_BUILDER_COUNT).parallel().forEach(i -> commandBuilders.set(i, new VulkanCommandBuilder()));
+
         return commandBuilders;
     }
 
