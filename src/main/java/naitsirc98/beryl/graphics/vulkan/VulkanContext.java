@@ -2,8 +2,6 @@ package naitsirc98.beryl.graphics.vulkan;
 
 import naitsirc98.beryl.core.Beryl;
 import naitsirc98.beryl.core.BerylConfiguration;
-import naitsirc98.beryl.events.EventManager;
-import naitsirc98.beryl.events.window.WindowClosedEvent;
 import naitsirc98.beryl.graphics.GraphicsContext;
 import naitsirc98.beryl.graphics.rendering.RenderingPath;
 import naitsirc98.beryl.graphics.vulkan.commands.VulkanCommandPool;
@@ -67,7 +65,6 @@ public final class VulkanContext implements GraphicsContext {
         graphicsCommandPool = createGraphicsCommandPool();
         swapchain = new VulkanSwapchain();
         renderer = newInstance(VulkanRenderer.class);
-        EventManager.addEventCallback(WindowClosedEvent.class, e -> logicalDevice.waitIdle());
     }
 
     @Override

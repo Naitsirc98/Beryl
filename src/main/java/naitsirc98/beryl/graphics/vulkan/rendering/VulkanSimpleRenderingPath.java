@@ -19,6 +19,7 @@ import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
 
 import java.nio.ByteBuffer;
+import java.nio.FloatBuffer;
 import java.nio.file.Path;
 import java.util.List;
 
@@ -64,6 +65,7 @@ public final class VulkanSimpleRenderingPath extends RenderingPath implements Vu
     private VulkanSwapchain swapchain;
     private VulkanCommandBuilderExecutor commandBuilderExecutor;
     private Matrix4f projectionViewMatrix;
+    private Matrix4f mvp = new Matrix4f();
     private List<MeshView> meshViews;
 
     private VulkanSimpleRenderingPath() {
@@ -93,7 +95,40 @@ public final class VulkanSimpleRenderingPath extends RenderingPath implements Vu
 
         beginPrimaryCommandBuffer(primaryCommandBuffer);
 
-        commandBuilderExecutor.recordCommandBuffers(meshViews.size(), primaryCommandBuffer, this);
+        vkCmdBindPipeline(primaryCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline.handle());
+
+        try(MemoryStack stack = stackPush()) {
+
+            FloatBuffer pushConstantData = stack.mallocFloat(16);
+
+            for(final MeshView meshView : meshViews) {
+
+                projectionViewMatrix.mul(meshView.modelMatrix(), mvp).get(pushConstantData);
+
+                vkCmdPushConstants(
+                        primaryCommandBuffer,
+                        pipelineLayout.handle(),
+                        VK_SHADER_STAGE_VERTEX_BIT,
+                        0,
+                        pushConstantData);
+
+                VulkanVertexData vertexData = meshView.mesh().vertexData();
+
+                vertexData.bind(primaryCommandBuffer);
+
+                if (vertexData.indexCount() == 0) {
+                    vkCmdDraw(primaryCommandBuffer, vertexData.vertexCount(), 1, 0, 0);
+                } else {
+                    vkCmdDrawIndexed(primaryCommandBuffer, vertexData.indexCount(), 1, 0, 0, 0);
+                }
+
+            }
+
+        }
+
+        // beginPrimaryCommandBuffer(primaryCommandBuffer);
+
+        // commandBuilderExecutor.recordCommandBuffers(meshViews.size(), primaryCommandBuffer, this);
 
         endPrimaryCommandBuffer(primaryCommandBuffer);
 
@@ -183,7 +218,7 @@ public final class VulkanSimpleRenderingPath extends RenderingPath implements Vu
 
             vkCall(vkBeginCommandBuffer(commandBuffer, beginInfo));
 
-            vkCmdBeginRenderPass(commandBuffer, renderPassInfo, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
+            vkCmdBeginRenderPass(commandBuffer, renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
         }
     }
 
