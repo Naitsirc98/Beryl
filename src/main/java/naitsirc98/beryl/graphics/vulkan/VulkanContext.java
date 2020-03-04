@@ -2,6 +2,8 @@ package naitsirc98.beryl.graphics.vulkan;
 
 import naitsirc98.beryl.core.Beryl;
 import naitsirc98.beryl.core.BerylConfiguration;
+import naitsirc98.beryl.events.EventManager;
+import naitsirc98.beryl.events.window.WindowClosedEvent;
 import naitsirc98.beryl.graphics.GraphicsContext;
 import naitsirc98.beryl.graphics.rendering.RenderingPath;
 import naitsirc98.beryl.graphics.vulkan.commands.VulkanCommandPool;
@@ -33,7 +35,10 @@ import static org.lwjgl.vulkan.VK10.vkDestroyInstance;
 @Destructor
 public final class VulkanContext implements GraphicsContext {
 
+    // TODO: do logicalDevice.waitIdle() before destroying command buffers
+
     public static final boolean VULKAN_DEBUG_MESSAGES_ENABLED = BerylConfiguration.VULKAN_ENABLE_DEBUG_MESSAGES.get(Beryl.DEBUG);
+    public static final boolean VALIDATION_LAYERS_ENABLED = BerylConfiguration.VULKAN_ENABLE_VALIDATION_LAYERS.get(VULKAN_DEBUG_MESSAGES_ENABLED);
     public static final Set<String> VALIDATION_LAYERS = BerylConfiguration.VULKAN_VALIDATION_LAYERS.get(defaultValidationLayers());
     public static final Set<String> DEVICE_EXTENSIONS = BerylConfiguration.VULKAN_DEVICE_EXTENSIONS.get(defaultDeviceExtensions());
 

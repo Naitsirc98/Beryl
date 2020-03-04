@@ -39,12 +39,13 @@ public class App1 extends BerylApplication {
 
     @Override
     protected void setConfiguration() {
-        // BerylConfiguration.DEBUG.set(true);
-        // BerylConfiguration.INTERNAL_DEBUG.set(true);
+        BerylConfiguration.DEBUG.set(true);
+        BerylConfiguration.INTERNAL_DEBUG.set(true);
         // BerylConfiguration.INITIAL_TIME_VALUE.set(4000.0);
         BerylConfiguration.WINDOW_RESIZABLE.set(false);
         BerylConfiguration.SHOW_DEBUG_INFO.set(true);
         BerylConfiguration.GRAPHICS_API.set(GraphicsAPI.VULKAN);
+        BerylConfiguration.VULKAN_ENABLE_VALIDATION_LAYERS.set(false);
     }
 
     @Override

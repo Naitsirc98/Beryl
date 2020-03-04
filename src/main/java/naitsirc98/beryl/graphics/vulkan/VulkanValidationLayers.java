@@ -4,11 +4,14 @@ import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkLayerProperties;
 
 import java.nio.IntBuffer;
+import java.util.Collections;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import static java.util.Collections.emptySet;
 import static java.util.stream.Collectors.toSet;
 import static naitsirc98.beryl.graphics.vulkan.VulkanContext.VALIDATION_LAYERS;
+import static naitsirc98.beryl.graphics.vulkan.VulkanContext.VALIDATION_LAYERS_ENABLED;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.vulkan.VK10.vkEnumerateInstanceLayerProperties;
 
@@ -19,7 +22,7 @@ public class VulkanValidationLayers {
     }
 
     public static Set<String> defaultValidationLayers() {
-        return Stream.of("VK_LAYER_KHRONOS_validation").collect(toSet());
+        return VALIDATION_LAYERS_ENABLED ? Stream.of("VK_LAYER_KHRONOS_validation").collect(toSet()) : emptySet();
     }
 
     private static Set<String> availableValidationLayers() {

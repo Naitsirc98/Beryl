@@ -20,13 +20,14 @@ public class Worker {
     private final Thread thread;
     private final BlockingQueue<Runnable> taskQueue;
     private final AtomicReference<State> state;
-    private final Object sync = new Object();
+    private final Object awaitSync;
 
     public Worker(String name) {
         this.name = name;
         thread = new Thread(this::run, name);
         taskQueue = new LinkedBlockingDeque<>();
         state = new AtomicReference<>(State.IDLE);
+        awaitSync = new Object();
     }
 
     public String name() {
@@ -76,11 +77,11 @@ public class Worker {
     public void await() {
         if(state.compareAndSet(State.RUNNING, State.AWAIT)) {
 
-            synchronized(sync) {
+            synchronized(awaitSync) {
                 try {
-                    sync.wait();
+                    wait();
                 } catch (InterruptedException e) {
-                    Log.error("Timeout error while waiting for worker to finish", e);
+                    Log.error("Thread interrupted while waiting for worker to complete tasks", e);
                 }
             }
 
@@ -100,15 +101,14 @@ public class Worker {
 
             if(state.get() == State.AWAIT) {
 
-                while(!taskQueue.isEmpty()) {
-                    popTask().ifPresent(Runnable::run);
-                }
+                synchronized(awaitSync) {
 
-                synchronized(sync) {
-                    sync.notifyAll();
-                }
+                    while(!taskQueue.isEmpty()) {
+                        popTask().ifPresent(Runnable::run);
+                    }
 
-                state.set(State.RUNNING);
+                    state.set(State.RUNNING);
+                }
 
             } else {
                 popTask().ifPresent(Runnable::run);

@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.stream.IntStream;
 
+import static java.util.stream.IntStream.range;
 import static org.joml.Math.min;
 import static org.joml.Math.round;
 import static org.lwjgl.system.MemoryUtil.memAllocPointer;
@@ -21,6 +22,7 @@ import static org.lwjgl.vulkan.VK10.vkCmdExecuteCommands;
 
 public class VulkanCommandBuilderExecutor implements NativeResource {
 
+    // TODO: make this configurable?
     private static final int COMMAND_BUILDER_COUNT = 32;
 
     private List<VulkanCommandBuilder> commandBuilders;
@@ -35,13 +37,31 @@ public class VulkanCommandBuilderExecutor implements NativeResource {
 
     public void recordCommandBuffers(int count, VkCommandBuffer primaryCommandBuffer, VulkanCommandBufferRecorder recorder) {
 
-        final List<VulkanCommandBuilder> commandBuilders = this.commandBuilders;
         final int commandBuilderCount = commandBuilders.size();
-        final PointerBuffer pCommandBuffers = this.pCommandBuffers[Graphics.vulkan().renderer().currentSwapchainImageIndex()];
-        final CountDownLatch countDownLatch = new CountDownLatch(commandBuilderCount);
         final int objectsPerCommandBuilder = min(round((float)count / commandBuilderCount), count);
 
-        IntStream.range(0, commandBuilderCount).parallel().forEach(i -> {
+        if(count <= objectsPerCommandBuilder) {
+            recordCommandBuffersInThisThread(count, primaryCommandBuffer, recorder);
+        } else {
+            recordCommandBuffersInParallel(commandBuilderCount, objectsPerCommandBuilder, count, primaryCommandBuffer, recorder);
+        }
+    }
+
+    private void recordCommandBuffersInThisThread(int count, VkCommandBuffer primaryCommandBuffer, VulkanCommandBufferRecorder recorder) {
+
+        recordCommandBuffer(0, count, commandBuilders.get(0), matrices.get(0), recorder);
+
+        vkCmdExecuteCommands(primaryCommandBuffer, commandBuilders.get(0).commandBuffer());
+    }
+
+    private void recordCommandBuffersInParallel(int commandBuilderCount, int objectsPerCommandBuilder, int count,
+                                                VkCommandBuffer primaryCommandBuffer, VulkanCommandBufferRecorder recorder) {
+
+        final List<VulkanCommandBuilder> commandBuilders = this.commandBuilders;
+        final PointerBuffer pCommandBuffers = this.pCommandBuffers[Graphics.vulkan().renderer().currentSwapchainImageIndex()];
+        final CountDownLatch countDownLatch = new CountDownLatch(commandBuilderCount);
+
+        range(0, commandBuilderCount).parallel().forEach(i -> {
 
             final int offset = i * objectsPerCommandBuilder;
             final int objectCount = min(objectsPerCommandBuilder, count - offset);
@@ -62,11 +82,11 @@ public class VulkanCommandBuilderExecutor implements NativeResource {
 
                 recorder.endCommandBuffer(commandBuffer);
 
+                // recordCommandBuffer(offset, objectCount, commandBuilder, matrix, recorder);
+
                 countDownLatch.countDown();
             });
         });
-
-        // commandBuilders.forEach(VulkanCommandBuilder::await);
 
         try {
             countDownLatch.await();
@@ -75,6 +95,21 @@ public class VulkanCommandBuilderExecutor implements NativeResource {
         }
 
         vkCmdExecuteCommands(primaryCommandBuffer, pCommandBuffers);
+    }
+
+    private void recordCommandBuffer(int offset, int objectCount, VulkanCommandBuilder commandBuilder, Matrix4f matrix,
+                                     VulkanCommandBufferRecorder recorder) {
+
+        final VkCommandBuffer commandBuffer = commandBuilder.commandBuffer();
+        final ByteBuffer pushConstantData = commandBuilder.pushConstantData();
+
+        recorder.beginCommandBuffer(commandBuffer);
+
+        for (int j = 0; j < objectCount; j++) {
+            recorder.recordCommandBuffer(j + offset, commandBuffer, pushConstantData, matrix);
+        }
+
+        recorder.endCommandBuffer(commandBuffer);
     }
 
     @Override

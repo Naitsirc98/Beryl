@@ -65,6 +65,7 @@ public final class BerylConfiguration<T> {
     public static final BerylConfiguration<Integer> EVENT_QUEUE_INITIAL_CAPACITY = new BerylConfiguration<>();
 
     public static final BerylConfiguration<Boolean> VULKAN_ENABLE_DEBUG_MESSAGES = new BerylConfiguration<>();
+    public static final BerylConfiguration<Boolean> VULKAN_ENABLE_VALIDATION_LAYERS = new BerylConfiguration<>();
     public static final BerylConfiguration<Set<String>> VULKAN_VALIDATION_LAYERS = new BerylConfiguration<>();
     public static final BerylConfiguration<Set<String>> VULKAN_DEVICE_EXTENSIONS = new BerylConfiguration<>();
 
