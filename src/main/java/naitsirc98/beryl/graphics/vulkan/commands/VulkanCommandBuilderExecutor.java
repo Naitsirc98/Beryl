@@ -1,6 +1,7 @@
 package naitsirc98.beryl.graphics.vulkan.commands;
 
 import naitsirc98.beryl.graphics.Graphics;
+import naitsirc98.beryl.logging.Log;
 import org.joml.Matrix4f;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.NativeResource;
@@ -9,15 +10,18 @@ import org.lwjgl.vulkan.VkCommandBuffer;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.stream.IntStream;
 
-import static naitsirc98.beryl.util.Asserts.assertTrue;
+import static org.joml.Math.min;
+import static org.joml.Math.round;
 import static org.lwjgl.system.MemoryUtil.memAllocPointer;
 import static org.lwjgl.system.MemoryUtil.memFree;
 import static org.lwjgl.vulkan.VK10.vkCmdExecuteCommands;
 
 public class VulkanCommandBuilderExecutor implements NativeResource {
 
-    private static final int COMMAND_BUILDER_COUNT = 8;
+    private static final int COMMAND_BUILDER_COUNT = 32;
 
     private List<VulkanCommandBuilder> commandBuilders;
     private List<Matrix4f> matrices;
@@ -31,17 +35,16 @@ public class VulkanCommandBuilderExecutor implements NativeResource {
 
     public void recordCommandBuffers(int count, VkCommandBuffer primaryCommandBuffer, VulkanCommandBufferRecorder recorder) {
 
-        List<VulkanCommandBuilder> commandBuilders = this.commandBuilders;
+        final List<VulkanCommandBuilder> commandBuilders = this.commandBuilders;
         final int commandBuilderCount = commandBuilders.size();
-        PointerBuffer pCommandBuffers = this.pCommandBuffers[Graphics.vulkan().renderer().currentSwapchainImageIndex()];
+        final PointerBuffer pCommandBuffers = this.pCommandBuffers[Graphics.vulkan().renderer().currentSwapchainImageIndex()];
+        final CountDownLatch countDownLatch = new CountDownLatch(commandBuilderCount);
+        final int objectsPerCommandBuilder = min(round((float)count / commandBuilderCount), count);
 
-        int remaining = count;
-        int objectsPerCommandBuilder = Math.max(Math.round((float)count / commandBuilderCount), count);
+        IntStream.range(0, commandBuilderCount).parallel().forEach(i -> {
 
-        for(int i = 0; i < commandBuilderCount; i++) {
-
-            final int objectCount = Math.min(remaining, objectsPerCommandBuilder);
-            final int offset = count - remaining;
+            final int offset = i * objectsPerCommandBuilder;
+            final int objectCount = min(objectsPerCommandBuilder, count - offset);
 
             final VulkanCommandBuilder commandBuilder = commandBuilders.get(i);
             final Matrix4f matrix = matrices.get(i);
@@ -58,14 +61,18 @@ public class VulkanCommandBuilderExecutor implements NativeResource {
                 }
 
                 recorder.endCommandBuffer(commandBuffer);
+
+                countDownLatch.countDown();
             });
+        });
 
-            remaining -= objectCount;
+        // commandBuilders.forEach(VulkanCommandBuilder::await);
+
+        try {
+            countDownLatch.await();
+        } catch (InterruptedException e) {
+            Log.error("Interrupted exception while waiting for command buffers to be recorded", e);
         }
-
-        assertTrue(remaining == 0);
-
-        commandBuilders.parallelStream().forEach(VulkanCommandBuilder::await);
 
         vkCmdExecuteCommands(primaryCommandBuffer, pCommandBuffers);
     }

@@ -20,6 +20,7 @@ public class Worker {
     private final Thread thread;
     private final BlockingQueue<Runnable> taskQueue;
     private final AtomicReference<State> state;
+    private final Object sync = new Object();
 
     public Worker(String name) {
         this.name = name;
@@ -74,7 +75,15 @@ public class Worker {
 
     public void await() {
         if(state.compareAndSet(State.RUNNING, State.AWAIT)) {
-            while(state.get() == State.AWAIT);
+
+            synchronized(sync) {
+                try {
+                    sync.wait();
+                } catch (InterruptedException e) {
+                    Log.error("Timeout error while waiting for worker to finish", e);
+                }
+            }
+
             state.set(State.RUNNING);
         }
     }
@@ -93,6 +102,10 @@ public class Worker {
 
                 while(!taskQueue.isEmpty()) {
                     popTask().ifPresent(Runnable::run);
+                }
+
+                synchronized(sync) {
+                    sync.notifyAll();
                 }
 
                 state.set(State.RUNNING);

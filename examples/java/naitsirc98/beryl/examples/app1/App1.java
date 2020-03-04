@@ -64,21 +64,6 @@ public class App1 extends BerylApplication {
 
         Scene scene = new Scene();
 
-        int count = RAND.nextInt(5000) + 10000;
-
-        Entity lastOne = null;
-
-        /*
-        for(int i = 0;i < count;i++) {
-            Entity entity = scene.newEntity(String.valueOf(i));
-            entity.add(Transform.class).position(i, i*2, i*3);
-            if(lastOne != null && i%2 == 0) {
-                entity.get(Transform.class).addChild(lastOne.get(Transform.class));
-            }
-            entity.add(MyBehaviour.class).setCount(count);
-            lastOne = entity;
-        }*/
-
         Mesh mesh = new Mesh(VertexData.builder(VERTEX_LAYOUT_3D).vertices(getCubeVertices()).build());
 
         for(int i = 0;i < 10000;i++) {

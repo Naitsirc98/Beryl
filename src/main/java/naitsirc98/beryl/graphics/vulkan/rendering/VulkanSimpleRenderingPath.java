@@ -95,7 +95,7 @@ public final class VulkanSimpleRenderingPath extends RenderingPath implements Vu
 
         beginPrimaryCommandBuffer(primaryCommandBuffer);
 
-        vkCmdBindPipeline(primaryCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline.handle());
+        /*vkCmdBindPipeline(primaryCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline.handle());
 
         try(MemoryStack stack = stackPush()) {
 
@@ -126,9 +126,11 @@ public final class VulkanSimpleRenderingPath extends RenderingPath implements Vu
 
         }
 
+         */
+
         // beginPrimaryCommandBuffer(primaryCommandBuffer);
 
-        // commandBuilderExecutor.recordCommandBuffers(meshViews.size(), primaryCommandBuffer, this);
+        commandBuilderExecutor.recordCommandBuffers(meshViews.size(), primaryCommandBuffer, this);
 
         endPrimaryCommandBuffer(primaryCommandBuffer);
 
@@ -218,7 +220,7 @@ public final class VulkanSimpleRenderingPath extends RenderingPath implements Vu
 
             vkCall(vkBeginCommandBuffer(commandBuffer, beginInfo));
 
-            vkCmdBeginRenderPass(commandBuffer, renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+            vkCmdBeginRenderPass(commandBuffer, renderPassInfo, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
         }
     }
 
