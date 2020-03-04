@@ -1,19 +1,13 @@
 package naitsirc98.beryl.graphics.vulkan.vertex;
 
-import naitsirc98.beryl.graphics.Graphics;
 import naitsirc98.beryl.meshes.vertices.VertexData;
 import naitsirc98.beryl.meshes.vertices.VertexLayout;
-import org.lwjgl.system.MemoryStack;
-import org.lwjgl.vulkan.VkBufferCreateInfo;
 import org.lwjgl.vulkan.VkCommandBuffer;
 
 import java.nio.ByteBuffer;
-import java.nio.LongBuffer;
 import java.util.Arrays;
 
-import static naitsirc98.beryl.graphics.vulkan.util.VulkanUtils.vkCall;
 import static naitsirc98.beryl.graphics.vulkan.vertex.VulkanBufferUtils.setVulkanBufferData;
-import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.vulkan.VK10.*;
 
 public final class VulkanVertexData extends VertexData {

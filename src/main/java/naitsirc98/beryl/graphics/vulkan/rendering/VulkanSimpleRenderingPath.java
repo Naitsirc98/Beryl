@@ -91,21 +91,76 @@ public final class VulkanSimpleRenderingPath extends RenderingPath implements Vu
 
         VkCommandBuffer primaryCommandBuffer = renderer.currentCommandBuffer();
 
-        begin(primaryCommandBuffer);
+        beginPrimaryCommandBuffer(primaryCommandBuffer);
 
         commandBuilderExecutor.recordCommandBuffers(meshViews.size(), primaryCommandBuffer, this);
 
-        end(primaryCommandBuffer);
+        endPrimaryCommandBuffer(primaryCommandBuffer);
 
         this.meshViews = null;
     }
 
-    private void end(VkCommandBuffer commandBuffer) {
+
+    @Override
+    public void beginCommandBuffer(VkCommandBuffer commandBuffer) {
+
+        try (MemoryStack stack = stackPush()) {
+
+            VkCommandBufferInheritanceInfo inheritanceInfo = VkCommandBufferInheritanceInfo.callocStack(stack)
+                    .sType(VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO)
+                    .renderPass(swapchain.renderPass().handle())
+                    .subpass(0)
+                    .framebuffer(currentFramebuffer());
+
+            VkCommandBufferBeginInfo beginInfo = VkCommandBufferBeginInfo.callocStack(stack)
+                    .sType(VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO)
+                    .pInheritanceInfo(inheritanceInfo)
+                    .flags(VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT);
+
+
+            vkCall(vkBeginCommandBuffer(commandBuffer, beginInfo));
+
+            vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline.handle());
+        }
+    }
+
+    @Override
+    public void recordCommandBuffer(int index, VkCommandBuffer commandBuffer, ByteBuffer pushConstantData, Matrix4f mvp) {
+
+        final MeshView meshView = meshViews.get(index);
+
+        projectionViewMatrix.mul(meshView.modelMatrix(), mvp).get(pushConstantData);
+
+        nvkCmdPushConstants(
+                commandBuffer,
+                pipelineLayout.handle(),
+                VK_SHADER_STAGE_VERTEX_BIT,
+                0,
+                PUSH_CONSTANT_SIZE,
+                memAddress(pushConstantData));
+
+        VulkanVertexData vertexData = meshView.mesh().vertexData();
+
+        vertexData.bind(commandBuffer);
+
+        if (vertexData.indexCount() == 0) {
+            vkCmdDraw(commandBuffer, vertexData.vertexCount(), 1, 0, 0);
+        } else {
+            vkCmdDrawIndexed(commandBuffer, vertexData.indexCount(), 1, 0, 0, 0);
+        }
+    }
+
+    @Override
+    public void endCommandBuffer(VkCommandBuffer commandBuffer) {
+        vkCall(vkEndCommandBuffer(commandBuffer));
+    }
+
+    private void endPrimaryCommandBuffer(VkCommandBuffer commandBuffer) {
         vkCmdEndRenderPass(commandBuffer);
         vkCall(vkEndCommandBuffer(commandBuffer));
     }
 
-    private void begin(VkCommandBuffer commandBuffer) {
+    private void beginPrimaryCommandBuffer(VkCommandBuffer commandBuffer) {
 
         try(MemoryStack stack = stackPush()) {
 
@@ -129,7 +184,6 @@ public final class VulkanSimpleRenderingPath extends RenderingPath implements Vu
             vkCall(vkBeginCommandBuffer(commandBuffer, beginInfo));
 
             vkCmdBeginRenderPass(commandBuffer, renderPassInfo, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
-
         }
     }
 
@@ -229,59 +283,5 @@ public final class VulkanSimpleRenderingPath extends RenderingPath implements Vu
                 .cullMode(VK_CULL_MODE_BACK_BIT)
                 .frontFace(VK_FRONT_FACE_COUNTER_CLOCKWISE)
                 .depthBiasEnable(false);
-    }
-
-    @Override
-    public void beginCommandBuffer(VkCommandBuffer commandBuffer) {
-
-        try (MemoryStack stack = stackPush()) {
-
-            VkCommandBufferInheritanceInfo inheritanceInfo = VkCommandBufferInheritanceInfo.callocStack(stack)
-                    .sType(VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO)
-                    .renderPass(swapchain.renderPass().handle())
-                    .subpass(0)
-                    .framebuffer(currentFramebuffer());
-
-            VkCommandBufferBeginInfo beginInfo = VkCommandBufferBeginInfo.callocStack(stack)
-                    .sType(VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO)
-                    .pInheritanceInfo(inheritanceInfo)
-                    .flags(VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT);
-
-
-            vkCall(vkBeginCommandBuffer(commandBuffer, beginInfo));
-
-            vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline.handle());
-        }
-    }
-
-    @Override
-    public void recordCommandBuffer(int index, VkCommandBuffer commandBuffer, ByteBuffer pushConstantData, Matrix4f mvp) {
-
-        final MeshView meshView = meshViews.get(index);
-
-        projectionViewMatrix.mul(meshView.modelMatrix(), mvp).get(pushConstantData);
-
-        nvkCmdPushConstants(
-                commandBuffer,
-                pipelineLayout.handle(),
-                VK_SHADER_STAGE_VERTEX_BIT,
-                0,
-                PUSH_CONSTANT_SIZE,
-                memAddress(pushConstantData));
-
-        VulkanVertexData vertexData = meshView.mesh().vertexData();
-
-        vertexData.bind(commandBuffer);
-
-        if (vertexData.indexCount() == 0) {
-            vkCmdDraw(commandBuffer, vertexData.vertexCount(), 1, 0, 0);
-        } else {
-            vkCmdDrawIndexed(commandBuffer, vertexData.indexCount(), 1, 0, 0, 0);
-        }
-    }
-
-    @Override
-    public void endCommandBuffer(VkCommandBuffer commandBuffer) {
-        vkCall(vkEndCommandBuffer(commandBuffer));
     }
 }
