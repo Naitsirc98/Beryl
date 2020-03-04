@@ -2,25 +2,28 @@ package naitsirc98.beryl.concurrency;
 
 import naitsirc98.beryl.logging.Log;
 
+import java.util.Optional;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static java.util.Objects.requireNonNull;
-import static java.util.concurrent.Executors.newSingleThreadExecutor;
 
+@SuppressWarnings("ALL")
 public class Worker {
 
+    private static final long POP_TASK_TIMEOUT = 16;
+
+
     private final String name;
-    private final ExecutorService thread;
+    private final Thread thread;
     private final BlockingQueue<Runnable> taskQueue;
     private final AtomicReference<State> state;
 
     public Worker(String name) {
         this.name = name;
-        thread = newSingleThreadExecutor();
+        thread = new Thread(this::run, name);
         taskQueue = new LinkedBlockingDeque<>();
         state = new AtomicReference<>(State.IDLE);
     }
@@ -39,7 +42,7 @@ public class Worker {
         } else if(state.get() == State.AWAIT) {
             Log.error("Cannot submit a task while the worker is in the await state");
         } else {
-            taskQueue.add(requireNonNull(task));
+            taskQueue.offer(requireNonNull(task));
         }
     }
 
@@ -47,10 +50,11 @@ public class Worker {
         return state.get();
     }
 
-    public void start() {
+    public Worker start() {
         if(state.compareAndSet(State.IDLE, State.RUNNING)) {
-            thread.submit(this::run);
+            thread.start();
         }
+        return this;
     }
 
     public void terminate() {
@@ -70,7 +74,7 @@ public class Worker {
 
     public void await() {
         if(state.compareAndSet(State.RUNNING, State.AWAIT)) {
-            while(!taskQueue.isEmpty());
+            while(state.get() == State.AWAIT);
             state.set(State.RUNNING);
         }
     }
@@ -79,30 +83,45 @@ public class Worker {
 
         while(state.get() != State.TERMINATED) {
 
-            while(state.get() == State.PAUSED);
+            while(state.get() == State.PAUSED) {
+                if(state.get() == State.TERMINATED) {
+                    return;
+                }
+            }
 
-            popTask().run();
+            if(state.get() == State.AWAIT) {
+
+                while(!taskQueue.isEmpty()) {
+                    popTask().ifPresent(Runnable::run);
+                }
+
+                state.set(State.RUNNING);
+
+            } else {
+                popTask().ifPresent(Runnable::run);
+            }
+
         }
     }
 
-    private Runnable popTask() {
+    private Optional<Runnable> popTask() {
         try {
-            return taskQueue.take();
+            return Optional.ofNullable(taskQueue.poll(POP_TASK_TIMEOUT, TimeUnit.MILLISECONDS));
         } catch (InterruptedException e) {
             Log.error("Exception while waiting for a worker task", e);
         }
-        return null;
+        return Optional.empty();
     }
 
     private void shutdown() {
-        thread.shutdownNow();
-        waitForThread();
+        await();
+        joinThread();
         taskQueue.clear();
     }
 
-    private void waitForThread() {
+    private void joinThread() {
         try {
-            thread.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
+            thread.join();
         } catch (InterruptedException e) {
             Log.error("Timeout error while waiting for worker to complete the tasks", e);
         }

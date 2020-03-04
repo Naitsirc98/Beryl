@@ -57,7 +57,10 @@ public final class RenderingPaths extends BerylSystem {
     @Override
     protected void init() {
         renderingPaths.putAll(getStandardRenderingPaths());
-        renderingPaths.values().forEach(RenderingPath::init);
+        renderingPaths.values().forEach(renderingPath -> {
+            renderingPath.init();
+            renderingPath.initialized = true;
+        });
     }
 
     private Map<? extends Integer,? extends RenderingPath> getStandardRenderingPaths() {

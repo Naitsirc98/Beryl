@@ -1,63 +1,61 @@
 package naitsirc98.beryl.graphics.vulkan.commands;
 
+import naitsirc98.beryl.concurrency.Worker;
 import naitsirc98.beryl.graphics.Graphics;
-import org.lwjgl.PointerBuffer;
+import naitsirc98.beryl.graphics.vulkan.rendering.VulkanRenderer;
 import org.lwjgl.system.NativeResource;
 import org.lwjgl.vulkan.VkCommandBuffer;
 
 import java.nio.ByteBuffer;
 
-import static java.lang.ThreadLocal.withInitial;
-import static org.lwjgl.system.MemoryUtil.*;
+import static org.lwjgl.system.MemoryUtil.memAlloc;
+import static org.lwjgl.system.MemoryUtil.memFree;
 import static org.lwjgl.vulkan.VK10.VK_COMMAND_BUFFER_LEVEL_SECONDARY;
-import static org.lwjgl.vulkan.VK10.vkCmdExecuteCommands;
 
 public class VulkanCommandBuilder implements NativeResource {
 
-    public static final int COMMAND_BUFFERS_COUNT = 128;
     public static final int MIN_PUSH_CONSTANT_DATA_SIZE = 128;
 
-    private static final ThreadLocal<VulkanCommandBuilder> COMMAND_GENERATOR = withInitial(VulkanCommandBuilder::new);
 
-    public static void buildCommandBuffers(int offset, int count, VkCommandBuffer primaryCommandBuffer, VulkanCommandBufferConsumer consumer) {
-
-        VulkanCommandBuilder generator = COMMAND_GENERATOR.get();//.get();
-
-        VkCommandBuffer[] commandBuffers = generator.commandBuffers;
-        ByteBuffer pushConstantData = generator.pushConstantData;
-
-        for(int i = offset;i < count;i++) {
-            consumer.consume(i, commandBuffers[i], pushConstantData);
-        }
-
-        generator.pCommandBuffers.limit(count);
-
-        vkCmdExecuteCommands(primaryCommandBuffer, generator.pCommandBuffers);
-
-        generator.pCommandBuffers.limit(COMMAND_BUFFERS_COUNT);
-    }
-
+    private final Worker worker;
+    private final VulkanRenderer renderer;
     private VulkanCommandPool commandPool;
     private VkCommandBuffer[] commandBuffers;
-    private PointerBuffer pCommandBuffers;
     private ByteBuffer pushConstantData;
 
-    private VulkanCommandBuilder() {
+    public VulkanCommandBuilder() {
+        worker = new Worker("VulkanCommandBufferBuilder-Worker"+hashCode()).start();
+        renderer = Graphics.vulkan().renderer();
         commandPool = createCommandPool();
-        commandBuffers = commandPool.newCommandBuffers(VK_COMMAND_BUFFER_LEVEL_SECONDARY, COMMAND_BUFFERS_COUNT);
-        pCommandBuffers = getCommandBufferPointers();
+        commandBuffers = createCommandBuffers();
         pushConstantData = memAlloc(MIN_PUSH_CONSTANT_DATA_SIZE);
     }
 
-    private PointerBuffer getCommandBufferPointers() {
+    public void await() {
+        worker.await();
+    }
 
-        PointerBuffer pointers = memAllocPointer(COMMAND_BUFFERS_COUNT);
+    public void submitRecordTask(Runnable task) {
+        worker.submit(task);
+    }
 
-        for(int i = 0;i < COMMAND_BUFFERS_COUNT;i++) {
-            pointers.put(i, commandBuffers[i]);
-        }
+    public VkCommandBuffer commandBuffer() {
+        return commandBuffer(renderer.currentSwapchainImageIndex());
+    }
 
-        return pointers;
+    public VkCommandBuffer commandBuffer(int index) {
+        return commandBuffers[index];
+    }
+
+    public ByteBuffer pushConstantData() {
+        return pushConstantData;
+    }
+
+    private VkCommandBuffer[] createCommandBuffers() {
+
+        final int count = Graphics.vulkan().swapchain().swapChainImages().length;
+
+        return commandPool.newCommandBuffers(VK_COMMAND_BUFFER_LEVEL_SECONDARY, count);
     }
 
     private VulkanCommandPool createCommandPool() {
@@ -70,10 +68,10 @@ public class VulkanCommandBuilder implements NativeResource {
     @Override
     public void free() {
 
-        memFree(pushConstantData);
+        worker.terminate();
 
-        memFree(pCommandBuffers);
-        pCommandBuffers = null;
+        memFree(pushConstantData);
+        pushConstantData = null;
 
         commandPool.freeCommandBuffers(commandBuffers);
         commandBuffers = null;

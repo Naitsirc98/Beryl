@@ -2,6 +2,7 @@ package naitsirc98.beryl.graphics.vulkan.rendering;
 
 import naitsirc98.beryl.graphics.Graphics;
 import naitsirc98.beryl.graphics.rendering.RenderingPath;
+import naitsirc98.beryl.graphics.vulkan.commands.VulkanCommandBufferRecorder;
 import naitsirc98.beryl.graphics.vulkan.commands.VulkanCommandBuilderExecutor;
 import naitsirc98.beryl.graphics.vulkan.pipelines.VulkanGraphicsPipeline;
 import naitsirc98.beryl.graphics.vulkan.pipelines.VulkanPipelineLayout;
@@ -17,6 +18,7 @@ import org.joml.Matrix4f;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
 
+import java.nio.ByteBuffer;
 import java.nio.file.Path;
 import java.util.List;
 
@@ -30,7 +32,7 @@ import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.memAddress;
 import static org.lwjgl.vulkan.VK10.*;
 
-public final class VulkanSimpleRenderingPath extends RenderingPath {
+public final class VulkanSimpleRenderingPath extends RenderingPath implements VulkanCommandBufferRecorder {
 
     public static final VertexLayout VERTEX_LAYOUT = VertexLayout.VERTEX_LAYOUT_3D;
 
@@ -61,6 +63,8 @@ public final class VulkanSimpleRenderingPath extends RenderingPath {
     private VulkanRenderer renderer;
     private VulkanSwapchain swapchain;
     private VulkanCommandBuilderExecutor commandBuilderExecutor;
+    private Matrix4f projectionViewMatrix;
+    private List<MeshView> meshViews;
 
     private VulkanSimpleRenderingPath() {
 
@@ -73,85 +77,27 @@ public final class VulkanSimpleRenderingPath extends RenderingPath {
         createGraphicsPipeline();
         renderer = Graphics.vulkan().renderer();
         commandBuilderExecutor = new VulkanCommandBuilderExecutor();
+        projectionViewMatrix = new Matrix4f();
     }
 
     @Override
     public void render(Camera camera, List<MeshView> meshViews) {
 
-        try (MemoryStack stack = stackPush()) {
+        this.meshViews = meshViews;
 
-            VkCommandBuffer primaryCommandBuffer = renderer.currentCommandBuffer();
+        projectionViewMatrix = projectionViewMatrix.set(camera.projectionMatrix());
+        projectionViewMatrix.m11(-projectionViewMatrix.m11());
+        projectionViewMatrix.mul(camera.viewMatrix());
 
-            begin(primaryCommandBuffer, stack);
+        VkCommandBuffer primaryCommandBuffer = renderer.currentCommandBuffer();
 
-            Matrix4f projectionView = new Matrix4f(camera.projectionMatrix());
-            projectionView.m11(-projectionView.m11());
-            projectionView.mul(camera.viewMatrix());
-            final long pipelineLayout = this.pipelineLayout.handle();
+        begin(primaryCommandBuffer);
 
-            final long framebuffer = swapchain.renderPass()
-                    .framebuffers().get(renderer.currentSwapchainImageIndex());
+        commandBuilderExecutor.recordCommandBuffers(meshViews.size(), primaryCommandBuffer, this);
 
-            commandBuilderExecutor.build(meshViews.size(), primaryCommandBuffer,
-                    (index, commandBuffer, pushConstantData) -> {
+        end(primaryCommandBuffer);
 
-
-                        VkCommandBufferInheritanceInfo inheritanceInfo = VkCommandBufferInheritanceInfo.callocStack()
-                                .sType(VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO)
-                                .renderPass(swapchain.renderPass().handle())
-                                .framebuffer(framebuffer);
-
-                        beginSecondaryCommandBuffer(commandBuffer, inheritanceInfo);
-
-                        final MeshView meshView = meshViews.get(index);
-
-                        projectionView.mul(meshView.modelMatrix(), new Matrix4f()).get(pushConstantData);
-
-                        nvkCmdPushConstants(
-                                commandBuffer,
-                                pipelineLayout,
-                                VK_SHADER_STAGE_VERTEX_BIT,
-                                0,
-                                PUSH_CONSTANT_SIZE,
-                                memAddress(pushConstantData));
-
-                        VulkanVertexData vertexData = meshView.mesh().vertexData();
-
-                        vertexData.bind(commandBuffer);
-
-                        if (vertexData.indexCount() == 0) {
-                            vkCmdDraw(commandBuffer, vertexData.vertexCount(), 1, 0, 0);
-                        } else {
-                            vkCmdDrawIndexed(commandBuffer, vertexData.indexCount(), 1, 0, 0, 0);
-                        }
-
-                        endSecondaryCommandBuffer(commandBuffer);
-
-                    });
-
-            end(primaryCommandBuffer);
-        }
-    }
-
-    private void endSecondaryCommandBuffer(VkCommandBuffer commandBuffer) {
-        vkCall(vkEndCommandBuffer(commandBuffer));
-    }
-
-    private void beginSecondaryCommandBuffer(VkCommandBuffer commandBuffer,
-                                             VkCommandBufferInheritanceInfo inheritanceInfo) {
-
-        try (MemoryStack stack = stackPush()) {
-
-            VkCommandBufferBeginInfo beginInfo = VkCommandBufferBeginInfo.callocStack(stack)
-                    .sType(VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO)
-                    .pInheritanceInfo(inheritanceInfo)
-                    .flags(VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT);
-
-
-            vkCall(vkBeginCommandBuffer(commandBuffer, beginInfo));
-
-            vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline.handle());
-        }
+        this.meshViews = null;
     }
 
     private void end(VkCommandBuffer commandBuffer) {
@@ -159,28 +105,32 @@ public final class VulkanSimpleRenderingPath extends RenderingPath {
         vkCall(vkEndCommandBuffer(commandBuffer));
     }
 
-    private void begin(VkCommandBuffer commandBuffer, MemoryStack stack) {
+    private void begin(VkCommandBuffer commandBuffer) {
 
-        VkCommandBufferBeginInfo beginInfo = VkCommandBufferBeginInfo.callocStack(stack)
-                .sType(VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO);
+        try(MemoryStack stack = stackPush()) {
 
-        VkRenderPassBeginInfo renderPassInfo = VkRenderPassBeginInfo.callocStack(stack)
-                .sType(VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO)
-                .renderPass(swapchain.renderPass().handle())
-                .renderArea(VkRect2D.callocStack(stack)
-                        .offset(VkOffset2D.callocStack(stack).set(0, 0))
-                        .extent(swapchain.extent()))
-                .framebuffer(currentFramebuffer());
+            VkCommandBufferBeginInfo beginInfo = VkCommandBufferBeginInfo.callocStack(stack)
+                    .sType(VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO);
 
-        VkClearValue.Buffer clearValues = VkClearValue.callocStack(2, stack);
-        clearValues.get(0).color().float32(stack.floats(0.1f, 0.1f, 0.1f, 1.0f));
-        clearValues.get(1).depthStencil().set(1.0f, 0);
+            VkRenderPassBeginInfo renderPassInfo = VkRenderPassBeginInfo.callocStack(stack)
+                    .sType(VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO)
+                    .renderPass(swapchain.renderPass().handle())
+                    .renderArea(VkRect2D.callocStack(stack)
+                            .offset(VkOffset2D.callocStack(stack).set(0, 0))
+                            .extent(swapchain.extent()))
+                    .framebuffer(currentFramebuffer());
 
-        renderPassInfo.pClearValues(clearValues);
+            VkClearValue.Buffer clearValues = VkClearValue.callocStack(2, stack);
+            clearValues.get(0).color().float32(stack.floats(0.1f, 0.1f, 0.1f, 1.0f));
+            clearValues.get(1).depthStencil().set(1.0f, 0);
 
-        vkCall(vkBeginCommandBuffer(commandBuffer, beginInfo));
+            renderPassInfo.pClearValues(clearValues);
 
-        vkCmdBeginRenderPass(commandBuffer, renderPassInfo, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
+            vkCall(vkBeginCommandBuffer(commandBuffer, beginInfo));
+
+            vkCmdBeginRenderPass(commandBuffer, renderPassInfo, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
+
+        }
     }
 
     private long currentFramebuffer() {
@@ -189,6 +139,7 @@ public final class VulkanSimpleRenderingPath extends RenderingPath {
 
     @Override
     protected void terminate() {
+        commandBuilderExecutor.free();
         pipelineLayout.free();
         graphicsPipeline.free();
     }
@@ -280,4 +231,57 @@ public final class VulkanSimpleRenderingPath extends RenderingPath {
                 .depthBiasEnable(false);
     }
 
+    @Override
+    public void beginCommandBuffer(VkCommandBuffer commandBuffer) {
+
+        try (MemoryStack stack = stackPush()) {
+
+            VkCommandBufferInheritanceInfo inheritanceInfo = VkCommandBufferInheritanceInfo.callocStack(stack)
+                    .sType(VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO)
+                    .renderPass(swapchain.renderPass().handle())
+                    .subpass(0)
+                    .framebuffer(currentFramebuffer());
+
+            VkCommandBufferBeginInfo beginInfo = VkCommandBufferBeginInfo.callocStack(stack)
+                    .sType(VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO)
+                    .pInheritanceInfo(inheritanceInfo)
+                    .flags(VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT);
+
+
+            vkCall(vkBeginCommandBuffer(commandBuffer, beginInfo));
+
+            vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline.handle());
+        }
+    }
+
+    @Override
+    public void recordCommandBuffer(int index, VkCommandBuffer commandBuffer, ByteBuffer pushConstantData, Matrix4f mvp) {
+
+        final MeshView meshView = meshViews.get(index);
+
+        projectionViewMatrix.mul(meshView.modelMatrix(), mvp).get(pushConstantData);
+
+        nvkCmdPushConstants(
+                commandBuffer,
+                pipelineLayout.handle(),
+                VK_SHADER_STAGE_VERTEX_BIT,
+                0,
+                PUSH_CONSTANT_SIZE,
+                memAddress(pushConstantData));
+
+        VulkanVertexData vertexData = meshView.mesh().vertexData();
+
+        vertexData.bind(commandBuffer);
+
+        if (vertexData.indexCount() == 0) {
+            vkCmdDraw(commandBuffer, vertexData.vertexCount(), 1, 0, 0);
+        } else {
+            vkCmdDrawIndexed(commandBuffer, vertexData.indexCount(), 1, 0, 0, 0);
+        }
+    }
+
+    @Override
+    public void endCommandBuffer(VkCommandBuffer commandBuffer) {
+        vkCall(vkEndCommandBuffer(commandBuffer));
+    }
 }
