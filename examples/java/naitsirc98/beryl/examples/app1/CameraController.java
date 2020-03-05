@@ -1,7 +1,6 @@
 package naitsirc98.beryl.examples.app1;
 
 
-import naitsirc98.beryl.core.Time;
 import naitsirc98.beryl.graphics.window.Window;
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.scenes.components.behaviours.Behaviour;
@@ -23,7 +22,7 @@ public class CameraController extends Behaviour {
     }
 
     @Override
-    protected void onUpdate() {
+    protected void onLateUpdate() {
 
         float amount = 1 / 60.0f;
 

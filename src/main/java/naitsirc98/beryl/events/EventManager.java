@@ -90,7 +90,7 @@ public final class EventManager extends BerylSystem {
 
     @Override
     protected void terminate() {
-        dispatcher.shutdown();
+
     }
 
     /**

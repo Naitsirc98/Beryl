@@ -1,27 +1,14 @@
 package naitsirc98.beryl.events;
 
-import naitsirc98.beryl.concurrency.FixedWorkerPool;
-import naitsirc98.beryl.concurrency.WorkerPool;
-
 import java.util.List;
 import java.util.Map;
 
 final class EventDispatcher {
 
-    private final WorkerPool workerPool;
     private final Map<Class<? extends Event>, List<EventCallback<?>>> eventCallbacks;
 
     EventDispatcher(Map<Class<? extends Event>, List<EventCallback<?>>> eventCallbacks) {
-        this.workerPool = new FixedWorkerPool("EventDispatcherWorkerPool", 10);
         this.eventCallbacks = eventCallbacks;
-    }
-
-    void shutdown() {
-        workerPool.terminate();
-    }
-
-    void await() {
-        workerPool.await();
     }
 
     void dispatch(Event event) {

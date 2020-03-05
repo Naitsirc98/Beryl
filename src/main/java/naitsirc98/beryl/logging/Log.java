@@ -19,7 +19,6 @@ import java.util.logging.Logger;
 
 import static java.util.Objects.requireNonNull;
 import static java.util.concurrent.Executors.newSingleThreadExecutor;
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 /**
@@ -33,6 +32,8 @@ public final class Log extends BerylSystem {
     private static final String PATTERN = "%s[%s]: %s\n";
 
     private static final DateTimeFormatter DEFAULT_DATETIME_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/YYYY HH:mm:ss");
+
+    private static final Message TERMINATION_COMMAND = new Message(null, null);
 
     @Singleton
     private static Log instance;
@@ -227,9 +228,9 @@ public final class Log extends BerylSystem {
 
     @Override
     protected void terminate() {
-        running.set(false);
-        executor.shutdown();
         Log.info("Terminating logging system...");
+        messageQueue.add(TERMINATION_COMMAND);
+        executor.shutdown();
         try {
             executor.awaitTermination(MSG_QUEUE_TERMINATION_WAIT_TIME, SECONDS);
         } catch (InterruptedException e) {
@@ -249,23 +250,37 @@ public final class Log extends BerylSystem {
 
     private void run() {
         while(running.get()) {
-            while(!messageQueue.isEmpty()) {
-                popMessage().ifPresent(this::log);
-            }
+            logNextMessage();
         }
     }
 
-    private Optional<Message> popMessage() {
+    private void logNextMessage() {
+
+        Message message = popMessage();
+
+        if(message == null) {
+            return;
+        }
+
+        if(message == TERMINATION_COMMAND) {
+            running.set(false);
+            return;
+        }
+
+        log(message);
+    }
+
+    private Message popMessage() {
         try {
-            return Optional.ofNullable(messageQueue.poll(MSG_QUEUE_POLL_WAIT_TIME, MILLISECONDS));
+            return messageQueue.take();
         } catch (InterruptedException e) {
             Logger.getLogger(Log.class.getName()).log(java.util.logging.Level.SEVERE, "Error while popping message", e);
         }
-        return Optional.empty();
+        return null;
     }
 
     private void logMessage(Level level, Object msg) {
-        if(levelMask.contains(level)) {
+        if(running.get() && levelMask.contains(level)) {
             messageQueue.add(new Message(level, msg));
         }
     }
@@ -273,6 +288,7 @@ public final class Log extends BerylSystem {
     private void log(Message message) {
         final String bakedMessage = bakeMessage(message.level, message.contents);
         channels.parallelStream()
+                .unordered()
                 .filter(channel -> channel.accept(message.level))
                 .forEach(channel -> writeMessage(channel, message.level, bakedMessage));
     }

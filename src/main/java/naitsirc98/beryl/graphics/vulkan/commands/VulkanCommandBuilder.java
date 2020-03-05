@@ -1,13 +1,16 @@
 package naitsirc98.beryl.graphics.vulkan.commands;
 
-import naitsirc98.beryl.concurrency.Worker;
 import naitsirc98.beryl.graphics.Graphics;
 import naitsirc98.beryl.graphics.vulkan.rendering.VulkanRenderer;
+import naitsirc98.beryl.logging.Log;
 import org.lwjgl.system.NativeResource;
 import org.lwjgl.vulkan.VkCommandBuffer;
 
 import java.nio.ByteBuffer;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 
+import static java.util.concurrent.Executors.newSingleThreadExecutor;
 import static org.lwjgl.system.MemoryUtil.memAlloc;
 import static org.lwjgl.system.MemoryUtil.memFree;
 import static org.lwjgl.vulkan.VK10.VK_COMMAND_BUFFER_LEVEL_SECONDARY;
@@ -17,22 +20,18 @@ public class VulkanCommandBuilder implements NativeResource {
     public static final int MIN_PUSH_CONSTANT_DATA_SIZE = 128;
 
 
-    private final Worker worker;
+    private final ExecutorService worker;
     private final VulkanRenderer renderer;
     private VulkanCommandPool commandPool;
     private VkCommandBuffer[] commandBuffers;
     private ByteBuffer pushConstantData;
 
     public VulkanCommandBuilder() {
-        worker = new Worker("VulkanCommandBufferBuilder-Worker"+hashCode()).start();
+        worker = newSingleThreadExecutor();
         renderer = Graphics.vulkan().renderer();
         commandPool = createCommandPool();
         commandBuffers = createCommandBuffers();
         pushConstantData = memAlloc(MIN_PUSH_CONSTANT_DATA_SIZE);
-    }
-
-    public void await() {
-        worker.await();
     }
 
     public void submitRecordTask(Runnable task) {
@@ -68,7 +67,7 @@ public class VulkanCommandBuilder implements NativeResource {
     @Override
     public void free() {
 
-        worker.terminate();
+        stopWorker();
 
         memFree(pushConstantData);
         pushConstantData = null;
@@ -78,5 +77,14 @@ public class VulkanCommandBuilder implements NativeResource {
 
         commandPool.free();
         commandPool = null;
+    }
+
+    private void stopWorker() {
+        worker.shutdown();
+        try {
+            worker.awaitTermination(10, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            Log.error("Timeout error while waiting for VulkanCommandBuilder to finish");
+        }
     }
 }

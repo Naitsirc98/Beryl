@@ -10,6 +10,7 @@ import naitsirc98.beryl.scenes.SceneManager;
 import naitsirc98.beryl.util.Version;
 import org.lwjgl.system.Configuration;
 
+import java.nio.ByteBuffer;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.lang.String.format;
@@ -66,6 +67,7 @@ public final class Beryl {
     private Renderer renderer;
     private float updateDelay;
     private int updatesPerSecond;
+    private int framesPerSecond;
 
     private Beryl(BerylApplication application) {
         this.application = application;
@@ -99,8 +101,6 @@ public final class Beryl {
         float lastFrame = 0;
         float lastDebugReport = Time.time();
         float deltaTime = IDEAL_FRAME_DELAY;
-
-        int framesPerSecond = 0;
 
         setup();
 
@@ -151,7 +151,9 @@ public final class Beryl {
 
         updateDelay += deltaTime;
 
-        while(updateDelay >= IDEAL_FRAME_DELAY) {
+        int updates = 0;
+
+        while(updates < UPDATES_PER_SECOND && updateDelay >= IDEAL_FRAME_DELAY) {
 
             eventManager.processEvents();
 
@@ -163,6 +165,7 @@ public final class Beryl {
 
             updateDelay -= IDEAL_FRAME_DELAY;
             ++updatesPerSecond;
+            ++updates;
         }
     }
 

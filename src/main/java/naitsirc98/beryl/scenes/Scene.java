@@ -11,6 +11,8 @@ import naitsirc98.beryl.scenes.components.meshes.MeshView;
 import naitsirc98.beryl.scenes.components.meshes.MeshViewManager;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Stream;
 
 import static naitsirc98.beryl.scenes.Entity.UNTAGGED;
@@ -48,7 +50,7 @@ public final class Scene {
         componentManagers = createComponentManagersMap();
         // ===
 
-        taskQueue = new ArrayDeque<>();
+        taskQueue = new ConcurrentLinkedQueue<>();
     }
 
     void start() {
