@@ -49,6 +49,7 @@ public class LogFileChannel implements LogChannel {
     @Override
     public void write(String message) throws Exception {
         bufferedWriter.write(message);
+        bufferedWriter.flush();
     }
 
     @Override

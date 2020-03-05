@@ -74,7 +74,8 @@ public class Worker {
         state.compareAndSet(State.PAUSED, State.RUNNING);
     }
 
-    public void await() {
+    public synchronized void await() {
+
         if(state.compareAndSet(State.RUNNING, State.AWAIT)) {
 
             synchronized(awaitSync) {
@@ -104,26 +105,43 @@ public class Worker {
                 synchronized(awaitSync) {
 
                     while(!taskQueue.isEmpty()) {
-                        popTask().ifPresent(Runnable::run);
+                        performNextTask();
                     }
+
+                    notifyAll();
 
                     state.set(State.RUNNING);
                 }
 
             } else {
-                popTask().ifPresent(Runnable::run);
+                performNextTask();
             }
 
         }
     }
 
-    private Optional<Runnable> popTask() {
+    private void performNextTask() {
+
+        Runnable task = popTask();
+
+        if(task == null) {
+            return;
+        }
+
         try {
-            return Optional.ofNullable(taskQueue.poll(POP_TASK_TIMEOUT, TimeUnit.MILLISECONDS));
+            task.run();
+        } catch(Throwable e) {
+            Log.error("Error while executing task " + task + " in Worker " + this, e);
+        }
+    }
+
+    private Runnable popTask() {
+        try {
+            return taskQueue.poll(POP_TASK_TIMEOUT, TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
             Log.error("Exception while waiting for a worker task", e);
         }
-        return Optional.empty();
+        return null;
     }
 
     private void shutdown() {

@@ -3,7 +3,6 @@ package naitsirc98.beryl.graphics.opengl.rendering;
 import naitsirc98.beryl.graphics.rendering.Renderer;
 import naitsirc98.beryl.graphics.window.Window;
 import naitsirc98.beryl.util.geometry.Sizec;
-import org.lwjgl.system.MemoryStack;
 
 import static org.lwjgl.glfw.GLFW.glfwSwapBuffers;
 import static org.lwjgl.glfw.GLFW.glfwSwapInterval;
@@ -23,14 +22,14 @@ public final class GLRenderer implements Renderer {
     }
 
     @Override
-    public void begin(MemoryStack stack) {
+    public void begin() {
         Sizec framebufferSize = Window.get().framebufferSize();
         glViewport(0, 0, framebufferSize.width(), framebufferSize.height());
         glBindFramebuffer(GL_FRAMEBUFFER, DEFAULT_FRAMEBUFFER);
     }
 
     @Override
-    public void end(MemoryStack stack) {
+    public void end() {
         glBindFramebuffer(GL_FRAMEBUFFER, DEFAULT_FRAMEBUFFER);
         glfwSwapBuffers(glContext);
     }

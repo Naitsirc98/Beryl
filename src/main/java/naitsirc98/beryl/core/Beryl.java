@@ -98,9 +98,9 @@ public final class Beryl {
 
         final Time time = systems.time;
 
-        float lastFrame = Time.time();
+        float lastFrame = 0;
         float lastDebugReport = Time.time();
-        float deltaTime;
+        float deltaTime = IDEAL_FRAME_DELAY;
 
         int framesPerSecond = 0;
 
@@ -131,16 +131,18 @@ public final class Beryl {
     }
 
     private void setup() {
-        update0();
         if(BerylConfiguration.WINDOW_VISIBLE.get(true)) {
             Window.get().show();
         }
+        update0();
+        render();
     }
 
     private void update0() {
         systems.eventManager.processEvents();
         systems.input.update();
         systems.sceneManager.update();
+        updateDelay = IDEAL_FRAME_DELAY;
     }
 
     private void update(float deltaTime) {
@@ -151,11 +153,19 @@ public final class Beryl {
 
         updateDelay += deltaTime;
 
+        System.out.println("Before update while loop...");
+
         while(updateDelay >= IDEAL_FRAME_DELAY) {
+
+            System.out.println("Updating Event manager...");
 
             eventManager.processEvents();
 
+            System.out.println("Updating Input...");
+
             input.update();
+
+            System.out.println("Updating scenes...");
 
             sceneManager.update();
 
@@ -164,20 +174,27 @@ public final class Beryl {
             updateDelay -= IDEAL_FRAME_DELAY;
             ++updatesPerSecond;
         }
+
+        System.out.println("Update while loop terminated");
     }
 
     private void render() {
 
-        try(MemoryStack stack = stackPush()) {
+        System.out.println("Starting Rendering...");
 
-            renderer.begin(stack);
+        renderer.begin();
 
-            systems.sceneManager.render();
+        System.out.println("Scene rendering...");
 
-            application.onRender();
+        systems.sceneManager.render();
 
-            renderer.end(stack);
-        }
+        System.out.println("Scene rendering terminated");
+
+        application.onRender();
+
+        renderer.end();
+
+        System.out.println("Rendering terminated");
     }
 
     private void error(Throwable error) {

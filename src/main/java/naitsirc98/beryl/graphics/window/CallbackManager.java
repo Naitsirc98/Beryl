@@ -3,13 +3,11 @@ package naitsirc98.beryl.graphics.window;
 import naitsirc98.beryl.core.BerylApplication;
 import naitsirc98.beryl.events.Event;
 import naitsirc98.beryl.events.EventManager;
+import naitsirc98.beryl.events.input.keyboard.*;
 import naitsirc98.beryl.events.window.FramebufferResizeEvent;
-import naitsirc98.beryl.events.input.keyboard.KeyEvent;
-import naitsirc98.beryl.events.input.keyboard.KeyPressedEvent;
-import naitsirc98.beryl.events.input.keyboard.KeyReleasedEvent;
-import naitsirc98.beryl.events.input.keyboard.KeyRepeatEvent;
 import naitsirc98.beryl.events.input.mouse.*;
 import naitsirc98.beryl.events.window.*;
+import naitsirc98.beryl.input.Input;
 import naitsirc98.beryl.input.Key;
 import naitsirc98.beryl.input.KeyModifier;
 import naitsirc98.beryl.input.MouseButton;
@@ -19,6 +17,7 @@ import org.lwjgl.system.Callback;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import static naitsirc98.beryl.events.EventManager.triggerEvent;
 import static org.lwjgl.glfw.GLFW.*;
@@ -129,38 +128,45 @@ class CallbackManager {
         return callback;
     }
 
-    private Event newMouseButtonEvent(int button, int action, int mods) {
+    private Event newMouseButtonEvent(int buttonID, int action, int mods) {
 
         MouseButtonEvent event = null;
 
-        switch (action) {
+        MouseButton button = MouseButton.asMouseButton(buttonID);
+        Set<KeyModifier> modifiers = KeyModifier.asModifierMask(mods);
 
+        switch (action) {
             case GLFW_PRESS:
                 keyRepeatCount = 0;
-                event = new MouseButtonPressedEvent(MouseButton.asMouseButton(button), KeyModifier.asModifierMask(mods));
+                event = new MouseButtonPressedEvent(button, modifiers);
                 break;
             case GLFW_RELEASE:
-                event = new MouseButtonReleasedEvent(MouseButton.asMouseButton(button), KeyModifier.asModifierMask(mods));
+                // If a button is released, it will trigger a clicked event at first, and the it will be reset to the release state
+                event = new MouseButtonClickedEvent(button, modifiers);
                 break;
         }
 
         return event;
     }
 
-    private Event newKeyEvent(int key, int scancode, int action, int mods) {
+    private Event newKeyEvent(int keyID, int scancode, int action, int mods) {
 
         KeyEvent event = null;
+
+        Key key = Key.asKey(keyID);
+        Set<KeyModifier> modifiers = KeyModifier.asModifierMask(mods);
 
         switch(action) {
             case GLFW_PRESS:
                 keyRepeatCount = 0;
-                event = new KeyPressedEvent(Key.asKey(key), KeyModifier.asModifierMask(mods));
+                event = new KeyPressedEvent(key, modifiers);
                 break;
             case GLFW_REPEAT:
-                event = new KeyRepeatEvent(Key.asKey(key), KeyModifier.asModifierMask(mods), ++keyRepeatCount);
+                event = new KeyRepeatEvent(key, modifiers, ++keyRepeatCount);
                 break;
             case GLFW_RELEASE:
-                event = new KeyReleasedEvent(Key.asKey(key), KeyModifier.asModifierMask(mods));
+                // If a key is released, it will trigger a typed event at first, and the it will be reset to the release state
+                event = new KeyTypedEvent(key, modifiers);
                 break;
         }
 

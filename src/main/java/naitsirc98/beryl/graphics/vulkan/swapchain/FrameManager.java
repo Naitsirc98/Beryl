@@ -1,6 +1,7 @@
 package naitsirc98.beryl.graphics.vulkan.swapchain;
 
 import naitsirc98.beryl.graphics.Graphics;
+import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.util.types.Destructor;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.NativeResource;
@@ -54,6 +55,8 @@ public class FrameManager implements NativeResource {
     }
 
     private Frame[] createFrames(int size) {
+
+        Log.trace("Vulkan max frames in flight = " + size);
 
         frames = new Frame[size];
 

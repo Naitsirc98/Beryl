@@ -1,38 +1,31 @@
 package naitsirc98.beryl.events;
 
-import naitsirc98.beryl.logging.Log;
+import naitsirc98.beryl.concurrency.FixedWorkerPool;
+import naitsirc98.beryl.concurrency.WorkerPool;
 
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 final class EventDispatcher {
 
-    private final ExecutorService threadPool;
+    private final WorkerPool workerPool;
     private final Map<Class<? extends Event>, List<EventCallback<?>>> eventCallbacks;
 
     EventDispatcher(Map<Class<? extends Event>, List<EventCallback<?>>> eventCallbacks) {
-        this.threadPool = Executors.newCachedThreadPool();
+        this.workerPool = new FixedWorkerPool("EventDispatcherWorkerPool", 10);
         this.eventCallbacks = eventCallbacks;
     }
 
     void shutdown() {
-        threadPool.shutdown();
-        await();
+        workerPool.terminate();
     }
 
     void await() {
-        try {
-            threadPool.awaitTermination(5, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            Log.error("Timeout error while waiting for events", e);
-        }
+        workerPool.await();
     }
 
     void dispatch(Event event) {
-        threadPool.submit(() -> processEvent(event));
+        processEvent(event);
     }
 
     private void processEvent(Event event) {
@@ -47,6 +40,10 @@ final class EventDispatcher {
     }
 
     private void processEvent(Event event, List<EventCallback<?>> eventCallbacks) {
+
+        if(eventCallbacks == null) {
+            return;
+        }
 
         for(EventCallback<?> callback : eventCallbacks) {
 

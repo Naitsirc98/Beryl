@@ -44,24 +44,22 @@ public final class Graphics extends BerylSystem {
     @Override
     protected void init() {
 
-        Log.trace("Initializing Graphics...");
-
         initSingleton(GraphicsAPI.class, BerylConfiguration.GRAPHICS_API.get(VULKAN));
 
-        Log.trace("Using " + GraphicsAPI.get() + " as the Graphics API");
+        Log.info("Using " + GraphicsAPI.get() + " as the Graphics API");
 
-        Log.trace("Creating window...");
+        Log.info("Creating window...");
 
         window = newInstance(WindowFactory.class).newWindow();
 
-        Log.trace("Window created");
+        Log.info("Window created");
 
-        Log.trace("Creating Graphics Context...");
+        Log.info("Creating Graphics Context...");
 
         graphicsContext = createGraphicsContext();
         graphicsContext.init();
 
-        Log.trace(GraphicsAPI.get()  + " Context created");
+        Log.info(GraphicsAPI.get()  + " Context created");
     }
 
     private GraphicsContext createGraphicsContext() {

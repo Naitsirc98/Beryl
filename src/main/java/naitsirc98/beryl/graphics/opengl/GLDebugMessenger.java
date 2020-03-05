@@ -93,7 +93,7 @@ public class GLDebugMessenger implements NativeResource {
             case GL_DEBUG_SEVERITY_LOW:
                 return Level.WARNING;
             default:
-                return Level.INFO;
+                return Level.TRACE;
         }
     }
 }

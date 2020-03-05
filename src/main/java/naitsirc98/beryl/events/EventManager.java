@@ -6,7 +6,9 @@ import naitsirc98.beryl.core.BerylSystem;
 import naitsirc98.beryl.util.types.Singleton;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentLinkedDeque;
 
+import static java.util.stream.IntStream.range;
 import static naitsirc98.beryl.util.Asserts.assertNonNull;
 import static org.lwjgl.glfw.GLFW.*;
 
@@ -68,15 +70,6 @@ public final class EventManager extends BerylSystem {
         instance.frontEventQueue.add(assertNonNull(event));
     }
 
-    /**
-     * Submit a new event to be processed after the next frame
-     *
-     * @param event the event
-     */
-    public static void triggerLater(Event event) {
-        instance.backEventQueue.add(assertNonNull(event));
-    }
-
     private Queue<Event> frontEventQueue;
     private Queue<Event> backEventQueue;
     private Map<Class<? extends Event>, List<EventCallback<?>>> eventCallbacks;
@@ -88,8 +81,8 @@ public final class EventManager extends BerylSystem {
 
     @Override
     protected void init() {
-        this.frontEventQueue = new ArrayDeque<>(BerylConfiguration.EVENT_QUEUE_INITIAL_CAPACITY.get(128));
-        this.backEventQueue = new ArrayDeque<>(BerylConfiguration.EVENT_QUEUE_INITIAL_CAPACITY.get(128));
+        this.frontEventQueue = new ConcurrentLinkedDeque<>();
+        this.backEventQueue = new ConcurrentLinkedDeque<>();
         this.eventCallbacks = new HashMap<>();
         dispatcher = new EventDispatcher(eventCallbacks);
         debugReport = DEBUG_REPORT_ENABLED ? new EventDebugReport() : null;
@@ -128,8 +121,6 @@ public final class EventManager extends BerylSystem {
         }
 
         processEventQueue();
-
-        swapEventQueues();
     }
 
     /**
@@ -150,10 +141,9 @@ public final class EventManager extends BerylSystem {
             return;
         }
 
-        while(!eventQueue.isEmpty()) {
-            final Event event = eventQueue.poll();
-            dispatcher.dispatch(event);
-        }
+        swapEventQueues();
+
+        range(0, eventQueue.size()).unordered().forEach(i -> dispatcher.dispatch(eventQueue.poll()));
     }
 
     private void swapEventQueues() {

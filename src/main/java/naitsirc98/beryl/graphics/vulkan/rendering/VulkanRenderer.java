@@ -2,8 +2,6 @@ package naitsirc98.beryl.graphics.vulkan.rendering;
 
 import naitsirc98.beryl.graphics.Graphics;
 import naitsirc98.beryl.graphics.rendering.Renderer;
-import naitsirc98.beryl.graphics.vulkan.commands.VulkanCommandBuilder;
-import naitsirc98.beryl.graphics.vulkan.commands.VulkanCommandBuilderExecutor;
 import naitsirc98.beryl.graphics.vulkan.commands.VulkanCommandPool;
 import naitsirc98.beryl.graphics.vulkan.devices.VulkanLogicalDevice;
 import naitsirc98.beryl.graphics.vulkan.swapchain.FrameManager;
@@ -18,6 +16,7 @@ import static naitsirc98.beryl.graphics.vulkan.util.VulkanUtils.getVulkanErrorNa
 import static naitsirc98.beryl.graphics.vulkan.util.VulkanUtils.vkCall;
 import static naitsirc98.beryl.logging.Log.Level.FATAL;
 import static naitsirc98.beryl.util.types.DataType.UINT64_MAX;
+import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.vulkan.KHRSwapchain.*;
 import static org.lwjgl.vulkan.VK10.*;
 
@@ -46,81 +45,88 @@ public class VulkanRenderer implements Renderer {
     }
 
     @Override
-    public void begin(MemoryStack stack) {
+    public void begin() {
 
-        FrameManager.Frame frame = frameManager.currentFrame();
+        try(MemoryStack stack = stackPush()) {
 
-        vkWaitForFences(logicalDevice, stack.longs(frame.fence), true, UINT64_MAX);
+            FrameManager.Frame frame = frameManager.currentFrame();
 
-        IntBuffer pImageIndex = stack.mallocInt(1);
+            vkWaitForFences(logicalDevice, stack.longs(frame.fence), true, UINT64_MAX);
 
-        int vkResult = vkAcquireNextImageKHR(logicalDevice, swapchain.handle(), UINT64_MAX,
-                frame.imageAvailableSemaphore, VK_NULL_HANDLE, pImageIndex);
+            IntBuffer pImageIndex = stack.mallocInt(1);
 
-        if(vkResult == VK_ERROR_OUT_OF_DATE_KHR) {
-            Log.warning("Swap chain is out of date");
-            // TODO
-            // recreateSwapChain();
-            return;
-        } else if(vkResult != VK_SUCCESS) {
-            Log.fatal("Cannot acquire swapchain image: " + getVulkanErrorName(vkResult));
-            return;
+            int vkResult = vkAcquireNextImageKHR(logicalDevice, swapchain.handle(), UINT64_MAX,
+                    frame.imageAvailableSemaphore, VK_NULL_HANDLE, pImageIndex);
+
+            if(vkResult == VK_ERROR_OUT_OF_DATE_KHR) {
+                Log.warning("Swap chain is out of date");
+                // TODO
+                // recreateSwapChain();
+                return;
+            } else if(vkResult != VK_SUCCESS) {
+                Log.fatal("Cannot acquire swapchain image: " + getVulkanErrorName(vkResult));
+                return;
+            }
+
+            final int imageIndex = currentSwapchainImageIndex = pImageIndex.get(0);
+
+            if(frameManager.isInFlight(imageIndex)) {
+                vkWaitForFences(logicalDevice, frameManager.getInFlight(imageIndex).fence, true, UINT64_MAX);
+            }
+
+            frameManager.setInFlight(imageIndex, frame);
         }
-
-        final int imageIndex = currentSwapchainImageIndex = pImageIndex.get(0);
-
-        if(frameManager.isInFlight(imageIndex)) {
-            vkWaitForFences(logicalDevice, frameManager.getInFlight(imageIndex).fence, true, UINT64_MAX);
-        }
-
-        frameManager.setInFlight(imageIndex, frame);
     }
 
     @Override
-    public void end(MemoryStack stack) {
+    public void end() {
 
-        FrameManager.Frame frame = frameManager.currentFrame();
+        try(MemoryStack stack = stackPush()) {
 
-        VkSubmitInfo submitInfo = VkSubmitInfo.callocStack(stack);
-        submitInfo.sType(VK_STRUCTURE_TYPE_SUBMIT_INFO);
+            FrameManager.Frame frame = frameManager.currentFrame();
 
-        submitInfo.waitSemaphoreCount(1);
-        submitInfo.pWaitSemaphores(stack.longs(frame.imageAvailableSemaphore));
-        submitInfo.pWaitDstStageMask(stack.ints(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT));
+            VkSubmitInfo submitInfo = VkSubmitInfo.callocStack(stack);
+            submitInfo.sType(VK_STRUCTURE_TYPE_SUBMIT_INFO);
 
-        submitInfo.pSignalSemaphores(stack.longs(frame.renderFinishedSemaphore));
+            submitInfo.waitSemaphoreCount(1);
+            submitInfo.pWaitSemaphores(stack.longs(frame.imageAvailableSemaphore));
+            submitInfo.pWaitDstStageMask(stack.ints(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT));
 
-        submitInfo.pCommandBuffers(stack.pointers(currentCommandBuffer()));
+            submitInfo.pSignalSemaphores(stack.longs(frame.renderFinishedSemaphore));
 
-        vkResetFences(logicalDevice, frame.fence);
+            submitInfo.pCommandBuffers(stack.pointers(currentCommandBuffer()));
 
-        if(!vkCall(vkQueueSubmit(graphicsQueue, submitInfo, frame.fence), FATAL)) {
             vkResetFences(logicalDevice, frame.fence);
-            return;
+
+            if(!vkCall(vkQueueSubmit(graphicsQueue, submitInfo, frame.fence), FATAL)) {
+                vkResetFences(logicalDevice, frame.fence);
+                return;
+            }
+
+            VkPresentInfoKHR presentInfo = VkPresentInfoKHR.callocStack(stack);
+            presentInfo.sType(VK_STRUCTURE_TYPE_PRESENT_INFO_KHR);
+
+            presentInfo.pWaitSemaphores(stack.longs(frame.renderFinishedSemaphore));
+
+            presentInfo.swapchainCount(1);
+            presentInfo.pSwapchains(stack.longs(swapchain.handle()));
+
+            presentInfo.pImageIndices(stack.ints(currentSwapchainImageIndex));
+
+            final int presentResult = vkQueuePresentKHR(presentationQueue, presentInfo);
+
+            if(presentResult == VK_ERROR_OUT_OF_DATE_KHR || presentResult == VK_SUBOPTIMAL_KHR || framebufferResize) {
+                framebufferResize = false;
+                Log.warning("Swapchain recreation needed");
+                // TODO
+                // recreateSwapChain();
+            } else if(presentResult != VK_SUCCESS) {
+                Log.fatal("Failed to present swap chain image: " + getVulkanErrorName(presentResult));
+            }
+
+            frameManager.endFrame();
+
         }
-
-        VkPresentInfoKHR presentInfo = VkPresentInfoKHR.callocStack(stack);
-        presentInfo.sType(VK_STRUCTURE_TYPE_PRESENT_INFO_KHR);
-
-        presentInfo.pWaitSemaphores(stack.longs(frame.renderFinishedSemaphore));
-
-        presentInfo.swapchainCount(1);
-        presentInfo.pSwapchains(stack.longs(swapchain.handle()));
-
-        presentInfo.pImageIndices(stack.ints(currentSwapchainImageIndex));
-
-        final int presentResult = vkQueuePresentKHR(presentationQueue, presentInfo);
-
-        if(presentResult == VK_ERROR_OUT_OF_DATE_KHR || presentResult == VK_SUBOPTIMAL_KHR || framebufferResize) {
-            framebufferResize = false;
-            Log.warning("Swapchain recreation needed");
-            // TODO
-            // recreateSwapChain();
-        } else if(presentResult != VK_SUCCESS) {
-            Log.fatal("Failed to present swap chain image: " + getVulkanErrorName(presentResult));
-        }
-
-        frameManager.endFrame();
     }
 
     public int currentSwapchainImageIndex() {

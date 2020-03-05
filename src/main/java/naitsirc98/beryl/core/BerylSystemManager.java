@@ -11,7 +11,6 @@ import naitsirc98.beryl.tasks.TaskManager;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static java.util.Arrays.stream;
 import static naitsirc98.beryl.util.types.TypeUtils.initSingleton;
 import static naitsirc98.beryl.util.types.TypeUtils.newInstance;
 
@@ -45,8 +44,8 @@ public class BerylSystemManager {
     public void init() throws Throwable {
         // Initialize systems in order
         Throwable error = null;
-        for(int i = 0;i < systems.length;i++) {
-            error = initialize(systems[i]);
+        for(BerylSystem system : systems) {
+            error = initialize(system);
         }
         if(error != null) {
             throw error;
@@ -55,13 +54,29 @@ public class BerylSystemManager {
 
     private Throwable initialize(BerylSystem system) {
         try {
-            if(system != null) {
-                system.init();
-                system.initialized = true;
+
+            double time = System.nanoTime();
+
+            if(log.initialized()) {
+                Log.info("Initializing " + system.getClass().getSimpleName() + "...");
+            } else {
+                Logger.getLogger(getClass().getSimpleName()).info("Initializing " + system.getClass().getSimpleName() + "...");
             }
+
+            system.init();
+            system.initialized(true);
+
+            time = (System.nanoTime() - time) / 1e6;
+
+            if(log.initialized()) {
+                Log.info(system.getClass().getSimpleName() + " initialized in " + time + " ms");
+            } else {
+                Logger.getLogger(getClass().getSimpleName()).info(system.getClass().getSimpleName() + " initialized in " + time + " ms");
+            }
+
         } catch(Throwable e) {
             Logger.getLogger(BerylSystemManager.class.getSimpleName())
-                    .log(Level.SEVERE, "Failed to initialize system " + system, e);
+                    .log(Level.SEVERE, "Failed to initialize system " + system.getClass().getSimpleName(), e);
             return e;
         }
         return null;
@@ -76,7 +91,7 @@ public class BerylSystemManager {
 
     private void terminate(BerylSystem system) {
         try {
-            if(system != null && system.initialized) {
+            if(system != null && system.initialized()) {
                 system.terminate();
             }
         } catch(Throwable e) {

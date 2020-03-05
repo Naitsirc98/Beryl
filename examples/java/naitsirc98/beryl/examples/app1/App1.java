@@ -45,6 +45,7 @@ public class App1 extends BerylApplication {
         BerylConfiguration.WINDOW_RESIZABLE.set(false);
         BerylConfiguration.SHOW_DEBUG_INFO.set(true);
         BerylConfiguration.GRAPHICS_API.set(GraphicsAPI.VULKAN);
+        BerylConfiguration.VULKAN_ENABLE_DEBUG_MESSAGES.set(false);
         BerylConfiguration.VULKAN_ENABLE_VALIDATION_LAYERS.set(false);
     }
 
@@ -82,7 +83,7 @@ public class App1 extends BerylApplication {
         }
 
         Entity camera = scene.newEntity("Camera");
-        camera.add(Transform.class);
+        camera.add(Transform.class).position(100, 0, 300);
         camera.add(Camera.class).lookAt(0, 0);
         camera.add(CameraController.class);
 

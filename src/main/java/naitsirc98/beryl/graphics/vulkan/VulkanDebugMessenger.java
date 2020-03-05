@@ -113,7 +113,7 @@ public class VulkanDebugMessenger implements VulkanObject.Long {
     private static Log.Level asLogLevel(int messageSeverity) {
         switch(messageSeverity) {
             case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
-                return Log.Level.INFO;
+                return Log.Level.TRACE;
             case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
                 return Log.Level.WARNING;
             case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:

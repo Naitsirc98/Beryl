@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import static java.util.stream.IntStream.range;
 import static org.joml.Math.min;
@@ -23,7 +24,7 @@ import static org.lwjgl.vulkan.VK10.vkCmdExecuteCommands;
 public class VulkanCommandBuilderExecutor implements NativeResource {
 
     // TODO: make this configurable?
-    private static final int COMMAND_BUILDER_COUNT = 32;
+    private static final int COMMAND_BUILDER_COUNT = 12;
 
     private List<VulkanCommandBuilder> commandBuilders;
     private List<Matrix4f> matrices;
@@ -61,7 +62,7 @@ public class VulkanCommandBuilderExecutor implements NativeResource {
         final PointerBuffer pCommandBuffers = this.pCommandBuffers[Graphics.vulkan().renderer().currentSwapchainImageIndex()];
         final CountDownLatch countDownLatch = new CountDownLatch(commandBuilderCount);
 
-        range(0, commandBuilderCount).parallel().forEach(i -> {
+        range(0, commandBuilderCount).unordered().parallel().forEach(i -> {
 
             final int offset = i * objectsPerCommandBuilder;
             final int objectCount = min(objectsPerCommandBuilder, count - offset);
@@ -78,7 +79,9 @@ public class VulkanCommandBuilderExecutor implements NativeResource {
         });
 
         try {
-            countDownLatch.await();
+            if(!countDownLatch.await(5, TimeUnit.SECONDS)) {
+                throw new RuntimeException();
+            }
         } catch (InterruptedException e) {
             Log.error("Interrupted exception while waiting for command buffers to be recorded", e);
         }

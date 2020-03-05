@@ -310,7 +310,7 @@ public final class Log extends BerylSystem {
     private void setChannels() {
         channels.addAll(BerylConfiguration.LOG_CHANNELS.get(Arrays.asList(
                 LogChannel.stdout(),
-                new LogFileChannel(Paths.get("beryl.log"), Level.FATAL, StandardOpenOption.CREATE))));
+                new LogFileChannel(Paths.get("beryl.log"), Level.ERROR, StandardOpenOption.CREATE))));
     }
 
     private void setLevelColors() {
