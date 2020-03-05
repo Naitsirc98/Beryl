@@ -11,7 +11,6 @@ import org.lwjgl.vulkan.VkCommandBuffer;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
@@ -19,7 +18,6 @@ import static java.util.stream.IntStream.range;
 import static org.joml.Math.min;
 import static org.joml.Math.round;
 import static org.lwjgl.system.MemoryUtil.memAllocPointer;
-import static org.lwjgl.system.MemoryUtil.memFree;
 import static org.lwjgl.vulkan.VK10.vkCmdExecuteCommands;
 
 public class VulkanCommandBuilderExecutor implements NativeResource {
@@ -118,10 +116,13 @@ public class VulkanCommandBuilderExecutor implements NativeResource {
     }
 
     private List<Matrix4f> createMatrices() {
+
         List<Matrix4f> matrices = new ArrayList<>(commandBuilders.size());
+
         for(int i = 0;i < commandBuilders.size();i++) {
             matrices.add(new Matrix4f());
         }
+
         return matrices;
     }
 
@@ -129,14 +130,14 @@ public class VulkanCommandBuilderExecutor implements NativeResource {
 
         pCommandBuffers = new PointerBuffer[Graphics.vulkan().swapchain().swapChainImages().length];
 
-        for(int i = 0;i < pCommandBuffers.length;i++) {
+        range(0, pCommandBuffers.length).parallel().forEach(i -> {
 
             PointerBuffer pointerBuffer = pCommandBuffers[i] = memAllocPointer(commandBuilders.size());
 
             for(int j = 0;j < pointerBuffer.capacity();j++) {
                 pointerBuffer.put(j, commandBuilders.get(j).commandBuffer(i));
             }
-        }
+        });
     }
 
     private List<VulkanCommandBuilder> createCommandBuilders() {
@@ -151,6 +152,4 @@ public class VulkanCommandBuilderExecutor implements NativeResource {
 
         return commandBuilders;
     }
-
-
 }

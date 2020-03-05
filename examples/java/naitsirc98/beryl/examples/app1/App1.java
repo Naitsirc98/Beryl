@@ -72,7 +72,7 @@ public class App1 extends BerylApplication {
             final float angle = RAND.nextFloat();
 
             Entity model = scene.newEntity();
-            model.add(Transform.class).position(RAND.nextInt(100), -RAND.nextInt(100), -RAND.nextInt(100));
+            model.add(Transform.class).position(RAND.nextInt(200), -RAND.nextInt(200), -RAND.nextInt(200));
             model.add(MeshView.class).mesh(mesh);
             model.add(MutableBehaviour.class).onUpdate(thisBehaviour -> {
                 Transform transform = thisBehaviour.get(Transform.class);
