@@ -9,7 +9,6 @@ import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.scenes.SceneManager;
 import naitsirc98.beryl.util.Version;
 import org.lwjgl.system.Configuration;
-import org.lwjgl.system.MemoryStack;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -17,7 +16,6 @@ import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
 import static naitsirc98.beryl.util.SystemInfo.*;
 import static naitsirc98.beryl.util.types.TypeUtils.initSingleton;
-import static org.lwjgl.system.MemoryStack.stackPush;
 
 public final class Beryl {
 
@@ -153,19 +151,11 @@ public final class Beryl {
 
         updateDelay += deltaTime;
 
-        System.out.println("Before update while loop...");
-
         while(updateDelay >= IDEAL_FRAME_DELAY) {
-
-            System.out.println("Updating Event manager...");
 
             eventManager.processEvents();
 
-            System.out.println("Updating Input...");
-
             input.update();
-
-            System.out.println("Updating scenes...");
 
             sceneManager.update();
 
@@ -174,27 +164,17 @@ public final class Beryl {
             updateDelay -= IDEAL_FRAME_DELAY;
             ++updatesPerSecond;
         }
-
-        System.out.println("Update while loop terminated");
     }
 
     private void render() {
 
-        System.out.println("Starting Rendering...");
-
         renderer.begin();
 
-        System.out.println("Scene rendering...");
-
         systems.sceneManager.render();
-
-        System.out.println("Scene rendering terminated");
 
         application.onRender();
 
         renderer.end();
-
-        System.out.println("Rendering terminated");
     }
 
     private void error(Throwable error) {
@@ -240,15 +220,15 @@ public final class Beryl {
         if(SHOW_DEBUG_INFO_ON_WINDOW_TITLE) {
             Window.get().title(APPLICATION_NAME + " | [DEBUG INFO]: "
                     + builder.toString()
-                    + " | Memory used: " + getMemoryUsed() / 1024 / 1024 + " MB"
-                    + " | Total memory: " + getTotalMemory() / 1024 / 1024 + " MB");
+                    + " | Memory used: " + memoryUsed() / 1024 / 1024 + " MB"
+                    + " | Total memory: " + totalMemory() / 1024 / 1024 + " MB");
         }
 
         builder.append("\n\t");
         if(MEMORY_USAGE_REPORT) {
-            builder.append("[JVM MEMORY]: Used = ").append(getMemoryUsed() / 1024 / 1024)
-                    .append(" MB | Total = ").append(getTotalMemory() / 1024 / 1024)
-                    .append(" MB | Max = ").append(getMaxMemory() / 1024 / 1024).append(" MB");
+            builder.append("[JVM MEMORY]: Used = ").append(memoryUsed() / 1024 / 1024)
+                    .append(" MB | Total = ").append(totalMemory() / 1024 / 1024)
+                    .append(" MB | Max = ").append(maxMemory() / 1024 / 1024).append(" MB");
         }
 
         builder.append("\n\t");

@@ -207,7 +207,7 @@ public final class Input extends BerylSystem {
     }
 
     public void update() {
-        gamepads.values().forEach(Gamepad::update);
+        gamepads.values().parallelStream().unordered().forEach(Gamepad::update);
     }
 
     private void cacheMousePosition() {

@@ -79,9 +79,7 @@ public class VulkanCommandBuilderExecutor implements NativeResource {
         });
 
         try {
-            if(!countDownLatch.await(5, TimeUnit.SECONDS)) {
-                throw new RuntimeException();
-            }
+            countDownLatch.await();
         } catch (InterruptedException e) {
             Log.error("Interrupted exception while waiting for command buffers to be recorded", e);
         }

@@ -45,7 +45,7 @@ public class App1 extends BerylApplication {
         BerylConfiguration.WINDOW_RESIZABLE.set(false);
         BerylConfiguration.SHOW_DEBUG_INFO.set(true);
         BerylConfiguration.GRAPHICS_API.set(GraphicsAPI.VULKAN);
-        BerylConfiguration.VULKAN_ENABLE_DEBUG_MESSAGES.set(false);
+        BerylConfiguration.VULKAN_ENABLE_DEBUG_MESSAGES.set(true);
         BerylConfiguration.VULKAN_ENABLE_VALIDATION_LAYERS.set(false);
     }
 

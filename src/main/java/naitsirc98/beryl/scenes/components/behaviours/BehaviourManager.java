@@ -2,7 +2,6 @@ package naitsirc98.beryl.scenes.components.behaviours;
 
 import naitsirc98.beryl.scenes.Scene;
 import naitsirc98.beryl.scenes.components.AbstractComponentManager;
-import naitsirc98.beryl.scenes.components.ComponentContainer;
 
 /**
  * The Behaviour Manager updates the {@link Behaviour} instances of a scene
