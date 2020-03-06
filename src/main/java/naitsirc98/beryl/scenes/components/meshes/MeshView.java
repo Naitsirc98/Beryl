@@ -31,6 +31,7 @@ public final class MeshView extends Component<MeshView> {
     public final Matrix4fc modelMatrix() {
         return requires(Transform.class).modelMatrix();
     }
+
     public final Matrix3fc normalMatrix() {
         return requires(Transform.class).normalMatrix();
     }

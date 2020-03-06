@@ -10,8 +10,8 @@ import naitsirc98.beryl.graphics.vulkan.devices.VulkanPhysicalDevice.SwapChainSu
 import naitsirc98.beryl.graphics.vulkan.renderpasses.VulkanRenderPass;
 import naitsirc98.beryl.graphics.vulkan.renderpasses.VulkanSubPassAttachments;
 import naitsirc98.beryl.graphics.window.Window;
-import naitsirc98.beryl.util.types.Destructor;
 import naitsirc98.beryl.util.geometry.Sizec;
+import naitsirc98.beryl.util.types.Destructor;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
 
@@ -19,8 +19,8 @@ import java.nio.IntBuffer;
 import java.nio.LongBuffer;
 
 import static naitsirc98.beryl.graphics.vulkan.util.VulkanFormatUtils.findDepthFormat;
-import static naitsirc98.beryl.util.types.DataType.UINT32_MAX;
 import static naitsirc98.beryl.util.Maths.clamp;
+import static naitsirc98.beryl.util.types.DataType.UINT32_MAX;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.vulkan.KHRSurface.*;
 import static org.lwjgl.vulkan.KHRSwapchain.*;
@@ -42,8 +42,7 @@ public class VulkanSwapchain implements VulkanObject.Long {
     private VulkanRenderPass renderPass;
 
     public VulkanSwapchain() {
-        createSwapchain();
-        renderPass = createSwapchainRenderPass();
+        init();
     }
 
     @Override
@@ -71,6 +70,21 @@ public class VulkanSwapchain implements VulkanObject.Long {
         return renderPass;
     }
 
+    public void recreate() {
+
+        final Sizec framebufferSize = Window.get().framebufferSize();
+
+        if(framebufferSize.width() == 0 && framebufferSize.height() == 0) {
+            return;
+        }
+
+        logicalDevice().waitIdle();
+
+        free();
+
+        init();
+        // TODO: recreate the swapchain and all swapchain dependent objects again
+    }
 
     @Override
     public void free() {
@@ -84,6 +98,11 @@ public class VulkanSwapchain implements VulkanObject.Long {
         swapChainExtent.free();
 
         vkDestroySwapchainKHR(logicalDevice().handle(), vkSwapchain, null);
+    }
+
+    private void init() {
+        createSwapchain();
+        renderPass = createSwapchainRenderPass();
     }
 
     private void freeSwapchainImages() {

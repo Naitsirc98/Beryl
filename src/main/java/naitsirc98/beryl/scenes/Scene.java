@@ -11,8 +11,6 @@ import naitsirc98.beryl.scenes.components.meshes.MeshView;
 import naitsirc98.beryl.scenes.components.meshes.MeshViewManager;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentLinkedDeque;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Stream;
 
 import static naitsirc98.beryl.scenes.Entity.UNTAGGED;
@@ -50,7 +48,7 @@ public final class Scene {
         componentManagers = createComponentManagersMap();
         // ===
 
-        taskQueue = new ConcurrentLinkedQueue<>();
+        taskQueue = new ArrayDeque<>();
     }
 
     void start() {
@@ -71,7 +69,7 @@ public final class Scene {
 
     void lateUpdate() {
         // TODO
-        behaviours.lateUpdate();
+        // behaviours.lateUpdate();
         transforms.update();
         cameras.update();
     }
@@ -99,7 +97,7 @@ public final class Scene {
     public void submit(Runnable task) {
 
         if(task == null) {
-            Log.error("Cannot to submit a null task");
+            Log.error("Cannot submit a null task");
             return;
         }
 

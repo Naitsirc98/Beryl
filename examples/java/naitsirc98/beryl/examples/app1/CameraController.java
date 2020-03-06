@@ -22,7 +22,7 @@ public class CameraController extends Behaviour {
     }
 
     @Override
-    protected void onLateUpdate() {
+    protected void onUpdate() {
 
         float amount = 1 / 60.0f;
 

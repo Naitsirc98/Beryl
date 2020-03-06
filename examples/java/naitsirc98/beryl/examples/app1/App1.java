@@ -42,7 +42,7 @@ public class App1 extends BerylApplication {
         BerylConfiguration.DEBUG.set(true);
         BerylConfiguration.INTERNAL_DEBUG.set(true);
         // BerylConfiguration.INITIAL_TIME_VALUE.set(4000.0);
-        BerylConfiguration.WINDOW_RESIZABLE.set(false);
+        // BerylConfiguration.WINDOW_RESIZABLE.set(false);
         BerylConfiguration.SHOW_DEBUG_INFO.set(true);
         BerylConfiguration.GRAPHICS_API.set(GraphicsAPI.VULKAN);
         BerylConfiguration.VULKAN_ENABLE_DEBUG_MESSAGES.set(true);
@@ -78,6 +78,8 @@ public class App1 extends BerylApplication {
             model.add(MutableBehaviour.class).onUpdate(thisBehaviour -> {
                 Transform transform = thisBehaviour.get(Transform.class);
                 transform.rotateY(radians(angle));
+                // thisBehaviour.entity().destroy();
+                addOrRemoveRandomly(thisBehaviour.entity(), mesh);
             });
 
         }
@@ -151,6 +153,29 @@ public class App1 extends BerylApplication {
 
 
 
+    }
+
+    private void addOrRemoveRandomly(Entity entity, Mesh mesh) {
+
+        if(RAND.nextFloat() < 0.03f) {
+
+            entity.destroy();
+
+        }
+
+        if(RAND.nextFloat() < 0.03f) {
+
+            final float angle = RAND.nextFloat();
+
+            Entity model = entity.scene().newEntity();
+            model.add(Transform.class).position(RAND.nextInt(200), -RAND.nextInt(200), -RAND.nextInt(200));
+            model.add(MeshView.class).mesh(mesh);
+            model.add(MutableBehaviour.class).onUpdate(thisBehaviour -> {
+                Transform transform = thisBehaviour.get(Transform.class);
+                transform.rotateY(radians(angle));
+                addOrRemoveRandomly(thisBehaviour.entity(), mesh);
+            });
+        }
     }
 
 

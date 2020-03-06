@@ -116,10 +116,10 @@ public class VulkanRenderer implements Renderer {
             final int presentResult = vkQueuePresentKHR(presentationQueue, presentInfo);
 
             if(presentResult == VK_ERROR_OUT_OF_DATE_KHR || presentResult == VK_SUBOPTIMAL_KHR || framebufferResize) {
-                framebufferResize = false;
                 Log.warning("Swapchain recreation needed");
-                // TODO
-                // recreateSwapChain();
+                framebufferResize = false;
+                swapchain.recreate();
+                return;
             } else if(presentResult != VK_SUCCESS) {
                 Log.fatal("Failed to present swap chain image: " + getVulkanErrorName(presentResult));
             }

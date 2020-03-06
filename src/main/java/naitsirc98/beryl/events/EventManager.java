@@ -70,6 +70,22 @@ public final class EventManager extends BerylSystem {
         instance.frontEventQueue.add(assertNonNull(event));
     }
 
+    /**
+     * Waits for events.
+     */
+    public static void waitForEvents() {
+        glfwWaitEvents();
+    }
+
+    /**
+     * Waits for events for a certain timeout of time
+     *
+     * @param timeout the timeout in seconds
+     */
+    public static void waitForEvents(double timeout) {
+        glfwWaitEventsTimeout(timeout);
+    }
+
     private Queue<Event> frontEventQueue;
     private Queue<Event> backEventQueue;
     private Map<Class<? extends Event>, List<EventCallback<?>>> eventCallbacks;
@@ -91,22 +107,6 @@ public final class EventManager extends BerylSystem {
     @Override
     protected void terminate() {
 
-    }
-
-    /**
-     * Wait for events.
-     */
-    public void waitForEvents() {
-        glfwWaitEvents();
-    }
-
-    /**
-     * Wait for events for a certain timeout of time
-     *
-     * @param timeout the timeout in seconds
-     */
-    public void waitForEvents(double timeout) {
-        glfwWaitEventsTimeout(timeout);
     }
 
     /**
