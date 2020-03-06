@@ -11,6 +11,7 @@ import naitsirc98.beryl.util.Version;
 import org.lwjgl.system.Configuration;
 
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
@@ -99,7 +100,7 @@ public final class Beryl {
 
         float lastFrame = 0;
         float lastDebugReport = Time.time();
-        float deltaTime = IDEAL_FRAME_DELAY;
+        float deltaTime;
 
         setup();
 
@@ -128,11 +129,11 @@ public final class Beryl {
     }
 
     private void setup() {
+        update0();
+        render();
         if(BerylConfiguration.WINDOW_VISIBLE.get(true)) {
             Window.get().show();
         }
-        update0();
-        render();
     }
 
     private void update0() {
