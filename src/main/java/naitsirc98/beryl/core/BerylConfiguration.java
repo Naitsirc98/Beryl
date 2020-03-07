@@ -6,8 +6,8 @@ import naitsirc98.beryl.graphics.window.DisplayMode;
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.logging.LogChannel;
 import naitsirc98.beryl.util.ANSIColor;
-import naitsirc98.beryl.util.geometry.Sizec;
 import naitsirc98.beryl.util.Version;
+import naitsirc98.beryl.util.geometry.Sizec;
 import org.joml.Vector2ic;
 
 import java.time.format.DateTimeFormatter;
@@ -21,12 +21,13 @@ import java.util.function.Supplier;
  * its contents will be either stored in a {@code static final} variable or used at the moment.
  *
  * A value of null means default value. If another behaviour is wanted, it must be set before {@link Beryl} class loads.
- * There is a special method for it, which is {@link BerylApplication#setConfiguration}.
  *
  * This class is heavily based on {@link org.lwjgl.system.Configuration}
  *
  * */
 public final class BerylConfiguration<T> {
+
+    public static final BerylConfiguration<Runnable> SET_CONFIGURATION_METHOD = new BerylConfiguration<>();
 
     public static final BerylConfiguration<Boolean> DEBUG = new BerylConfiguration<>();
     public static final BerylConfiguration<Boolean> INTERNAL_DEBUG = new BerylConfiguration<>();

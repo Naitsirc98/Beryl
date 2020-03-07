@@ -11,12 +11,13 @@ import naitsirc98.beryl.graphics.vulkan.renderpasses.VulkanRenderPass;
 import naitsirc98.beryl.graphics.vulkan.renderpasses.VulkanSubPassAttachments;
 import naitsirc98.beryl.graphics.window.Window;
 import naitsirc98.beryl.util.geometry.Sizec;
-import naitsirc98.beryl.util.types.Destructor;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
 
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;
+import java.util.ArrayList;
+import java.util.List;
 
 import static naitsirc98.beryl.graphics.vulkan.util.VulkanFormatUtils.findDepthFormat;
 import static naitsirc98.beryl.util.Maths.clamp;
@@ -26,7 +27,7 @@ import static org.lwjgl.vulkan.KHRSurface.*;
 import static org.lwjgl.vulkan.KHRSwapchain.*;
 import static org.lwjgl.vulkan.VK10.*;
 
-@Destructor
+
 public class VulkanSwapchain implements VulkanObject.Long {
 
     // TODO: add MSAA support
@@ -40,9 +41,12 @@ public class VulkanSwapchain implements VulkanObject.Long {
     private VulkanSwapchainImage[] swapChainImages;
     private VulkanImageBase depthImage;
     private VulkanRenderPass renderPass;
+    // Objects that need to be reinitialized when the swapchain is recreated
+    private final List<VulkanSwapchainDependent> swapchainDependents;
 
     public VulkanSwapchain() {
         init();
+        swapchainDependents = new ArrayList<>();
     }
 
     @Override
@@ -70,6 +74,14 @@ public class VulkanSwapchain implements VulkanObject.Long {
         return renderPass;
     }
 
+    public void addSwapchainDependent(VulkanSwapchainDependent dependent) {
+        swapchainDependents.add(dependent);
+    }
+
+    public void removeSwapchainDependent(VulkanSwapchainDependent dependent) {
+        swapchainDependents.remove(dependent);
+    }
+
     public void recreate() {
 
         final Sizec framebufferSize = Window.get().framebufferSize();
@@ -83,7 +95,8 @@ public class VulkanSwapchain implements VulkanObject.Long {
         free();
 
         init();
-        // TODO: recreate the swapchain and all swapchain dependent objects again
+
+        swapchainDependents.parallelStream().forEach(VulkanSwapchainDependent::onSwapchainRecreate);
     }
 
     @Override

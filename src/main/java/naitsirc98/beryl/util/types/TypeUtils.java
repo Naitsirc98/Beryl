@@ -95,30 +95,6 @@ public final class TypeUtils {
         return getAnnotatedField(clazz, Singleton.class);
     }
 
-    public static void deleteSingleton(Class<?> clazz) {
-        delete(singleton(clazz));
-    }
-
-    public static void delete(Object object) {
-
-        Destructor destructor = object.getClass().getDeclaredAnnotation(Destructor.class);
-
-        if(destructor == null) {
-            Log.error("Trying to destroy " + object + ", but it has no destructor");
-            return;
-        }
-
-        try {
-
-            Method destructorMethod = object.getClass().getDeclaredMethod(destructor.method());
-            destructorMethod.setAccessible(true);
-            destructorMethod.invoke(object);
-
-        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-            Log.error("Cannot call destructor method of " + object, e);
-        }
-    }
-
     @SuppressWarnings("unchecked")
     public static <T> T callAnnotatedMethod(Class<?> clazz, Class<? extends Annotation> annotation, Object object) {
         Optional<Method> result = Stream.of(clazz.getDeclaredMethods())

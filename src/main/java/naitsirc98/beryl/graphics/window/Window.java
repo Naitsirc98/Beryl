@@ -7,12 +7,12 @@ import naitsirc98.beryl.util.geometry.Rectc;
 import naitsirc98.beryl.util.geometry.Size;
 import naitsirc98.beryl.util.geometry.Sizec;
 import naitsirc98.beryl.util.handles.LongHandle;
-import naitsirc98.beryl.util.types.Destructor;
 import naitsirc98.beryl.util.types.Singleton;
 import org.joml.Vector2i;
 import org.joml.Vector2ic;
 import org.lwjgl.glfw.GLFWImage;
 import org.lwjgl.glfw.GLFWVidMode;
+import org.lwjgl.system.Configuration;
 import org.lwjgl.system.MemoryStack;
 
 import java.nio.ByteBuffer;
@@ -27,7 +27,6 @@ import static org.lwjgl.system.MemoryStack.stackPush;
 /**
  * A class to represent the window. This is basically a wrapper of a {@code GLFWWindow} handle
  */
-@Destructor(method = "destroy")
 public final class Window implements LongHandle {
 
     @Singleton
@@ -481,10 +480,11 @@ public final class Window implements LongHandle {
     /**
      * Destroys this window
      * */
-    private void destroy() {
-        callbacks.destroy();
+    public void destroy() {
+        callbacks.free();
         glfwDestroyWindow(handle);
     }
+
 
     private int centerY(int monitorHeight, int windowHeight) {
         return centerPos(monitorHeight, windowHeight);

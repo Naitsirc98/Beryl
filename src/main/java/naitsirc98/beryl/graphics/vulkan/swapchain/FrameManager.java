@@ -2,7 +2,6 @@ package naitsirc98.beryl.graphics.vulkan.swapchain;
 
 import naitsirc98.beryl.graphics.Graphics;
 import naitsirc98.beryl.logging.Log;
-import naitsirc98.beryl.util.types.Destructor;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.NativeResource;
 import org.lwjgl.vulkan.VkDevice;
@@ -18,7 +17,7 @@ import static naitsirc98.beryl.logging.Log.Level.FATAL;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.vulkan.VK10.*;
 
-@Destructor
+
 public class FrameManager implements NativeResource {
 
     private Frame[] frames;
@@ -102,7 +101,7 @@ public class FrameManager implements NativeResource {
      *
      * This frame's sync objects must be deleted manually
      * */
-    @Destructor
+
     public class Frame implements NativeResource {
 
         public final long imageAvailableSemaphore;

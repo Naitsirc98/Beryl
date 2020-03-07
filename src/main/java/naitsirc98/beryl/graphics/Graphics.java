@@ -11,7 +11,8 @@ import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.util.types.Singleton;
 
 import static naitsirc98.beryl.graphics.GraphicsAPI.VULKAN;
-import static naitsirc98.beryl.util.types.TypeUtils.*;
+import static naitsirc98.beryl.util.types.TypeUtils.initSingleton;
+import static naitsirc98.beryl.util.types.TypeUtils.newInstance;
 
 public final class Graphics extends BerylSystem {
 
@@ -71,7 +72,7 @@ public final class Graphics extends BerylSystem {
         if(graphicsContext != null) {
             graphicsContext.free();
         }
-        delete(window);
+        window.destroy();
     }
 
 }

@@ -1,6 +1,5 @@
 package naitsirc98.beryl.images;
 
-import naitsirc98.beryl.util.types.Destructor;
 import org.lwjgl.system.NativeResource;
 
 import java.nio.Buffer;
@@ -14,7 +13,7 @@ import java.nio.FloatBuffer;
  * You should always call {@link Image#free} when no longer needed to release the resources used by an image. It can
  * be used inside a try-with-resources block to automatically free the memory
  */
-@Destructor
+
 public abstract class Image implements NativeResource {
 
     private final int width;

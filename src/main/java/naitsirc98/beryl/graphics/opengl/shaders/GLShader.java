@@ -3,7 +3,6 @@ package naitsirc98.beryl.graphics.opengl.shaders;
 import naitsirc98.beryl.graphics.ShaderStage;
 import naitsirc98.beryl.graphics.opengl.GLObject;
 import naitsirc98.beryl.logging.Log;
-import naitsirc98.beryl.util.types.Destructor;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -11,7 +10,6 @@ import java.nio.file.Path;
 
 import static org.lwjgl.opengl.GL45.*;
 
-@Destructor
 public final class GLShader implements GLObject {
 
     private final int handle;

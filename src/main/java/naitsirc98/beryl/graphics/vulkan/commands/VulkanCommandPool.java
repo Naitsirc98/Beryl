@@ -1,7 +1,6 @@
 package naitsirc98.beryl.graphics.vulkan.commands;
 
 import naitsirc98.beryl.graphics.vulkan.VulkanObject;
-import naitsirc98.beryl.util.types.Destructor;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
@@ -14,7 +13,7 @@ import static naitsirc98.beryl.graphics.vulkan.util.VulkanUtils.vkCall;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.vulkan.VK10.*;
 
-@Destructor
+
 public class VulkanCommandPool implements VulkanObject.Long {
 
     private final long vkCommandPool;

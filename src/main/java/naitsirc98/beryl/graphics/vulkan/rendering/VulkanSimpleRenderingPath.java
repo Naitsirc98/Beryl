@@ -19,7 +19,6 @@ import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
 
 import java.nio.ByteBuffer;
-import java.nio.FloatBuffer;
 import java.nio.file.Path;
 import java.util.List;
 
@@ -59,14 +58,17 @@ public final class VulkanSimpleRenderingPath extends RenderingPath implements Vu
         FRAGMENT_SHADER_PATH = fragmentPath;
     }
 
+    private static final ThreadLocal<VulkanVertexData> LAST_VERTEX_DATA = new ThreadLocal<>();
+
     private VulkanPipelineLayout pipelineLayout;
     private VulkanGraphicsPipeline graphicsPipeline;
     private VulkanRenderer renderer;
     private VulkanSwapchain swapchain;
     private VulkanCommandBuilderExecutor commandBuilderExecutor;
     private Matrix4f projectionViewMatrix;
-    private Matrix4f mvp = new Matrix4f();
     private List<MeshView> meshViews;
+    private VkCommandBufferInheritanceInfo inheritanceInfo;
+    private VkCommandBufferBeginInfo beginInfo;
 
     private VulkanSimpleRenderingPath() {
 
@@ -91,39 +93,28 @@ public final class VulkanSimpleRenderingPath extends RenderingPath implements Vu
         projectionViewMatrix.m11(-projectionViewMatrix.m11()); // Need this to flip Y coordinate
         projectionViewMatrix.mul(camera.viewMatrix());
 
-        VkCommandBuffer primaryCommandBuffer = renderer.currentCommandBuffer();
+        try(MemoryStack stack = stackPush()) {
 
-        beginPrimaryCommandBuffer(primaryCommandBuffer);
+            setupCommandBufferInfos(stack);
 
-        commandBuilderExecutor.recordCommandBuffers(meshViews.size(), primaryCommandBuffer, this);
+            VkCommandBuffer primaryCommandBuffer = renderer.currentCommandBuffer();
 
-        endPrimaryCommandBuffer(primaryCommandBuffer);
+            beginPrimaryCommandBuffer(primaryCommandBuffer);
+
+            commandBuilderExecutor.recordCommandBuffers(meshViews.size(), primaryCommandBuffer, this);
+
+            endPrimaryCommandBuffer(primaryCommandBuffer);
+        }
 
         this.meshViews = null;
+        inheritanceInfo = null;
+        beginInfo = null;
     }
-
 
     @Override
     public void beginCommandBuffer(VkCommandBuffer commandBuffer) {
-
-        try (MemoryStack stack = stackPush()) {
-
-            VkCommandBufferInheritanceInfo inheritanceInfo = VkCommandBufferInheritanceInfo.callocStack(stack)
-                    .sType(VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO)
-                    .renderPass(swapchain.renderPass().handle())
-                    .subpass(0)
-                    .framebuffer(currentFramebuffer());
-
-            VkCommandBufferBeginInfo beginInfo = VkCommandBufferBeginInfo.callocStack(stack)
-                    .sType(VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO)
-                    .pInheritanceInfo(inheritanceInfo)
-                    .flags(VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT);
-
-
-            vkCall(vkBeginCommandBuffer(commandBuffer, beginInfo));
-
-            vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline.handle());
-        }
+        vkCall(vkBeginCommandBuffer(commandBuffer, beginInfo));
+        vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline.handle());
     }
 
     @Override
@@ -143,7 +134,10 @@ public final class VulkanSimpleRenderingPath extends RenderingPath implements Vu
 
         VulkanVertexData vertexData = meshView.mesh().vertexData();
 
-        vertexData.bind(commandBuffer);
+        if(LAST_VERTEX_DATA.get() != vertexData) {
+            vertexData.bind(commandBuffer);
+            LAST_VERTEX_DATA.set(vertexData);
+        }
 
         if (vertexData.indexCount() == 0) {
             vkCmdDraw(commandBuffer, vertexData.vertexCount(), 1, 0, 0);
@@ -155,6 +149,7 @@ public final class VulkanSimpleRenderingPath extends RenderingPath implements Vu
     @Override
     public void endCommandBuffer(VkCommandBuffer commandBuffer) {
         vkCall(vkEndCommandBuffer(commandBuffer));
+        LAST_VERTEX_DATA.set(null);
     }
 
     private void endPrimaryCommandBuffer(VkCommandBuffer commandBuffer) {
@@ -214,7 +209,7 @@ public final class VulkanSimpleRenderingPath extends RenderingPath implements Vu
         graphicsPipeline = new VulkanGraphicsPipeline.Builder()
                 .pipelineLayout(pipelineLayout.handle())
                 .renderPass(swapchain.renderPass().handle())
-                .subpass(0)
+                .subpass(RENDER_SUBPASS)
                 .addShaderModules(vertexShaderModule, fragmentShaderModule)
                 .vertexInputState(vertexInputBindingsStack(VERTEX_LAYOUT), vertexInputAttributesStack(VERTEX_LAYOUT))
                 .inputAssemblyState(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, false)
@@ -285,5 +280,19 @@ public final class VulkanSimpleRenderingPath extends RenderingPath implements Vu
                 .cullMode(VK_CULL_MODE_BACK_BIT)
                 .frontFace(VK_FRONT_FACE_COUNTER_CLOCKWISE)
                 .depthBiasEnable(false);
+    }
+
+    private void setupCommandBufferInfos(MemoryStack stack) {
+
+        inheritanceInfo = VkCommandBufferInheritanceInfo.callocStack(stack)
+                .sType(VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO)
+                .renderPass(swapchain.renderPass().handle())
+                .subpass(RENDER_SUBPASS)
+                .framebuffer(currentFramebuffer());
+
+        beginInfo = VkCommandBufferBeginInfo.callocStack(stack)
+                .sType(VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO)
+                .pInheritanceInfo(inheritanceInfo)
+                .flags(VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT);
     }
 }

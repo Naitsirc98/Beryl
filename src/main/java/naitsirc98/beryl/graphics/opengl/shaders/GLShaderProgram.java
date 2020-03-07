@@ -2,7 +2,6 @@ package naitsirc98.beryl.graphics.opengl.shaders;
 
 import naitsirc98.beryl.graphics.opengl.GLObject;
 import naitsirc98.beryl.logging.Log;
-import naitsirc98.beryl.util.types.Destructor;
 import org.joml.Matrix4fc;
 import org.lwjgl.system.MemoryStack;
 
@@ -14,7 +13,6 @@ import java.util.WeakHashMap;
 import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.system.MemoryStack.stackPush;
 
-@Destructor
 public final class GLShaderProgram implements GLObject {
 
     private final int handle;

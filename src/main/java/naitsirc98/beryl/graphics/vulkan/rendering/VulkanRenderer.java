@@ -1,5 +1,7 @@
 package naitsirc98.beryl.graphics.vulkan.rendering;
 
+import naitsirc98.beryl.events.EventManager;
+import naitsirc98.beryl.events.window.WindowResizedEvent;
 import naitsirc98.beryl.graphics.Graphics;
 import naitsirc98.beryl.graphics.rendering.Renderer;
 import naitsirc98.beryl.graphics.vulkan.commands.VulkanCommandPool;
@@ -42,6 +44,7 @@ public class VulkanRenderer implements Renderer {
         final int swapchainImagesCount = swapchain.swapChainImages().length;
         commandBuffers = commandPool.newPrimaryCommandBuffers(swapchainImagesCount);
         this.frameManager = new FrameManager(swapchainImagesCount);
+        EventManager.addEventCallback(WindowResizedEvent.class, e -> framebufferResize = true);
     }
 
     @Override
@@ -61,7 +64,7 @@ public class VulkanRenderer implements Renderer {
             if(vkResult == VK_ERROR_OUT_OF_DATE_KHR) {
                 Log.warning("Swap chain is out of date");
                 // TODO
-                // recreateSwapChain();
+                swapchain.recreate();
                 return;
             } else if(vkResult != VK_SUCCESS) {
                 Log.fatal("Cannot acquire swapchain image: " + getVulkanErrorName(vkResult));
@@ -125,7 +128,6 @@ public class VulkanRenderer implements Renderer {
             }
 
             frameManager.endFrame();
-
         }
     }
 

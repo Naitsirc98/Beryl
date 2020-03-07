@@ -9,9 +9,10 @@ import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.scenes.SceneManager;
 import naitsirc98.beryl.util.Version;
 import org.lwjgl.system.Configuration;
+import org.lwjgl.system.MemoryStack;
+import org.lwjgl.system.MemoryUtil;
 
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
@@ -19,6 +20,14 @@ import static naitsirc98.beryl.util.SystemInfo.*;
 import static naitsirc98.beryl.util.types.TypeUtils.initSingleton;
 
 public final class Beryl {
+
+    static {
+        final Runnable setConfigurationMethod = BerylConfiguration.SET_CONFIGURATION_METHOD.get();
+
+        if(setConfigurationMethod != null) {
+            setConfigurationMethod.run();
+        }
+    }
 
     public static final Version VERSION = new Version(1, 0, 0);
     public static final String NAME = "Beryl";
@@ -37,6 +46,11 @@ public final class Beryl {
 
     private static final int UPDATES_PER_SECOND = 60;
     private static final float IDEAL_FRAME_DELAY = 1.0f / UPDATES_PER_SECOND;
+
+    static {
+        setLWJGLConfiguration();
+        setJOMLConfiguration();
+    }
 
     private static final AtomicBoolean LAUNCHED = new AtomicBoolean(false);
 
@@ -193,27 +207,6 @@ public final class Beryl {
         systems.terminate();
     }
 
-
-    private void setLWJGLConfiguration() {
-        Configuration.DEBUG.set(INTERNAL_DEBUG);
-        Configuration.DEBUG_STACK.set(INTERNAL_DEBUG);
-        Configuration.DEBUG_MEMORY_ALLOCATOR_INTERNAL.set(INTERNAL_DEBUG);
-        Configuration.DEBUG_MEMORY_ALLOCATOR.set(INTERNAL_DEBUG);
-        Configuration.DEBUG_LOADER.set(INTERNAL_DEBUG);
-        Configuration.DEBUG_FUNCTIONS.set(INTERNAL_DEBUG);
-        Configuration.DEBUG_STREAM.set(INTERNAL_DEBUG);
-        Configuration.GLFW_CHECK_THREAD0.set(INTERNAL_DEBUG);
-        Configuration.DISABLE_CHECKS.set(!INTERNAL_DEBUG);
-        Configuration.DISABLE_FUNCTION_CHECKS.set(!INTERNAL_DEBUG);
-    }
-
-    private void setJOMLConfiguration() {
-        System.setProperty("joml.debug", String.valueOf(INTERNAL_DEBUG));
-        System.setProperty("joml.fastmath", String.valueOf(BerylConfiguration.FAST_MATH.get(true)));
-        System.setProperty("joml.sinLookup", String.valueOf(BerylConfiguration.FAST_MATH.get(true)));
-        System.setProperty("joml.format", String.valueOf(false));
-    }
-
     private String buildDebugReport(int fps, int ups, float deltaTime) {
 
         StringBuilder builder = new StringBuilder(
@@ -245,5 +238,25 @@ public final class Beryl {
         }
 
         return builder.toString();
+    }
+
+    private static void setLWJGLConfiguration() {
+        Configuration.DEBUG_STREAM.set(new LWJGLDebugStream());
+        Configuration.DEBUG.set(INTERNAL_DEBUG);
+        // Configuration.DEBUG_STACK.set(INTERNAL_DEBUG);
+        Configuration.DEBUG_MEMORY_ALLOCATOR_INTERNAL.set(INTERNAL_DEBUG);
+        Configuration.DEBUG_MEMORY_ALLOCATOR.set(INTERNAL_DEBUG);
+        Configuration.DEBUG_LOADER.set(INTERNAL_DEBUG);
+        Configuration.DEBUG_FUNCTIONS.set(INTERNAL_DEBUG);
+        Configuration.GLFW_CHECK_THREAD0.set(INTERNAL_DEBUG);
+        Configuration.DISABLE_CHECKS.set(!INTERNAL_DEBUG);
+        Configuration.DISABLE_FUNCTION_CHECKS.set(!INTERNAL_DEBUG);
+    }
+
+    private static void setJOMLConfiguration() {
+        System.setProperty("joml.debug", String.valueOf(INTERNAL_DEBUG));
+        System.setProperty("joml.fastmath", String.valueOf(BerylConfiguration.FAST_MATH.get(true)));
+        System.setProperty("joml.sinLookup", String.valueOf(BerylConfiguration.FAST_MATH.get(true)));
+        System.setProperty("joml.format", String.valueOf(false));
     }
 }

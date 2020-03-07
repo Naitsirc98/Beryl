@@ -13,6 +13,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
@@ -27,7 +28,6 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 public final class Log extends BerylSystem {
 
     private static final int MSG_QUEUE_TERMINATION_WAIT_TIME = Integer.MAX_VALUE;
-    private static final int MSG_QUEUE_POLL_WAIT_TIME = 1000 / 60;
 
     private static final String PATTERN = "%s[%s]: %s\n";
 
@@ -85,6 +85,15 @@ public final class Log extends BerylSystem {
      */
     public static void debug(Object msg) {
         instance.logMessage(Level.DEBUG, msg);
+    }
+
+    /**
+     * Logs the given message with the {@link Level} 'LWJGL'. Should only be used by the LWJGL DEBUG_STREAM.
+     *
+     * @param msg the message
+     */
+    public static void lwjgl(String msg) {
+        instance.logMessage(Level.LWJGL, msg.replaceFirst("\\[LWJGL\\] ", ""));
     }
 
     /**
@@ -213,11 +222,17 @@ public final class Log extends BerylSystem {
         channels = new ArrayList<>(2);
         messageQueue = new LinkedBlockingDeque<>();
         running = new AtomicBoolean(false);
-        executor = newSingleThreadExecutor();
+        executor = newSingleThreadExecutor(runnable -> {
+            Thread thread = Executors.defaultThreadFactory().newThread(runnable);
+            thread.setName("Log Thread");
+            thread.setDaemon(true);
+            return thread;
+        });
     }
 
     @Override
     protected void init() {
+
         setLevelMask();
         setLevelColors();
         setChannels();
@@ -341,6 +356,7 @@ public final class Log extends BerylSystem {
         levelColors.put(Level.TRACE, ANSIColor.NONE);
         levelColors.put(Level.INFO, ANSIColor.BLUE);
         levelColors.put(Level.DEBUG, ANSIColor.GREEN);
+        levelColors.put(Level.LWJGL, ANSIColor.MAGENTA);
         levelColors.put(Level.WARNING, ANSIColor.YELLOW);
         levelColors.put(Level.ERROR, ANSIColor.RED);
         levelColors.put(Level.FATAL, ANSIColor.RED_BOLD);
@@ -358,6 +374,7 @@ public final class Log extends BerylSystem {
         TRACE,
         INFO,
         DEBUG,
+        LWJGL,
         WARNING,
         ERROR,
         FATAL;

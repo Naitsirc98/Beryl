@@ -4,13 +4,12 @@ import naitsirc98.beryl.graphics.Graphics;
 import naitsirc98.beryl.graphics.vulkan.commands.VulkanCommandPool;
 import naitsirc98.beryl.graphics.vulkan.devices.VulkanLogicalDevice;
 import naitsirc98.beryl.graphics.vulkan.devices.VulkanPhysicalDevice;
-import naitsirc98.beryl.util.types.Destructor;
 import naitsirc98.beryl.util.handles.Handle;
 import naitsirc98.beryl.util.handles.LongHandle;
 import org.lwjgl.system.NativeResource;
 import org.lwjgl.vulkan.VkInstance;
 
-@Destructor
+
 public interface VulkanObject extends NativeResource {
 
     default VulkanContext vulkan() {

@@ -3,17 +3,18 @@ package naitsirc98.beryl.graphics.window;
 import naitsirc98.beryl.core.BerylApplication;
 import naitsirc98.beryl.events.Event;
 import naitsirc98.beryl.events.EventManager;
-import naitsirc98.beryl.events.input.keyboard.*;
-import naitsirc98.beryl.events.window.FramebufferResizeEvent;
+import naitsirc98.beryl.events.input.keyboard.KeyEvent;
+import naitsirc98.beryl.events.input.keyboard.KeyPressedEvent;
+import naitsirc98.beryl.events.input.keyboard.KeyRepeatEvent;
+import naitsirc98.beryl.events.input.keyboard.KeyTypedEvent;
 import naitsirc98.beryl.events.input.mouse.*;
 import naitsirc98.beryl.events.window.*;
-import naitsirc98.beryl.input.Input;
 import naitsirc98.beryl.input.Key;
 import naitsirc98.beryl.input.KeyModifier;
 import naitsirc98.beryl.input.MouseButton;
-import naitsirc98.beryl.util.types.Destructor;
 import org.lwjgl.glfw.*;
 import org.lwjgl.system.Callback;
+import org.lwjgl.system.NativeResource;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,8 +23,7 @@ import java.util.Set;
 import static naitsirc98.beryl.events.EventManager.triggerEvent;
 import static org.lwjgl.glfw.GLFW.*;
 
-@Destructor(method = "destroy")
-class CallbackManager {
+class CallbackManager implements NativeResource {
 
     private final List<Callback> callbacks;
     private int keyRepeatCount;
@@ -32,7 +32,8 @@ class CallbackManager {
         callbacks = new ArrayList<>();
     }
 
-    void destroy() {
+    @Override
+    public void free() {
         callbacks.forEach(Callback::free);
         callbacks.clear();
     }
@@ -172,6 +173,5 @@ class CallbackManager {
 
         return event;
     }
-
 
 }

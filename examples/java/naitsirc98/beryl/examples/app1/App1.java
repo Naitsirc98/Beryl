@@ -23,11 +23,14 @@ import static naitsirc98.beryl.meshes.vertices.VertexLayout.VERTEX_LAYOUT_3D;
 import static naitsirc98.beryl.util.Maths.radians;
 import static naitsirc98.beryl.util.types.DataType.FLOAT32;
 
+
 public class App1 extends BerylApplication {
 
     private static final Random RAND = new Random(System.nanoTime());
 
     public static void main(String[] args) {
+
+        BerylConfiguration.SET_CONFIGURATION_METHOD.set(App1::setConfiguration);
 
         Beryl.launch(new App1());
 
@@ -37,8 +40,7 @@ public class App1 extends BerylApplication {
 
     }
 
-    @Override
-    protected void setConfiguration() {
+    protected static void setConfiguration() {
         BerylConfiguration.DEBUG.set(true);
         BerylConfiguration.INTERNAL_DEBUG.set(true);
         // BerylConfiguration.INITIAL_TIME_VALUE.set(4000.0);

@@ -2,8 +2,6 @@ package naitsirc98.beryl.graphics.vulkan;
 
 import naitsirc98.beryl.core.Beryl;
 import naitsirc98.beryl.core.BerylConfiguration;
-import naitsirc98.beryl.events.EventManager;
-import naitsirc98.beryl.events.window.WindowClosedEvent;
 import naitsirc98.beryl.graphics.GraphicsContext;
 import naitsirc98.beryl.graphics.rendering.RenderingPath;
 import naitsirc98.beryl.graphics.vulkan.commands.VulkanCommandPool;
@@ -15,7 +13,6 @@ import naitsirc98.beryl.graphics.vulkan.swapchain.VulkanSwapchain;
 import naitsirc98.beryl.graphics.vulkan.vertex.VulkanVertexDataBuilder;
 import naitsirc98.beryl.meshes.vertices.VertexData;
 import naitsirc98.beryl.meshes.vertices.VertexLayout;
-import naitsirc98.beryl.util.types.Destructor;
 import org.lwjgl.vulkan.VkInstance;
 
 import java.util.HashMap;
@@ -32,7 +29,6 @@ import static naitsirc98.beryl.util.types.TypeUtils.newInstance;
 import static org.lwjgl.vulkan.KHRSwapchain.VK_KHR_SWAPCHAIN_EXTENSION_NAME;
 import static org.lwjgl.vulkan.VK10.vkDestroyInstance;
 
-@Destructor
 public final class VulkanContext implements GraphicsContext {
 
     // TODO: do logicalDevice.waitIdle() before destroying command buffers

@@ -1,7 +1,6 @@
 package naitsirc98.beryl.graphics.vulkan.renderpasses;
 
 import naitsirc98.beryl.graphics.vulkan.VulkanObject;
-import naitsirc98.beryl.util.types.Destructor;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkFramebufferCreateInfo;
 import org.lwjgl.vulkan.VkRenderPassCreateInfo;
@@ -17,13 +16,13 @@ import static org.lwjgl.system.MemoryUtil.memAllocLong;
 import static org.lwjgl.system.MemoryUtil.memFree;
 import static org.lwjgl.vulkan.VK10.*;
 
-@Destructor
+
 public class VulkanRenderPass implements VulkanObject.Long {
 
-    private final long vkRenderPass;
-    private final VkSubpassDescription.Buffer subPasses;
-    private final VulkanSubPassAttachments subPassAttachmentDescriptions;
-    private final VkSubpassDependency.Buffer subpassDependencies;
+    private long vkRenderPass;
+    private VkSubpassDescription.Buffer subPasses;
+    private VulkanSubPassAttachments subPassAttachmentDescriptions;
+    private VkSubpassDependency.Buffer subpassDependencies;
     private LongBuffer framebuffers;
 
     public VulkanRenderPass(VkSubpassDescription.Buffer subPasses,

@@ -20,15 +20,10 @@ public class BerylApplication {
     private boolean running;
 
     public BerylApplication() {
-        setConfiguration();
     }
 
     public final boolean running() {
         return running;
-    }
-
-    protected void setConfiguration() {
-
     }
 
     protected void onInit() {
@@ -115,10 +110,6 @@ public class BerylApplication {
 
         public BerylApplication build() {
             return new BerylApplication() {
-                @Override
-                protected void setConfiguration() {
-                    setConfig.run();
-                }
 
                 @Override
                 protected void onInit() {

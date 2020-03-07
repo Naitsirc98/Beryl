@@ -2,7 +2,6 @@ package naitsirc98.beryl.graphics.opengl;
 
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.logging.Log.Level;
-import naitsirc98.beryl.util.types.Destructor;
 import org.lwjgl.opengl.GLDebugMessageCallback;
 import org.lwjgl.system.NativeResource;
 
@@ -12,7 +11,6 @@ import static org.lwjgl.opengl.GL43.glEnable;
 import static org.lwjgl.opengl.GL43C.*;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
-@Destructor
 public class GLDebugMessenger implements NativeResource {
 
     static GLDebugMessenger newGLDebugMessenger() {
