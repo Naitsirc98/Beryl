@@ -10,6 +10,8 @@ import org.lwjgl.system.Pointer;
 import java.util.Collection;
 
 import static org.lwjgl.system.MemoryStack.stackGet;
+import static org.lwjgl.vulkan.KHRSwapchain.VK_ERROR_OUT_OF_DATE_KHR;
+import static org.lwjgl.vulkan.KHRSwapchain.VK_SUBOPTIMAL_KHR;
 import static org.lwjgl.vulkan.VK10.*;
 
 public class VulkanUtils {
@@ -94,6 +96,10 @@ public class VulkanUtils {
                 return "VK_ERROR_FORMAT_NOT_SUPPORTED";
             case VK_ERROR_FRAGMENTED_POOL:
                 return "VK_ERROR_FRAGMENTED_POOL";
+            case VK_SUBOPTIMAL_KHR:
+                return "VK_SUBOPTIMAL_KHR";
+            case VK_ERROR_OUT_OF_DATE_KHR:
+                return "VK_ERROR_OUT_OF_DATE_KHR";
             default:
                 return "Unknown Vulkan error code (" + errorCode + ")";
         }

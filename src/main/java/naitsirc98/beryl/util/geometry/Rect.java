@@ -1,5 +1,7 @@
 package naitsirc98.beryl.util.geometry;
 
+import java.util.Objects;
+
 public class Rect implements Rectc {
 
     private int left;
@@ -60,5 +62,31 @@ public class Rect implements Rectc {
         this.top = top;
         this.bottom = bottom;
         return this;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Rect rect = (Rect) o;
+        return left == rect.left &&
+                right == rect.right &&
+                top == rect.top &&
+                bottom == rect.bottom;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(left, right, top, bottom);
+    }
+
+    @Override
+    public String toString() {
+        return "Rect{" +
+                "left=" + left +
+                ", right=" + right +
+                ", top=" + top +
+                ", bottom=" + bottom +
+                '}';
     }
 }

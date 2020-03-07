@@ -8,6 +8,7 @@ import naitsirc98.beryl.graphics.vulkan.pipelines.VulkanGraphicsPipeline;
 import naitsirc98.beryl.graphics.vulkan.pipelines.VulkanPipelineLayout;
 import naitsirc98.beryl.graphics.vulkan.pipelines.VulkanShaderModule;
 import naitsirc98.beryl.graphics.vulkan.swapchain.VulkanSwapchain;
+import naitsirc98.beryl.graphics.vulkan.swapchain.VulkanSwapchainDependent;
 import naitsirc98.beryl.graphics.vulkan.vertex.VulkanVertexData;
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.meshes.vertices.VertexLayout;
@@ -32,7 +33,7 @@ import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.memAddress;
 import static org.lwjgl.vulkan.VK10.*;
 
-public final class VulkanSimpleRenderingPath extends RenderingPath implements VulkanCommandBufferRecorder {
+public final class VulkanSimpleRenderingPath extends RenderingPath implements VulkanCommandBufferRecorder, VulkanSwapchainDependent {
 
     public static final VertexLayout VERTEX_LAYOUT = VertexLayout.VERTEX_LAYOUT_3D;
 
@@ -77,6 +78,7 @@ public final class VulkanSimpleRenderingPath extends RenderingPath implements Vu
     @Override
     protected void init() {
         swapchain = Graphics.vulkan().swapchain();
+        swapchain.addSwapchainDependent(this);
         createPipelineLayout();
         createGraphicsPipeline();
         renderer = Graphics.vulkan().renderer();
@@ -85,7 +87,18 @@ public final class VulkanSimpleRenderingPath extends RenderingPath implements Vu
     }
 
     @Override
+    protected void terminate() {
+        commandBuilderExecutor.free();
+        pipelineLayout.free();
+        graphicsPipeline.free();
+    }
+
+    @Override
     public void render(Camera camera, List<MeshView> meshViews) {
+
+        if(meshViews.size() == 0) {
+            return;
+        }
 
         this.meshViews = meshViews;
 
@@ -188,13 +201,6 @@ public final class VulkanSimpleRenderingPath extends RenderingPath implements Vu
         return swapchain.renderPass().framebuffers().get(renderer.currentSwapchainImageIndex());
     }
 
-    @Override
-    protected void terminate() {
-        commandBuilderExecutor.free();
-        pipelineLayout.free();
-        graphicsPipeline.free();
-    }
-
     private void createPipelineLayout() {
         pipelineLayout = new VulkanPipelineLayout.Builder()
                 .addPushConstantRange(VK_SHADER_STAGE_VERTEX_BIT, 0, PUSH_CONSTANT_SIZE)
@@ -294,5 +300,11 @@ public final class VulkanSimpleRenderingPath extends RenderingPath implements Vu
                 .sType(VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO)
                 .pInheritanceInfo(inheritanceInfo)
                 .flags(VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT);
+    }
+
+    @Override
+    public void onSwapchainRecreate() {
+        terminate();
+        init();
     }
 }

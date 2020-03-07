@@ -185,13 +185,14 @@ public final class Beryl {
 
     private void render() {
 
-        renderer.begin();
+        if(renderer.begin()) {
 
-        systems.sceneManager.render();
+            application.onRender();
 
-        application.onRender();
+            systems.sceneManager.render();
 
-        renderer.end();
+            renderer.end();
+        }
     }
 
     private void error(Throwable error) {

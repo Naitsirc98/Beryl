@@ -1,5 +1,7 @@
 package naitsirc98.beryl.util.geometry;
 
+import java.util.Objects;
+
 public final class Viewport implements Viewportc {
 
     private int x;
@@ -66,4 +68,29 @@ public final class Viewport implements Viewportc {
         return this;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Viewport viewport = (Viewport) o;
+        return x == viewport.x &&
+                y == viewport.y &&
+                width == viewport.width &&
+                height == viewport.height;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(x, y, width, height);
+    }
+
+    @Override
+    public String toString() {
+        return "Viewport{" +
+                "x=" + x +
+                ", y=" + y +
+                ", width=" + width +
+                ", height=" + height +
+                '}';
+    }
 }

@@ -2,6 +2,7 @@ package naitsirc98.beryl.graphics.vulkan.devices;
 
 import naitsirc98.beryl.graphics.vulkan.VulkanObject;
 import naitsirc98.beryl.logging.Log;
+import org.lwjgl.BufferUtils;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.NativeResource;
@@ -13,6 +14,7 @@ import java.util.stream.IntStream;
 import static java.util.stream.Collectors.toSet;
 import static naitsirc98.beryl.graphics.vulkan.VulkanContext.DEVICE_EXTENSIONS;
 import static naitsirc98.beryl.graphics.vulkan.util.VulkanUtils.vkCall;
+import static org.lwjgl.BufferUtils.createIntBuffer;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.memAllocInt;
 import static org.lwjgl.system.MemoryUtil.memFree;
@@ -24,23 +26,11 @@ public class VulkanPhysicalDevice implements VulkanObject.Custom<VkPhysicalDevic
 
     // TODO: pick best physical device, not the first matching the requirements
 
-    private final VkPhysicalDevice vkPhysicalDevice;
-    private final VkPhysicalDeviceProperties properties;
-    private final VkPhysicalDeviceFeatures features;
-    private final QueueFamilyIndices queueFamilyIndices;
-    private final SwapChainSupportDetails swapChainSupportDetails;
-    private final int msaaSamples;
+    private VkPhysicalDevice vkPhysicalDevice;
 
     public VulkanPhysicalDevice() {
 
-        PhysicalDeviceSelection selection = findSuitablePhysicalDevice();
-        vkPhysicalDevice = selection.vkPhysicalDevice;
-        queueFamilyIndices = selection.queueFamilyIndices;
-        swapChainSupportDetails = selection.swapChainSupportDetails;
-        msaaSamples = selection.msaaSamples;
-
-        properties = getPhysicalDeviceProperties(vkPhysicalDevice);
-        features = getPhysicalDeviceFeatures(vkPhysicalDevice);
+        vkPhysicalDevice = findSuitablePhysicalDevice();
 
         Log.trace("[VULKAN]: Physical Device: " + properties().deviceNameString());
     }
@@ -51,33 +41,31 @@ public class VulkanPhysicalDevice implements VulkanObject.Custom<VkPhysicalDevic
     }
 
     public VkPhysicalDeviceProperties properties() {
-        return properties;
+        return getPhysicalDeviceProperties(vkPhysicalDevice);
     }
 
     public VkPhysicalDeviceFeatures features() {
-        return features;
+        return getPhysicalDeviceFeatures(vkPhysicalDevice);
     }
 
     public QueueFamilyIndices queueFamilyIndices() {
-        return queueFamilyIndices;
+        return findQueueFamilies(vkPhysicalDevice);
     }
 
     public SwapChainSupportDetails swapChainSupportDetails() {
-        return swapChainSupportDetails;
+        return new SwapChainSupportDetails(vkPhysicalDevice);
     }
 
     public int msaaSamples() {
-        return msaaSamples;
+        return getMaxMSAASmaples(vkPhysicalDevice);
     }
 
     @Override
     public void free() {
-        properties.free();
-        features.free();
-        swapChainSupportDetails.free();
+        vkPhysicalDevice = null;
     }
 
-    private PhysicalDeviceSelection findSuitablePhysicalDevice() {
+    private VkPhysicalDevice findSuitablePhysicalDevice() {
 
         try(MemoryStack stack = stackPush()) {
 
@@ -112,10 +100,7 @@ public class VulkanPhysicalDevice implements VulkanObject.Custom<VkPhysicalDevic
                 throw new RuntimeException("Failed to find a suitable GPU");
             }
 
-            return new PhysicalDeviceSelection(physicalDevice,
-                    queueFamilyIndices,
-                    new SwapChainSupportDetails(physicalDevice),
-                    getMaxMSAASmaples(physicalDevice));
+            return physicalDevice;
         }
     }
 
@@ -222,31 +207,28 @@ public class VulkanPhysicalDevice implements VulkanObject.Custom<VkPhysicalDevic
     }
 
     private VkPhysicalDeviceFeatures getPhysicalDeviceFeatures(VkPhysicalDevice physicalDevice) {
-        VkPhysicalDeviceFeatures features = VkPhysicalDeviceFeatures.malloc();
+        VkPhysicalDeviceFeatures features = VkPhysicalDeviceFeatures.create();
         vkGetPhysicalDeviceFeatures(physicalDevice, features);
         return features;
     }
 
     private VkPhysicalDeviceProperties getPhysicalDeviceProperties(VkPhysicalDevice physicalDevice) {
-        VkPhysicalDeviceProperties properties = VkPhysicalDeviceProperties.malloc();
+        VkPhysicalDeviceProperties properties = VkPhysicalDeviceProperties.create();
         vkGetPhysicalDeviceProperties(physicalDevice, properties);
         return properties;
     }
 
 
-    public final class SwapChainSupportDetails implements NativeResource {
+    public final class SwapChainSupportDetails {
 
         private VkSurfaceCapabilitiesKHR capabilities;
         private VkSurfaceFormatKHR.Buffer formats;
         private IntBuffer presentModes;
-        private final boolean stackAllocated;
 
         /**
          * Initializes a new SwapChainSupportDetails on the stack
          * */
         public SwapChainSupportDetails(VkPhysicalDevice vkPhysicalDevice, MemoryStack stack) {
-
-            stackAllocated = true;
 
             capabilities = VkSurfaceCapabilitiesKHR.mallocStack(stack);
 
@@ -264,25 +246,23 @@ public class VulkanPhysicalDevice implements VulkanObject.Custom<VkPhysicalDevic
         }
 
         /**
-         * Initializes a new SwapChainSupportDetails dynamically
+         * Initializes a new SwapChainSupportDetails on the heap
          * */
         public SwapChainSupportDetails(VkPhysicalDevice vkPhysicalDevice) {
 
-            stackAllocated = false;
-
-            capabilities = VkSurfaceCapabilitiesKHR.malloc();
+            capabilities = VkSurfaceCapabilitiesKHR.create();
 
             try(MemoryStack stack = stackPush()) {
 
                 IntBuffer formatsCount = stack.mallocInt(1);
                 vkCall(vkGetPhysicalDeviceSurfaceFormatsKHR(vkPhysicalDevice, surface().handle(), formatsCount, null));
 
-                formats = VkSurfaceFormatKHR.malloc(formatsCount.get(0));
+                formats = VkSurfaceFormatKHR.create(formatsCount.get(0));
 
                 IntBuffer presentModesCount = stack.mallocInt(1);
                 vkCall(vkGetPhysicalDeviceSurfacePresentModesKHR(vkPhysicalDevice, surface().handle(), presentModesCount, null));
 
-                presentModes = memAllocInt(presentModesCount.get(0));
+                presentModes = createIntBuffer(presentModesCount.get(0));
 
                 init(vkPhysicalDevice, formatsCount, presentModesCount);
             }
@@ -307,15 +287,6 @@ public class VulkanPhysicalDevice implements VulkanObject.Custom<VkPhysicalDevic
 
         public IntBuffer presentModes() {
             return presentModes;
-        }
-
-        @Override
-        public void free() {
-            if(!stackAllocated) {
-                memFree(presentModes);
-                capabilities.free();
-                formats.free();
-            }
         }
     }
 
@@ -344,21 +315,4 @@ public class VulkanPhysicalDevice implements VulkanObject.Custom<VkPhysicalDevic
             return new int[] {graphicsFamily, presentationFamily};
         }
     }
-
-    private class PhysicalDeviceSelection {
-
-        private final VkPhysicalDevice vkPhysicalDevice;
-        private final QueueFamilyIndices queueFamilyIndices;
-        private final SwapChainSupportDetails swapChainSupportDetails;
-        public final int msaaSamples;
-
-        public PhysicalDeviceSelection(VkPhysicalDevice vkPhysicalDevice, QueueFamilyIndices queueFamilyIndices,
-                                       SwapChainSupportDetails swapChainSupportDetails, int msaaSamples) {
-            this.vkPhysicalDevice = vkPhysicalDevice;
-            this.queueFamilyIndices = queueFamilyIndices;
-            this.swapChainSupportDetails = swapChainSupportDetails;
-            this.msaaSamples = msaaSamples;
-        }
-    }
-
 }

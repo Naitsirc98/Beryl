@@ -57,14 +57,19 @@ public class VulkanImage implements VulkanImageBase {
     public void free() {
 
         imageViewInfo.free();
+        imageViewInfo = null;
 
         imageInfo.free();
+        imageInfo = null;
 
         vkDestroyImageView(logicalDevice().handle(), vkImageView, null);
+        vkImageView = VK_NULL_HANDLE;
 
         vkDestroyImage(logicalDevice().handle(), vkImage, null);
+        vkImage = VK_NULL_HANDLE;
 
         vkFreeMemory(logicalDevice().handle(), vkImageMemory, null);
+        vkImageMemory = VK_NULL_HANDLE;
     }
 
     public void transitionLayout(int oldLayout, int newLayout) {

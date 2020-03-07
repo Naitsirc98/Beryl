@@ -14,7 +14,7 @@ public final class VulkanSwapchainImage implements VulkanImageBase {
     private static final int MIP_LEVELS = 1;
 
     private final long vkImage;
-    private final long vkImageView;
+    private long vkImageView;
     private final int imageFormat;
 
     public VulkanSwapchainImage(long vkImage, int imageFormat) {
@@ -42,6 +42,7 @@ public final class VulkanSwapchainImage implements VulkanImageBase {
     public void free() {
         // VkImage is automatically destroyed by the swapchain
         vkDestroyImageView(logicalDevice().handle(), vkImageView, null);
+        vkImageView = VK_NULL_HANDLE;
     }
 
     private long createSwapchainImageView() {

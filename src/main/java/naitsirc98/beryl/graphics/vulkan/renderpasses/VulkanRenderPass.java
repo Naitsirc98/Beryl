@@ -49,6 +49,8 @@ public class VulkanRenderPass implements VulkanObject.Long {
         memFree(framebuffers);
 
         vkDestroyRenderPass(logicalDevice().handle(), vkRenderPass, null);
+
+        vkRenderPass = VK_NULL_HANDLE;
     }
 
     public VkSubpassDescription.Buffer subpasses() {

@@ -1,13 +1,12 @@
 package naitsirc98.beryl.graphics.vulkan.rendering;
 
-import naitsirc98.beryl.events.EventManager;
-import naitsirc98.beryl.events.window.WindowResizedEvent;
 import naitsirc98.beryl.graphics.Graphics;
 import naitsirc98.beryl.graphics.rendering.Renderer;
 import naitsirc98.beryl.graphics.vulkan.commands.VulkanCommandPool;
 import naitsirc98.beryl.graphics.vulkan.devices.VulkanLogicalDevice;
 import naitsirc98.beryl.graphics.vulkan.swapchain.FrameManager;
 import naitsirc98.beryl.graphics.vulkan.swapchain.VulkanSwapchain;
+import naitsirc98.beryl.graphics.vulkan.swapchain.VulkanSwapchainDependent;
 import naitsirc98.beryl.logging.Log;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
@@ -22,33 +21,24 @@ import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.vulkan.KHRSwapchain.*;
 import static org.lwjgl.vulkan.VK10.*;
 
-public class VulkanRenderer implements Renderer {
+public class VulkanRenderer implements Renderer, VulkanSwapchainDependent {
 
-    private final VulkanSwapchain swapchain;
-    private final VkDevice logicalDevice;
-    private final FrameManager frameManager;
-    private final VkQueue graphicsQueue;
-    private final VkQueue presentationQueue;
-    private final VulkanCommandPool commandPool;
-    private final VkCommandBuffer[] commandBuffers;
+    private VulkanSwapchain swapchain;
+    private VkDevice logicalDevice;
+    private FrameManager frameManager;
+    private VkQueue graphicsQueue;
+    private VkQueue presentationQueue;
+    private VulkanCommandPool commandPool;
+    private VkCommandBuffer[] commandBuffers;
     private boolean framebufferResize;
     private int currentSwapchainImageIndex;
 
     private VulkanRenderer() {
-        VulkanLogicalDevice logicalDevice = Graphics.vulkan().logicalDevice();
-        this.swapchain = Graphics.vulkan().swapchain();
-        this.logicalDevice = logicalDevice.handle();
-        graphicsQueue = logicalDevice.graphicsQueue();
-        presentationQueue = logicalDevice.presentationQueue();
-        this.commandPool = Graphics.vulkan().graphicsCommandPool();
-        final int swapchainImagesCount = swapchain.swapChainImages().length;
-        commandBuffers = commandPool.newPrimaryCommandBuffers(swapchainImagesCount);
-        this.frameManager = new FrameManager(swapchainImagesCount);
-        EventManager.addEventCallback(WindowResizedEvent.class, e -> framebufferResize = true);
+        init();
     }
 
     @Override
-    public void begin() {
+    public boolean begin() {
 
         try(MemoryStack stack = stackPush()) {
 
@@ -63,12 +53,11 @@ public class VulkanRenderer implements Renderer {
 
             if(vkResult == VK_ERROR_OUT_OF_DATE_KHR) {
                 Log.warning("Swap chain is out of date");
-                // TODO
                 swapchain.recreate();
-                return;
+                return false;
             } else if(vkResult != VK_SUCCESS) {
                 Log.fatal("Cannot acquire swapchain image: " + getVulkanErrorName(vkResult));
-                return;
+                return false;
             }
 
             final int imageIndex = currentSwapchainImageIndex = pImageIndex.get(0);
@@ -79,6 +68,8 @@ public class VulkanRenderer implements Renderer {
 
             frameManager.setInFlight(imageIndex, frame);
         }
+
+        return true;
     }
 
     @Override
@@ -118,11 +109,10 @@ public class VulkanRenderer implements Renderer {
 
             final int presentResult = vkQueuePresentKHR(presentationQueue, presentInfo);
 
-            if(presentResult == VK_ERROR_OUT_OF_DATE_KHR || presentResult == VK_SUBOPTIMAL_KHR || framebufferResize) {
-                Log.warning("Swapchain recreation needed");
-                framebufferResize = false;
+            if(presentResult == VK_ERROR_OUT_OF_DATE_KHR || presentResult == VK_SUBOPTIMAL_KHR) {
+                Log.warning("Swapchain recreation needed: " + getVulkanErrorName(presentResult));
                 swapchain.recreate();
-                return;
+                framebufferResize = false;
             } else if(presentResult != VK_SUCCESS) {
                 Log.fatal("Failed to present swap chain image: " + getVulkanErrorName(presentResult));
             }
@@ -143,5 +133,28 @@ public class VulkanRenderer implements Renderer {
     public void free() {
         commandPool.freeCommandBuffers(commandBuffers);
         frameManager.free();
+    }
+
+    @Override
+    public void onSwapchainRecreate() {
+        commandPool.freeCommandBuffers(commandBuffers);
+        init0();
+    }
+
+    private void init() {
+        init0();
+        this.frameManager = new FrameManager(swapchain.swapChainImages().length);
+        currentSwapchainImageIndex = 0;
+        swapchain.addSwapchainDependent(this);
+    }
+
+    private void init0() {
+        VulkanLogicalDevice logicalDevice = Graphics.vulkan().logicalDevice();
+        this.swapchain = Graphics.vulkan().swapchain();
+        this.logicalDevice = logicalDevice.handle();
+        graphicsQueue = logicalDevice.graphicsQueue();
+        presentationQueue = logicalDevice.presentationQueue();
+        this.commandPool = Graphics.vulkan().graphicsCommandPool();
+        commandBuffers = commandPool.newPrimaryCommandBuffers(swapchain.swapChainImages().length);
     }
 }

@@ -2,7 +2,6 @@ package naitsirc98.beryl.graphics.opengl.rendering;
 
 import naitsirc98.beryl.graphics.opengl.shaders.GLShader;
 import naitsirc98.beryl.graphics.opengl.shaders.GLShaderProgram;
-import naitsirc98.beryl.graphics.opengl.shaders.GLUniformBuffer;
 import naitsirc98.beryl.graphics.opengl.vertex.GLVertexData;
 import naitsirc98.beryl.graphics.rendering.RenderingPath;
 import naitsirc98.beryl.logging.Log;
@@ -19,7 +18,6 @@ import java.util.List;
 
 import static naitsirc98.beryl.graphics.ShaderStage.FRAGMENT_STAGE;
 import static naitsirc98.beryl.graphics.ShaderStage.VERTEX_STAGE;
-import static naitsirc98.beryl.util.types.DataType.FLOAT32;
 import static org.lwjgl.opengl.GL46.*;
 import static org.lwjgl.system.MemoryStack.stackPush;
 

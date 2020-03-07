@@ -16,8 +16,11 @@ import org.lwjgl.vulkan.*;
 
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import static naitsirc98.beryl.graphics.vulkan.util.VulkanFormatUtils.findDepthFormat;
 import static naitsirc98.beryl.util.Maths.clamp;
@@ -42,11 +45,11 @@ public class VulkanSwapchain implements VulkanObject.Long {
     private VulkanImageBase depthImage;
     private VulkanRenderPass renderPass;
     // Objects that need to be reinitialized when the swapchain is recreated
-    private final List<VulkanSwapchainDependent> swapchainDependents;
+    private final Queue<VulkanSwapchainDependent> swapchainDependents;
 
     public VulkanSwapchain() {
         init();
-        swapchainDependents = new ArrayList<>();
+        swapchainDependents = new ArrayDeque<>();
     }
 
     @Override
@@ -75,7 +78,9 @@ public class VulkanSwapchain implements VulkanObject.Long {
     }
 
     public void addSwapchainDependent(VulkanSwapchainDependent dependent) {
-        swapchainDependents.add(dependent);
+        if(!swapchainDependents.contains(dependent)) {
+            swapchainDependents.add(dependent);
+        }
     }
 
     public void removeSwapchainDependent(VulkanSwapchainDependent dependent) {
@@ -96,21 +101,30 @@ public class VulkanSwapchain implements VulkanObject.Long {
 
         init();
 
-        swapchainDependents.parallelStream().forEach(VulkanSwapchainDependent::onSwapchainRecreate);
+        for(VulkanSwapchainDependent dependent : swapchainDependents) {
+            dependent.onSwapchainRecreate();
+        }
     }
 
     @Override
     public void free() {
 
         depthImage.free();
+        depthImage = null;
 
         renderPass.free();
+        renderPass = null;
 
         freeSwapchainImages();
+        swapChainImages = null;
+
+        swapChainImageFormat = -1;
 
         swapChainExtent.free();
+        swapChainExtent = null;
 
         vkDestroySwapchainKHR(logicalDevice().handle(), vkSwapchain, null);
+        vkSwapchain = VK_NULL_HANDLE;
     }
 
     private void init() {
@@ -230,7 +244,8 @@ public class VulkanSwapchain implements VulkanObject.Long {
 
     private VkExtent2D chooseSwapExtent(VkSurfaceCapabilitiesKHR capabilities) {
 
-        if(capabilities.currentExtent().width() != UINT32_MAX) {
+        if(capabilities.currentExtent().width() != UINT32_MAX && capabilities.currentExtent().height() != UINT32_MAX) {
+            System.out.println(capabilities.currentExtent().width() + ", " + capabilities.currentExtent().height());
             return capabilities.currentExtent();
         }
 
