@@ -24,19 +24,16 @@ public class GLBuffer implements GLObject {
         glNamedBufferStorage(handle, size, GL_DYNAMIC_STORAGE_BIT);
     }
 
-    public void data(ByteBuffer data) {
-        storage(data.remaining());
-        update(data);
+    public void storage(ByteBuffer data) {
+        glNamedBufferStorage(handle, data, 0);
     }
 
-    public void data(FloatBuffer data) {
-        storage(data.remaining());
-        update(data);
+    public void storage(FloatBuffer data) {
+        glNamedBufferStorage(handle, data, 0);
     }
 
-    public void data(IntBuffer data) {
-        storage(data.remaining());
-        update(data);
+    public void storage(IntBuffer data) {
+        glNamedBufferStorage(handle, data, 0);
     }
 
     public void update(ByteBuffer data) {

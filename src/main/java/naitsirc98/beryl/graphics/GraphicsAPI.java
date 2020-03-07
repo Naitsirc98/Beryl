@@ -5,7 +5,7 @@ import naitsirc98.beryl.util.types.Singleton;
 public enum GraphicsAPI {
 
     VULKAN(1, 1),
-    OPENGL(4, 6);
+    OPENGL(4, 5);
 
     @Singleton
     private static GraphicsAPI currentGraphicsAPI;

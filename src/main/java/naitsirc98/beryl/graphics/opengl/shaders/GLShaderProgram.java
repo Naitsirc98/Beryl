@@ -5,6 +5,7 @@ import naitsirc98.beryl.logging.Log;
 import org.joml.Matrix4fc;
 import org.lwjgl.system.MemoryStack;
 
+import java.nio.FloatBuffer;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -79,11 +80,8 @@ public final class GLShaderProgram implements GLObject {
         return uniformLocations.computeIfAbsent(name, k -> glGetUniformLocation(handle, name));
     }
 
-    public GLShaderProgram uniformMatrix4f(String name, boolean transpose, Matrix4fc value) {
-        try(MemoryStack stack = stackPush()) {
-            glUniformMatrix4fv(uniformLocation(name), transpose, value.get(stack.mallocFloat(16)));
-        }
-        return this;
+    public void uniformMatrix4f(String name, boolean transpose, FloatBuffer value) {
+        glUniformMatrix4fv(uniformLocation(name), transpose, value);
     }
 
     @Override

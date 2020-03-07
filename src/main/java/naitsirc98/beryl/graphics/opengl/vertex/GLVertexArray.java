@@ -33,7 +33,6 @@ public final class GLVertexArray implements GLObject {
 
     public void addVertexBuffer(int binding, VertexAttributeList attributes, GLBuffer vertexBuffer) {
         glVertexArrayVertexBuffer(handle, binding, vertexBuffer.handle(), 0, attributes.stride());
-        System.out.println(attributes.stride());
         VertexAttributeListIterator it = attributes.iterator();
         while(it.hasNext()) {
             setVertexAttribute(binding, it.next(), it.location(), it.offset(), attributes.stride());

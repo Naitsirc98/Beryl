@@ -28,9 +28,7 @@ public final class GLSimpleRenderingPath extends RenderingPath {
     private static final Path VERTEX_SHADER_PATH;
     private static final Path FRAGMENT_SHADER_PATH;
 
-    private static final String UNIFORM_BUFFER_NAME = "ModelViewProjectionMatrix";
-    private static final int UNIFORM_BUFFER_BINDING = 0;
-    private static final int UNIFORM_BUFFER_SIZE = 16 * FLOAT32.sizeof();
+    private static final String UNIFORM_MVP_NAME = "u_MVP";
 
     static {
 
@@ -38,8 +36,8 @@ public final class GLSimpleRenderingPath extends RenderingPath {
         Path fragmentPath = null;
 
         try {
-            vertexPath = Resources.getPath("shaders/simple/simple.vert");
-            fragmentPath = Resources.getPath("shaders/simple/simple.frag");
+            vertexPath = Resources.getPath("shaders/gl/simple/simple.vert");
+            fragmentPath = Resources.getPath("shaders/gl/simple/simple.frag");
         } catch (Exception e) {
             Log.fatal("Failed to get shader files for RenderingPath", e);
         }
@@ -49,8 +47,8 @@ public final class GLSimpleRenderingPath extends RenderingPath {
     }
 
     private GLShaderProgram shader;
-    private GLUniformBuffer uniformBuffer;
-    private Matrix4f projectionViewModelMatrix;
+    private Matrix4f projectionViewMatrix;
+    private GLVertexData lastVertexData;
 
     private GLSimpleRenderingPath() {
 
@@ -64,16 +62,12 @@ public final class GLSimpleRenderingPath extends RenderingPath {
                 .attach(new GLShader(FRAGMENT_STAGE).source(FRAGMENT_SHADER_PATH).compile())
                 .link();
 
-        uniformBuffer = new GLUniformBuffer(UNIFORM_BUFFER_NAME, shader, UNIFORM_BUFFER_BINDING);
-        uniformBuffer.storage(UNIFORM_BUFFER_SIZE);
-
-        projectionViewModelMatrix = new Matrix4f();
+        projectionViewMatrix = new Matrix4f();
     }
 
     @Override
     protected void terminate() {
         shader.free();
-        uniformBuffer.free();
     }
 
     @Override
@@ -85,25 +79,30 @@ public final class GLSimpleRenderingPath extends RenderingPath {
 
         shader.use();
 
-        uniformBuffer.bind();
+        final int mvpLocation = shader.uniformLocation(UNIFORM_MVP_NAME);
 
         Matrix4fc projectionView = camera.projectionViewMatrix();
-        Matrix4f mvp = projectionViewModelMatrix;
+        Matrix4f mvp = projectionViewMatrix;
 
         try(MemoryStack stack = stackPush()) {
 
-            FloatBuffer uboData = stack.mallocFloat(16);
+            FloatBuffer mvpData = stack.mallocFloat(16);
 
             for(MeshView meshView : meshViews) {
 
                 GLVertexData vertexData = meshView.mesh().vertexData();
 
-                vertexData.bind();
+                if(lastVertexData != vertexData) {
+                    vertexData.bind();
+                    lastVertexData = vertexData;
+                }
 
-                uniformBuffer.update(projectionView.mul(meshView.modelMatrix(), mvp).get(uboData));
+                glUniformMatrix4fv(mvpLocation, false, projectionView.mul(meshView.modelMatrix(), mvp).get(mvpData));
 
                 glDrawArrays(GL_TRIANGLES, vertexData.firstVertex(), vertexData.vertexCount());
             }
         }
+
+        lastVertexData = null;
     }
 }

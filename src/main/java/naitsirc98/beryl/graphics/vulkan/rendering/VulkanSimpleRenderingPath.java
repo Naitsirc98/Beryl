@@ -48,8 +48,8 @@ public final class VulkanSimpleRenderingPath extends RenderingPath implements Vu
         Path fragmentPath = null;
 
         try {
-            vertexPath = Resources.getPath("shaders/simple/simple.vert");
-            fragmentPath = Resources.getPath("shaders/simple/simple.frag");
+            vertexPath = Resources.getPath("shaders/vk/simple/simple.vert");
+            fragmentPath = Resources.getPath("shaders/vk/simple/simple.frag");
         } catch (Exception e) {
             Log.fatal("Failed to get shader files for RenderingPath", e);
         }
