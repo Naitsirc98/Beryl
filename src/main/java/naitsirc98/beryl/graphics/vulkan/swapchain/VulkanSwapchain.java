@@ -10,6 +10,7 @@ import naitsirc98.beryl.graphics.vulkan.devices.VulkanPhysicalDevice.SwapChainSu
 import naitsirc98.beryl.graphics.vulkan.renderpasses.VulkanRenderPass;
 import naitsirc98.beryl.graphics.vulkan.renderpasses.VulkanSubPassAttachments;
 import naitsirc98.beryl.graphics.window.Window;
+import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.util.geometry.Sizec;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
@@ -94,6 +95,10 @@ public class VulkanSwapchain implements VulkanObject.Long {
 
         logicalDevice().waitIdle();
 
+        Log.info("[VULKAN]: Recreating swapchain...");
+
+        double time = System.nanoTime();
+
         free();
 
         init();
@@ -101,6 +106,10 @@ public class VulkanSwapchain implements VulkanObject.Long {
         for(VulkanSwapchainDependent dependent : swapchainDependents) {
             dependent.onSwapchainRecreate();
         }
+
+        time = (System.nanoTime() - time) / 1e6;
+
+        Log.info("[VULKAN]: Swapchain recreated in " + time + " ms");
     }
 
     @Override
@@ -242,7 +251,6 @@ public class VulkanSwapchain implements VulkanObject.Long {
     private VkExtent2D chooseSwapExtent(VkSurfaceCapabilitiesKHR capabilities) {
 
         if(capabilities.currentExtent().width() != UINT32_MAX && capabilities.currentExtent().height() != UINT32_MAX) {
-            System.out.println(capabilities.currentExtent().width() + ", " + capabilities.currentExtent().height());
             return capabilities.currentExtent();
         }
 

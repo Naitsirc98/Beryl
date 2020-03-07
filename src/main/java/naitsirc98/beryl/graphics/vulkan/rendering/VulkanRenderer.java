@@ -30,7 +30,6 @@ public class VulkanRenderer implements Renderer, VulkanSwapchainDependent {
     private VkQueue presentationQueue;
     private VulkanCommandPool commandPool;
     private VkCommandBuffer[] commandBuffers;
-    private boolean framebufferResize;
     private int currentSwapchainImageIndex;
 
     private VulkanRenderer() {
@@ -52,7 +51,6 @@ public class VulkanRenderer implements Renderer, VulkanSwapchainDependent {
                     frame.imageAvailableSemaphore, VK_NULL_HANDLE, pImageIndex);
 
             if(vkResult == VK_ERROR_OUT_OF_DATE_KHR) {
-                Log.warning("Swap chain is out of date");
                 swapchain.recreate();
                 return false;
             } else if(vkResult != VK_SUCCESS) {
@@ -110,9 +108,7 @@ public class VulkanRenderer implements Renderer, VulkanSwapchainDependent {
             final int presentResult = vkQueuePresentKHR(presentationQueue, presentInfo);
 
             if(presentResult == VK_ERROR_OUT_OF_DATE_KHR || presentResult == VK_SUBOPTIMAL_KHR) {
-                Log.warning("Swapchain recreation needed: " + getVulkanErrorName(presentResult));
                 swapchain.recreate();
-                framebufferResize = false;
             } else if(presentResult != VK_SUCCESS) {
                 Log.fatal("Failed to present swap chain image: " + getVulkanErrorName(presentResult));
             }

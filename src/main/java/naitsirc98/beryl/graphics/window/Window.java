@@ -406,6 +406,7 @@ public final class Window implements LongHandle {
      * @return this window
      */
     public Window maximized() {
+
         restore();
 
         if(displayMode == DisplayMode.FULLSCREEN) {
