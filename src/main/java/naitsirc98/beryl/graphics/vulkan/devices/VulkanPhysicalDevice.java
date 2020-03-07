@@ -2,10 +2,8 @@ package naitsirc98.beryl.graphics.vulkan.devices;
 
 import naitsirc98.beryl.graphics.vulkan.VulkanObject;
 import naitsirc98.beryl.logging.Log;
-import org.lwjgl.BufferUtils;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
-import org.lwjgl.system.NativeResource;
 import org.lwjgl.vulkan.*;
 
 import java.nio.IntBuffer;
@@ -16,8 +14,6 @@ import static naitsirc98.beryl.graphics.vulkan.VulkanContext.DEVICE_EXTENSIONS;
 import static naitsirc98.beryl.graphics.vulkan.util.VulkanUtils.vkCall;
 import static org.lwjgl.BufferUtils.createIntBuffer;
 import static org.lwjgl.system.MemoryStack.stackPush;
-import static org.lwjgl.system.MemoryUtil.memAllocInt;
-import static org.lwjgl.system.MemoryUtil.memFree;
 import static org.lwjgl.vulkan.KHRSurface.*;
 import static org.lwjgl.vulkan.VK10.*;
 

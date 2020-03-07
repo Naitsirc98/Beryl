@@ -17,10 +17,7 @@ import org.lwjgl.vulkan.*;
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;
 import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 import static naitsirc98.beryl.graphics.vulkan.util.VulkanFormatUtils.findDepthFormat;
 import static naitsirc98.beryl.util.Maths.clamp;
