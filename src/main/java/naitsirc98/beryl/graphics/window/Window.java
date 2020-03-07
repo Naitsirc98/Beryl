@@ -12,7 +12,6 @@ import org.joml.Vector2i;
 import org.joml.Vector2ic;
 import org.lwjgl.glfw.GLFWImage;
 import org.lwjgl.glfw.GLFWVidMode;
-import org.lwjgl.system.Configuration;
 import org.lwjgl.system.MemoryStack;
 
 import java.nio.ByteBuffer;
@@ -305,6 +304,16 @@ public final class Window implements LongHandle {
     }
 
     /**
+     * Request the focus for this window
+     *
+     * @return this window
+     * */
+    public Window focus() {
+        glfwFocusWindow(handle);
+        return this;
+    }
+
+    /**
      * Returns a native handle to the clipboard
      *
      * @return a handle to the clipboard
@@ -381,6 +390,7 @@ public final class Window implements LongHandle {
      * @return this window
      */
     public Window fullscreen() {
+        restore();
         displayMode = DisplayMode.FULLSCREEN;
         long monitor = assertNotEquals(glfwGetPrimaryMonitor(), NULL);
         GLFWVidMode vmode = assertNonNull(glfwGetVideoMode(monitor));
@@ -396,8 +406,15 @@ public final class Window implements LongHandle {
      * @return this window
      */
     public Window maximized() {
+        restore();
+
+        if(displayMode == DisplayMode.FULLSCREEN) {
+            windowed();
+        }
+
         displayMode = DisplayMode.MAXIMIZED;
         glfwMaximizeWindow(handle);
+
         return this;
     }
 
@@ -407,6 +424,8 @@ public final class Window implements LongHandle {
      * @return this window
      */
     public Window windowed() {
+
+        restore();
 
         displayMode = DisplayMode.WINDOWED;
 
@@ -445,6 +464,7 @@ public final class Window implements LongHandle {
      * @return this window
      */
     public Window hide() {
+        restore();
         glfwHideWindow(handle);
         return this;
     }
@@ -456,6 +476,16 @@ public final class Window implements LongHandle {
      */
     public boolean open() {
         return !shouldClose();
+    }
+
+    /**
+     * Restores this window
+     *
+     * @return this window
+     * */
+    public Window restore() {
+        glfwRestoreWindow(handle);
+        return this;
     }
 
     /**
@@ -499,6 +529,7 @@ public final class Window implements LongHandle {
     }
 
     private Window changeDisplayMode(long monitor, int refreshRate, int x, int y, int width, int height) {
+        restore();
         glfwSetWindowMonitor(
                 handle,
                 monitor,

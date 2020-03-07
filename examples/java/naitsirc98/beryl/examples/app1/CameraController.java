@@ -64,8 +64,18 @@ public class CameraController extends Behaviour {
             }
         }
 
+        Window.get().focus();
+
         if(isKeyTyped(KEY_F1)) {
             Window.get().fullscreen();
+        } else if(isKeyTyped(KEY_F2)) {
+            Window.get().maximized();
+        } else if(isKeyTyped(KEY_F3)) {
+            Window.get().windowed();
+        } else if(isKeyTyped(KEY_F4)) {
+            Window.get().hide();
+        } else if(isKeyTyped(KEY_F5)) {
+            Window.get().show();
         }
 
         camera.lookAt(mouseX(), mouseY());
