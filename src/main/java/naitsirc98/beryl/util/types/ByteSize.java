@@ -10,7 +10,7 @@ public interface ByteSize {
     @Target(ElementType.TYPE)
     @interface Static {
 
-        int sizeof();
+        int value();
 
     }
 

@@ -3,6 +3,7 @@
     <words>
       <w>attributef</w>
       <w>attributei</w>
+      <w>blinn</w>
       <w>calloc</w>
       <w>framebuffers</w>
       <w>growable</w>
@@ -10,6 +11,7 @@
       <w>msaa</w>
       <w>multisample</w>
       <w>opengl</w>
+      <w>phong</w>
       <w>rasterization</w>
       <w>spirv</w>
       <w>subpass</w>

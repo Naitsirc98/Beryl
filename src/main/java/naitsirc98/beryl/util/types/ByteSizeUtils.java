@@ -24,7 +24,7 @@ public final class ByteSizeUtils {
         final ByteSize.Static byteSize = type.getAnnotation(ByteSize.Static.class);
 
         if(byteSize != null) {
-            final int sizeof = byteSize.sizeof();
+            final int sizeof = byteSize.value();
             cacheSize(type, sizeof);
             return sizeof;
         }

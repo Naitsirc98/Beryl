@@ -1,6 +1,5 @@
 package naitsirc98.beryl.graphics.vulkan;
 
-import naitsirc98.beryl.graphics.Graphics;
 import naitsirc98.beryl.logging.Log;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
@@ -18,16 +17,16 @@ public class VulkanImage implements VulkanImageBase {
     private long vkImage;
     private long vkImageMemory;
     private long vkImageView;
-    private VkImageCreateInfo imageInfo;
-    private VkImageViewCreateInfo imageViewInfo;
+    private int format;
+    private int mipLevels;
 
     public VulkanImage(VkImageCreateInfo imageInfo, VkImageViewCreateInfo imageViewInfo, int memoryProperties) {
-        this.imageInfo = imageInfo;
-        this.imageViewInfo = imageViewInfo;
-        vkImage = createVkImage();
+        vkImage = createVkImage(imageInfo);
         vkImageMemory = createVkImageMemory(memoryProperties);
         bindImageMemory();
-        vkImageView = createVkImageView();
+        vkImageView = createVkImageView(imageViewInfo);
+        format = imageInfo.format();
+        mipLevels = imageInfo.mipLevels();
     }
 
     @Override
@@ -40,27 +39,21 @@ public class VulkanImage implements VulkanImageBase {
         return vkImageView;
     }
 
-    public long getVkImageMemory() {
+    public long vkImageMemory() {
         return vkImageMemory;
     }
 
     @Override
     public int format() {
-        return imageInfo.format();
+        return format;
     }
 
     public int mipLevels() {
-        return imageInfo.mipLevels();
+        return mipLevels;
     }
 
     @Override
     public void free() {
-
-        imageViewInfo.free();
-        imageViewInfo = null;
-
-        imageInfo.free();
-        imageInfo = null;
 
         vkDestroyImageView(logicalDevice().handle(), vkImageView, null);
         vkImageView = VK_NULL_HANDLE;
@@ -82,8 +75,7 @@ public class VulkanImage implements VulkanImageBase {
 
             setupImageMemoryBarrier(barrier.get(0), oldLayout, newLayout, stages);
 
-            Graphics.vulkan().graphicsCommandPool()
-                    .execute(commandBuffer -> doTransition(barrier, stages.get(0), stages.get(1), commandBuffer));
+            graphicsCommandPool().execute(commandBuffer -> doTransition(barrier, stages.get(0), stages.get(1), commandBuffer));
         }
     }
 
@@ -173,7 +165,7 @@ public class VulkanImage implements VulkanImageBase {
     }
 
 
-    private long createVkImage() {
+    private long createVkImage(VkImageCreateInfo imageInfo) {
 
         try(MemoryStack stack = stackPush()) {
 
@@ -225,7 +217,7 @@ public class VulkanImage implements VulkanImageBase {
         return -1;
     }
 
-    private long createVkImageView() {
+    private long createVkImageView(VkImageViewCreateInfo imageViewInfo) {
 
         try(MemoryStack stack = stackPush()) {
 
