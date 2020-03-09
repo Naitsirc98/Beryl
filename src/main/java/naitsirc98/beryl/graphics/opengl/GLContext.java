@@ -3,6 +3,7 @@ package naitsirc98.beryl.graphics.opengl;
 import naitsirc98.beryl.core.Beryl;
 import naitsirc98.beryl.core.BerylConfiguration;
 import naitsirc98.beryl.graphics.GraphicsContext;
+import naitsirc98.beryl.graphics.GraphicsFactory;
 import naitsirc98.beryl.graphics.opengl.rendering.GLRenderer;
 import naitsirc98.beryl.graphics.opengl.rendering.GLSimpleRenderingPath;
 import naitsirc98.beryl.graphics.opengl.vertex.GLVertexDataBuilder;
@@ -30,6 +31,7 @@ public class GLContext implements GraphicsContext, LongHandle {
     private GLDebugMessenger debugMessenger;
     private GLCapabilities capabilities;
     private GLRenderer renderer;
+    private GLGraphicsFactory graphicsFactory;
 
     private GLContext() {
 
@@ -42,6 +44,7 @@ public class GLContext implements GraphicsContext, LongHandle {
         capabilities = GL.createCapabilities();
         debugMessenger = newGLDebugMessenger();
         renderer = newInstance(GLRenderer.class, glContext);
+        graphicsFactory = new GLGraphicsFactory();
     }
 
     @Override
@@ -61,8 +64,8 @@ public class GLContext implements GraphicsContext, LongHandle {
     }
 
     @Override
-    public GLVertexDataBuilder newVertexDataBuilder(VertexLayout layout) {
-        return new GLVertexDataBuilder(layout);
+    public GraphicsFactory graphicsFactory() {
+        return graphicsFactory;
     }
 
     @Override

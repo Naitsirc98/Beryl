@@ -1,7 +1,7 @@
 package naitsirc98.beryl.graphics.vulkan.swapchain;
 
-import naitsirc98.beryl.graphics.vulkan.VulkanImage;
-import naitsirc98.beryl.graphics.vulkan.VulkanImageBase;
+import naitsirc98.beryl.graphics.vulkan.textures.VulkanImage;
+import naitsirc98.beryl.graphics.vulkan.textures.VulkanImageBase;
 import naitsirc98.beryl.graphics.vulkan.VulkanObject;
 import naitsirc98.beryl.graphics.vulkan.devices.VulkanLogicalDevice;
 import naitsirc98.beryl.graphics.vulkan.devices.VulkanPhysicalDevice;

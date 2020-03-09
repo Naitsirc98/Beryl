@@ -3,6 +3,7 @@ package naitsirc98.beryl.graphics.vulkan;
 import naitsirc98.beryl.core.Beryl;
 import naitsirc98.beryl.core.BerylConfiguration;
 import naitsirc98.beryl.graphics.GraphicsContext;
+import naitsirc98.beryl.graphics.GraphicsFactory;
 import naitsirc98.beryl.graphics.rendering.RenderingPath;
 import naitsirc98.beryl.graphics.vulkan.commands.VulkanCommandPool;
 import naitsirc98.beryl.graphics.vulkan.devices.VulkanLogicalDevice;
@@ -10,9 +11,6 @@ import naitsirc98.beryl.graphics.vulkan.devices.VulkanPhysicalDevice;
 import naitsirc98.beryl.graphics.vulkan.rendering.VulkanRenderer;
 import naitsirc98.beryl.graphics.vulkan.rendering.VulkanSimpleRenderingPath;
 import naitsirc98.beryl.graphics.vulkan.swapchain.VulkanSwapchain;
-import naitsirc98.beryl.graphics.vulkan.vertex.VulkanVertexDataBuilder;
-import naitsirc98.beryl.meshes.vertices.VertexData;
-import naitsirc98.beryl.meshes.vertices.VertexLayout;
 import org.lwjgl.vulkan.VkInstance;
 
 import java.util.HashMap;
@@ -51,6 +49,7 @@ public final class VulkanContext implements GraphicsContext {
     private VulkanCommandPool graphicsCommandPool;
     private VulkanSwapchain swapchain;
     private VulkanRenderer renderer;
+    private VulkanGraphicsFactory graphicsFactory;
 
     private VulkanContext() {
 
@@ -66,6 +65,7 @@ public final class VulkanContext implements GraphicsContext {
         graphicsCommandPool = createGraphicsCommandPool();
         swapchain = new VulkanSwapchain();
         renderer = newInstance(VulkanRenderer.class);
+        graphicsFactory = new VulkanGraphicsFactory();
     }
 
     @Override
@@ -84,8 +84,8 @@ public final class VulkanContext implements GraphicsContext {
     }
 
     @Override
-    public VertexData.Builder newVertexDataBuilder(VertexLayout layout) {
-        return new VulkanVertexDataBuilder(layout);
+    public GraphicsFactory graphicsFactory() {
+        return graphicsFactory;
     }
 
     public VkInstance vkInstance() {

@@ -1,6 +1,6 @@
 package naitsirc98.beryl.graphics.vulkan.swapchain;
 
-import naitsirc98.beryl.graphics.vulkan.VulkanImageBase;
+import naitsirc98.beryl.graphics.vulkan.textures.VulkanImageBase;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkImageViewCreateInfo;
 

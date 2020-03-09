@@ -68,8 +68,10 @@ public final class Scene {
     }
 
     void lateUpdate() {
-        // TODO
-        // behaviours.lateUpdate();
+        behaviours.lateUpdate();
+    }
+
+    void endUpdate() {
         transforms.update();
         cameras.update();
     }

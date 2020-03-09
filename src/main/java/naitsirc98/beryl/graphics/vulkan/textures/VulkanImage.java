@@ -1,4 +1,4 @@
-package naitsirc98.beryl.graphics.vulkan;
+package naitsirc98.beryl.graphics.vulkan.textures;
 
 import naitsirc98.beryl.logging.Log;
 import org.lwjgl.system.MemoryStack;

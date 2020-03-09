@@ -64,7 +64,7 @@ public class CameraController extends Behaviour {
             }
         }
 
-        Window.get().focus();
+        // Window.get().focus();
 
         if(isKeyTyped(KEY_F1)) {
             Window.get().fullscreen();

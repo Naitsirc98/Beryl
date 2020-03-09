@@ -1,44 +1,80 @@
 package naitsirc98.beryl.graphics.opengl.textures;
 
+import naitsirc98.beryl.graphics.textures.Texture2D;
 import naitsirc98.beryl.images.Image;
+import naitsirc98.beryl.images.PixelFormat;
 
 import java.nio.ByteBuffer;
+import java.nio.FloatBuffer;
 
+import static naitsirc98.beryl.graphics.opengl.GLUtils.glToPixelFormat;
 import static naitsirc98.beryl.graphics.opengl.GLUtils.toGL;
 import static org.lwjgl.opengl.GL11C.GL_TEXTURE_2D;
 import static org.lwjgl.opengl.GL45C.*;
 
-public final class GLTexture2D extends GLTexture {
+public final class GLTexture2D extends GLTexture implements Texture2D {
+
+    private PixelFormat imageFormat;
 
     public GLTexture2D() {
         super(GL_TEXTURE_2D);
     }
 
-    public void image(int internalFormat, Image image) {
-        glBindTexture(GL_TEXTURE_2D, handle());
-        glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, image.width(), image.height(), 0,
-                toGL(image.pixelFormat()), toGL(image.pixelFormat().dataType()), image.pixelsi());
-        glBindTexture(GL_TEXTURE_2D, 0);
+    @Override
+    public Type type() {
+        return Type.TEXTURE_2D;
     }
 
-    public void storage(int levels, int internalFormat, int width, int height) {
-        glTextureStorage2D(handle(), levels, internalFormat, width, height);
-    }
-
-    public void update(int level, int width, int height, int format, int type, ByteBuffer pixels) {
-        update(level, 0, 0, width, height, format, type, pixels);
-    }
-
-    public void update(int level, int xoffset, int yoffset, int width, int height, int format, int type, ByteBuffer pixels) {
-        glTextureSubImage2D(handle(), level, xoffset, yoffset, width, height, format, type, pixels);
-    }
-
+    @Override
     public void generateMipmaps() {
         glGenerateTextureMipmap(handle());
     }
 
-    public void bind(int unit) {
-        glBindTextureUnit(unit, handle());
+    @Override
+    public int width() {
+        return glGetTextureLevelParameteri(handle, 0, GL_TEXTURE_WIDTH);
     }
 
+    @Override
+    public int height() {
+        return glGetTextureLevelParameteri(handle, 0, GL_TEXTURE_HEIGHT);
+    }
+
+    @Override
+    public PixelFormat internalFormat() {
+        return glToPixelFormat(glGetTextureLevelParameteri(handle, 0, GL_TEXTURE_INTERNAL_FORMAT));
+    }
+
+    @Override
+    public PixelFormat format() {
+        return imageFormat;
+    }
+
+    @Override
+    public void allocate(int mipLevels, int width, int height, PixelFormat internalFormat) {
+        glTextureStorage2D(handle, mipLevels, toGL(internalFormat), width, height);
+    }
+
+    @Override
+    public void pixels(int mipLevels, Image image) {
+        pixels(mipLevels, image.width(), image.height(), image.pixelFormat(), image.pixelsi());
+    }
+
+    @Override
+    public void pixels(int mipLevels, int width, int height, PixelFormat format, ByteBuffer pixels) {
+        allocate(mipLevels, width, height, format);
+        update(0, 0, 0, width, height, format, pixels);
+    }
+
+    @Override
+    public void update(int mipLevel, int xOffset, int yOffset, int width, int height, PixelFormat format, ByteBuffer pixels) {
+        glTextureSubImage2D(handle, mipLevel, xOffset, yOffset, width, height, toGL(format), toGL(format.dataType()), pixels);
+        this.imageFormat = format;
+    }
+
+    @Override
+    public void update(int mipLevel, int xOffset, int yOffset, int width, int height, PixelFormat format, FloatBuffer pixels) {
+        glTextureSubImage2D(handle, mipLevel, xOffset, yOffset, width, height, toGL(format), toGL(format.dataType()), pixels);
+        this.imageFormat = format;
+    }
 }

@@ -152,6 +152,7 @@ public final class SceneManager extends BerylSystem {
         scene.processTasks();
         scene.lateUpdate();
         scene.processTasks();
+        scene.endUpdate();
     }
 
     public void render() {
