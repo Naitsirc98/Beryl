@@ -4,7 +4,9 @@ import naitsirc98.beryl.graphics.Graphics;
 import naitsirc98.beryl.graphics.vulkan.commands.VulkanCommandPool;
 import naitsirc98.beryl.graphics.vulkan.devices.VulkanLogicalDevice;
 import naitsirc98.beryl.graphics.vulkan.devices.VulkanPhysicalDevice;
+import naitsirc98.beryl.graphics.vulkan.memory.VulkanAllocator;
 import naitsirc98.beryl.util.handles.Handle;
+import naitsirc98.beryl.util.handles.IntHandle;
 import naitsirc98.beryl.util.handles.LongHandle;
 import org.lwjgl.system.NativeResource;
 import org.lwjgl.vulkan.VkInstance;
@@ -30,6 +32,10 @@ public interface VulkanObject extends NativeResource {
 
     default VulkanLogicalDevice logicalDevice() {
         return vulkan().logicalDevice();
+    }
+
+    default VulkanAllocator allocator() {
+        return vulkan().allocator();
     }
 
     default VulkanCommandPool graphicsCommandPool() {

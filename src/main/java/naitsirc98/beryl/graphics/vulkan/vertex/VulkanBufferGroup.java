@@ -1,124 +1,65 @@
 package naitsirc98.beryl.graphics.vulkan.vertex;
 
 import naitsirc98.beryl.graphics.vulkan.VulkanObject;
-import org.lwjgl.system.MemoryStack;
-import org.lwjgl.vulkan.VkBufferCreateInfo;
-import org.lwjgl.vulkan.VkDevice;
-import org.lwjgl.vulkan.VkMemoryRequirements;
 
 import java.nio.LongBuffer;
 
-import static naitsirc98.beryl.graphics.vulkan.util.VulkanMemoryUtils.allocateVkBufferMemory;
-import static naitsirc98.beryl.graphics.vulkan.util.VulkanUtils.vkCall;
-import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.memAllocLong;
 import static org.lwjgl.system.MemoryUtil.memFree;
-import static org.lwjgl.vulkan.VK10.*;
 
-public class VulkanBufferGroup implements VulkanObject.Custom<LongBuffer> {
+public class VulkanBufferGroup implements VulkanObject {
 
-    private LongBuffer vkBuffers;
-    private LongBuffer memoryOffsets;
-    private final int bufferType;
-    private long vkMemory;
+    private VulkanBuffer[] buffers;
+    private LongBuffer pBuffers;
+    private LongBuffer pOffsets;
 
-    public VulkanBufferGroup(int bufferType, int desiredMemoryProperties, long[] bufferSizes) {
-        this.bufferType = bufferType;
-        vkBuffers = createVkBuffers(bufferSizes);
-        memoryOffsets = getMemoryOffsets(bufferSizes);
-        vkMemory = allocateVkBufferMemory(getMemoryRequirements(), desiredMemoryProperties);
-        bindBuffersToMemory();
+    public VulkanBufferGroup() {
     }
 
-    @Override
-    public LongBuffer handle() {
-        return vkBuffers;
+    public VulkanBufferGroup(VulkanBuffer[] buffers) {
+        init(buffers);
     }
 
-    public LongBuffer memoryOffsets() {
-        return memoryOffsets;
+    public VulkanBuffer[] buffers() {
+        return buffers;
     }
 
-    public int bufferType() {
-        return bufferType;
+    public LongBuffer pBuffers() {
+        return pBuffers;
     }
 
-    public long vkMemory() {
-        return vkMemory;
+    public LongBuffer pOffsets() {
+        return pOffsets;
+    }
+
+    public void init(VulkanBuffer[] buffers) {
+
+        this.buffers = buffers;
+
+        pBuffers = memAllocLong(buffers.length);
+        pOffsets = memAllocLong(buffers.length);
+
+        for(int i = 0;i < buffers.length;i++) {
+            pBuffers.put(i, buffers[i].handle());
+            pOffsets.put(i, buffers[i].offset());
+        }
+    }
+
+    public void ensure() {
+
     }
 
     @Override
     public void free() {
 
-        final VkDevice device = logicalDevice().handle();
-
-        for(int i = 0;i < vkBuffers.limit();i++) {
-            vkDestroyBuffer(device, vkBuffers.get(i), null);
+        for(VulkanBuffer buffer : buffers) {
+            buffer.free();
         }
+        memFree(pBuffers);
+        memFree(pOffsets);
 
-        memFree(vkBuffers);
-        vkBuffers = null;
-
-        memFree(memoryOffsets);
-
-        vkFreeMemory(device, vkMemory, null);
-        vkMemory = VK_NULL_HANDLE;
-    }
-
-    private void bindBuffersToMemory() {
-
-        final VkDevice device = logicalDevice().handle();
-
-        for(int i = 0;i < vkBuffers.limit();i++) {
-            vkBindBufferMemory(device, vkBuffers.get(i), vkMemory, memoryOffsets.get(i));
-        }
-    }
-
-    private LongBuffer createVkBuffers(long[] bufferSizes) {
-
-        try(MemoryStack stack = stackPush()) {
-
-            LongBuffer vkBuffers = memAllocLong(bufferSizes.length);
-
-            VkBufferCreateInfo bufferInfo = VkBufferCreateInfo.callocStack(stack)
-                    .sType(VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO)
-                    .usage(bufferType)
-                    .sharingMode(VK_SHARING_MODE_EXCLUSIVE);
-
-            final VkDevice device = logicalDevice().handle();
-
-            for(int i = 0;i < bufferSizes.length;i++) {
-                vkBuffers.position(i);
-                bufferInfo.size(bufferSizes[i]);
-                vkCall(vkCreateBuffer(device, bufferInfo, null, vkBuffers));
-            }
-
-            return vkBuffers.rewind();
-        }
-    }
-
-    private LongBuffer getMemoryOffsets(long[] bufferSizes) {
-
-        LongBuffer memoryOffsets = memAllocLong(bufferSizes.length);
-
-        long offset = 0;
-
-        for(int i = 0;i < bufferSizes.length;i++) {
-            memoryOffsets.put(i, offset);
-            offset += bufferSizes[i];
-        }
-
-        return memoryOffsets;
-    }
-
-    private VkMemoryRequirements.Buffer getMemoryRequirements() {
-
-        VkMemoryRequirements.Buffer memoryRequirements = VkMemoryRequirements.create(vkBuffers.capacity());
-
-        for(int i = 0;i < memoryRequirements.capacity();i++) {
-            vkGetBufferMemoryRequirements(logicalDevice().handle(), vkBuffers.get(i), memoryRequirements.get(i));
-        }
-
-        return memoryRequirements;
+        buffers = null;
+        pBuffers = null;
+        pOffsets = null;
     }
 }

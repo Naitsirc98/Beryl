@@ -16,6 +16,9 @@ module Beryl {
 
     requires org.lwjgl.vulkan;
 
+    requires org.lwjgl.vma;
+    requires org.lwjgl.vma.natives;
+
     requires org.lwjgl.opengl;
     requires org.lwjgl.opengl.natives;
 

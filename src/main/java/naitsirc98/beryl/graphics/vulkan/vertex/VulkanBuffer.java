@@ -1,29 +1,26 @@
 package naitsirc98.beryl.graphics.vulkan.vertex;
 
 import naitsirc98.beryl.graphics.vulkan.VulkanObject;
-import naitsirc98.beryl.graphics.vulkan.util.VulkanMemoryUtils;
-import org.lwjgl.system.MemoryStack;
+import naitsirc98.beryl.graphics.vulkan.memory.VmaAllocated;
+import naitsirc98.beryl.graphics.vulkan.memory.VmaBufferAllocation;
+import org.lwjgl.util.vma.VmaAllocationCreateInfo;
 import org.lwjgl.vulkan.VkBufferCreateInfo;
 
-import java.nio.LongBuffer;
+import static org.lwjgl.vulkan.VK10.VK_NULL_HANDLE;
 
-import static naitsirc98.beryl.graphics.vulkan.util.VulkanUtils.vkCall;
-import static org.lwjgl.system.MemoryStack.stackPush;
-import static org.lwjgl.vulkan.VK10.*;
-
-public class VulkanBuffer implements VulkanObject.Long {
+public class VulkanBuffer implements VulkanObject.Long, VmaAllocated {
 
     protected long vkBuffer;
-    protected long vkMemory;
-    protected final int size;
-    protected final int type;
+    protected long vmaAllocation;
+    protected VkBufferCreateInfo bufferCreateInfo;
+    private VmaAllocationCreateInfo allocationCreateInfo;
 
-    protected VulkanBuffer(int size, int type, int desiredMemoryProperties) {
-        this.size = size;
-        this.type = type;
-        vkBuffer = createVkBuffer();
-        this.vkMemory = VulkanMemoryUtils.allocateVkBufferMemory(vkBuffer, desiredMemoryProperties);
-        vkBindBufferMemory(logicalDevice().handle(), vkBuffer, vkMemory, 0);
+    public VulkanBuffer() {
+
+    }
+
+    public VulkanBuffer(VmaBufferAllocation bufferAllocation) {
+        init(bufferAllocation);
     }
 
     @Override
@@ -31,33 +28,46 @@ public class VulkanBuffer implements VulkanObject.Long {
         return vkBuffer;
     }
 
-    public final long vkMemory() {
-        return vkMemory;
+    public VkBufferCreateInfo bufferCreateInfo() {
+        return bufferCreateInfo;
+    }
+
+    @Override
+    public long allocation() {
+        return vmaAllocation;
+    }
+
+    @Override
+    public VmaAllocationCreateInfo allocationCreateInfo() {
+        return allocationCreateInfo;
+    }
+
+    @Override
+    public void ensure() {
+
+        if(!available()) {
+
+            allocator().destroyBuffer(handle(), allocation());
+
+            init(allocator().createBuffer(bufferCreateInfo, allocationCreateInfo));
+        }
     }
 
     @Override
     public void free() {
-        vkDestroyBuffer(logicalDevice().handle(), vkBuffer, null);
-        vkFreeMemory(logicalDevice().handle(), vkMemory, null);
+
+        allocator().destroyBuffer(handle(), allocation());
+        bufferCreateInfo.free();
+
         vkBuffer = VK_NULL_HANDLE;
-        vkMemory = VK_NULL_HANDLE;
+        vmaAllocation = VK_NULL_HANDLE;
+        bufferCreateInfo = null;
     }
 
-    protected long createVkBuffer() {
-
-        try(MemoryStack stack = stackPush()) {
-
-            VkBufferCreateInfo bufferInfo = VkBufferCreateInfo.callocStack(stack)
-                    .sType(VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO)
-                    .size(size)
-                    .usage(type)
-                    .sharingMode(VK_SHARING_MODE_EXCLUSIVE);
-
-            LongBuffer pBuffer = stack.mallocLong(1);
-            vkCall(vkCreateBuffer(logicalDevice().handle(), bufferInfo, null, pBuffer));
-
-            return pBuffer.get(0);
-        }
+    private void init(VmaBufferAllocation bufferAllocation) {
+        this.vkBuffer = bufferAllocation.buffer();
+        this.vmaAllocation = bufferAllocation.allocation();
+        this.bufferCreateInfo = bufferAllocation.bufferCreateInfo();
+        this.allocationCreateInfo = bufferAllocation.allocationCreateInfo();
     }
-
 }

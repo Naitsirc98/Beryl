@@ -8,6 +8,7 @@ import naitsirc98.beryl.graphics.rendering.RenderingPath;
 import naitsirc98.beryl.graphics.vulkan.commands.VulkanCommandPool;
 import naitsirc98.beryl.graphics.vulkan.devices.VulkanLogicalDevice;
 import naitsirc98.beryl.graphics.vulkan.devices.VulkanPhysicalDevice;
+import naitsirc98.beryl.graphics.vulkan.memory.VulkanAllocator;
 import naitsirc98.beryl.graphics.vulkan.rendering.VulkanRenderer;
 import naitsirc98.beryl.graphics.vulkan.rendering.VulkanSimpleRenderingPath;
 import naitsirc98.beryl.graphics.vulkan.swapchain.VulkanSwapchain;
@@ -46,6 +47,7 @@ public final class VulkanContext implements GraphicsContext {
     private VulkanSurface surface;
     private VulkanPhysicalDevice physicalDevice;
     private VulkanLogicalDevice logicalDevice;
+    private VulkanAllocator allocator;
     private VulkanCommandPool graphicsCommandPool;
     private VulkanSwapchain swapchain;
     private VulkanRenderer renderer;
@@ -62,6 +64,7 @@ public final class VulkanContext implements GraphicsContext {
         surface = new VulkanSurface();
         physicalDevice = new VulkanPhysicalDevice();
         logicalDevice = new VulkanLogicalDevice();
+        allocator = new VulkanAllocator(vkInstance, physicalDevice, logicalDevice);
         graphicsCommandPool = createGraphicsCommandPool();
         swapchain = new VulkanSwapchain();
         renderer = newInstance(VulkanRenderer.class);
@@ -106,6 +109,10 @@ public final class VulkanContext implements GraphicsContext {
 
     public VulkanLogicalDevice logicalDevice() {
         return logicalDevice;
+    }
+
+    public VulkanAllocator allocator() {
+        return allocator;
     }
 
     public VulkanCommandPool graphicsCommandPool() {

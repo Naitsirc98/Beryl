@@ -44,7 +44,6 @@ public final class VulkanBufferUtils {
             vkDestroyBuffer(Graphics.vulkan().logicalDevice().handle(), stagingBuffer.get(0), null);
             vkFreeMemory(Graphics.vulkan().logicalDevice().handle(), stagingBuffer.get(1), null);
         }
-
     }
 
     public static void copyVkBuffer(long srcBuffer, long dstBuffer, long size) {
