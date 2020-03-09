@@ -12,7 +12,12 @@ class TaskProcessor {
     private final ExecutorService threadPool;
 
     public TaskProcessor() {
-        threadPool = Executors.newCachedThreadPool();
+        threadPool = Executors.newCachedThreadPool(runnable -> {
+            Thread thread = Executors.defaultThreadFactory().newThread(runnable);
+            thread.setName("TaskProcessor Thread: " + thread.getName());
+            thread.setDaemon(true);
+            return thread;
+        });
     }
 
     public void submit(Task task) {

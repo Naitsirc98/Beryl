@@ -95,7 +95,7 @@ public final class EntityManager implements Iterable<Entity> {
      *
      * @param entity the entity
      */
-    public void remove(Entity entity) {
+    public synchronized void remove(Entity entity) {
 
         if(!entity.name().equals(UNNAMED)) {
             nameTable.remove(entity.name());

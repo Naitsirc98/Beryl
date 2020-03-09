@@ -11,8 +11,11 @@ import naitsirc98.beryl.scenes.components.meshes.MeshView;
 import naitsirc98.beryl.scenes.components.meshes.MeshViewManager;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import static java.util.stream.IntStream.range;
 import static naitsirc98.beryl.scenes.Entity.UNTAGGED;
 import static naitsirc98.beryl.util.Asserts.assertNonNull;
 import static naitsirc98.beryl.util.Asserts.assertTrue;
@@ -48,7 +51,7 @@ public final class Scene {
         componentManagers = createComponentManagersMap();
         // ===
 
-        taskQueue = new ArrayDeque<>();
+        taskQueue = new ConcurrentLinkedQueue<>();
     }
 
     void start() {
@@ -57,13 +60,12 @@ public final class Scene {
     }
 
     void update() {
-        // TODO
         behaviours.update();
     }
 
     void processTasks() {
-        while(!taskQueue.isEmpty()) {
-            taskQueue.poll().run();
+        if(!taskQueue.isEmpty()) {
+            range(0, taskQueue.size()).parallel().mapToObj(i -> taskQueue.poll()).forEach(Runnable::run);
         }
     }
 
@@ -86,7 +88,6 @@ public final class Scene {
     }
 
     void terminate() {
-        // TODO
         processTasks();
         entityManager.remove();
         componentManagers.values().forEach(ComponentManager::removeAll);
@@ -207,7 +208,11 @@ public final class Scene {
     <T extends Component> void add(T component) {
         assertNonNull(component);
         ComponentManager<T> manager = managerOf(component.type());
-        manager.add(component);
+
+        synchronized(manager) {
+            manager.add(component);
+        }
+
         component.manager = manager;
     }
 
@@ -242,8 +247,14 @@ public final class Scene {
     }
 
     @SuppressWarnings("unchecked")
-    void destroyComponent(Component component) {
-        managerOf(component.type()).remove(component);
+    <T extends Component> void destroyComponent(T component) {
+
+        ComponentManager<T> manager = managerOf(component.type());
+
+        synchronized(manager) {
+            manager.remove(component);
+        }
+
         component.delete();
     }
 
