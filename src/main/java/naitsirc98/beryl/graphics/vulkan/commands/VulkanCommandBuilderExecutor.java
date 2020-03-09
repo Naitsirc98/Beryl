@@ -2,6 +2,7 @@ package naitsirc98.beryl.graphics.vulkan.commands;
 
 import naitsirc98.beryl.graphics.Graphics;
 import naitsirc98.beryl.logging.Log;
+import naitsirc98.beryl.util.SystemInfo;
 import org.joml.Matrix4f;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryUtil;
@@ -23,7 +24,7 @@ import static org.lwjgl.vulkan.VK10.vkCmdExecuteCommands;
 public class VulkanCommandBuilderExecutor implements NativeResource {
 
     // TODO: make this configurable?
-    private static final int COMMAND_BUILDER_COUNT = 12;
+    private static final int COMMAND_BUILDER_COUNT = SystemInfo.processorCount();
 
     private List<VulkanCommandBuilder> commandBuilders;
     private List<Matrix4f> matrices;

@@ -4,13 +4,13 @@ import naitsirc98.beryl.core.BerylSystem;
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.util.types.Singleton;
 
-import java.util.Optional;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static java.util.concurrent.Executors.newSingleThreadExecutor;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 /**
@@ -19,6 +19,8 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 public final class TaskManager extends BerylSystem {
 
     private static final int TASK_POP_TIMEOUT = 16;
+
+    private static final Task TERMINATION_TASK = new TerminationTask();
 
     @Singleton
     private static TaskManager instance;
@@ -51,7 +53,12 @@ public final class TaskManager extends BerylSystem {
     private TaskManager() {
         running = new AtomicBoolean(false);
         taskQueue = new PriorityBlockingQueue<>();
-        taskThread = Executors.newSingleThreadExecutor();
+        taskThread = newSingleThreadExecutor(runnable -> {
+            Thread thread = Executors.defaultThreadFactory().newThread(runnable);
+            thread.setName("TaskManager Thread");
+            thread.setDaemon(true);
+            return thread;
+        });
         taskProcessor = new TaskProcessor();
     }
 
@@ -64,6 +71,7 @@ public final class TaskManager extends BerylSystem {
     @Override
     protected void terminate() {
 
+        taskQueue.add(TERMINATION_TASK);
         running.set(false);
         taskProcessor.shutdown();
         taskThread.shutdown();
@@ -92,21 +100,38 @@ public final class TaskManager extends BerylSystem {
     }
 
     private void run() {
+
         while(running.get()) {
+
             while(!taskQueue.isEmpty()) {
-                popTask().filter(Task::notCanceled).ifPresent(taskProcessor::submit);
+
+                final Task task = popTask();
+
+                if(task == TERMINATION_TASK) {
+                    return;
+                }
+
+                if(task != null && task.state() != Task.State.CANCELED) {
+                    taskProcessor.submit(task);
+                }
             }
         }
     }
 
-    private Optional<Task> popTask() {
+    private Task popTask() {
         try {
-            return Optional.ofNullable(taskQueue.poll(TASK_POP_TIMEOUT, MILLISECONDS));
+            return taskQueue.take();
         } catch (InterruptedException e) {
-            Log.error("Timeout error while polling the task queue", e);
+            Log.error("TaskManager thread has been interrupted", e);
         }
-        return Optional.empty();
+        return null;
     }
 
 
+    private static final class TerminationTask extends Task {
+        @Override
+        protected void perform() {
+
+        }
+    }
 }

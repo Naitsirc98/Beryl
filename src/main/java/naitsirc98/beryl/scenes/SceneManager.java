@@ -6,8 +6,8 @@ import naitsirc98.beryl.core.BerylSystem;
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.util.types.Singleton;
 
-import java.util.ArrayDeque;
-import java.util.Deque;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Stream;
 
 import static naitsirc98.beryl.util.types.TypeUtils.getOrElse;
@@ -42,11 +42,11 @@ public final class SceneManager extends BerylSystem {
     }
 
     public static Scene frontScene() {
-        return instance.scenes.peekFirst();
+        return instance.scenes.get(0);
     }
 
     public static Scene backScene() {
-        return instance.scenes.peekLast();
+        return instance.scenes.get(sceneCount() - 1);
     }
 
     public static void setScene(Scene scene) {
@@ -84,9 +84,9 @@ public final class SceneManager extends BerylSystem {
         }
 
         if(mode == AddMode.LAST) {
-            instance.scenes.addLast(scene);
+            instance.scenes.add(0, scene);
         } else {
-            instance.scenes.addFirst(scene);
+            instance.scenes.add(sceneCount() - 1, scene);
         }
     }
 
@@ -121,10 +121,10 @@ public final class SceneManager extends BerylSystem {
     }
 
     private Scene activeScene;
-    private final Deque<Scene> scenes;
+    private final List<Scene> scenes;
 
     private SceneManager() {
-        scenes = new ArrayDeque<>(2);
+        scenes = new ArrayList<>(2);
     }
 
     @Override
@@ -167,9 +167,10 @@ public final class SceneManager extends BerylSystem {
     }
 
     private void terminateAllScenes() {
-        while(!scenes.isEmpty()) {
-            scenes.poll().terminate();
+        for(Scene scene : scenes) {
+            scene.terminate();
         }
+        scenes.clear();
     }
 
     @Override
