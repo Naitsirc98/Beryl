@@ -1,6 +1,6 @@
-package naitsirc98.beryl.graphics.opengl.shaders;
+package naitsirc98.beryl.graphics.opengl.buffers;
 
-import naitsirc98.beryl.graphics.opengl.GLBuffer;
+import naitsirc98.beryl.graphics.opengl.shaders.GLShaderProgram;
 
 import static org.lwjgl.opengl.GL30.glBindBufferBase;
 import static org.lwjgl.opengl.GL31.*;
@@ -24,5 +24,10 @@ public class GLUniformBuffer extends GLBuffer {
 
     public void bind(long offset, long size) {
         glBindBufferRange(GL_UNIFORM_BUFFER, binding, handle(), offset, size);
+    }
+
+    @Override
+    public Type type() {
+        return Type.UNIFORM_BUFFER;
     }
 }

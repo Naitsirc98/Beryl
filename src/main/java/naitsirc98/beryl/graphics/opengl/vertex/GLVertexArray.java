@@ -1,7 +1,7 @@
 package naitsirc98.beryl.graphics.opengl.vertex;
 
-import naitsirc98.beryl.graphics.opengl.GLBuffer;
 import naitsirc98.beryl.graphics.opengl.GLObject;
+import naitsirc98.beryl.graphics.opengl.buffers.GLBuffer;
 import naitsirc98.beryl.meshes.vertices.VertexAttribute;
 import naitsirc98.beryl.meshes.vertices.VertexAttributeList;
 import naitsirc98.beryl.meshes.vertices.VertexAttributeList.VertexAttributeListIterator;

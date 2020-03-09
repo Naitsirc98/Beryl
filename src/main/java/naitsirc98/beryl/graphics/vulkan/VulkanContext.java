@@ -38,7 +38,11 @@ public final class VulkanContext implements GraphicsContext {
     public static final Set<String> DEVICE_EXTENSIONS = BerylConfiguration.VULKAN_DEVICE_EXTENSIONS.get(defaultDeviceExtensions());
 
     private static Set<String> defaultDeviceExtensions() {
-        return Stream.of(VK_KHR_SWAPCHAIN_EXTENSION_NAME)
+        return Stream.of(
+                VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+                "VK_KHR_dedicated_allocation",
+                "VK_KHR_get_memory_requirements2"
+                )
                 .collect(toSet());
     }
 

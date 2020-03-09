@@ -1,5 +1,6 @@
 package naitsirc98.beryl.graphics.vulkan.util;
 
+import naitsirc98.beryl.graphics.buffers.GraphicsBuffer;
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.util.Version;
 import naitsirc98.beryl.util.types.DataType;
@@ -58,6 +59,19 @@ public class VulkanUtils {
         }
 
         return buffer.rewind();
+    }
+
+    public static GraphicsBuffer.Type vkToBufferType(int usage) {
+
+        if((usage & VK_BUFFER_USAGE_VERTEX_BUFFER_BIT) == VK_BUFFER_USAGE_VERTEX_BUFFER_BIT) {
+            return GraphicsBuffer.Type.VERTEX_BUFFER;
+        } else if((usage & VK_BUFFER_USAGE_INDEX_BUFFER_BIT) == VK_BUFFER_USAGE_INDEX_BUFFER_BIT) {
+            return GraphicsBuffer.Type.INDEX_BUFFER;
+        } else if((usage & VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT) == VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT) {
+            return GraphicsBuffer.Type.UNIFORM_BUFFER;
+        }
+
+        throw new IllegalArgumentException("Unknown Vulkan buffer usage: " + usage);
     }
 
     public static String getVulkanErrorName(int errorCode) {

@@ -1,17 +1,18 @@
 package naitsirc98.beryl.graphics.opengl.vertex;
 
-import naitsirc98.beryl.graphics.opengl.GLBuffer;
+import naitsirc98.beryl.graphics.opengl.buffers.GLBuffer;
+import naitsirc98.beryl.graphics.opengl.buffers.GLVertexBuffer;
 import naitsirc98.beryl.meshes.vertices.VertexData;
 import naitsirc98.beryl.meshes.vertices.VertexLayout;
 
 public final class GLVertexData extends VertexData {
 
     private GLVertexArray vertexArray;
-    private GLBuffer[] vertexBuffers;
+    private GLVertexBuffer[] vertexBuffers;
     private GLBuffer indexBuffer;
 
     protected GLVertexData(VertexLayout layout, int firstVertex, int vertexCount, int indexCount,
-                           GLBuffer[] vertexBuffers, GLBuffer indexBuffer) {
+                           GLVertexBuffer[] vertexBuffers, GLBuffer indexBuffer) {
 
         super(layout, firstVertex, vertexCount, indexCount);
         this.vertexBuffers = vertexBuffers;

@@ -1,6 +1,8 @@
 package naitsirc98.beryl.graphics.opengl.vertex;
 
-import naitsirc98.beryl.graphics.opengl.GLBuffer;
+import naitsirc98.beryl.graphics.opengl.buffers.GLBuffer;
+import naitsirc98.beryl.graphics.opengl.buffers.GLIndexBuffer;
+import naitsirc98.beryl.graphics.opengl.buffers.GLVertexBuffer;
 import naitsirc98.beryl.meshes.vertices.VertexData;
 import naitsirc98.beryl.meshes.vertices.VertexLayout;
 
@@ -34,8 +36,8 @@ public final class GLVertexDataBuilder extends VertexData.Builder {
         GLBuffer indexBuffer = null;
 
         if(indices != null && indices.hasRemaining()) {
-            indexBuffer = new GLBuffer();
-            indexBuffer.storage(indices);
+            indexBuffer = new GLIndexBuffer();
+            indexBuffer.data(indices);
         }
 
         final int indexCount = indices == null ? 0 : indices.remaining();
@@ -44,11 +46,11 @@ public final class GLVertexDataBuilder extends VertexData.Builder {
     }
 
 
-    private GLBuffer[] createVertexBuffers() {
-        GLBuffer[] vertexBuffers = new GLBuffer[layout.bindings()];
+    private GLVertexBuffer[] createVertexBuffers() {
+        GLVertexBuffer[] vertexBuffers = new GLVertexBuffer[layout.bindings()];
         for(int i = 0;i < vertexBuffers.length;i++) {
-            vertexBuffers[i] = new GLBuffer();
-            vertexBuffers[i].storage(vertices[i]);
+            vertexBuffers[i] = new GLVertexBuffer();
+            vertexBuffers[i].data(vertices[i]);
         }
         return vertexBuffers;
     }

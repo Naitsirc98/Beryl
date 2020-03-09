@@ -1,4 +1,4 @@
-package naitsirc98.beryl.graphics.vulkan.vertex;
+package naitsirc98.beryl.graphics.vulkan.buffers;
 
 import naitsirc98.beryl.graphics.vulkan.VulkanObject;
 
@@ -46,7 +46,7 @@ public class VulkanBufferGroup implements VulkanObject {
     }
 
     public void ensure() {
-
+        // TODO
     }
 
     @Override

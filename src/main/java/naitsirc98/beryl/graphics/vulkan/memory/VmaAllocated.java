@@ -14,7 +14,7 @@ public interface VmaAllocated extends VulkanObject {
     VmaAllocationCreateInfo allocationCreateInfo();
 
     default VmaAllocationInfo allocationInfo() {
-        VmaAllocationInfo allocationInfo = VmaAllocationInfo.mallocStack();
+        VmaAllocationInfo allocationInfo = VmaAllocationInfo.create();
         vmaGetAllocationInfo(allocator().handle(), allocation(), allocationInfo);
         return allocationInfo;
     }

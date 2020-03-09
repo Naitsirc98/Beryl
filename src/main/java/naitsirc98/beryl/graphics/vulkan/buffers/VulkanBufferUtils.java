@@ -1,4 +1,4 @@
-package naitsirc98.beryl.graphics.vulkan.vertex;
+package naitsirc98.beryl.graphics.vulkan.buffers;
 
 import naitsirc98.beryl.graphics.Graphics;
 import naitsirc98.beryl.graphics.vulkan.commands.VulkanCommandPool;
