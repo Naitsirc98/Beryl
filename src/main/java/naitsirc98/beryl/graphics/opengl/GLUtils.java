@@ -108,18 +108,28 @@ public class GLUtils {
         throw new IllegalArgumentException("Unknown Wrap mode: " + wrapMode);
     }
 
-    public static int toGL(Texture.Filter filter) {
-        switch(requireNonNull(filter)) {
+    public static int toGL(Texture.MagFilter filter) {
+        switch(filter) {
             case NEAREST:
                 return GL_NEAREST;
             case LINEAR:
                 return GL_LINEAR;
-            case MIPMAP_NEAREST:
+        }
+        throw new IllegalArgumentException("Unknown GL Mag Filter: " +filter);
+    }
+
+    public static int toGL(Texture.MinFilter filter) {
+        switch(filter) {
+            case NEAREST_MIPMAP_NEAREST:
                 return GL_NEAREST_MIPMAP_NEAREST;
-            case MIPMAP_LINEAR:
+            case NEAREST_MIPMAP_LINEAR:
+                return GL_NEAREST_MIPMAP_LINEAR;
+            case LINEAR_MIPMAP_NEAREST:
+                return GL_LINEAR_MIPMAP_NEAREST;
+            case LINEAR_MIPMAP_LINEAR:
                 return GL_LINEAR_MIPMAP_LINEAR;
         }
-        throw new IllegalArgumentException("Unknown Filter: " + filter);
+        throw new IllegalArgumentException("Unknown GL Min Filter: " + filter);
     }
 
     public static Texture.WrapMode glToWrapMode(int glWrapMode) {
@@ -136,18 +146,28 @@ public class GLUtils {
         throw new IllegalArgumentException("Unknown GL Wrap mode: " + glWrapMode);
     }
 
-    public static Texture.Filter glToFilter(int glFilter) {
+    public static Texture.MagFilter glToMagFilter(int glFilter) {
         switch(glFilter) {
             case GL_NEAREST:
-                return Texture.Filter.NEAREST;
+                return Texture.MagFilter.NEAREST;
             case GL_LINEAR:
-                return Texture.Filter.LINEAR;
-            case GL_NEAREST_MIPMAP_NEAREST:
-                return Texture.Filter.MIPMAP_NEAREST;
-            case GL_LINEAR_MIPMAP_LINEAR:
-                return Texture.Filter.MIPMAP_LINEAR;
+                return Texture.MagFilter.LINEAR;
         }
-        throw new IllegalArgumentException("Unknown GL Filter: " + glFilter);
+        throw new IllegalArgumentException("Unknown GL Mag Filter: " + glFilter);
+    }
+
+    public static Texture.MinFilter glToMinFilter(int glFilter) {
+        switch(glFilter) {
+            case GL_NEAREST_MIPMAP_NEAREST:
+                return Texture.MinFilter.NEAREST_MIPMAP_NEAREST;
+            case GL_NEAREST_MIPMAP_LINEAR:
+                return Texture.MinFilter.NEAREST_MIPMAP_LINEAR;
+            case GL_LINEAR_MIPMAP_NEAREST:
+                return Texture.MinFilter.LINEAR_MIPMAP_NEAREST;
+            case GL_LINEAR_MIPMAP_LINEAR:
+                return Texture.MinFilter.LINEAR_MIPMAP_LINEAR;
+        }
+        throw new IllegalArgumentException("Unknown GL Min Filter: " + glFilter);
     }
 
 }

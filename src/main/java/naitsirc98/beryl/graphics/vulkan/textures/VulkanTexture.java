@@ -5,78 +5,83 @@ import naitsirc98.beryl.graphics.textures.Texture;
 import naitsirc98.beryl.graphics.vulkan.VulkanObject;
 import naitsirc98.beryl.images.PixelFormat;
 
-import static org.lwjgl.vulkan.VK10.VK_NULL_HANDLE;
-import static org.lwjgl.vulkan.VK10.vkDestroySampler;
+import static naitsirc98.beryl.graphics.vulkan.util.VulkanFormatUtils.vkToPixelFormat;
+import static naitsirc98.beryl.graphics.vulkan.util.VulkanUtils.*;
 
 public abstract class VulkanTexture implements VulkanObject, Texture {
 
-    private VulkanImage image;
-    private long sampler;
+    private VulkanRenderImage renderImage;
+    private VulkanSampler sampler;
 
-    public VulkanTexture() {
-
+    public VulkanTexture(VulkanRenderImage renderImage, VulkanSampler sampler) {
+        this.renderImage = renderImage;
+        this.sampler = sampler;
     }
 
     public VulkanImage image() {
-        return image;
+        return renderImage.image();
     }
 
-    public long sampler() {
+    public VulkanImageView view() {
+        return renderImage.view();
+    }
+
+    public VulkanSampler sampler() {
         return sampler;
     }
 
     @Override
     public PixelFormat internalFormat() {
-        return null;
+        return vkToPixelFormat(image().format());
     }
 
     @Override
     public PixelFormat format() {
-        return null;
+        return vkToPixelFormat(view().format());
     }
 
     @Override
     public void generateMipmaps() {
-
+        // TODO
     }
 
     @Override
     public WrapMode wrapModeS() {
-        return null;
+        return vkToWrapMode(sampler.addressModeU());
     }
 
     @Override
     public WrapMode wrapModeT() {
-        return null;
+        return vkToWrapMode(sampler.addressModeV());
     }
 
     @Override
     public WrapMode wrapModeR() {
-        return null;
+        return vkToWrapMode(sampler.addressModeW());
     }
 
     @Override
-    public Filter minFilter() {
-        return null;
+    public MinFilter minFilter() {
+        return vkToMinFilter(sampler.minFilter(), sampler.mipmapMode());
     }
 
     @Override
-    public Filter magFilter() {
-        return null;
+    public MagFilter magFilter() {
+        return vkToMagFilter(sampler.magFilter());
     }
 
     @Override
     public void samplerInfo(SamplerInfo samplerInfo) {
-
+        // TODO
     }
 
     @Override
     public void free() {
 
-        image.free();
-        vkDestroySampler(logicalDevice().handle(), sampler, null);
+        renderImage.free();
+        sampler.free();
 
-        image = null;
-        sampler = VK_NULL_HANDLE;
+        renderImage = null;
+        sampler = null;
     }
 }

@@ -1,5 +1,6 @@
 package naitsirc98.beryl.graphics.vulkan.util;
 
+import naitsirc98.beryl.images.PixelFormat;
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.util.types.DataType;
 import org.lwjgl.system.MemoryStack;
@@ -52,6 +53,40 @@ public class VulkanFormatUtils {
                     VK_IMAGE_TILING_OPTIMAL,
                     VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
         }
+    }
+    
+    public static PixelFormat vkToPixelFormat(int vkFormat) {
+        switch(vkFormat) {
+            case VK_FORMAT_R8_UINT:
+            case VK_FORMAT_R8_SINT:
+                return PixelFormat.RED;
+            case VK_FORMAT_R8G8_UINT:
+            case VK_FORMAT_R8G8_SINT:
+                return PixelFormat.RG;
+            case VK_FORMAT_R8G8B8_UINT:
+            case VK_FORMAT_R8G8B8_SINT:
+                return PixelFormat.RGB;
+            case VK_FORMAT_R8G8B8A8_UINT:
+            case VK_FORMAT_R8G8B8A8_SINT:
+                return PixelFormat.RGBA;
+            case VK_FORMAT_R16_SFLOAT:
+                return PixelFormat.RED16F;
+            case VK_FORMAT_R16G16_SFLOAT:
+                return PixelFormat.RG16F;
+            case VK_FORMAT_R16G16B16_SFLOAT:
+                return PixelFormat.RGB16F;
+            case VK_FORMAT_R16G16B16A16_SFLOAT:
+                return PixelFormat.RGBA16F;
+            case VK_FORMAT_R32_SFLOAT:
+                return PixelFormat.RED32F;
+            case VK_FORMAT_R32G32_SFLOAT:
+                return PixelFormat.RG32F;
+            case VK_FORMAT_R32G32B32_SFLOAT:
+                return PixelFormat.RGB32F;
+            case VK_FORMAT_R32G32B32A32_SFLOAT:
+                return PixelFormat.RGBA32F;
+        }
+        throw new IllegalArgumentException("Unsupported Vulkan Format: " + vkFormat);
     }
 
     public static int asVkFormat(DataType dataType, int size) {

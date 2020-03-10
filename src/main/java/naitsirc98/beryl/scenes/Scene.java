@@ -1,7 +1,7 @@
 package naitsirc98.beryl.scenes;
 
 import naitsirc98.beryl.logging.Log;
-import naitsirc98.beryl.scenes.components.behaviours.Behaviour;
+import naitsirc98.beryl.scenes.components.behaviours.AbstractBehaviour;
 import naitsirc98.beryl.scenes.components.behaviours.BehaviourManager;
 import naitsirc98.beryl.scenes.components.camera.Camera;
 import naitsirc98.beryl.scenes.components.camera.CameraManager;
@@ -280,7 +280,7 @@ public final class Scene {
 
         Map<Class<? extends Component>, ComponentManager<?>> components = new HashMap<>();
 
-        components.put(Behaviour.class, behaviours);
+        components.put(AbstractBehaviour.class, behaviours);
         components.put(Transform.class, transforms);
         components.put(Camera.class, cameras);
         components.put(MeshView.class, meshes);

@@ -43,13 +43,13 @@ public abstract class GLTexture implements GLObject, Texture {
     }
 
     @Override
-    public Filter minFilter() {
-        return glToFilter(glGetTextureParameteri(handle, GL_TEXTURE_MIN_FILTER));
+    public MinFilter minFilter() {
+        return glToMinFilter(glGetTextureParameteri(handle, GL_TEXTURE_MIN_FILTER));
     }
 
     @Override
-    public Filter magFilter() {
-        return glToFilter(glGetTextureParameteri(handle, GL_TEXTURE_MAG_FILTER));
+    public MagFilter magFilter() {
+        return glToMagFilter(glGetTextureParameteri(handle, GL_TEXTURE_MAG_FILTER));
     }
 
     @Override

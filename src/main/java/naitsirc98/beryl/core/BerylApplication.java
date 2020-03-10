@@ -17,7 +17,7 @@ public class BerylApplication {
         instance.running = false;
     }
 
-    private boolean running;
+    private volatile boolean running;
 
     public BerylApplication() {
     }
@@ -62,7 +62,6 @@ public class BerylApplication {
 
     public static final class Builder {
 
-        private Runnable setConfig = () -> {};
         private Runnable onInit = () -> {};
         private Runnable onStart = () -> {};
         private Runnable onUpdate = () -> {};
@@ -71,11 +70,6 @@ public class BerylApplication {
         private Runnable onTerminate = () -> {};
 
         public Builder() {
-        }
-
-        public Builder setConfiguration(Runnable setConfig) {
-            this.setConfig = requireNonNull(setConfig);
-            return this;
         }
 
         public Builder onInit(Runnable onInit) {

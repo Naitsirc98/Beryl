@@ -2,51 +2,45 @@ package naitsirc98.beryl.scenes.components.behaviours;
 
 import java.util.function.Consumer;
 
-public final class MutableBehaviour extends Behaviour {
+public final class LateMutableBehaviour extends LateBehaviour {
 
     private Stage onInit;
     private Stage onStart;
-    private Stage onUpdate;
     private Stage onLateUpdate;
     private Stage onEnable;
     private Stage onDisable;
     private Stage onDestroy;
 
-    private MutableBehaviour() {
+    private LateMutableBehaviour() {
 
     }
 
-    public MutableBehaviour onInit(Stage onInit) {
+    public LateMutableBehaviour onInit(Stage onInit) {
         this.onInit = onInit;
         return this;
     }
 
-    public MutableBehaviour onStart(Stage onStart) {
+    public LateMutableBehaviour onStart(Stage onStart) {
         this.onStart = onStart;
         return this;
     }
 
-    public MutableBehaviour onUpdate(Stage onUpdate) {
-        this.onUpdate = onUpdate;
-        return this;
-    }
-
-    public MutableBehaviour onLateUpdate(Stage onLateUpdate) {
+    public LateMutableBehaviour onLateUpdate(Stage onLateUpdate) {
         this.onLateUpdate = onLateUpdate;
         return this;
     }
 
-    public MutableBehaviour onEnable(Stage onEnable) {
+    public LateMutableBehaviour onEnable(Stage onEnable) {
         this.onEnable = onEnable;
         return this;
     }
 
-    public MutableBehaviour onDisable(Stage onDisable) {
+    public LateMutableBehaviour onDisable(Stage onDisable) {
         this.onDisable = onDisable;
         return this;
     }
 
-    public MutableBehaviour onDestroy(Stage onDestroy) {
+    public LateMutableBehaviour onDestroy(Stage onDestroy) {
         this.onDestroy = onDestroy;
         return this;
     }
@@ -62,13 +56,6 @@ public final class MutableBehaviour extends Behaviour {
     protected void onStart() {
         if(onStart != null) {
             onStart.accept(this);
-        }
-    }
-
-    @Override
-    public void onUpdate() {
-        if(onUpdate != null) {
-            onUpdate.accept(this);
         }
     }
 
@@ -100,7 +87,7 @@ public final class MutableBehaviour extends Behaviour {
         }
     }
 
-    public interface Stage extends Consumer<MutableBehaviour> {
+    public interface Stage extends Consumer<LateMutableBehaviour> {
 
     }
 }

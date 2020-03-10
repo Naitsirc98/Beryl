@@ -3,7 +3,7 @@ package naitsirc98.beryl.examples.app1;
 
 import naitsirc98.beryl.graphics.window.Window;
 import naitsirc98.beryl.logging.Log;
-import naitsirc98.beryl.scenes.components.behaviours.Behaviour;
+import naitsirc98.beryl.scenes.components.behaviours.LateBehaviour;
 import naitsirc98.beryl.scenes.components.camera.Camera;
 
 import static naitsirc98.beryl.graphics.window.CursorType.DISABLED;
@@ -11,7 +11,7 @@ import static naitsirc98.beryl.graphics.window.CursorType.NORMAL;
 import static naitsirc98.beryl.input.Input.*;
 import static naitsirc98.beryl.input.Key.*;
 
-public class CameraController extends Behaviour {
+public class CameraController extends LateBehaviour {
 
     private Camera camera;
 
@@ -22,7 +22,7 @@ public class CameraController extends Behaviour {
     }
 
     @Override
-    protected void onUpdate() {
+    public void onLateUpdate() {
 
         float amount = 1 / 60.0f;
 

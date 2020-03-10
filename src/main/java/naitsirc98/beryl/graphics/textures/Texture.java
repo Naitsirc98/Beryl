@@ -17,8 +17,8 @@ public interface Texture extends NativeResource {
     WrapMode wrapModeT();
     WrapMode wrapModeR();
 
-    Filter minFilter();
-    Filter magFilter();
+    MinFilter minFilter();
+    MagFilter magFilter();
 
     void samplerInfo(SamplerInfo samplerInfo);
 
@@ -35,11 +35,15 @@ public interface Texture extends NativeResource {
         CLAMP_TO_EDGE
     }
 
-    enum Filter {
+    enum MinFilter {
+        NEAREST_MIPMAP_NEAREST,
+        NEAREST_MIPMAP_LINEAR,
+        LINEAR_MIPMAP_NEAREST,
+        LINEAR_MIPMAP_LINEAR
+    }
 
+    enum MagFilter {
         NEAREST,
-        LINEAR,
-        MIPMAP_NEAREST,
-        MIPMAP_LINEAR
+        LINEAR
     }
 }

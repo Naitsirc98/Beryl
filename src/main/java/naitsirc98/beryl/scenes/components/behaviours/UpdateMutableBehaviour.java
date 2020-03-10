@@ -2,51 +2,45 @@ package naitsirc98.beryl.scenes.components.behaviours;
 
 import java.util.function.Consumer;
 
-public final class MutableBehaviour extends Behaviour {
+public final class UpdateMutableBehaviour extends UpdateBehaviour {
 
     private Stage onInit;
     private Stage onStart;
     private Stage onUpdate;
-    private Stage onLateUpdate;
     private Stage onEnable;
     private Stage onDisable;
     private Stage onDestroy;
 
-    private MutableBehaviour() {
+    private UpdateMutableBehaviour() {
 
     }
 
-    public MutableBehaviour onInit(Stage onInit) {
+    public UpdateMutableBehaviour onInit(Stage onInit) {
         this.onInit = onInit;
         return this;
     }
 
-    public MutableBehaviour onStart(Stage onStart) {
+    public UpdateMutableBehaviour onStart(Stage onStart) {
         this.onStart = onStart;
         return this;
     }
 
-    public MutableBehaviour onUpdate(Stage onUpdate) {
+    public UpdateMutableBehaviour onUpdate(Stage onUpdate) {
         this.onUpdate = onUpdate;
         return this;
     }
 
-    public MutableBehaviour onLateUpdate(Stage onLateUpdate) {
-        this.onLateUpdate = onLateUpdate;
-        return this;
-    }
-
-    public MutableBehaviour onEnable(Stage onEnable) {
+    public UpdateMutableBehaviour onEnable(Stage onEnable) {
         this.onEnable = onEnable;
         return this;
     }
 
-    public MutableBehaviour onDisable(Stage onDisable) {
+    public UpdateMutableBehaviour onDisable(Stage onDisable) {
         this.onDisable = onDisable;
         return this;
     }
 
-    public MutableBehaviour onDestroy(Stage onDestroy) {
+    public UpdateMutableBehaviour onDestroy(Stage onDestroy) {
         this.onDestroy = onDestroy;
         return this;
     }
@@ -73,13 +67,6 @@ public final class MutableBehaviour extends Behaviour {
     }
 
     @Override
-    public void onLateUpdate() {
-        if(onLateUpdate != null) {
-            onLateUpdate.accept(this);
-        }
-    }
-
-    @Override
     protected void onEnable() {
         if(onEnable != null) {
             onEnable.accept(this);
@@ -100,7 +87,7 @@ public final class MutableBehaviour extends Behaviour {
         }
     }
 
-    public interface Stage extends Consumer<MutableBehaviour> {
+    public interface Stage extends Consumer<UpdateMutableBehaviour> {
 
     }
 }

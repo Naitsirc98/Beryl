@@ -1,9 +1,9 @@
 package naitsirc98.beryl.graphics.vulkan.util;
 
 import naitsirc98.beryl.graphics.buffers.GraphicsBuffer;
+import naitsirc98.beryl.graphics.textures.Texture;
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.util.Version;
-import naitsirc98.beryl.util.types.DataType;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.Pointer;
@@ -72,6 +72,54 @@ public class VulkanUtils {
         }
 
         throw new IllegalArgumentException("Unknown Vulkan buffer usage: " + usage);
+    }
+
+    public static Texture.WrapMode vkToWrapMode(int vkAddressMode) {
+        switch(vkAddressMode) {
+            case VK_SAMPLER_ADDRESS_MODE_REPEAT:
+                return Texture.WrapMode.REPEAT;
+            case VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT:
+                return Texture.WrapMode.MIRRORED_REPEAT;
+            case VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE:
+                return Texture.WrapMode.CLAMP_TO_EDGE;
+            case VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER:
+                return Texture.WrapMode.CLAMP_TO_BORDER;
+        }
+        throw new IllegalArgumentException("Unsupported Vulkan Address Mode: " + vkAddressMode);
+    }
+
+    public static Texture.MagFilter vkToMagFilter(int vkMagFilter) {
+
+        if(vkMagFilter == VK_FILTER_NEAREST) {
+            return Texture.MagFilter.NEAREST;
+        } else if(vkMagFilter == VK_FILTER_LINEAR) {
+            return Texture.MagFilter.LINEAR;
+        }
+
+        throw new IllegalArgumentException("Unknown Vulkan Mag Filter: " + vkMagFilter);
+    }
+
+    public static Texture.MinFilter vkToMinFilter(int vkMinFilter, int vkMipmapMode) {
+
+        if(vkMinFilter == VK_FILTER_NEAREST) {
+
+            if(vkMipmapMode == VK_SAMPLER_MIPMAP_MODE_NEAREST) {
+                return Texture.MinFilter.NEAREST_MIPMAP_NEAREST;
+            } else if(vkMipmapMode == VK_SAMPLER_MIPMAP_MODE_LINEAR) {
+                return Texture.MinFilter.NEAREST_MIPMAP_LINEAR;
+            }
+
+        } else if(vkMinFilter == VK_FILTER_LINEAR) {
+
+            if(vkMipmapMode == VK_SAMPLER_MIPMAP_MODE_NEAREST) {
+                return Texture.MinFilter.LINEAR_MIPMAP_NEAREST;
+            } else if(vkMipmapMode == VK_SAMPLER_MIPMAP_MODE_LINEAR) {
+                return Texture.MinFilter.LINEAR_MIPMAP_LINEAR;
+            }
+
+        }
+
+        throw new IllegalArgumentException("Unknown Vulkan Min Filter: " + vkMinFilter + ", " + vkMipmapMode);
     }
 
     public static String getVulkanErrorName(int errorCode) {

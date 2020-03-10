@@ -11,6 +11,7 @@ import naitsirc98.beryl.scenes.Entity;
 import naitsirc98.beryl.scenes.Scene;
 import naitsirc98.beryl.scenes.SceneManager;
 import naitsirc98.beryl.scenes.components.behaviours.MutableBehaviour;
+import naitsirc98.beryl.scenes.components.behaviours.UpdateMutableBehaviour;
 import naitsirc98.beryl.scenes.components.camera.Camera;
 import naitsirc98.beryl.scenes.components.math.Transform;
 import naitsirc98.beryl.scenes.components.meshes.MeshView;
@@ -80,7 +81,7 @@ public class App1 extends BerylApplication {
                 Transform transform = thisBehaviour.get(Transform.class);
                 transform.rotateY(radians(angle));
                 // thisBehaviour.entity().destroy();
-                addOrRemoveRandomly(thisBehaviour.entity(), mesh);
+                // addOrRemoveRandomly(thisBehaviour.entity(), mesh);
             });
 
         }
@@ -167,7 +168,7 @@ public class App1 extends BerylApplication {
             Entity model = entity.scene().newEntity();
             model.add(Transform.class).position(RAND.nextInt(200), -RAND.nextInt(200), -RAND.nextInt(200));
             model.add(MeshView.class).mesh(mesh);
-            model.add(MutableBehaviour.class).onUpdate(thisBehaviour -> {
+            model.add(UpdateMutableBehaviour.class).onUpdate(thisBehaviour -> {
                 Transform transform = thisBehaviour.get(Transform.class);
                 transform.rotateY(radians(angle));
                 addOrRemoveRandomly(thisBehaviour.entity(), mesh);

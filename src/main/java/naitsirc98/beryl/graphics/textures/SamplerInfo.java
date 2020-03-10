@@ -1,9 +1,11 @@
 package naitsirc98.beryl.graphics.textures;
 
-import naitsirc98.beryl.graphics.textures.Texture.Filter;
+import naitsirc98.beryl.graphics.textures.Texture.MagFilter;
+import naitsirc98.beryl.graphics.textures.Texture.MinFilter;
 import naitsirc98.beryl.graphics.textures.Texture.WrapMode;
 
-import static naitsirc98.beryl.graphics.textures.Texture.Filter.NEAREST;
+import static naitsirc98.beryl.graphics.textures.Texture.MagFilter.NEAREST;
+import static naitsirc98.beryl.graphics.textures.Texture.MinFilter.NEAREST_MIPMAP_NEAREST;
 import static naitsirc98.beryl.graphics.textures.Texture.WrapMode.REPEAT;
 
 public final class SamplerInfo {
@@ -11,13 +13,14 @@ public final class SamplerInfo {
     private WrapMode wrapModeS = REPEAT;
     private WrapMode wrapModeT = REPEAT;
     private WrapMode wrapModeR = REPEAT;
-    private Filter minFilter = NEAREST;
-    private Filter magFilter = NEAREST;
+    private MinFilter minFilter = NEAREST_MIPMAP_NEAREST;
+    private MagFilter magFilter = NEAREST;
 
     public SamplerInfo() {
     }
 
-    public SamplerInfo(WrapMode wrapModeS, WrapMode wrapModeT, WrapMode wrapModeR, Filter minFilter, Filter magFilter) {
+    public SamplerInfo(WrapMode wrapModeS, WrapMode wrapModeT, WrapMode wrapModeR,
+                       MinFilter minFilter, MagFilter magFilter) {
         this.wrapModeS = wrapModeS;
         this.wrapModeT = wrapModeT;
         this.wrapModeR = wrapModeR;
@@ -57,25 +60,20 @@ public final class SamplerInfo {
         return this;
     }
 
-    public SamplerInfo filter(Filter filter) {
-        minFilter = magFilter = filter;
-        return this;
-    }
-
-    public Filter minFilter() {
+    public MinFilter minFilter() {
         return minFilter;
     }
 
-    public SamplerInfo minFilter(Filter minFilter) {
+    public SamplerInfo minFilter(MinFilter minFilter) {
         this.minFilter = minFilter;
         return this;
     }
 
-    public Filter magFilter() {
+    public MagFilter magFilter() {
         return magFilter;
     }
 
-    public SamplerInfo magFilter(Filter magFilter) {
+    public SamplerInfo magFilter(MagFilter magFilter) {
         this.magFilter = magFilter;
         return this;
     }
