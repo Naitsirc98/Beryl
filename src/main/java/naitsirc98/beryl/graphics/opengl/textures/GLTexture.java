@@ -1,21 +1,20 @@
 package naitsirc98.beryl.graphics.opengl.textures;
 
 import naitsirc98.beryl.graphics.opengl.GLObject;
-import naitsirc98.beryl.graphics.textures.SamplerInfo;
 import naitsirc98.beryl.graphics.textures.Texture;
 
-import static naitsirc98.beryl.graphics.opengl.GLUtils.*;
-import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL12.GL_TEXTURE_WRAP_R;
-import static org.lwjgl.opengl.GL45.*;
+import static org.lwjgl.opengl.GL11.glDeleteTextures;
+import static org.lwjgl.opengl.GL45.glCreateTextures;
 import static org.lwjgl.opengl.GL45C.glBindTextureUnit;
 
 public abstract class GLTexture implements GLObject, Texture {
 
     protected int handle;
+    private GLSampler sampler;
 
     public GLTexture(int target) {
         this.handle = glCreateTextures(target);
+        sampler = new GLSampler();
     }
 
     @Override
@@ -23,49 +22,22 @@ public abstract class GLTexture implements GLObject, Texture {
         return handle;
     }
 
+    @Override
+    public GLSampler sampler() {
+        return sampler;
+    }
+
     public void bind(int unit) {
         glBindTextureUnit(unit, handle());
-    }
-
-    @Override
-    public WrapMode wrapModeS() {
-        return glToWrapMode(glGetTextureParameteri(handle, GL_TEXTURE_WRAP_S));
-    }
-
-    @Override
-    public WrapMode wrapModeT() {
-        return glToWrapMode(glGetTextureParameteri(handle, GL_TEXTURE_WRAP_T));
-    }
-
-    @Override
-    public WrapMode wrapModeR() {
-        return glToWrapMode(glGetTextureParameteri(handle, GL_TEXTURE_WRAP_R));
-    }
-
-    @Override
-    public MinFilter minFilter() {
-        return glToMinFilter(glGetTextureParameteri(handle, GL_TEXTURE_MIN_FILTER));
-    }
-
-    @Override
-    public MagFilter magFilter() {
-        return glToMagFilter(glGetTextureParameteri(handle, GL_TEXTURE_MAG_FILTER));
-    }
-
-    @Override
-    public void samplerInfo(SamplerInfo samplerInfo) {
-
-        glTextureParameteri(handle, GL_TEXTURE_WRAP_S, toGL(samplerInfo.wrapModeS()));
-        glTextureParameteri(handle, GL_TEXTURE_WRAP_T, toGL(samplerInfo.wrapModeT()));
-        glTextureParameteri(handle, GL_TEXTURE_WRAP_R, toGL(samplerInfo.wrapModeR()));
-
-        glTextureParameteri(handle, GL_TEXTURE_MIN_FILTER, toGL(samplerInfo.minFilter()));
-        glTextureParameteri(handle, GL_TEXTURE_MAG_FILTER, toGL(samplerInfo.magFilter()));
+        sampler.bind(unit);
     }
 
     @Override
     public void free() {
         glDeleteTextures(handle);
+        sampler.free();
+
         handle = NULL;
+        sampler = null;
     }
 }

@@ -7,43 +7,16 @@ public interface Texture extends NativeResource {
 
     Type type();
 
+    Sampler sampler();
+
     PixelFormat internalFormat();
 
     PixelFormat format();
 
     void generateMipmaps();
 
-    WrapMode wrapModeS();
-    WrapMode wrapModeT();
-    WrapMode wrapModeR();
-
-    MinFilter minFilter();
-    MagFilter magFilter();
-
-    void samplerInfo(SamplerInfo samplerInfo);
-
     enum Type {
         TEXTURE_2D
         // TODO
-    }
-
-    enum WrapMode {
-
-        REPEAT,
-        MIRRORED_REPEAT,
-        CLAMP_TO_BORDER,
-        CLAMP_TO_EDGE
-    }
-
-    enum MinFilter {
-        NEAREST_MIPMAP_NEAREST,
-        NEAREST_MIPMAP_LINEAR,
-        LINEAR_MIPMAP_NEAREST,
-        LINEAR_MIPMAP_LINEAR
-    }
-
-    enum MagFilter {
-        NEAREST,
-        LINEAR
     }
 }

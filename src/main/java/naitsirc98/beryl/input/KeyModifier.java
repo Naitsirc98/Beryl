@@ -1,6 +1,6 @@
 package naitsirc98.beryl.input;
 
-import naitsirc98.beryl.util.types.EnumMapper;
+import naitsirc98.beryl.util.collections.EnumMapper;
 import naitsirc98.beryl.util.GLFWWrapper;
 
 import java.util.*;

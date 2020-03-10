@@ -13,6 +13,8 @@ public interface GraphicsContext extends NativeResource {
 
     void init();
 
+    GraphicsMapper mapper();
+
     Renderer renderer();
 
     Map<Integer, RenderingPath> renderingPaths();

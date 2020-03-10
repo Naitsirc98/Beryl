@@ -1,6 +1,5 @@
 package naitsirc98.beryl.graphics.vulkan.textures;
 
-import naitsirc98.beryl.graphics.textures.SamplerInfo;
 import naitsirc98.beryl.graphics.textures.Texture;
 import naitsirc98.beryl.graphics.vulkan.VulkanObject;
 import naitsirc98.beryl.images.PixelFormat;

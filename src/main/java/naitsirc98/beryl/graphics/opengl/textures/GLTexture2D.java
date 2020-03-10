@@ -7,8 +7,6 @@ import naitsirc98.beryl.images.PixelFormat;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 
-import static naitsirc98.beryl.graphics.opengl.GLUtils.glToPixelFormat;
-import static naitsirc98.beryl.graphics.opengl.GLUtils.toGL;
 import static org.lwjgl.opengl.GL11C.GL_TEXTURE_2D;
 import static org.lwjgl.opengl.GL45C.*;
 
@@ -42,7 +40,7 @@ public final class GLTexture2D extends GLTexture implements Texture2D {
 
     @Override
     public PixelFormat internalFormat() {
-        return glToPixelFormat(glGetTextureLevelParameteri(handle, 0, GL_TEXTURE_INTERNAL_FORMAT));
+        return mapFromAPI(PixelFormat.class, glGetTextureLevelParameteri(handle, 0, GL_TEXTURE_INTERNAL_FORMAT));
     }
 
     @Override
@@ -52,7 +50,7 @@ public final class GLTexture2D extends GLTexture implements Texture2D {
 
     @Override
     public void allocate(int mipLevels, int width, int height, PixelFormat internalFormat) {
-        glTextureStorage2D(handle, mipLevels, toGL(internalFormat), width, height);
+        glTextureStorage2D(handle, mipLevels, mapToAPI(internalFormat), width, height);
     }
 
     @Override
@@ -68,13 +66,13 @@ public final class GLTexture2D extends GLTexture implements Texture2D {
 
     @Override
     public void update(int mipLevel, int xOffset, int yOffset, int width, int height, PixelFormat format, ByteBuffer pixels) {
-        glTextureSubImage2D(handle, mipLevel, xOffset, yOffset, width, height, toGL(format), toGL(format.dataType()), pixels);
+        glTextureSubImage2D(handle, mipLevel, xOffset, yOffset, width, height, mapToAPI(format), mapToAPI(format.dataType()), pixels);
         this.imageFormat = format;
     }
 
     @Override
     public void update(int mipLevel, int xOffset, int yOffset, int width, int height, PixelFormat format, FloatBuffer pixels) {
-        glTextureSubImage2D(handle, mipLevel, xOffset, yOffset, width, height, toGL(format), toGL(format.dataType()), pixels);
+        glTextureSubImage2D(handle, mipLevel, xOffset, yOffset, width, height, mapToAPI(format), mapToAPI(format.dataType()), pixels);
         this.imageFormat = format;
     }
 }
