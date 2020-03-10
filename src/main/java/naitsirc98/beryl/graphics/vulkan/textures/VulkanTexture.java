@@ -5,7 +5,6 @@ import naitsirc98.beryl.graphics.vulkan.VulkanObject;
 import naitsirc98.beryl.images.PixelFormat;
 
 import static naitsirc98.beryl.graphics.vulkan.util.VulkanFormatUtils.vkToPixelFormat;
-import static naitsirc98.beryl.graphics.vulkan.util.VulkanUtils.*;
 
 public abstract class VulkanTexture implements VulkanObject, Texture {
 
@@ -25,6 +24,7 @@ public abstract class VulkanTexture implements VulkanObject, Texture {
         return renderImage.view();
     }
 
+    @Override
     public VulkanSampler sampler() {
         return sampler;
     }
@@ -41,36 +41,6 @@ public abstract class VulkanTexture implements VulkanObject, Texture {
 
     @Override
     public void generateMipmaps() {
-        // TODO
-    }
-
-    @Override
-    public WrapMode wrapModeS() {
-        return vkToWrapMode(sampler.addressModeU());
-    }
-
-    @Override
-    public WrapMode wrapModeT() {
-        return vkToWrapMode(sampler.addressModeV());
-    }
-
-    @Override
-    public WrapMode wrapModeR() {
-        return vkToWrapMode(sampler.addressModeW());
-    }
-
-    @Override
-    public MinFilter minFilter() {
-        return vkToMinFilter(sampler.minFilter(), sampler.mipmapMode());
-    }
-
-    @Override
-    public MagFilter magFilter() {
-        return vkToMagFilter(sampler.magFilter());
-    }
-
-    @Override
-    public void samplerInfo(SamplerInfo samplerInfo) {
         // TODO
     }
 

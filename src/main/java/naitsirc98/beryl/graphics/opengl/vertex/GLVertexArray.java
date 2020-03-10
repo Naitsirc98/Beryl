@@ -6,7 +6,6 @@ import naitsirc98.beryl.meshes.vertices.VertexAttribute;
 import naitsirc98.beryl.meshes.vertices.VertexAttributeList;
 import naitsirc98.beryl.meshes.vertices.VertexAttributeList.VertexAttributeListIterator;
 
-import static naitsirc98.beryl.graphics.opengl.GLUtils.toGL;
 import static org.lwjgl.opengl.GL30.glDeleteVertexArrays;
 import static org.lwjgl.opengl.GL45.*;
 
@@ -56,12 +55,12 @@ public final class GLVertexArray implements GLObject {
 
     private void setAttributef(int binding, int location, VertexAttribute attribute, int offset) {
         glVertexArrayAttribBinding(handle, location, binding);
-        glVertexArrayAttribFormat(handle, location, attribute.size(), toGL(attribute.dataType()), false, offset);
+        glVertexArrayAttribFormat(handle, location, attribute.size(), mapToAPI(attribute.dataType()), false, offset);
     }
 
     private void setAttributei(int binding, int location, VertexAttribute attribute, int offset) {
         glVertexArrayAttribBinding(handle, location, binding);
-        glVertexArrayAttribIFormat(handle, location, attribute.size(), toGL(attribute.dataType()), offset);
+        glVertexArrayAttribIFormat(handle, location, attribute.size(), mapToAPI(attribute.dataType()), offset);
     }
 
     @Override

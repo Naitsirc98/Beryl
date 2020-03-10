@@ -42,6 +42,10 @@ public interface VulkanObject extends NativeResource {
         return vulkan().graphicsCommandPool();
     }
 
+    default VulkanMapper mapper() {
+        return Graphics.vulkan().mapper();
+    }
+
     interface Long extends VulkanObject, LongHandle {
 
     }

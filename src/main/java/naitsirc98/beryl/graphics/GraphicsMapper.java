@@ -1,5 +1,7 @@
 package naitsirc98.beryl.graphics;
 
+import naitsirc98.beryl.graphics.textures.Sampler;
+import naitsirc98.beryl.util.Pair;
 import naitsirc98.beryl.util.collections.IDoubleMap;
 
 import java.util.HashMap;

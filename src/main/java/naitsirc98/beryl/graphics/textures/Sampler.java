@@ -69,10 +69,7 @@ public interface Sampler extends NativeResource {
         WHITE_FLOAT_OPAQUE,
         BLACK_FLOAT_OPAQUE,
 
-        WHITE_INT_TRANSPARENT,
         BLACK_INT_TRANSPARENT,
-
-        WHITE_FLOAT_TRANSPARENT,
         BLACK_FLOAT_TRANSPARENT
     }
 

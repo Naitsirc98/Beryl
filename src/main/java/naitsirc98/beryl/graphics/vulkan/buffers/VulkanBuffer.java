@@ -12,7 +12,6 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
 import static java.util.Objects.requireNonNull;
-import static naitsirc98.beryl.graphics.vulkan.util.VulkanUtils.vkToBufferType;
 import static org.lwjgl.BufferUtils.createIntBuffer;
 import static org.lwjgl.vulkan.VK10.VK_NULL_HANDLE;
 
@@ -82,7 +81,7 @@ public abstract class VulkanBuffer implements VulkanObject.Long, VmaAllocated, G
 
     @Override
     public Type type() {
-        return vkToBufferType(bufferInfo.usage());
+        return mapper().mapBufferTypeFromAPI(bufferInfo.usage());
     }
 
     @Override

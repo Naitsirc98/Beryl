@@ -188,14 +188,8 @@ public class GLSampler implements GLObject, Sampler {
                 case BLACK_FLOAT_OPAQUE:
                     glSamplerParameterfv(handle, GL_TEXTURE_BORDER_COLOR, stack.floats(0, 0, 0, 1));
                     break;
-                case WHITE_INT_TRANSPARENT:
-                    glSamplerParameteriv(handle, GL_TEXTURE_BORDER_COLOR, stack.ints(1, 1, 1, 0));
-                    break;
                 case BLACK_INT_TRANSPARENT:
                     glSamplerParameteriv(handle, GL_TEXTURE_BORDER_COLOR, stack.ints(0, 0, 0, 0));
-                    break;
-                case WHITE_FLOAT_TRANSPARENT:
-                    glSamplerParameterfv(handle, GL_TEXTURE_BORDER_COLOR, stack.floats(1, 1, 1, 0));
                     break;
                 case BLACK_FLOAT_TRANSPARENT:
                     glSamplerParameterfv(handle, GL_TEXTURE_BORDER_COLOR, stack.floats(0, 0, 0, 0));

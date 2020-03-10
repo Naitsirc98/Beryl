@@ -1,6 +1,5 @@
 package naitsirc98.beryl.graphics.opengl;
 
-import naitsirc98.beryl.graphics.GraphicsMapper;
 import naitsirc98.beryl.util.handles.IntHandle;
 import org.lwjgl.system.NativeResource;
 
@@ -8,7 +7,7 @@ import static naitsirc98.beryl.graphics.Graphics.opengl;
 
 public interface GLObject extends IntHandle, NativeResource {
 
-    default GraphicsMapper mapper() {
+    default GLMapper mapper() {
         return opengl().mapper();
     }
 

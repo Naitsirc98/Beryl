@@ -4,6 +4,7 @@ import naitsirc98.beryl.core.Beryl;
 import naitsirc98.beryl.core.BerylConfiguration;
 import naitsirc98.beryl.graphics.GraphicsContext;
 import naitsirc98.beryl.graphics.GraphicsFactory;
+import naitsirc98.beryl.graphics.GraphicsMapper;
 import naitsirc98.beryl.graphics.opengl.rendering.GLRenderer;
 import naitsirc98.beryl.graphics.opengl.rendering.GLSimpleRenderingPath;
 import naitsirc98.beryl.graphics.opengl.vertex.GLVertexDataBuilder;
@@ -32,6 +33,7 @@ public class GLContext implements GraphicsContext, LongHandle {
     private GLCapabilities capabilities;
     private GLRenderer renderer;
     private GLGraphicsFactory graphicsFactory;
+    private GLMapper mapper;
 
     private GLContext() {
 
@@ -45,6 +47,12 @@ public class GLContext implements GraphicsContext, LongHandle {
         debugMessenger = newGLDebugMessenger();
         renderer = newInstance(GLRenderer.class, glContext);
         graphicsFactory = new GLGraphicsFactory();
+        mapper = new GLMapper();
+    }
+
+    @Override
+    public GLMapper mapper() {
+        return mapper;
     }
 
     @Override
