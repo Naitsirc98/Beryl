@@ -8,8 +8,8 @@ import naitsirc98.beryl.graphics.vulkan.devices.VulkanPhysicalDevice.SwapChainSu
 import naitsirc98.beryl.graphics.vulkan.renderpasses.VulkanRenderPass;
 import naitsirc98.beryl.graphics.vulkan.renderpasses.VulkanSubPassAttachments;
 import naitsirc98.beryl.graphics.vulkan.textures.VulkanImage;
-import naitsirc98.beryl.graphics.vulkan.textures.VulkanImageBase;
 import naitsirc98.beryl.graphics.vulkan.textures.VulkanImageView;
+import naitsirc98.beryl.graphics.vulkan.textures.VulkanRenderImage;
 import naitsirc98.beryl.graphics.window.Window;
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.util.geometry.Sizec;
@@ -43,7 +43,7 @@ public class VulkanSwapchain implements VulkanObject.Long {
     private int swapChainImageFormat;
     private VkExtent2D swapChainExtent;
     private VulkanImageView[] swapChainImages;
-    private VulkanImageBase depthImage;
+    private VulkanRenderImage depthImage;
     private VulkanRenderPass renderPass;
     // Objects that need to be reinitialized when the swapchain is recreated
     private final Queue<VulkanSwapchainDependent> swapchainDependents;
@@ -70,7 +70,7 @@ public class VulkanSwapchain implements VulkanObject.Long {
         return swapChainImages;
     }
 
-    public VulkanImageBase depthImage() {
+    public VulkanRenderImage depthImage() {
         return depthImage;
     }
 
@@ -308,7 +308,7 @@ public class VulkanSwapchain implements VulkanObject.Long {
 
             LongBuffer framebufferAttachments = stack.mallocLong(2);
 
-            framebufferAttachments.put(DEPTH_ATTACHMENT_INDEX, depthImage.imageView());
+            framebufferAttachments.put(DEPTH_ATTACHMENT_INDEX, depthImage.view().handle());
 
             renderPass.createFramebuffers(
                     swapChainExtent.width(),
@@ -373,14 +373,15 @@ public class VulkanSwapchain implements VulkanObject.Long {
             .dstAccessMask(VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT);
     }
 
-    private VulkanImageBase createDepthImage() {
+    private VulkanRenderImage createDepthImage() {
 
         final int depthFormat = findDepthFormat(physicalDevice().handle());
 
-        VulkanImage depthImage = new VulkanImage(
-                getDepthImageInfo(depthFormat),
-                getDepthImageAllocationInfo(),
-                getDepthImageViewInfo(depthFormat));
+        VulkanRenderImage depthImage = new VulkanRenderImage.Builder()
+                .imageCreateInfo(getDepthImageInfo(depthFormat))
+                .allocationCreateInfo(getDepthImageAllocationInfo())
+                .imageViewCreateInfo(getDepthImageViewInfo(depthFormat))
+                .build();
 
         depthImage.transitionLayout(VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
 
