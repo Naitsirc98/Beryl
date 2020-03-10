@@ -108,13 +108,13 @@ public final class Beryl {
 
         renderer = systems.graphics.renderer();
 
+        setup();
+
         final Time time = systems.time;
 
-        float lastFrame = 0;
+        float lastFrame = Time.time();
         float lastDebugReport = Time.time();
         float deltaTime;
-
-        setup();
 
         while(application.running()) {
 
@@ -141,18 +141,12 @@ public final class Beryl {
     }
 
     private void setup() {
-        update0();
-        render();
         if(BerylConfiguration.WINDOW_VISIBLE.get(true)) {
             Window.get().show();
         }
-    }
-
-    private void update0() {
-        systems.eventManager.processEvents();
-        systems.input.update();
-        systems.sceneManager.update();
-        updateDelay = IDEAL_FRAME_DELAY;
+        render();
+        update(IDEAL_FRAME_DELAY);
+        render();
     }
 
     private void update(float deltaTime) {

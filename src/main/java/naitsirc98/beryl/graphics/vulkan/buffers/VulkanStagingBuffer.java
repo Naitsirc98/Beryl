@@ -1,6 +1,5 @@
 package naitsirc98.beryl.graphics.vulkan.buffers;
 
-import naitsirc98.beryl.util.handles.IntHandle;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.util.vma.VmaAllocationCreateInfo;
@@ -13,6 +12,7 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
 import static naitsirc98.beryl.graphics.vulkan.util.VulkanUtils.vkCall;
+import static naitsirc98.beryl.util.Asserts.assertTrue;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.memAddress;
 import static org.lwjgl.system.libc.LibCString.nmemcpy;
@@ -20,24 +20,6 @@ import static org.lwjgl.util.vma.Vma.*;
 import static org.lwjgl.vulkan.VK11.*;
 
 public class VulkanStagingBuffer extends VulkanBuffer {
-
-    public static void transfer(long offset, ByteBuffer data, VulkanGPUBuffer buffer) {
-        VulkanStagingBuffer stagingBuffer = new VulkanStagingBuffer(data);
-        stagingBuffer.transfer(offset, buffer);
-        stagingBuffer.free();
-    }
-
-    public static void transfer(long offset, IntBuffer data, VulkanGPUBuffer buffer) {
-        VulkanStagingBuffer stagingBuffer = new VulkanStagingBuffer(data);
-        stagingBuffer.transfer(offset, buffer);
-        stagingBuffer.free();
-    }
-
-    public static void transfer(long offset, FloatBuffer data, VulkanGPUBuffer buffer) {
-        VulkanStagingBuffer stagingBuffer = new VulkanStagingBuffer(data);
-        stagingBuffer.transfer(offset, buffer);
-        stagingBuffer.free();
-    }
 
     public VulkanStagingBuffer() {
         super(getStagingBufferCreateInfo(), getStagingBufferAllocationCreateInfo());
@@ -69,10 +51,12 @@ public class VulkanStagingBuffer extends VulkanBuffer {
 
         try(MemoryStack stack = stackPush()) {
 
+            assertTrue((buffer.usage() & VK_BUFFER_USAGE_TRANSFER_DST_BIT) == VK_BUFFER_USAGE_TRANSFER_DST_BIT);
+
             VkBufferCopy.Buffer copyRegion = VkBufferCopy.callocStack(1, stack)
                     .srcOffset(0)
                     .dstOffset(offset)
-                    .size(buffer.bufferCreateInfo().size());
+                    .size(buffer.size());
 
             vkCmdCopyBuffer(commandBuffer, handle(), buffer.handle(), copyRegion);
         }

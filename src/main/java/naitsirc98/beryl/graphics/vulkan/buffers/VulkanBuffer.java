@@ -11,18 +11,20 @@ import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
+import static java.util.Objects.requireNonNull;
 import static naitsirc98.beryl.graphics.vulkan.util.VulkanUtils.vkToBufferType;
+import static org.lwjgl.BufferUtils.createIntBuffer;
 import static org.lwjgl.vulkan.VK10.VK_NULL_HANDLE;
 
 public abstract class VulkanBuffer implements VulkanObject.Long, VmaAllocated, GraphicsBuffer {
 
-    protected long vkBuffer;
+    protected long buffer;
     protected long allocation;
-    protected VkBufferCreateInfo bufferCreateInfo;
+    protected VkBufferCreateInfo bufferInfo;
     protected VmaAllocationCreateInfo allocationCreateInfo;
 
     public VulkanBuffer(VkBufferCreateInfo bufferCreateInfo, VmaAllocationCreateInfo allocationCreateInfo) {
-        this.bufferCreateInfo = bufferCreateInfo;
+        this.bufferInfo = bufferCreateInfo;
         this.allocationCreateInfo = allocationCreateInfo;
     }
 
@@ -32,11 +34,7 @@ public abstract class VulkanBuffer implements VulkanObject.Long, VmaAllocated, G
 
     @Override
     public final long handle() {
-        return vkBuffer;
-    }
-
-    public VkBufferCreateInfo bufferCreateInfo() {
-        return bufferCreateInfo;
+        return buffer;
     }
 
     @Override
@@ -49,6 +47,28 @@ public abstract class VulkanBuffer implements VulkanObject.Long, VmaAllocated, G
         return allocationCreateInfo;
     }
 
+    public long size() {
+        return bufferInfo.size();
+    }
+
+    public int usage() {
+        return bufferInfo.usage();
+    }
+
+    public int sharingMode() {
+        return bufferInfo.sharingMode();
+    }
+
+    public IntBuffer queueFamilyIndices() {
+        return bufferInfo.queueFamilyIndexCount() == 0
+                ? null
+                : createIntBuffer(bufferInfo.queueFamilyIndexCount()).put(requireNonNull(bufferInfo.pQueueFamilyIndices())).rewind();
+    }
+
+    public int flags() {
+        return bufferInfo.flags();
+    }
+
     @Override
     public void ensure() {
 
@@ -56,24 +76,24 @@ public abstract class VulkanBuffer implements VulkanObject.Long, VmaAllocated, G
 
             allocator().destroyBuffer(handle(), allocation());
 
-            init(allocator().createBuffer(bufferCreateInfo, allocationCreateInfo));
+            init(allocator().createBuffer(bufferInfo, allocationCreateInfo));
         }
     }
 
     @Override
     public Type type() {
-        return vkToBufferType(bufferCreateInfo.usage());
+        return vkToBufferType(bufferInfo.usage());
     }
 
     @Override
     public void allocate(long bytes) {
-        bufferCreateInfo.size(bytes);
-        init(allocator().createBuffer(bufferCreateInfo, allocationCreateInfo));
+        bufferInfo.size(bytes);
+        init(allocator().createBuffer(bufferInfo, allocationCreateInfo));
     }
 
     @Override
     public void data(ByteBuffer data) {
-        if(bufferCreateInfo.size() != data.remaining()) {
+        if(bufferInfo.size() != data.remaining()) {
             allocate(data.remaining());
         }
         update(0, data);
@@ -81,7 +101,7 @@ public abstract class VulkanBuffer implements VulkanObject.Long, VmaAllocated, G
 
     @Override
     public void data(IntBuffer data) {
-        if(bufferCreateInfo.size() != data.remaining()) {
+        if(bufferInfo.size() != data.remaining()) {
             allocate(data.remaining());
         }
         update(0, data);
@@ -89,7 +109,7 @@ public abstract class VulkanBuffer implements VulkanObject.Long, VmaAllocated, G
 
     @Override
     public void data(FloatBuffer data) {
-        if(bufferCreateInfo.size() != data.remaining()) {
+        if(bufferInfo.size() != data.remaining()) {
             allocate(data.remaining());
         }
         update(0, data);
@@ -99,19 +119,19 @@ public abstract class VulkanBuffer implements VulkanObject.Long, VmaAllocated, G
     public void free() {
 
         allocator().destroyBuffer(handle(), allocation());
-        bufferCreateInfo.free();
+        bufferInfo.free();
         allocationCreateInfo.free();
 
-        vkBuffer = VK_NULL_HANDLE;
+        buffer = VK_NULL_HANDLE;
         allocation = VK_NULL_HANDLE;
-        bufferCreateInfo = null;
+        bufferInfo = null;
         allocationCreateInfo = null;
     }
 
     protected void init(VmaBufferAllocation bufferAllocation) {
-        this.vkBuffer = bufferAllocation.buffer();
+        this.buffer = bufferAllocation.buffer();
         this.allocation = bufferAllocation.allocation();
-        this.bufferCreateInfo = bufferAllocation.bufferCreateInfo();
+        this.bufferInfo = bufferAllocation.bufferCreateInfo();
         this.allocationCreateInfo = bufferAllocation.allocationCreateInfo();
     }
 }

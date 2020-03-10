@@ -33,7 +33,6 @@ public class App1 extends BerylApplication {
         BerylConfiguration.SET_CONFIGURATION_METHOD.set(App1::setConfiguration);
 
         Beryl.launch(new App1());
-
     }
 
     private static void setConfiguration() {

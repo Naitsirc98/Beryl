@@ -34,16 +34,6 @@ public class VulkanRenderImage implements VulkanObject {
         return imageView;
     }
 
-    @Override
-    public void free() {
-
-        image.free();
-        imageView.free();
-
-        image = null;
-        imageView = null;
-    }
-
     public void transitionLayout(int oldLayout, int newLayout) {
 
         try(MemoryStack stack = stackPush()) {
@@ -56,6 +46,16 @@ public class VulkanRenderImage implements VulkanObject {
 
             graphicsCommandPool().execute(commandBuffer -> doTransition(barrier, stages.get(0), stages.get(1), commandBuffer));
         }
+    }
+
+    @Override
+    public void free() {
+
+        image.free();
+        imageView.free();
+
+        image = null;
+        imageView = null;
     }
 
     private void doTransition(VkImageMemoryBarrier.Buffer barrier, int srcStage, int dstStage, VkCommandBuffer commandBuffer) {
@@ -143,6 +143,7 @@ public class VulkanRenderImage implements VulkanObject {
 
         stages.put(0, sourceStage).put(1, destinationStage);
     }
+
 
     public static final class Builder implements IBuilder<VulkanRenderImage> {
 
