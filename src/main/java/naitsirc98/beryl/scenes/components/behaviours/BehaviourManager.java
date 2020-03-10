@@ -4,9 +4,7 @@ import naitsirc98.beryl.scenes.ComponentManager;
 import naitsirc98.beryl.scenes.Scene;
 import naitsirc98.beryl.util.collections.OptimizedArray;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -110,8 +108,6 @@ public class BehaviourManager extends ComponentManager<AbstractBehaviour> {
         if(component instanceof ILateBehaviour) {
             lateBehaviours.add((ILateBehaviour) component);
         }
-
-
     }
 
     private void removeFromProperCollection(AbstractBehaviour component) {

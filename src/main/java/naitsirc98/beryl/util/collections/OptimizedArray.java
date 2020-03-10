@@ -3,34 +3,27 @@ package naitsirc98.beryl.util.collections;
 import java.util.*;
 import java.util.stream.Stream;
 
-import static java.util.Objects.requireNonNull;
+public class OptimizedArray<T> implements Set<T> {
 
-public class OptimizedArray<T> implements List<T> {
-
-    private final ArrayList<T> list;
+    private T[] array;
     private final Queue<Integer> freeIndices;
+    private final Map<Object, Integer> indexTable;
+    private int size;
 
     public OptimizedArray() {
         this(16);
     }
 
+    @SuppressWarnings("unchecked")
     public OptimizedArray(int initialCapacity) {
-        list = new ArrayList<>(initialCapacity);
+        array = (T[]) new Object[initialCapacity];
         freeIndices = new ArrayDeque<>();
-    }
-
-    public void trimToSize() {
-
-        while(!freeIndices.isEmpty()) {
-            remove(freeIndices.poll().intValue());
-        }
-
-        list.trimToSize();
+        indexTable = new HashMap<>();
     }
 
     @Override
     public int size() {
-        return list.size() - freeIndices.size();
+        return size;
     }
 
     @Override
@@ -40,124 +33,112 @@ public class OptimizedArray<T> implements List<T> {
 
     @Override
     public boolean contains(Object o) {
-        return o != null && list.contains(o);
-    }
-
-    @Override
-    public int indexOf(Object o) {
-        return o == null ? -1 : list.indexOf(o);
-    }
-
-    @Override
-    public int lastIndexOf(Object o) {
-        return o == null ? -1 : list.lastIndexOf(o);
+        return indexTable.containsKey(o);
     }
 
     @Override
     public Object[] toArray() {
-        return list.stream().filter(Objects::nonNull).toArray();
+        return array;
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public <T1> T1[] toArray(T1[] a) {
-
-        final int size = size();
-
-        if(a.length < size) {
-            return (T1[]) toArray();
-        }
-
-        for(int i = 0;i < size;i++) {
-            a[i] = (T1) get(i);
-        }
-
+        System.arraycopy((T1[])array, 0, a, 0, a.length);
         return a;
     }
 
     @Override
-    public T get(int index) {
-        return list.get(index);
-    }
-
-    @Override
-    public T set(int index, T element) {
-        requireNonNull(element);
-        freeIndices.remove(index);
-        return list.set(index, element);
-    }
-
-    @Override
     public boolean add(T t) {
-        requireNonNull(t);
+
+        if(indexTable.containsKey(t)) {
+            return false;
+        }
 
         if(!freeIndices.isEmpty()) {
-            list.set(freeIndices.poll(), t);
+
+            final int index = freeIndices.poll();
+            array[index] = t;
+            indexTable.put(t, index);
+
         } else {
-            list.add(t);
+
+            if(size >= array.length) {
+                array = Arrays.copyOf(array, Math.round(size * 1.5f));
+            }
+
+            indexTable.put(t, size);
+            array[size] = t;
         }
+
+        ++size;
 
         return true;
     }
 
     @Override
-    public void add(int index, T element) {
-        requireNonNull(element);
-        freeIndices.remove(index);
-        list.add(index, element);
-    }
-
-    @Override
-    public T remove(int index) {
-        final T old = list.set(index, null);
-        freeIndices.add(index);
-        return old;
-    }
-
-    @Override
     public boolean remove(Object o) {
-        final int index = indexOf(o);
-        if(index >= 0) {
-            list.set(index, null);
-            freeIndices.add(index);
+
+        if(!indexTable.containsKey(o)) {
+            return false;
         }
-        return index >= 0;
+
+        final int index = indexTable.get(o);
+        array[index] = null;
+        freeIndices.add(index);
+        indexTable.remove(o);
+
+        --size;
+
+        return true;
+    }
+
+    public void trim(int newSize) {
+        if(size == newSize) {
+            return;
+        }
+        array = Arrays.copyOf(array, newSize);
+        size = Math.min(newSize, size);
     }
 
     @Override
     public void clear() {
-        list.clear();
+        size = 0;
+        Arrays.fill(array, null);
         freeIndices.clear();
+        indexTable.clear();
     }
 
     @Override
     public boolean addAll(Collection<? extends T> c) {
-        return list.addAll(c);
-    }
-
-    @Override
-    public boolean addAll(int index, Collection<? extends T> c) {
-        return list.addAll(index, c);
+        boolean allAdded = false;
+        for(T t : c) {
+            allAdded |= add(t);
+        }
+        return allAdded;
     }
 
     @Override
     public boolean removeAll(Collection<?> c) {
-        return list.removeAll(c);
+        boolean allRemoved = false;
+        for(Object o : c) {
+            allRemoved |= remove(o);
+        }
+        return allRemoved;
     }
 
     @Override
     public boolean retainAll(Collection<?> c) {
-        return list.retainAll(c);
-    }
-
-    @Override
-    public ListIterator<T> listIterator(int index) {
-        return list.listIterator(index);
-    }
-
-    @Override
-    public ListIterator<T> listIterator() {
-        return list.listIterator();
+        Iterator<T> it = iterator();
+        boolean changed = false;
+        while(it.hasNext()) {
+            T t = it.next();
+            if(!c.contains(t)) {
+                it.remove();
+                changed = true;
+            }
+        }
+        return changed;
     }
 
     @Override
@@ -166,23 +147,18 @@ public class OptimizedArray<T> implements List<T> {
     }
 
     @Override
-    public List<T> subList(int fromIndex, int toIndex) {
-        return list.subList(fromIndex, toIndex);
-    }
-
-    @Override
     public boolean containsAll(Collection<?> c) {
-        return list.containsAll(c);
+        return c.stream().allMatch(this::contains);
     }
 
     @Override
     public Stream<T> stream() {
-        return list.stream().filter(Objects::nonNull);
+        return Arrays.stream(array).unordered().filter(Objects::nonNull);
     }
 
     @Override
     public Stream<T> parallelStream() {
-        return list.parallelStream().filter(Objects::nonNull);
+        return Arrays.stream(array).parallel().unordered().filter(Objects::nonNull);
     }
 
     @Override
@@ -190,17 +166,17 @@ public class OptimizedArray<T> implements List<T> {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         OptimizedArray<?> that = (OptimizedArray<?>) o;
-        return Objects.equals(list, that.list) &&
+        return Arrays.equals(array, that.array) &&
                 Objects.equals(freeIndices, that.freeIndices);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(list, freeIndices);
+        return Objects.hash(array, freeIndices);
     }
 
     @Override
     public String toString() {
-        return list.toString();
+        return Arrays.toString(array);
     }
 }
