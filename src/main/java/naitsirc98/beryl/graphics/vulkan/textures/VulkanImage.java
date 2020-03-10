@@ -1,7 +1,10 @@
 package naitsirc98.beryl.graphics.vulkan.textures;
 
+import naitsirc98.beryl.graphics.vulkan.memory.VmaAllocated;
+import naitsirc98.beryl.graphics.vulkan.memory.VmaImageAllocation;
 import naitsirc98.beryl.logging.Log;
 import org.lwjgl.system.MemoryStack;
+import org.lwjgl.util.vma.VmaAllocationCreateInfo;
 import org.lwjgl.vulkan.*;
 
 import java.nio.IntBuffer;
@@ -12,21 +15,26 @@ import static naitsirc98.beryl.graphics.vulkan.util.VulkanUtils.vkCall;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.vulkan.VK10.*;
 
-public class VulkanImage implements VulkanImageBase {
+public class VulkanImage implements VulkanImageBase, VmaAllocated {
 
     private long vkImage;
-    private long vkImageMemory;
+    private long allocation;
     private long vkImageView;
-    private int format;
-    private int mipLevels;
+    private VkImageCreateInfo imageCreateInfo;
+    private VmaAllocationCreateInfo allocationCreateInfo;
+    private VkImageViewCreateInfo imageViewCreateInfo;
 
-    public VulkanImage(VkImageCreateInfo imageInfo, VkImageViewCreateInfo imageViewInfo, int memoryProperties) {
-        vkImage = createVkImage(imageInfo);
-        vkImageMemory = createVkImageMemory(memoryProperties);
-        bindImageMemory();
-        vkImageView = createVkImageView(imageViewInfo);
-        format = imageInfo.format();
-        mipLevels = imageInfo.mipLevels();
+    public VulkanImage(VkImageCreateInfo imageInfo, VmaAllocationCreateInfo allocationInfo, VkImageViewCreateInfo imageViewInfo) {
+        init(allocator().createImage(imageInfo, allocationInfo), imageViewInfo);
+    }
+
+    private void init(VmaImageAllocation imageAllocation, VkImageViewCreateInfo imageViewInfo) {
+        this.vkImage = imageAllocation.image();
+        this.allocation = imageAllocation.allocation();
+        this.imageCreateInfo = imageAllocation.imageCreateInfo();
+        this.allocationCreateInfo = imageAllocation.allocationCreateInfo();
+        this.vkImageView = createVkImageView(imageViewInfo);
+        this.imageViewCreateInfo = imageViewInfo;
     }
 
     @Override
@@ -35,34 +43,49 @@ public class VulkanImage implements VulkanImageBase {
     }
 
     @Override
-    public long vkImageView() {
+    public long imageView() {
         return vkImageView;
     }
 
-    public long vkImageMemory() {
-        return vkImageMemory;
+    public VkImageCreateInfo imageInfo() {
+        return imageCreateInfo;
+    }
+
+    public VkImageViewCreateInfo viewInfo() {
+        return imageViewCreateInfo;
     }
 
     @Override
-    public int format() {
-        return format;
+    public long allocation() {
+        return allocation;
     }
 
-    public int mipLevels() {
-        return mipLevels;
+    @Override
+    public VmaAllocationCreateInfo allocationCreateInfo() {
+        return allocationCreateInfo;
+    }
+
+    @Override
+    public void ensure() {
+        // TODO
     }
 
     @Override
     public void free() {
 
         vkDestroyImageView(logicalDevice().handle(), vkImageView, null);
-        vkImageView = VK_NULL_HANDLE;
+        allocator().destroyImage(vkImage, allocation);
+        imageCreateInfo.free();
+        allocationCreateInfo.free();
+        imageViewCreateInfo.free();
 
-        vkDestroyImage(logicalDevice().handle(), vkImage, null);
+
         vkImage = VK_NULL_HANDLE;
-
-        vkFreeMemory(logicalDevice().handle(), vkImageMemory, null);
-        vkImageMemory = VK_NULL_HANDLE;
+        allocation = VK_NULL_HANDLE;
+        vkImageView = VK_NULL_HANDLE;
+        imageCreateInfo = null;
+        allocationCreateInfo = null;
+        imageViewCreateInfo = null;
     }
 
     public void transitionLayout(int oldLayout, int newLayout) {
@@ -97,10 +120,11 @@ public class VulkanImage implements VulkanImageBase {
             .dstQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
             .image(vkImage);
 
-        barrier.subresourceRange().baseMipLevel(0)
-            .levelCount(mipLevels())
-            .baseArrayLayer(0)
-            .layerCount(1);
+        barrier.subresourceRange()
+                .baseMipLevel(0)
+                .levelCount(imageInfo().mipLevels())
+                .baseArrayLayer(0)
+                .layerCount(1);
 
         return barrier;
     }
@@ -113,7 +137,7 @@ public class VulkanImage implements VulkanImageBase {
 
             barrier.subresourceRange().aspectMask(VK_IMAGE_ASPECT_DEPTH_BIT);
 
-            if(formatHasStencilComponent(format())) {
+            if(formatHasStencilComponent(imageInfo().format())) {
                 barrier.subresourceRange().aspectMask(
                         barrier.subresourceRange().aspectMask() | VK_IMAGE_ASPECT_STENCIL_BIT);
             }
@@ -197,10 +221,6 @@ public class VulkanImage implements VulkanImageBase {
         }
     }
 
-    private void bindImageMemory() {
-        vkBindImageMemory(logicalDevice().handle(), vkImage, vkImageMemory, 0);
-    }
-
     private int findMemoryType(int typeFilter, int properties) {
 
         VkPhysicalDeviceMemoryProperties memProperties = VkPhysicalDeviceMemoryProperties.mallocStack();
@@ -230,4 +250,5 @@ public class VulkanImage implements VulkanImageBase {
             return pImageView.get(0);
         }
     }
+
 }

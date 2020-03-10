@@ -10,9 +10,11 @@ import naitsirc98.beryl.scenes.components.math.TransformManager;
 import naitsirc98.beryl.scenes.components.meshes.MeshView;
 import naitsirc98.beryl.scenes.components.meshes.MeshViewManager;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static java.util.stream.IntStream.range;
@@ -34,6 +36,8 @@ public final class Scene {
     private final Map<Class<? extends Component>, ComponentManager<?>> componentManagers;
     // ===
 
+    private final Runnable[] endUpdateTasks;
+
     private final Queue<Runnable> taskQueue;
 
     private boolean started;
@@ -51,6 +55,11 @@ public final class Scene {
         componentManagers = createComponentManagersMap();
         // ===
 
+        endUpdateTasks = new Runnable[] {
+            transforms::update,
+            cameras::update
+        };
+
         taskQueue = new ConcurrentLinkedQueue<>();
     }
 
@@ -65,7 +74,7 @@ public final class Scene {
 
     void processTasks() {
         if(!taskQueue.isEmpty()) {
-            range(0, taskQueue.size()).parallel().mapToObj(i -> taskQueue.poll()).forEach(Runnable::run);
+            range(0, taskQueue.size()).unordered().parallel().mapToObj(i -> taskQueue.poll()).forEach(Runnable::run);
         }
     }
 
@@ -74,8 +83,9 @@ public final class Scene {
     }
 
     void endUpdate() {
-        transforms.update();
-        cameras.update();
+        Stream.of(endUpdateTasks).parallel().unordered().forEach(Runnable::run);
+        // transforms.update();
+        // cameras.update();
     }
 
     void render() {
@@ -88,9 +98,11 @@ public final class Scene {
     }
 
     void terminate() {
+        // TODO
         processTasks();
         entityManager.remove();
         componentManagers.values().forEach(ComponentManager::removeAll);
+        componentManagers.clear();
     }
 
     public boolean started() {

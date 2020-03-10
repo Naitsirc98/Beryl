@@ -1,7 +1,5 @@
 package naitsirc98.beryl.graphics.vulkan.swapchain;
 
-import naitsirc98.beryl.graphics.vulkan.textures.VulkanImage;
-import naitsirc98.beryl.graphics.vulkan.textures.VulkanImageBase;
 import naitsirc98.beryl.graphics.vulkan.VulkanObject;
 import naitsirc98.beryl.graphics.vulkan.devices.VulkanLogicalDevice;
 import naitsirc98.beryl.graphics.vulkan.devices.VulkanPhysicalDevice;
@@ -9,10 +7,14 @@ import naitsirc98.beryl.graphics.vulkan.devices.VulkanPhysicalDevice.QueueFamily
 import naitsirc98.beryl.graphics.vulkan.devices.VulkanPhysicalDevice.SwapChainSupportDetails;
 import naitsirc98.beryl.graphics.vulkan.renderpasses.VulkanRenderPass;
 import naitsirc98.beryl.graphics.vulkan.renderpasses.VulkanSubPassAttachments;
+import naitsirc98.beryl.graphics.vulkan.textures.VulkanImage;
+import naitsirc98.beryl.graphics.vulkan.textures.VulkanImageBase;
+import naitsirc98.beryl.graphics.vulkan.textures.VulkanImageView;
 import naitsirc98.beryl.graphics.window.Window;
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.util.geometry.Sizec;
 import org.lwjgl.system.MemoryStack;
+import org.lwjgl.util.vma.VmaAllocationCreateInfo;
 import org.lwjgl.vulkan.*;
 
 import java.nio.IntBuffer;
@@ -24,6 +26,7 @@ import static naitsirc98.beryl.graphics.vulkan.util.VulkanFormatUtils.findDepthF
 import static naitsirc98.beryl.util.Maths.clamp;
 import static naitsirc98.beryl.util.types.DataType.UINT32_MAX;
 import static org.lwjgl.system.MemoryStack.stackPush;
+import static org.lwjgl.util.vma.Vma.VMA_MEMORY_USAGE_GPU_ONLY;
 import static org.lwjgl.vulkan.KHRSurface.*;
 import static org.lwjgl.vulkan.KHRSwapchain.*;
 import static org.lwjgl.vulkan.VK10.*;
@@ -39,7 +42,7 @@ public class VulkanSwapchain implements VulkanObject.Long {
     private long vkSwapchain;
     private int swapChainImageFormat;
     private VkExtent2D swapChainExtent;
-    private VulkanSwapchainImage[] swapChainImages;
+    private VulkanImageView[] swapChainImages;
     private VulkanImageBase depthImage;
     private VulkanRenderPass renderPass;
     // Objects that need to be reinitialized when the swapchain is recreated
@@ -63,7 +66,7 @@ public class VulkanSwapchain implements VulkanObject.Long {
         return swapChainExtent;
     }
 
-    public VulkanSwapchainImage[] swapChainImages() {
+    public VulkanImageView[] swapChainImages() {
         return swapChainImages;
     }
 
@@ -221,12 +224,30 @@ public class VulkanSwapchain implements VulkanObject.Long {
         vkGetSwapchainImagesKHR(logicalDevice().handle(), swapchain, imageCount, pSwapchainImages);
 
         if(swapChainImages == null || swapChainImages.length != imageCount.get(0)) {
-            swapChainImages = new VulkanSwapchainImage[imageCount.get(0)];
+            swapChainImages = new VulkanImageView[imageCount.get(0)];
         }
 
         for(int i = 0;i < pSwapchainImages.capacity();i++) {
-            swapChainImages[i] = new VulkanSwapchainImage(pSwapchainImages.get(i), swapChainImageFormat);
+            swapChainImages[i] = new VulkanImageView(getSwapchainImageViewCreateInfo(pSwapchainImages.get(i), swapChainImageFormat));
         }
+    }
+
+    private VkImageViewCreateInfo getSwapchainImageViewCreateInfo(long image, int format) {
+
+        VkImageViewCreateInfo viewInfo = VkImageViewCreateInfo.calloc()
+                .sType(VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO)
+                .image(image)
+                .viewType(VK_IMAGE_VIEW_TYPE_2D)
+                .format(format);
+
+        viewInfo.subresourceRange()
+                .aspectMask(VK_IMAGE_ASPECT_COLOR_BIT)
+                .baseMipLevel(0)
+                .levelCount(1)
+                .baseArrayLayer(0)
+                .layerCount(1);
+
+        return viewInfo;
     }
 
     private VkSurfaceFormatKHR chooseSwapSurfaceFormat(VkSurfaceFormatKHR.Buffer availableFormats) {
@@ -287,13 +308,13 @@ public class VulkanSwapchain implements VulkanObject.Long {
 
             LongBuffer framebufferAttachments = stack.mallocLong(2);
 
-            framebufferAttachments.put(DEPTH_ATTACHMENT_INDEX, depthImage.vkImageView());
+            framebufferAttachments.put(DEPTH_ATTACHMENT_INDEX, depthImage.imageView());
 
             renderPass.createFramebuffers(
                     swapChainExtent.width(),
                     swapChainExtent.height(),
                     swapChainImages.length,
-                    index -> framebufferAttachments.put(COLOR_ATTACHMENT_INDEX, swapChainImages[index].vkImageView()));
+                    index -> framebufferAttachments.put(COLOR_ATTACHMENT_INDEX, swapChainImages[index].handle()));
         }
     }
 
@@ -358,12 +379,17 @@ public class VulkanSwapchain implements VulkanObject.Long {
 
         VulkanImage depthImage = new VulkanImage(
                 getDepthImageInfo(depthFormat),
-                getDepthImageViewInfo(depthFormat),
-                getDepthImageMemoryProperties());
+                getDepthImageAllocationInfo(),
+                getDepthImageViewInfo(depthFormat));
 
         depthImage.transitionLayout(VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
 
         return depthImage;
+    }
+
+    private VmaAllocationCreateInfo getDepthImageAllocationInfo() {
+        return VmaAllocationCreateInfo.calloc()
+                .usage(VMA_MEMORY_USAGE_GPU_ONLY);
     }
 
     private VkImageCreateInfo getDepthImageInfo(int depthFormat) {

@@ -27,6 +27,6 @@ public interface VmaAllocated extends VulkanObject {
         return vmaTouchAllocation(allocator().handle(), allocation());
     }
 
-    void ensure();
+    void ensure(); // VMA lost allocations
 
 }

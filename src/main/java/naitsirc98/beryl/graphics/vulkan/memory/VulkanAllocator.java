@@ -9,6 +9,7 @@ import org.lwjgl.util.vma.VmaAllocationCreateInfo;
 import org.lwjgl.util.vma.VmaAllocatorCreateInfo;
 import org.lwjgl.util.vma.VmaVulkanFunctions;
 import org.lwjgl.vulkan.VkBufferCreateInfo;
+import org.lwjgl.vulkan.VkImageCreateInfo;
 import org.lwjgl.vulkan.VkInstance;
 
 import java.nio.LongBuffer;
@@ -41,6 +42,23 @@ public class VulkanAllocator implements VulkanObject.Long {
 
     public void destroyBuffer(long vkBuffer, long allocation) {
         vmaDestroyBuffer(vmaAllocator, vkBuffer, allocation);
+    }
+
+    public VmaImageAllocation createImage(VkImageCreateInfo imageCreateInfo, VmaAllocationCreateInfo allocationCreateInfo) {
+
+        try(MemoryStack stack = stackPush()) {
+
+            LongBuffer vkImage = stack.mallocLong(1);
+            PointerBuffer vmaAllocation = stack.mallocPointer(1);
+
+            vkCall(vmaCreateImage(vmaAllocator, imageCreateInfo, allocationCreateInfo, vkImage, vmaAllocation, null));
+
+            return new VmaImageAllocation(vmaAllocation.get(0), allocationCreateInfo, vkImage.get(0), imageCreateInfo);
+        }
+    }
+
+    public void destroyImage(long vkImage, long allocation) {
+        vmaDestroyImage(vmaAllocator, vkImage, allocation);
     }
 
     private long createVmaAllocator(VkInstance vkInstance, VulkanPhysicalDevice physicalDevice, VulkanLogicalDevice logicalDevice) {
