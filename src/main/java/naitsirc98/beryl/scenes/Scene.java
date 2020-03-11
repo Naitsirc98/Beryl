@@ -10,14 +10,9 @@ import naitsirc98.beryl.scenes.components.math.TransformManager;
 import naitsirc98.beryl.scenes.components.meshes.MeshView;
 import naitsirc98.beryl.scenes.components.meshes.MeshViewManager;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.*;
 import java.util.stream.Stream;
 
-import static java.util.stream.IntStream.range;
 import static naitsirc98.beryl.scenes.Entity.UNTAGGED;
 import static naitsirc98.beryl.util.Asserts.assertNonNull;
 import static naitsirc98.beryl.util.Asserts.assertTrue;
@@ -36,9 +31,7 @@ public final class Scene {
     private final Map<Class<? extends Component>, ComponentManager<?>> componentManagers;
     // ===
 
-    private final Runnable[] endUpdateTasks;
-
-    private final Queue<Runnable> taskQueue;
+    private final Deque<Runnable> taskQueue;
 
     private boolean started;
 
@@ -55,12 +48,7 @@ public final class Scene {
         componentManagers = createComponentManagersMap();
         // ===
 
-        endUpdateTasks = new Runnable[] {
-            transforms::update,
-            cameras::update
-        };
-
-        taskQueue = new ConcurrentLinkedQueue<>();
+        taskQueue = new ArrayDeque<>();
     }
 
     void start() {
@@ -73,8 +61,8 @@ public final class Scene {
     }
 
     void processTasks() {
-        if(!taskQueue.isEmpty()) {
-            range(0, taskQueue.size()).unordered().parallel().mapToObj(i -> taskQueue.poll()).forEach(Runnable::run);
+        while(!taskQueue.isEmpty()) {
+            taskQueue.poll().run();
         }
     }
 
@@ -83,9 +71,8 @@ public final class Scene {
     }
 
     void endUpdate() {
-        Stream.of(endUpdateTasks).parallel().unordered().forEach(Runnable::run);
-        // transforms.update();
-        // cameras.update();
+        cameras.update();
+        transforms.update();
     }
 
     void render() {
@@ -221,9 +208,9 @@ public final class Scene {
         assertNonNull(component);
         ComponentManager<T> manager = managerOf(component.type());
 
-        synchronized(manager) {
+        // synchronized(manager) {
             manager.add(component);
-        }
+        // }
 
         component.manager = manager;
     }
@@ -263,9 +250,9 @@ public final class Scene {
 
         ComponentManager<T> manager = managerOf(component.type());
 
-        synchronized(manager) {
+        // synchronized(manager) {
             manager.remove(component);
-        }
+        // }
 
         component.delete();
     }

@@ -6,6 +6,7 @@
       <w>attributei</w>
       <w>blinn</w>
       <w>calloc</w>
+      <w>emissive</w>
       <w>framebuffers</w>
       <w>growable</w>
       <w>lwjgl</w>

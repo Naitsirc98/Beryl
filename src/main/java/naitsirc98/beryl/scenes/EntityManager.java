@@ -56,7 +56,7 @@ public final class EntityManager implements Iterable<Entity> {
      * @param tag  the tag
      * @return the entity
      */
-    public synchronized Entity newEntity(String name, String tag) {
+    public Entity newEntity(String name, String tag) {
 
         if(nameTable.containsKey(name)) {
             Log.error("There is already an Entity named " + name + " in this scene. Names must be unique per scene");
@@ -95,7 +95,7 @@ public final class EntityManager implements Iterable<Entity> {
      *
      * @param entity the entity
      */
-    public synchronized void remove(Entity entity) {
+    public void remove(Entity entity) {
 
         if(!entity.name().equals(UNNAMED)) {
             nameTable.remove(entity.name());
