@@ -1,9 +1,11 @@
 package naitsirc98.beryl.graphics.opengl.textures;
 
 import naitsirc98.beryl.graphics.opengl.GLObject;
+import naitsirc98.beryl.graphics.opengl.shaders.GLShaderProgram;
 import naitsirc98.beryl.graphics.textures.Texture;
 
 import static org.lwjgl.opengl.GL11.glDeleteTextures;
+import static org.lwjgl.opengl.GL20.glUniform1i;
 import static org.lwjgl.opengl.GL45.glCreateTextures;
 import static org.lwjgl.opengl.GL45C.glBindTextureUnit;
 

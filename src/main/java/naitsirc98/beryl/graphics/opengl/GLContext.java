@@ -4,6 +4,7 @@ import naitsirc98.beryl.core.Beryl;
 import naitsirc98.beryl.core.BerylConfiguration;
 import naitsirc98.beryl.graphics.GraphicsContext;
 import naitsirc98.beryl.graphics.GraphicsFactory;
+import naitsirc98.beryl.graphics.opengl.rendering.GLPhongRenderingPath;
 import naitsirc98.beryl.graphics.opengl.rendering.GLSimpleRenderingPath;
 import naitsirc98.beryl.graphics.rendering.RenderingPath;
 import naitsirc98.beryl.graphics.window.Window;
@@ -15,6 +16,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static naitsirc98.beryl.graphics.opengl.GLDebugMessenger.newGLDebugMessenger;
+import static naitsirc98.beryl.graphics.rendering.RenderingPaths.RPATH_PHONG;
 import static naitsirc98.beryl.graphics.rendering.RenderingPaths.RPATH_SIMPLE3D;
 import static naitsirc98.beryl.util.types.TypeUtils.newInstance;
 import static org.lwjgl.glfw.GLFW.glfwMakeContextCurrent;
@@ -54,6 +56,7 @@ public class GLContext implements GraphicsContext, LongHandle {
         Map<Integer, RenderingPath> renderingPaths = new HashMap<>();
 
         renderingPaths.put(RPATH_SIMPLE3D, newInstance(GLSimpleRenderingPath.class));
+        renderingPaths.put(RPATH_PHONG, newInstance(GLPhongRenderingPath.class));
         // ...
 
         return renderingPaths;

@@ -8,12 +8,12 @@ import static naitsirc98.beryl.graphics.vulkan.util.VulkanFormatUtils.vkToPixelF
 
 public abstract class VulkanTexture implements VulkanObject, Texture {
 
-    private VulkanRenderImage renderImage;
-    private VulkanSampler sampler;
+    protected VulkanRenderImage renderImage;
+    protected VulkanSampler sampler;
 
-    public VulkanTexture(VulkanRenderImage renderImage, VulkanSampler sampler) {
-        this.renderImage = renderImage;
-        this.sampler = sampler;
+    public VulkanTexture() {
+        renderImage = new VulkanRenderImage(new VulkanImage(), new VulkanImageView());
+        this.sampler = new VulkanSampler();
     }
 
     public VulkanImage image() {
@@ -47,10 +47,12 @@ public abstract class VulkanTexture implements VulkanObject, Texture {
     @Override
     public void free() {
 
-        renderImage.free();
-        sampler.free();
+        if(renderImage != null) {
+            renderImage.free();
+            renderImage = null;
+        }
 
-        renderImage = null;
+        sampler.free();
         sampler = null;
     }
 }

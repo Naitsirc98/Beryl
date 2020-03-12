@@ -21,7 +21,14 @@ public class VulkanRenderImage implements VulkanObject {
     private VulkanImage image;
     private VulkanImageView imageView;
 
+    public VulkanRenderImage() {
+    }
+
     public VulkanRenderImage(VulkanImage image, VulkanImageView imageView) {
+        init(image, imageView);
+    }
+
+    public void init(VulkanImage image, VulkanImageView imageView) {
         this.image = image;
         this.imageView = imageView;
     }
@@ -32,6 +39,18 @@ public class VulkanRenderImage implements VulkanObject {
 
     public VulkanImageView view() {
         return imageView;
+    }
+
+    public int width() {
+        return image.width();
+    }
+
+    public int height() {
+        return image.height();
+    }
+
+    public int depth() {
+        return image.depth();
     }
 
     public void transitionLayout(int oldLayout, int newLayout) {
@@ -51,11 +70,15 @@ public class VulkanRenderImage implements VulkanObject {
     @Override
     public void free() {
 
-        image.free();
-        imageView.free();
+        if(image != null) {
+            image.free();
+            image = null;
+        }
 
-        image = null;
-        imageView = null;
+        if(imageView != null) {
+            imageView.free();
+            imageView = null;
+        }
     }
 
     private void doTransition(VkImageMemoryBarrier.Buffer barrier, int srcStage, int dstStage, VkCommandBuffer commandBuffer) {

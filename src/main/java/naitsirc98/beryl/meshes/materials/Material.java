@@ -1,5 +1,6 @@
 package naitsirc98.beryl.meshes.materials;
 
+import naitsirc98.beryl.graphics.GraphicsFactory;
 import naitsirc98.beryl.graphics.textures.Texture2D;
 import naitsirc98.beryl.util.Color;
 
@@ -16,7 +17,7 @@ public interface Material {
 
         public ColorMapProperty() {
             color = Color.WHITE;
-            // map = default blank texture
+            map = GraphicsFactory.get().blankTexture2D();
         }
 
         public Color color() {

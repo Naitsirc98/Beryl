@@ -1,7 +1,10 @@
 package naitsirc98.beryl.graphics.opengl.shaders;
 
 import naitsirc98.beryl.graphics.opengl.GLObject;
+import naitsirc98.beryl.graphics.opengl.textures.GLTexture;
+import naitsirc98.beryl.graphics.opengl.textures.GLTexture2D;
 import naitsirc98.beryl.logging.Log;
+import naitsirc98.beryl.util.Color;
 import org.joml.Matrix4fc;
 import org.lwjgl.system.MemoryStack;
 
@@ -82,6 +85,35 @@ public final class GLShaderProgram implements GLObject {
 
     public void uniformMatrix4f(String name, boolean transpose, FloatBuffer value) {
         glUniformMatrix4fv(uniformLocation(name), transpose, value);
+    }
+
+    public void uniformMatrix4f(int location, boolean transpose, FloatBuffer value) {
+        glUniformMatrix4fv(location, transpose, value);
+    }
+
+    public void uniformColor(String name, Color color) {
+        uniformColor(uniformLocation(name), color);
+    }
+
+    public void uniformColor(int location, Color color) {
+        glUniform4f(location, color.red(), color.green(), color.blue(), color.alpha());
+    }
+
+    public void uniformSampler(String name, GLTexture texture, int unit) {
+        uniformSampler(uniformLocation(name), texture, unit);
+    }
+
+    public void uniformSampler(int location, GLTexture texture, int unit) {
+        glUniform1i(location, unit);
+        texture.bind(unit);
+    }
+
+    public void uniformFloat(String name, float value) {
+        uniformFloat(uniformLocation(name), value);
+    }
+
+    public void uniformFloat(int location, float value) {
+        glUniform1f(location, value);
     }
 
     @Override

@@ -17,6 +17,7 @@ public class GLSampler implements GLObject, Sampler {
 
     public GLSampler() {
         handle = glGenSamplers();
+        glSamplerParameteri(handle, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     }
 
     @Override

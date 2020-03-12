@@ -1,5 +1,6 @@
 package naitsirc98.beryl.graphics.textures;
 
+import naitsirc98.beryl.graphics.GraphicsFactory;
 import naitsirc98.beryl.images.Image;
 import naitsirc98.beryl.images.PixelFormat;
 

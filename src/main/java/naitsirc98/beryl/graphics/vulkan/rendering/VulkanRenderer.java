@@ -151,12 +151,12 @@ public class VulkanRenderer implements VulkanObject, Renderer, VulkanSwapchainDe
     }
 
     private void init0() {
-        VulkanLogicalDevice logicalDevice = Graphics.vulkan().logicalDevice();
-        this.swapchain = Graphics.vulkan().swapchain();
+        VulkanLogicalDevice logicalDevice = logicalDevice();
+        this.swapchain = swapchain();
         this.logicalDevice = logicalDevice.handle();
         graphicsQueue = logicalDevice.graphicsQueue();
         presentationQueue = logicalDevice.presentationQueue();
-        this.commandPool = Graphics.vulkan().graphicsCommandPool();
+        this.commandPool = graphicsCommandPool();
         commandBuffers = commandPool.newPrimaryCommandBuffers(swapchain.swapChainImages().length);
     }
 }

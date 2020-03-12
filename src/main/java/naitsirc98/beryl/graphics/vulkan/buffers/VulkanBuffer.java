@@ -17,7 +17,7 @@ import static org.lwjgl.vulkan.VK10.VK_NULL_HANDLE;
 
 public abstract class VulkanBuffer implements VulkanObject.Long, VmaAllocated, GraphicsBuffer {
 
-    protected long buffer;
+    protected long handle;
     protected long allocation;
     protected VkBufferCreateInfo bufferInfo;
     protected VmaAllocationCreateInfo allocationCreateInfo;
@@ -33,7 +33,7 @@ public abstract class VulkanBuffer implements VulkanObject.Long, VmaAllocated, G
 
     @Override
     public final long handle() {
-        return buffer;
+        return handle;
     }
 
     @Override
@@ -121,14 +121,14 @@ public abstract class VulkanBuffer implements VulkanObject.Long, VmaAllocated, G
         bufferInfo.free();
         allocationCreateInfo.free();
 
-        buffer = VK_NULL_HANDLE;
+        handle = VK_NULL_HANDLE;
         allocation = VK_NULL_HANDLE;
         bufferInfo = null;
         allocationCreateInfo = null;
     }
 
     protected void init(VmaBufferAllocation bufferAllocation) {
-        this.buffer = bufferAllocation.buffer();
+        this.handle = bufferAllocation.buffer();
         this.allocation = bufferAllocation.allocation();
         this.bufferInfo = bufferAllocation.bufferCreateInfo();
         this.allocationCreateInfo = bufferAllocation.allocationCreateInfo();

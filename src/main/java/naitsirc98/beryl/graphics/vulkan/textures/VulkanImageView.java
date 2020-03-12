@@ -17,13 +17,36 @@ public class VulkanImageView implements VulkanObject.Long {
     private long vkImageView;
     private VkImageViewCreateInfo info;
 
+    public VulkanImageView() {
+    }
+
     public VulkanImageView(VkImageViewCreateInfo createInfo) {
         init(createInfo);
+    }
+
+    public void init(VkImageViewCreateInfo createInfo) {
+
+        free();
+
+        try(MemoryStack stack = stackPush()) {
+
+            this.info = createInfo;
+
+            LongBuffer pImageView = stack.mallocLong(1);
+
+            vkCall(vkCreateImageView(logicalDevice().handle(), createInfo, null, pImageView));
+
+            vkImageView = pImageView.get(0);
+        }
     }
 
     @Override
     public long handle() {
         return vkImageView;
+    }
+
+    public VkImageViewCreateInfo info() {
+        return info;
     }
 
     public long image() {
@@ -53,24 +76,14 @@ public class VulkanImageView implements VulkanObject.Long {
     @Override
     public void free() {
 
+        if(vkImageView == VK_NULL_HANDLE) {
+            return;
+        }
+
         vkDestroyImageView(logicalDevice().handle(), vkImageView, null);
         info.free();
 
         vkImageView = VK_NULL_HANDLE;
         info = null;
-    }
-
-    private void init(VkImageViewCreateInfo createInfo) {
-
-        try(MemoryStack stack = stackPush()) {
-
-            this.info = createInfo;
-
-            LongBuffer pImageView = stack.mallocLong(1);
-
-            vkCall(vkCreateImageView(logicalDevice().handle(), createInfo, null, pImageView));
-
-            vkImageView = pImageView.get(0);
-        }
     }
 }

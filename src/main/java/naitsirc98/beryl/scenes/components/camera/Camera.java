@@ -111,11 +111,11 @@ public final class Camera extends Component<Camera> {
 		modified = true;
 	}
 
-	public void lookAt(float x, float y) {
+	public Camera lookAt(float x, float y) {
 		assertNotDeleted();
 
 		if(x == lastX && y == lastY) {
-			return;
+			return this;
 		}
 
 		float xOffset = x - lastX;
@@ -137,6 +137,8 @@ public final class Camera extends Component<Camera> {
 		updateCameraVectors();
 
 		modify();
+
+		return this;
 	}
 	
 	public void move(Direction direction, float amount) {

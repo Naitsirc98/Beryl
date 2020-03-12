@@ -34,8 +34,8 @@ public final class GLSimpleRenderingPath extends RenderingPath {
         Path fragmentPath = null;
 
         try {
-            vertexPath = Resources.getPath("shaders/gl/simple/simple.vert");
-            fragmentPath = Resources.getPath("shaders/gl/simple/simple.frag");
+            vertexPath = Resources.getPath("shaders/gl/simple/simple.gl.vert");
+            fragmentPath = Resources.getPath("shaders/gl/simple/simple.gl.frag");
         } catch (Exception e) {
             Log.fatal("Failed to get shader files for RenderingPath", e);
         }

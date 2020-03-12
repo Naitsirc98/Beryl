@@ -1,11 +1,10 @@
 package naitsirc98.beryl.graphics.vulkan.buffers;
 
+import naitsirc98.beryl.graphics.vulkan.textures.VulkanImage;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.util.vma.VmaAllocationCreateInfo;
-import org.lwjgl.vulkan.VkBufferCopy;
-import org.lwjgl.vulkan.VkBufferCreateInfo;
-import org.lwjgl.vulkan.VkCommandBuffer;
+import org.lwjgl.vulkan.*;
 
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
@@ -41,6 +40,29 @@ public class VulkanStagingBuffer extends VulkanBuffer {
         this();
         allocate(data.remaining());
         update(0, data);
+    }
+
+    public void transfer(long offset, VulkanImage image) {
+        graphicsCommandPool().execute(commandBuffer -> transfer(commandBuffer, offset, image));
+    }
+
+    private void transfer(VkCommandBuffer commandBuffer, long offset, VulkanImage image) {
+
+        try(MemoryStack stack = stackPush()) {
+
+            VkBufferImageCopy.Buffer region = VkBufferImageCopy.callocStack(1, stack);
+            region.bufferOffset(0);
+            region.bufferRowLength(0);   // Tightly packed
+            region.bufferImageHeight(0);  // Tightly packed
+            region.imageSubresource().aspectMask(VK_IMAGE_ASPECT_COLOR_BIT);
+            region.imageSubresource().mipLevel(0);
+            region.imageSubresource().baseArrayLayer(0);
+            region.imageSubresource().layerCount(1);
+            region.imageOffset().set(0, 0, 0);
+            region.imageExtent(VkExtent3D.callocStack(stack).set(image.width(), image.height(), image.depth()));
+
+            vkCmdCopyBufferToImage(commandBuffer, handle(), image.handle(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, region);
+        }
     }
 
     public void transfer(long offset, VulkanBuffer buffer) {
