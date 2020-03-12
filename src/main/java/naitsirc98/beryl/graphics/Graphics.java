@@ -38,10 +38,6 @@ public final class Graphics extends BerylSystem {
 
     }
 
-    public Renderer renderer() {
-        return graphicsContext.renderer();
-    }
-
     @Override
     protected void init() {
 

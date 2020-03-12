@@ -3,7 +3,7 @@ package naitsirc98.beryl.meshes.materials;
 import naitsirc98.beryl.graphics.textures.Texture2D;
 import naitsirc98.beryl.util.Color;
 
-public class BlinnPhongMaterial implements Material {
+public class PhongMaterial implements Material {
 
     public static final float DEFAULT_SHININESS = 32.0f;
 
@@ -13,7 +13,7 @@ public class BlinnPhongMaterial implements Material {
     private final ColorMapProperty emissive;
     private float shininess;
 
-    public BlinnPhongMaterial() {
+    public PhongMaterial() {
         ambient = new ColorMapProperty();
         diffuse = new ColorMapProperty();
         specular = new ColorMapProperty();
@@ -21,11 +21,11 @@ public class BlinnPhongMaterial implements Material {
         shininess = DEFAULT_SHININESS;
     }
 
-    public BlinnPhongMaterial color(Color color) {
+    public PhongMaterial color(Color color) {
         return ambientColor(color).diffuseColor(color).specularColor(color);
     }
 
-    public BlinnPhongMaterial map(Texture2D map) {
+    public PhongMaterial map(Texture2D map) {
         return ambientMap(map).diffuseMap(map).specularMap(map);
     }
 
@@ -37,12 +37,12 @@ public class BlinnPhongMaterial implements Material {
         return ambient.map();
     }
 
-    public BlinnPhongMaterial ambientColor(Color ambientColor) {
+    public PhongMaterial ambientColor(Color ambientColor) {
         ambient.color(ambientColor);
         return this;
     }
 
-    public BlinnPhongMaterial ambientMap(Texture2D ambientMap) {
+    public PhongMaterial ambientMap(Texture2D ambientMap) {
         ambient.map(ambientMap);
         return this;
     }
@@ -55,12 +55,12 @@ public class BlinnPhongMaterial implements Material {
         return diffuse.map();
     }
 
-    public BlinnPhongMaterial diffuseColor(Color diffuseColor) {
+    public PhongMaterial diffuseColor(Color diffuseColor) {
         diffuse.color(diffuseColor);
         return this;
     }
 
-    public BlinnPhongMaterial diffuseMap(Texture2D diffuseMap) {
+    public PhongMaterial diffuseMap(Texture2D diffuseMap) {
         diffuse.map(diffuseMap);
         return this;
     }
@@ -73,12 +73,12 @@ public class BlinnPhongMaterial implements Material {
         return specular.map();
     }
 
-    public BlinnPhongMaterial specularColor(Color specularColor) {
+    public PhongMaterial specularColor(Color specularColor) {
         specular.color(specularColor);
         return this;
     }
 
-    public BlinnPhongMaterial specularMap(Texture2D specularMap) {
+    public PhongMaterial specularMap(Texture2D specularMap) {
         specular.map(specularMap);
         return this;
     }
@@ -91,12 +91,12 @@ public class BlinnPhongMaterial implements Material {
         return emissive.map();
     }
 
-    public BlinnPhongMaterial emissiveColor(Color emissiveColor) {
+    public PhongMaterial emissiveColor(Color emissiveColor) {
         emissive.color(emissiveColor);
         return this;
     }
 
-    public BlinnPhongMaterial emissiveMap(Texture2D emissiveMap) {
+    public PhongMaterial emissiveMap(Texture2D emissiveMap) {
         emissive.map(emissiveMap);
         return this;
     }
@@ -105,7 +105,7 @@ public class BlinnPhongMaterial implements Material {
         return shininess;
     }
 
-    public BlinnPhongMaterial shininess(float shininess) {
+    public PhongMaterial shininess(float shininess) {
         this.shininess = shininess;
         return this;
     }

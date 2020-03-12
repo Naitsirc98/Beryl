@@ -4,6 +4,7 @@ import naitsirc98.beryl.graphics.rendering.Renderer;
 import naitsirc98.beryl.graphics.window.Window;
 import naitsirc98.beryl.util.geometry.Sizec;
 
+import static naitsirc98.beryl.graphics.Graphics.opengl;
 import static org.lwjgl.glfw.GLFW.glfwSwapBuffers;
 import static org.lwjgl.glfw.GLFW.glfwSwapInterval;
 import static org.lwjgl.opengl.GL11.glViewport;
@@ -16,8 +17,8 @@ public final class GLRenderer implements Renderer {
 
     private final long glContext;
 
-    private GLRenderer(Long glContext) {
-        this.glContext = glContext;
+    private GLRenderer() {
+        glContext = opengl().handle();
         glfwSwapInterval(0);
     }
 

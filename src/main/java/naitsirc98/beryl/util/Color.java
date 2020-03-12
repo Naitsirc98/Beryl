@@ -2,6 +2,9 @@ package naitsirc98.beryl.util;
 
 import naitsirc98.beryl.util.types.ByteSize;
 
+import java.nio.ByteBuffer;
+import java.nio.FloatBuffer;
+
 @ByteSize.Static(4 * Float.BYTES)
 public final class Color implements Cloneable, ByteSize {
 
@@ -75,6 +78,22 @@ public final class Color implements Cloneable, ByteSize {
     @Override
     public Color clone() {
         return new Color(this);
+    }
+
+    public FloatBuffer getRGB(FloatBuffer buffer) {
+        return buffer.put(red).put(green).put(blue);
+    }
+
+    public ByteBuffer getRGB(ByteBuffer buffer) {
+        return buffer.putFloat(red).putFloat(green).putFloat(blue);
+    }
+
+    public FloatBuffer getRGBA(FloatBuffer buffer) {
+        return buffer.put(red).put(green).put(blue).put(alpha);
+    }
+
+    public ByteBuffer getRGBA(ByteBuffer buffer) {
+        return buffer.putFloat(red).putFloat(green).putFloat(blue).putFloat(alpha);
     }
 
 }

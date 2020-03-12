@@ -3,6 +3,8 @@ package naitsirc98.beryl.meshes.materials;
 import naitsirc98.beryl.graphics.textures.Texture2D;
 import naitsirc98.beryl.util.Color;
 
+import static java.util.Objects.requireNonNull;
+
 public interface Material {
 
     ShadingModel shadingModel();
@@ -13,7 +15,8 @@ public interface Material {
         private Texture2D map;
 
         public ColorMapProperty() {
-
+            color = Color.WHITE;
+            // map = default blank texture
         }
 
         public Color color() {
@@ -21,7 +24,7 @@ public interface Material {
         }
 
         public ColorMapProperty color(Color color) {
-            this.color = color;
+            this.color = requireNonNull(color);
             return this;
         }
 
@@ -30,7 +33,7 @@ public interface Material {
         }
 
         public ColorMapProperty map(Texture2D map) {
-            this.map = map;
+            this.map = requireNonNull(map);
             return this;
         }
     }

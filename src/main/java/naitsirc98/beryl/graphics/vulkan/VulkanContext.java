@@ -4,7 +4,6 @@ import naitsirc98.beryl.core.Beryl;
 import naitsirc98.beryl.core.BerylConfiguration;
 import naitsirc98.beryl.graphics.GraphicsContext;
 import naitsirc98.beryl.graphics.GraphicsFactory;
-import naitsirc98.beryl.graphics.GraphicsMapper;
 import naitsirc98.beryl.graphics.rendering.RenderingPath;
 import naitsirc98.beryl.graphics.vulkan.commands.VulkanCommandPool;
 import naitsirc98.beryl.graphics.vulkan.devices.VulkanLogicalDevice;
@@ -55,7 +54,6 @@ public final class VulkanContext implements GraphicsContext {
     private VulkanAllocator allocator;
     private VulkanCommandPool graphicsCommandPool;
     private VulkanSwapchain swapchain;
-    private VulkanRenderer renderer;
     private VulkanGraphicsFactory graphicsFactory;
     private VulkanMapper mapper;
 
@@ -73,7 +71,6 @@ public final class VulkanContext implements GraphicsContext {
         allocator = new VulkanAllocator(vkInstance, physicalDevice, logicalDevice);
         graphicsCommandPool = createGraphicsCommandPool();
         swapchain = new VulkanSwapchain();
-        renderer = newInstance(VulkanRenderer.class);
         graphicsFactory = new VulkanGraphicsFactory();
         mapper = new VulkanMapper();
     }
@@ -81,11 +78,6 @@ public final class VulkanContext implements GraphicsContext {
     @Override
     public VulkanMapper mapper() {
         return mapper;
-    }
-
-    @Override
-    public VulkanRenderer renderer() {
-        return renderer;
     }
 
     @Override
@@ -138,10 +130,6 @@ public final class VulkanContext implements GraphicsContext {
     @Override
     public void free() {
 
-        logicalDevice.waitIdle();
-
-        renderer.free();
-
         graphicsCommandPool.free();
 
         swapchain.free();
@@ -159,7 +147,6 @@ public final class VulkanContext implements GraphicsContext {
         vkDestroyInstance(vkInstance, null);
 
         vkInstance = null;
-        renderer = null;
         graphicsCommandPool = null;
         swapchain = null;
         logicalDevice = null;

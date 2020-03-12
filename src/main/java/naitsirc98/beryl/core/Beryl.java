@@ -106,7 +106,7 @@ public final class Beryl {
 
         application.start();
 
-        renderer = systems.graphics.renderer();
+        renderer = Renderer.get();
 
         setup();
 

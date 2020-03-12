@@ -1,6 +1,9 @@
 package naitsirc98.beryl.graphics.vulkan.commands;
 
 import naitsirc98.beryl.graphics.Graphics;
+import naitsirc98.beryl.graphics.rendering.Renderer;
+import naitsirc98.beryl.graphics.vulkan.VulkanObject;
+import naitsirc98.beryl.graphics.vulkan.rendering.VulkanRenderer;
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.util.SystemInfo;
 import org.joml.Matrix4f;
@@ -59,7 +62,7 @@ public class VulkanCommandBuilderExecutor implements NativeResource {
                                                 VkCommandBuffer primaryCommandBuffer, VulkanCommandBufferRecorder recorder) {
 
         final List<VulkanCommandBuilder> commandBuilders = this.commandBuilders;
-        final PointerBuffer pCommandBuffers = this.pCommandBuffers[Graphics.vulkan().renderer().currentSwapchainImageIndex()];
+        final PointerBuffer pCommandBuffers = this.pCommandBuffers[VulkanRenderer.get().currentSwapchainImageIndex()];
         final CountDownLatch countDownLatch = new CountDownLatch(commandBuilderCount);
 
         range(0, commandBuilderCount).unordered().parallel().forEach(i -> {

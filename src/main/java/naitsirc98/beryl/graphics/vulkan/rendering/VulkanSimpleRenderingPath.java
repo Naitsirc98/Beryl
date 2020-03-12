@@ -63,7 +63,6 @@ public final class VulkanSimpleRenderingPath extends RenderingPath implements Vu
 
     private VulkanPipelineLayout pipelineLayout;
     private VulkanGraphicsPipeline graphicsPipeline;
-    private VulkanRenderer renderer;
     private VulkanSwapchain swapchain;
     private VulkanCommandBuilderExecutor commandBuilderExecutor;
     private Matrix4f projectionViewMatrix;
@@ -81,7 +80,6 @@ public final class VulkanSimpleRenderingPath extends RenderingPath implements Vu
         swapchain.addSwapchainDependent(this);
         createPipelineLayout();
         createGraphicsPipeline();
-        renderer = Graphics.vulkan().renderer();
         commandBuilderExecutor = new VulkanCommandBuilderExecutor();
         projectionViewMatrix = new Matrix4f();
     }
@@ -110,7 +108,7 @@ public final class VulkanSimpleRenderingPath extends RenderingPath implements Vu
 
             setupCommandBufferInfos(stack);
 
-            VkCommandBuffer primaryCommandBuffer = renderer.currentCommandBuffer();
+            VkCommandBuffer primaryCommandBuffer = VulkanRenderer.get().currentCommandBuffer();
 
             beginPrimaryCommandBuffer(primaryCommandBuffer);
 
@@ -198,7 +196,7 @@ public final class VulkanSimpleRenderingPath extends RenderingPath implements Vu
     }
 
     private long currentFramebuffer() {
-        return swapchain.renderPass().framebuffers().get(renderer.currentSwapchainImageIndex());
+        return swapchain.renderPass().framebuffers().get(VulkanRenderer.get().currentSwapchainImageIndex());
     }
 
     private void createPipelineLayout() {

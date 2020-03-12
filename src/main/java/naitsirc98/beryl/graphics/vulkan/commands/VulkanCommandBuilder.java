@@ -21,14 +21,12 @@ public class VulkanCommandBuilder implements NativeResource {
 
 
     private final ExecutorService worker;
-    private final VulkanRenderer renderer;
     private VulkanCommandPool commandPool;
     private VkCommandBuffer[] commandBuffers;
     private ByteBuffer pushConstantData;
 
     public VulkanCommandBuilder() {
         worker = newSingleThreadExecutor();
-        renderer = Graphics.vulkan().renderer();
         commandPool = createCommandPool();
         commandBuffers = createCommandBuffers();
         pushConstantData = memAlloc(MIN_PUSH_CONSTANT_DATA_SIZE);
@@ -39,7 +37,7 @@ public class VulkanCommandBuilder implements NativeResource {
     }
 
     public VkCommandBuffer commandBuffer() {
-        return commandBuffer(renderer.currentSwapchainImageIndex());
+        return commandBuffer(VulkanRenderer.get().currentSwapchainImageIndex());
     }
 
     public VkCommandBuffer commandBuffer(int index) {

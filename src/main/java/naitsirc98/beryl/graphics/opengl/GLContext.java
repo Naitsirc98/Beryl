@@ -4,14 +4,9 @@ import naitsirc98.beryl.core.Beryl;
 import naitsirc98.beryl.core.BerylConfiguration;
 import naitsirc98.beryl.graphics.GraphicsContext;
 import naitsirc98.beryl.graphics.GraphicsFactory;
-import naitsirc98.beryl.graphics.GraphicsMapper;
-import naitsirc98.beryl.graphics.opengl.rendering.GLRenderer;
 import naitsirc98.beryl.graphics.opengl.rendering.GLSimpleRenderingPath;
-import naitsirc98.beryl.graphics.opengl.vertex.GLVertexDataBuilder;
-import naitsirc98.beryl.graphics.rendering.Renderer;
 import naitsirc98.beryl.graphics.rendering.RenderingPath;
 import naitsirc98.beryl.graphics.window.Window;
-import naitsirc98.beryl.meshes.vertices.VertexLayout;
 import naitsirc98.beryl.util.handles.LongHandle;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GLCapabilities;
@@ -31,7 +26,6 @@ public class GLContext implements GraphicsContext, LongHandle {
     private long glContext;
     private GLDebugMessenger debugMessenger;
     private GLCapabilities capabilities;
-    private GLRenderer renderer;
     private GLGraphicsFactory graphicsFactory;
     private GLMapper mapper;
 
@@ -45,7 +39,6 @@ public class GLContext implements GraphicsContext, LongHandle {
         makeCurrent();
         capabilities = GL.createCapabilities();
         debugMessenger = newGLDebugMessenger();
-        renderer = newInstance(GLRenderer.class, glContext);
         graphicsFactory = new GLGraphicsFactory();
         mapper = new GLMapper();
     }
@@ -53,11 +46,6 @@ public class GLContext implements GraphicsContext, LongHandle {
     @Override
     public GLMapper mapper() {
         return mapper;
-    }
-
-    @Override
-    public GLRenderer renderer() {
-        return renderer;
     }
 
     @Override
@@ -91,8 +79,6 @@ public class GLContext implements GraphicsContext, LongHandle {
 
     @Override
     public void free() {
-
-        renderer.free();
 
         if(OPENGL_DEBUG_MESSAGES_ENABLED) {
             debugMessenger.free();

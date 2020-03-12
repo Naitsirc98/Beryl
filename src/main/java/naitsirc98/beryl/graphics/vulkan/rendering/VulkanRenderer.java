@@ -2,6 +2,7 @@ package naitsirc98.beryl.graphics.vulkan.rendering;
 
 import naitsirc98.beryl.graphics.Graphics;
 import naitsirc98.beryl.graphics.rendering.Renderer;
+import naitsirc98.beryl.graphics.vulkan.VulkanObject;
 import naitsirc98.beryl.graphics.vulkan.commands.VulkanCommandPool;
 import naitsirc98.beryl.graphics.vulkan.devices.VulkanLogicalDevice;
 import naitsirc98.beryl.graphics.vulkan.swapchain.FrameManager;
@@ -21,7 +22,11 @@ import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.vulkan.KHRSwapchain.*;
 import static org.lwjgl.vulkan.VK10.*;
 
-public class VulkanRenderer implements Renderer, VulkanSwapchainDependent {
+public class VulkanRenderer implements VulkanObject, Renderer, VulkanSwapchainDependent {
+
+    public static VulkanRenderer get() {
+        return Renderer.get();
+    }
 
     private VulkanSwapchain swapchain;
     private VkDevice logicalDevice;
@@ -127,6 +132,7 @@ public class VulkanRenderer implements Renderer, VulkanSwapchainDependent {
 
     @Override
     public void free() {
+        logicalDevice().waitIdle();
         commandPool.freeCommandBuffers(commandBuffers);
         frameManager.free();
     }
