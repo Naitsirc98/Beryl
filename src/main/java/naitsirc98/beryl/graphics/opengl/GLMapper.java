@@ -17,12 +17,32 @@ public class GLMapper extends GraphicsMapper {
 
     @Override
     protected void init() {
+        
         initDataTypeMapper();
         initPixelFormatMapper();
         initWrapModeMapper();
         initMinFilterMapper();
         initMagFilterMapper();
         initCompareOpMapper();
+    }
+
+    public int mapToSizedInternalFormat(PixelFormat pixelFormat) {
+        return toSizedInternalFormat(mapToAPI(pixelFormat));
+    }
+
+    private int toSizedInternalFormat(int internalFormat) {
+        switch(internalFormat) {
+            case GL_RED:
+                return GL_R8;
+            case GL_RG:
+                return GL_RG8;
+            case GL_RGB:
+                return GL_RGB8;
+            case GL_RGBA:
+                return GL_RGBA8;
+            default:
+                return internalFormat;
+        }
     }
 
     private void initDataTypeMapper() {

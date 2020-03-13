@@ -17,7 +17,6 @@ public class GLSampler implements GLObject, Sampler {
 
     public GLSampler() {
         handle = glGenSamplers();
-        glSamplerParameteri(handle, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     }
 
     @Override
@@ -107,7 +106,7 @@ public class GLSampler implements GLObject, Sampler {
 
     @Override
     public Sampler compareEnable(boolean enable) {
-        glSamplerParameteri(handle, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
+        glSamplerParameteri(handle, GL_TEXTURE_COMPARE_MODE, enable ? GL_COMPARE_REF_TO_TEXTURE : GL_COMPARE_R_TO_TEXTURE);
         return this;
     }
 

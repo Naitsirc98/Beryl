@@ -4,6 +4,26 @@ import org.lwjgl.system.NativeResource;
 
 public interface Sampler extends NativeResource {
 
+    default Sampler defaults() {
+        return wrapMode(WrapMode.REPEAT)
+                .magFilter(MagFilter.LINEAR)
+                .minFilter(MinFilter.LINEAR_MIPMAP_LINEAR)
+                .borderColor(BorderColor.BLACK_INT_TRANSPARENT)
+                .compareEnable(false)
+                .compareOperation(CompareOperation.LESS)
+                .lodBias(0.0f)
+                .minLod(0.0f)
+                .maxLod(1.0f)
+                .maxAnisotropy(1.0f);
+    }
+
+    default Sampler wrapMode(WrapMode wrapMode) {
+        wrapModeS(wrapMode);
+        wrapModeT(wrapMode);
+        wrapModeR(wrapMode);
+        return this;
+    }
+
     WrapMode wrapModeS();
     Sampler wrapModeS(WrapMode wrapMode);
 

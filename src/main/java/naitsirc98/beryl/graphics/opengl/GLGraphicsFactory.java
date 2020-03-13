@@ -10,8 +10,6 @@ import naitsirc98.beryl.images.PixelFormat;
 import naitsirc98.beryl.meshes.vertices.VertexData;
 import naitsirc98.beryl.meshes.vertices.VertexLayout;
 
-import static naitsirc98.beryl.graphics.textures.Sampler.*;
-
 public class GLGraphicsFactory implements GraphicsFactory {
 
     private Texture2D blankTexture2D;
@@ -37,12 +35,6 @@ public class GLGraphicsFactory implements GraphicsFactory {
     private Texture2D newBlankTexture2D() {
 
         Texture2D texture = newTexture2D();
-
-        texture.sampler().wrapModeS(WrapMode.REPEAT);
-        texture.sampler().wrapModeT(WrapMode.REPEAT);
-        texture.sampler().wrapModeR(WrapMode.REPEAT);
-        texture.sampler().magFilter(MagFilter.LINEAR);
-        texture.sampler().minFilter(MinFilter.LINEAR_MIPMAP_LINEAR);
 
         try(Image image = ImageFactory.newBlankImage(1, 1, PixelFormat.RGBA)) {
             texture.pixels(1, image);
