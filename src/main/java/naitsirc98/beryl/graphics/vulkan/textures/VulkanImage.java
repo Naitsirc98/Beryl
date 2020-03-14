@@ -3,11 +3,10 @@ package naitsirc98.beryl.graphics.vulkan.textures;
 import naitsirc98.beryl.graphics.vulkan.VulkanObject;
 import naitsirc98.beryl.graphics.vulkan.memory.VmaAllocated;
 import naitsirc98.beryl.graphics.vulkan.memory.VmaImageAllocation;
+import naitsirc98.beryl.logging.Log;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.util.vma.VmaAllocationCreateInfo;
-import org.lwjgl.vulkan.VkCommandBuffer;
-import org.lwjgl.vulkan.VkImageCreateInfo;
-import org.lwjgl.vulkan.VkImageMemoryBarrier;
+import org.lwjgl.vulkan.*;
 
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
@@ -153,6 +152,113 @@ public class VulkanImage implements VmaAllocated, VulkanObject.Long {
             graphicsCommandPool().execute(commandBuffer -> doTransition(barrier, stages.get(0), stages.get(1), commandBuffer));
 
             layout = newLayout;
+        }
+    }
+
+    public void generateMipmaps() {
+
+        try(MemoryStack stack = stackPush()) {
+
+            // Check if image format supports linear blitting
+            VkFormatProperties formatProperties = VkFormatProperties.mallocStack(stack);
+            vkGetPhysicalDeviceFormatProperties(physicalDevice().handle(), format(), formatProperties);
+
+            if((formatProperties.optimalTilingFeatures() & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT) == 0) {
+                Log.error("Failed to generate mipmaps: Texture image format does not support linear blitting");
+                return;
+            }
+
+            graphicsCommandPool().execute(this::generateMipmaps);
+        }
+    }
+
+    private void generateMipmaps(VkCommandBuffer commandBuffer) {
+
+        try(MemoryStack stack = stackPush()) {
+
+            // TODO: generify some parameters
+
+            final int mipLevels = mipLevels();
+
+            VkImageMemoryBarrier.Buffer barrier = VkImageMemoryBarrier.callocStack(1, stack);
+            barrier.sType(VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER);
+            barrier.image(handle());
+            barrier.srcQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED);
+            barrier.dstQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED);
+            barrier.dstAccessMask(VK_QUEUE_FAMILY_IGNORED);
+            barrier.subresourceRange().aspectMask(VK_IMAGE_ASPECT_COLOR_BIT);
+            barrier.subresourceRange().baseArrayLayer(0);
+            barrier.subresourceRange().layerCount(1);
+            barrier.subresourceRange().levelCount(1);
+
+            int mipWidth = width();
+            int mipHeight = height();
+
+            for(int i = 1;i < mipLevels;i++) {
+
+                barrier.subresourceRange().baseMipLevel(i - 1);
+                barrier.oldLayout(layout);
+                barrier.newLayout(VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+                barrier.srcAccessMask(VK_ACCESS_TRANSFER_WRITE_BIT);
+                barrier.dstAccessMask(VK_ACCESS_TRANSFER_READ_BIT);
+
+                vkCmdPipelineBarrier(commandBuffer,
+                        VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0,
+                        null,
+                        null,
+                        barrier);
+
+                VkImageBlit.Buffer blit = VkImageBlit.callocStack(1, stack);
+                blit.srcOffsets(0).set(0, 0, 0);
+                blit.srcOffsets(1).set(mipWidth, mipHeight, 1);
+                blit.srcSubresource().aspectMask(VK_IMAGE_ASPECT_COLOR_BIT);
+                blit.srcSubresource().mipLevel(i - 1);
+                blit.srcSubresource().baseArrayLayer(0);
+                blit.srcSubresource().layerCount(1);
+                blit.dstOffsets(0).set(0, 0, 0);
+                blit.dstOffsets(1).set(mipWidth > 1 ? mipWidth / 2 : 1, mipHeight > 1 ? mipHeight / 2 : 1, 1);
+                blit.dstSubresource().aspectMask(VK_IMAGE_ASPECT_COLOR_BIT);
+                blit.dstSubresource().mipLevel(i);
+                blit.dstSubresource().baseArrayLayer(0);
+                blit.dstSubresource().layerCount(1);
+
+                vkCmdBlitImage(commandBuffer,
+                        handle(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+                        handle(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                        blit,
+                        VK_FILTER_LINEAR);
+
+                barrier.oldLayout(VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+                barrier.newLayout(layout);
+                barrier.srcAccessMask(VK_ACCESS_TRANSFER_READ_BIT);
+                barrier.dstAccessMask(VK_ACCESS_SHADER_READ_BIT);
+
+                vkCmdPipelineBarrier(commandBuffer,
+                        VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0,
+                        null,
+                        null,
+                        barrier);
+
+                if(mipWidth > 1) {
+                    mipWidth /= 2;
+                }
+
+                if(mipHeight > 1) {
+                    mipHeight /= 2;
+                }
+            }
+
+            barrier.subresourceRange().baseMipLevel(mipLevels - 1);
+            barrier.oldLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+            barrier.newLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+            barrier.srcAccessMask(VK_ACCESS_TRANSFER_WRITE_BIT);
+            barrier.dstAccessMask(VK_ACCESS_SHADER_READ_BIT);
+
+            vkCmdPipelineBarrier(commandBuffer,
+                    VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0,
+                    null,
+                    null,
+                    barrier);
         }
     }
 

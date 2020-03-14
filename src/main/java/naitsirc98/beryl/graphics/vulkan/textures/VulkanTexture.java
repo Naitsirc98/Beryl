@@ -3,6 +3,7 @@ package naitsirc98.beryl.graphics.vulkan.textures;
 import naitsirc98.beryl.graphics.textures.Texture;
 import naitsirc98.beryl.graphics.vulkan.VulkanObject;
 import naitsirc98.beryl.images.PixelFormat;
+import naitsirc98.beryl.logging.Log;
 
 import static naitsirc98.beryl.graphics.vulkan.util.VulkanFormatUtils.vkToPixelFormat;
 
@@ -41,7 +42,11 @@ public abstract class VulkanTexture implements VulkanObject, Texture {
 
     @Override
     public void generateMipmaps() {
-        // TODO
+        if(renderImage == null || renderImage.image() == null || renderImage.image().isNull()) {
+            Log.error("Trying to generateMipmaps, but the texture image is null");
+            return;
+        }
+        renderImage.image().generateMipmaps();
     }
 
     @Override
