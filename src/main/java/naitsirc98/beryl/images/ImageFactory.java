@@ -16,6 +16,16 @@ import static org.lwjgl.system.MemoryUtil.*;
 public final class ImageFactory {
 
     /**
+     * Creates a 1x1 blank image backed by a new buffer in memory. The buffer must be manually freed by calling {@link Image#free}
+     *
+     * @param format the pixel format
+     * @return the new image
+     */
+    public static Image newBlankImage(PixelFormat format) {
+        return newBlankImage(1, 1, format);
+    }
+
+    /**
      * Creates a blank image backed by a new buffer in memory. The buffer must be manually freed by calling {@link Image#free}
      *
      * @param width  the width

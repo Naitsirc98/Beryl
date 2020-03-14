@@ -4,6 +4,8 @@ import naitsirc98.beryl.graphics.Graphics;
 import naitsirc98.beryl.graphics.rendering.RenderingPath;
 import naitsirc98.beryl.graphics.vulkan.commands.VulkanCommandBufferRecorder;
 import naitsirc98.beryl.graphics.vulkan.commands.VulkanCommandBuilderExecutor;
+import naitsirc98.beryl.graphics.vulkan.descriptors.VulkanDescriptorPool;
+import naitsirc98.beryl.graphics.vulkan.descriptors.VulkanDescriptorSetLayout;
 import naitsirc98.beryl.graphics.vulkan.pipelines.VulkanGraphicsPipeline;
 import naitsirc98.beryl.graphics.vulkan.pipelines.VulkanPipelineLayout;
 import naitsirc98.beryl.graphics.vulkan.pipelines.VulkanShaderModule;
@@ -33,7 +35,7 @@ import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.memAddress;
 import static org.lwjgl.vulkan.VK10.*;
 
-public final class VulkanSimpleRenderingPath extends RenderingPath implements VulkanCommandBufferRecorder, VulkanSwapchainDependent {
+public final class VulkanPhongRenderingPath extends RenderingPath implements VulkanCommandBufferRecorder, VulkanSwapchainDependent {
 
     public static final VertexLayout VERTEX_LAYOUT = VertexLayout.VERTEX_LAYOUT_3D;
 
@@ -49,8 +51,8 @@ public final class VulkanSimpleRenderingPath extends RenderingPath implements Vu
         Path fragmentPath = null;
 
         try {
-            vertexPath = Resources.getPath("shaders/vk/simple/simple.vk.vert");
-            fragmentPath = Resources.getPath("shaders/vk/simple/simple.vk.frag");
+            vertexPath = Resources.getPath("shaders/vk/phong/phong.vk.vert");
+            fragmentPath = Resources.getPath("shaders/vk/phong/phong.vk.frag");
         } catch (Exception e) {
             Log.fatal("Failed to get shader files for RenderingPath", e);
         }
@@ -63,6 +65,8 @@ public final class VulkanSimpleRenderingPath extends RenderingPath implements Vu
 
     private VulkanPipelineLayout pipelineLayout;
     private VulkanGraphicsPipeline graphicsPipeline;
+    private VulkanDescriptorPool descriptorPool;
+    private VulkanDescriptorSetLayout descriptorSetLayout;
     private VulkanSwapchain swapchain;
     private VulkanCommandBuilderExecutor commandBuilderExecutor;
     private Matrix4f projectionViewMatrix;
@@ -70,7 +74,7 @@ public final class VulkanSimpleRenderingPath extends RenderingPath implements Vu
     private VkCommandBufferInheritanceInfo inheritanceInfo;
     private VkCommandBufferBeginInfo beginInfo;
 
-    private VulkanSimpleRenderingPath() {
+    private VulkanPhongRenderingPath() {
 
     }
 

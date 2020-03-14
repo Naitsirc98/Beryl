@@ -2,19 +2,19 @@ package naitsirc98.beryl.graphics.opengl.shaders;
 
 import naitsirc98.beryl.graphics.ShaderStage;
 import naitsirc98.beryl.graphics.opengl.GLObject;
+import naitsirc98.beryl.graphics.shaders.GLSLPreprocessor;
 import naitsirc98.beryl.logging.Log;
 
-import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 
-import static org.lwjgl.opengl.GL45.*;
+import static java.util.Objects.requireNonNull;
+import static org.lwjgl.opengl.GL46C.*;
 
 public final class GLShader implements GLObject {
 
     private final int handle;
     private final ShaderStage stage;
-    private String source;
+    private Path path;
 
     public GLShader(ShaderStage stage) {
         this.handle = glCreateShader(stage.handle());
@@ -30,22 +30,9 @@ public final class GLShader implements GLObject {
         return stage;
     }
 
-    public String source() {
-        return source;
-    }
-
     public GLShader source(Path path) {
-        try {
-            return source(new String(Files.readAllBytes(path)));
-        } catch (IOException e) {
-            Log.fatal("Failed to read shader source file: " + path);
-        }
-        return this;
-    }
-
-    public GLShader source(String source) {
-        glShaderSource(handle, source);
-        this.source = source;
+        this.path = requireNonNull(path);
+        glShaderSource(handle, new GLSLPreprocessor(path).process());
         return this;
     }
 
@@ -57,14 +44,23 @@ public final class GLShader implements GLObject {
 
     private void checkCompilationStatus() {
         if(glGetShaderi(handle, GL_COMPILE_STATUS) != GL_TRUE) {
-            Log.fatal("Failed to compile " + stage + " OpenGL shader(" + handle + "):\n"
-                + glGetShaderInfoLog(handle) + "\nSource:\n" + source);
+            Log.fatal("Failed to compile OpenGL shader " + this + ":\n"
+                + glGetShaderInfoLog(handle));
         }
     }
 
     @Override
     public void free() {
         glDeleteShader(handle);
-        source = null;
+        path = null;
+    }
+
+    @Override
+    public String toString() {
+        return "GLShader{" +
+                "handle=" + handle +
+                ", stage=" + stage +
+                ", path=" + path +
+                '}';
     }
 }

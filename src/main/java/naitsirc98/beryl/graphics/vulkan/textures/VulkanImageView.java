@@ -1,6 +1,7 @@
 package naitsirc98.beryl.graphics.vulkan.textures;
 
 import naitsirc98.beryl.graphics.vulkan.VulkanObject;
+import naitsirc98.beryl.logging.Log;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkComponentMapping;
 import org.lwjgl.vulkan.VkImageSubresourceRange;
@@ -26,6 +27,10 @@ public class VulkanImageView implements VulkanObject.Long {
 
     public void init(VkImageViewCreateInfo createInfo) {
 
+        if(createInfo.image() == VK_NULL_HANDLE) {
+            Log.fatal("ImageViewCreateInfo.image is VK_NULL_HANDLE");
+        }
+
         free();
 
         try(MemoryStack stack = stackPush()) {
@@ -43,10 +48,6 @@ public class VulkanImageView implements VulkanObject.Long {
     @Override
     public long handle() {
         return vkImageView;
-    }
-
-    public VkImageViewCreateInfo info() {
-        return info;
     }
 
     public long image() {

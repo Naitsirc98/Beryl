@@ -8,6 +8,7 @@
       <w>calloc</w>
       <w>emissive</w>
       <w>framebuffers</w>
+      <w>glsl</w>
       <w>growable</w>
       <w>lwjgl</w>
       <w>msaa</w>

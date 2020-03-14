@@ -63,20 +63,8 @@ public final class GLShaderProgram implements GLObject {
     private void checkLinkStatus() {
         if(glGetProgrami(handle, GL_LINK_STATUS) != GL_TRUE) {
             Log.fatal("Failed to compile OpenGL shader program(" + handle + "):\n"
-                    + glGetProgramInfoLog(handle) + shaderSources());
+                    + glGetProgramInfoLog(handle));
         }
-    }
-
-    private String shaderSources() {
-
-        StringBuilder builder = new StringBuilder();
-
-        for(GLShader shader : shaders) {
-            builder.append('\n').append(shader.stage()).append(" shader source:\n");
-            builder.append(shader.source());
-        }
-
-        return builder.toString();
     }
 
     public int uniformLocation(String name) {

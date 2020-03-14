@@ -42,11 +42,11 @@ public class VulkanStagingBuffer extends VulkanBuffer {
         update(0, data);
     }
 
-    public void transfer(long offset, VulkanImage image) {
-        graphicsCommandPool().execute(commandBuffer -> transfer(commandBuffer, offset, image));
+    public void transfer(int mipLevel, int xOffset, int yOffset, int zOffset, VulkanImage image) {
+        graphicsCommandPool().execute(commandBuffer -> transfer(commandBuffer, mipLevel, xOffset, yOffset, zOffset, image));
     }
 
-    private void transfer(VkCommandBuffer commandBuffer, long offset, VulkanImage image) {
+    private void transfer(VkCommandBuffer commandBuffer, int mipLevel, int xOffset, int yOffset, int zOffset, VulkanImage image) {
 
         try(MemoryStack stack = stackPush()) {
 
@@ -55,10 +55,10 @@ public class VulkanStagingBuffer extends VulkanBuffer {
             region.bufferRowLength(0);   // Tightly packed
             region.bufferImageHeight(0);  // Tightly packed
             region.imageSubresource().aspectMask(VK_IMAGE_ASPECT_COLOR_BIT);
-            region.imageSubresource().mipLevel(0);
+            region.imageSubresource().mipLevel(mipLevel);
             region.imageSubresource().baseArrayLayer(0);
             region.imageSubresource().layerCount(1);
-            region.imageOffset().set(0, 0, 0);
+            region.imageOffset().set(xOffset, yOffset, zOffset);
             region.imageExtent(VkExtent3D.callocStack(stack).set(image.width(), image.height(), image.depth()));
 
             vkCmdCopyBufferToImage(commandBuffer, handle(), image.handle(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, region);

@@ -36,7 +36,7 @@ public class GLGraphicsFactory implements GraphicsFactory {
 
         Texture2D texture = newTexture2D();
 
-        try(Image image = ImageFactory.newBlankImage(1, 1, PixelFormat.RGBA)) {
+        try(Image image = ImageFactory.newBlankImage(PixelFormat.RGBA)) {
             texture.pixels(1, image);
         }
 

@@ -50,7 +50,7 @@ public class VulkanCommandBuilder implements NativeResource {
 
     private VkCommandBuffer[] createCommandBuffers() {
 
-        final int count = Graphics.vulkan().swapchain().swapChainImages().length;
+        final int count = Graphics.vulkan().swapchain().imageCount();
 
         return commandPool.newCommandBuffers(VK_COMMAND_BUFFER_LEVEL_SECONDARY, count);
     }

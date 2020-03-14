@@ -8,15 +8,15 @@ import java.nio.IntBuffer;
 
 public class VulkanBufferUtils {
 
-    public static void transferToImage(long offset, ByteBuffer pixels, VulkanImage image) {
+    public static void transferToImage(int mipLevel, int xOffset, int yOffset, int zOffset, ByteBuffer pixels, VulkanImage image) {
         try(VulkanStagingBuffer stagingBuffer = new VulkanStagingBuffer(pixels)) {
-            stagingBuffer.transfer(offset, image);
+            stagingBuffer.transfer(mipLevel, xOffset, yOffset, zOffset, image);
         }
     }
 
-    public static void transferToImage(long offset, FloatBuffer pixels, VulkanImage image) {
+    public static void transferToImage(int mipLevel, int xOffset, int yOffset, int zOffset, FloatBuffer pixels, VulkanImage image) {
         try(VulkanStagingBuffer stagingBuffer = new VulkanStagingBuffer(pixels)) {
-            stagingBuffer.transfer(offset, image);
+            stagingBuffer.transfer(mipLevel, xOffset, yOffset, zOffset, image);
         }
     }
 

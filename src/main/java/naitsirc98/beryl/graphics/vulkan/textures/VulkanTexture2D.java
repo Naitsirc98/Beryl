@@ -19,7 +19,6 @@ import static org.lwjgl.vulkan.VK10.*;
 public class VulkanTexture2D extends VulkanTexture implements Texture2D {
 
     public VulkanTexture2D() {
-        renderImage.view().init(getTexture2DImageViewCreateInfo());
     }
 
     private VkImageViewCreateInfo getTexture2DImageViewCreateInfo() {
@@ -59,7 +58,7 @@ public class VulkanTexture2D extends VulkanTexture implements Texture2D {
 
         try(MemoryStack stack = stackPush()) {
 
-            VkImageCreateInfo imageCreateInfo = VkImageCreateInfo.callocStack(stack)
+            VkImageCreateInfo imageCreateInfo = VkImageCreateInfo.calloc()
                     .sType(VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO)
                     .imageType(VK_IMAGE_TYPE_2D)
                     .arrayLayers(1)
@@ -72,39 +71,46 @@ public class VulkanTexture2D extends VulkanTexture implements Texture2D {
                     .usage(VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT)
                     .tiling(VK_IMAGE_TILING_OPTIMAL);
 
-            VmaAllocationCreateInfo allocationCreateInfo = VmaAllocationCreateInfo.callocStack(stack)
+            VmaAllocationCreateInfo allocationCreateInfo = VmaAllocationCreateInfo.calloc()
                     .usage(VMA_MEMORY_USAGE_GPU_ONLY);
 
             renderImage.image().init(allocator().createImage(imageCreateInfo, allocationCreateInfo));
 
-            renderImage.view().info()
+            VkImageViewCreateInfo viewInfo = getTexture2DImageViewCreateInfo()
                     .image(renderImage.image().handle())
-                    .format(imageCreateInfo.format())
-                    .subresourceRange().levelCount(mipLevels);
+                    .format(imageCreateInfo.format());
+
+            viewInfo.subresourceRange().levelCount(mipLevels);
+
+            renderImage.view().init(viewInfo);
         }
     }
 
     @Override
     public void pixels(int mipLevels, Image image) {
         allocate(mipLevels, image.width(), image.height(), image.pixelFormat());
-        renderImage.image().pixels(image.pixelsi());
+        if(image.pixelFormat().dataType().decimal()) {
+            update(0, 0, 0, image.width(), image.height(), image.pixelFormat(), image.pixelsf());
+        } else {
+            update(0, 0, 0, image.width(), image.height(), image.pixelFormat(), image.pixelsi());
+        }
     }
 
     @Override
     public void pixels(int mipLevels, int width, int height, PixelFormat format, ByteBuffer pixels) {
         allocate(mipLevels, width, height, format);
-        renderImage.image().pixels(pixels);
+        renderImage.image().pixels(0, 0, 0, 0, pixels);
     }
 
     @Override
     public void update(int mipLevel, int xOffset, int yOffset, int width, int height, PixelFormat format, ByteBuffer pixels) {
         // TODO
-        renderImage.image().pixels(pixels);
+        renderImage.image().pixels(mipLevel, xOffset, yOffset, 0, pixels);
     }
 
     @Override
     public void update(int mipLevel, int xOffset, int yOffset, int width, int height, PixelFormat format, FloatBuffer pixels) {
         // TODO
-        renderImage.image().pixels(pixels);
+        renderImage.image().pixels(mipLevel, xOffset, yOffset, 0, pixels);
     }
 }

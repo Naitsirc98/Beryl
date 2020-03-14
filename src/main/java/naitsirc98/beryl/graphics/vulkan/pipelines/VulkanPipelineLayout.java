@@ -2,6 +2,7 @@ package naitsirc98.beryl.graphics.vulkan.pipelines;
 
 import naitsirc98.beryl.graphics.Graphics;
 import naitsirc98.beryl.graphics.vulkan.VulkanObject;
+import naitsirc98.beryl.graphics.vulkan.descriptors.VulkanDescriptorSetLayout;
 import naitsirc98.beryl.util.types.StackBuilder;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkPipelineLayoutCreateInfo;

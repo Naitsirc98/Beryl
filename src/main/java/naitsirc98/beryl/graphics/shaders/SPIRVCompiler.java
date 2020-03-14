@@ -3,8 +3,6 @@ package naitsirc98.beryl.graphics.shaders;
 import naitsirc98.beryl.graphics.ShaderStage;
 import naitsirc98.beryl.logging.Log;
 
-import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 
 import static org.lwjgl.system.MemoryUtil.NULL;
@@ -16,21 +14,20 @@ public final class SPIRVCompiler {
 
     public static SPIRVBytecode compileShaderFile(Path path, ShaderStage stage) {
         try {
-            String source = new String(Files.readAllBytes(path));
+            String source = new GLSLPreprocessor(path).process();
             return compileShader(path.toString(), source, stage);
-        } catch (IOException e) {
+        } catch (Exception e) {
             Log.error("Failed to compile file " + path + " to SPIRV");
         }
         return null;
     }
 
-    public static SPIRVBytecode compileShader(String filename, String source, ShaderStage stage) {
+    private static SPIRVBytecode compileShader(String filename, String source, ShaderStage stage) {
 
         long compiler = shaderc_compiler_initialize();
 
         if(compiler == NULL) {
-            Log.fatal("Failed to create shader compiler");
-            return null;
+            throw new IllegalStateException("Failed to initialize Shaderc Compiler");
         }
 
         long result = shaderc_compile_into_spv(compiler, source, getShaderKind(stage), filename, ENTRY_POINT, NULL);

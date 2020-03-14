@@ -100,9 +100,7 @@ public final class VulkanSimpleRenderingPath extends RenderingPath implements Vu
 
         this.meshViews = meshViews;
 
-        projectionViewMatrix = projectionViewMatrix.set(camera.projectionMatrix());
-        projectionViewMatrix.m11(-projectionViewMatrix.m11()); // Need this to flip Y coordinate
-        projectionViewMatrix.mul(camera.viewMatrix());
+        projectionViewMatrix.set(camera.projectionViewMatrix());
 
         try(MemoryStack stack = stackPush()) {
 

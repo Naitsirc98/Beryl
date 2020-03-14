@@ -1,6 +1,5 @@
 package naitsirc98.beryl.graphics.vulkan.rendering;
 
-import naitsirc98.beryl.graphics.Graphics;
 import naitsirc98.beryl.graphics.rendering.Renderer;
 import naitsirc98.beryl.graphics.vulkan.VulkanObject;
 import naitsirc98.beryl.graphics.vulkan.commands.VulkanCommandPool;
@@ -145,7 +144,7 @@ public class VulkanRenderer implements VulkanObject, Renderer, VulkanSwapchainDe
 
     private void init() {
         init0();
-        this.frameManager = new FrameManager(swapchain.swapChainImages().length);
+        this.frameManager = new FrameManager(swapchain.imageCount());
         currentSwapchainImageIndex = 0;
         swapchain.addSwapchainDependent(this);
     }
@@ -157,6 +156,6 @@ public class VulkanRenderer implements VulkanObject, Renderer, VulkanSwapchainDe
         graphicsQueue = logicalDevice.graphicsQueue();
         presentationQueue = logicalDevice.presentationQueue();
         this.commandPool = graphicsCommandPool();
-        commandBuffers = commandPool.newPrimaryCommandBuffers(swapchain.swapChainImages().length);
+        commandBuffers = commandPool.newPrimaryCommandBuffers(swapchain.imageCount());
     }
 }

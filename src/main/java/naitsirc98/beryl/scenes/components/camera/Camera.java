@@ -1,5 +1,6 @@
 package naitsirc98.beryl.scenes.components.camera;
 
+import naitsirc98.beryl.graphics.GraphicsAPI;
 import naitsirc98.beryl.graphics.rendering.RenderingPath;
 import naitsirc98.beryl.graphics.rendering.RenderingPaths;
 import naitsirc98.beryl.graphics.window.Window;
@@ -406,6 +407,7 @@ public final class Camera extends Component<Camera> {
 	}
 
 	private void recalculateProjection() {
+
 		if(projectionType == PERSPECTIVE) {
 			projectionMatrix.setPerspective(fov, viewport.aspect(), nearPlane, farPlane);
 		} else {
@@ -415,6 +417,10 @@ public final class Camera extends Component<Camera> {
 			projectionMatrix.setOrtho(-ff, ff, -h/w*ff, h/w*ff, nearPlane, farPlane);
 			// projection.setOrtho(-ff, ff, -ff, ff, nearPlane, farPlane);
 			// projection.setOrtho(-1, 1, -1, 1, nearPlane, farPlane);
+		}
+
+		if(GraphicsAPI.get() == GraphicsAPI.VULKAN) {
+			projectionMatrix.m11(-projectionMatrix.m11()); // Flip y
 		}
 	}
 	

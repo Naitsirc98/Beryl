@@ -1,4 +1,4 @@
-package naitsirc98.beryl.graphics.vulkan.pipelines;
+package naitsirc98.beryl.graphics.vulkan.descriptors;
 
 import naitsirc98.beryl.graphics.Graphics;
 import naitsirc98.beryl.graphics.vulkan.VulkanObject;
