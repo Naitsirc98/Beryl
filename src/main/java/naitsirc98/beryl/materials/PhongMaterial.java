@@ -3,13 +3,19 @@ package naitsirc98.beryl.materials;
 import naitsirc98.beryl.graphics.textures.Texture2D;
 import naitsirc98.beryl.util.Color;
 import naitsirc98.beryl.util.types.ByteSize;
+import org.lwjgl.system.MemoryStack;
 
+import java.nio.FloatBuffer;
+
+import static naitsirc98.beryl.util.Asserts.assertTrue;
 import static naitsirc98.beryl.util.types.DataType.FLOAT32_SIZEOF;
+import static org.lwjgl.system.MemoryStack.stackPush;
 
 @ByteSize.Static(PhongMaterial.SIZEOF)
 public class PhongMaterial implements Material, ByteSize {
 
-    public static final int SIZEOF = 4 * ColorMapProperty.SIZEOF + FLOAT32_SIZEOF;
+    public static final int SIZEOF = 5 * 4 * FLOAT32_SIZEOF; // Do not count the textures
+    public static final int FLOAT_BUFFER_MIN_SIZE = SIZEOF / FLOAT32_SIZEOF;
 
     public static final float DEFAULT_SHININESS = 32.0f;
 
@@ -25,6 +31,19 @@ public class PhongMaterial implements Material, ByteSize {
         specular = new ColorMapProperty();
         emissive = new ColorMapProperty();
         shininess = DEFAULT_SHININESS;
+    }
+
+    // This modifies the buffer's position!
+    public FloatBuffer get(FloatBuffer buffer) {
+        assertTrue(buffer.remaining() >= FLOAT_BUFFER_MIN_SIZE);
+
+        ambientColor().getRGBA(buffer);
+        diffuseColor().getRGBA(buffer);
+        specularColor().getRGBA(buffer);
+        emissiveColor().getRGBA(buffer);
+        buffer.put(shininess());
+
+        return buffer;
     }
 
     public PhongMaterial color(Color color) {

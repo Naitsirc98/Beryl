@@ -1,8 +1,8 @@
 package naitsirc98.beryl.graphics.opengl.rendering;
 
+import naitsirc98.beryl.graphics.opengl.buffers.GLUniformBuffer;
 import naitsirc98.beryl.graphics.opengl.shaders.GLShader;
 import naitsirc98.beryl.graphics.opengl.shaders.GLShaderProgram;
-import naitsirc98.beryl.graphics.opengl.textures.GLTexture2D;
 import naitsirc98.beryl.graphics.opengl.vertex.GLVertexData;
 import naitsirc98.beryl.graphics.rendering.RenderingPath;
 import naitsirc98.beryl.logging.Log;
@@ -20,6 +20,7 @@ import java.util.List;
 
 import static naitsirc98.beryl.graphics.ShaderStage.FRAGMENT_STAGE;
 import static naitsirc98.beryl.graphics.ShaderStage.VERTEX_STAGE;
+import static naitsirc98.beryl.util.types.DataType.FLOAT32_SIZEOF;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.system.MemoryStack.stackPush;
 
@@ -28,18 +29,17 @@ public class GLPhongRenderingPath extends RenderingPath {
     private static final Path VERTEX_SHADER_PATH;
     private static final Path FRAGMENT_SHADER_PATH;
 
+    private static final int UNIFORM_BUFFER_BINDING = 0;
+    private static final int UNIFORM_BUFFER_SIZE = PhongMaterial.SIZEOF;
+
     private static final String UNIFORM_MVP_NAME = "u_MVP";
 
     private static final String UNIFORM_MATERIAL_NAME = "u_Material";
-    private static final String UNIFORM_AMBIENT_COLOR_NAME = UNIFORM_MATERIAL_NAME + ".ambientColor";
-    private static final String UNIFORM_AMBIENT_MAP_NAME = UNIFORM_MATERIAL_NAME + ".ambientMap";
-    private static final String UNIFORM_DIFFUSE_COLOR_NAME = UNIFORM_MATERIAL_NAME + ".diffuseColor";
-    private static final String UNIFORM_DIFFUSE_MAP_NAME = UNIFORM_MATERIAL_NAME + ".diffuseMap";
-    private static final String UNIFORM_SPECULAR_COLOR_NAME = UNIFORM_MATERIAL_NAME + ".specularColor";
-    private static final String UNIFORM_SPECULAR_MAP_NAME = UNIFORM_MATERIAL_NAME + ".specularMap";
-    private static final String UNIFORM_EMISSIVE_COLOR_NAME = UNIFORM_MATERIAL_NAME + ".emissiveColor";
-    private static final String UNIFORM_EMISSIVE_MAP_NAME = UNIFORM_MATERIAL_NAME + ".emissiveMap";
-    private static final String UNIFORM_SHININESS_NAME = UNIFORM_MATERIAL_NAME + ".shininess";
+
+    private static final String UNIFORM_AMBIENT_MAP_NAME = "u_AmbientMap";
+    private static final String UNIFORM_DIFFUSE_MAP_NAME = "u_DiffuseMap";
+    private static final String UNIFORM_SPECULAR_MAP_NAME =  "u_SpecularMap";
+    private static final String UNIFORM_EMISSIVE_MAP_NAME =  "u_EmissiveMap";
 
     static {
 
@@ -58,6 +58,7 @@ public class GLPhongRenderingPath extends RenderingPath {
     }
 
     private GLShaderProgram shader;
+    private GLUniformBuffer uniformBuffer;
     private Matrix4f projectionViewMatrix;
     private GLVertexData lastVertexData;
     private PhongMaterial lastMaterial;
@@ -73,6 +74,9 @@ public class GLPhongRenderingPath extends RenderingPath {
                 .attach(new GLShader(VERTEX_STAGE).source(VERTEX_SHADER_PATH).compile())
                 .attach(new GLShader(FRAGMENT_STAGE).source(FRAGMENT_SHADER_PATH).compile())
                 .link();
+
+        uniformBuffer = new GLUniformBuffer(UNIFORM_MATERIAL_NAME, shader, UNIFORM_BUFFER_BINDING);
+        uniformBuffer.allocate(UNIFORM_BUFFER_SIZE);
 
         projectionViewMatrix = new Matrix4f();
     }
@@ -91,10 +95,12 @@ public class GLPhongRenderingPath extends RenderingPath {
 
         shader.use();
 
+        uniformBuffer.bind();
+
         final int mvpLocation = shader.uniformLocation(UNIFORM_MVP_NAME);
 
-        Matrix4fc projectionView = camera.projectionViewMatrix();
-        Matrix4f mvp = projectionViewMatrix;
+        final Matrix4fc projectionView = camera.projectionViewMatrix();
+        final Matrix4f mvp = projectionViewMatrix;
 
         try(MemoryStack stack = stackPush()) {
 
@@ -127,15 +133,15 @@ public class GLPhongRenderingPath extends RenderingPath {
 
     private void setMaterialUniforms(GLShaderProgram shader, PhongMaterial material) {
 
-        shader.uniformColor(UNIFORM_AMBIENT_COLOR_NAME, material.ambientColor());
-        shader.uniformSampler(UNIFORM_AMBIENT_MAP_NAME, (GLTexture2D) material.ambientMap(), 0);
-        shader.uniformColor(UNIFORM_DIFFUSE_COLOR_NAME, material.diffuseColor());
-        shader.uniformSampler(UNIFORM_DIFFUSE_MAP_NAME, (GLTexture2D) material.diffuseMap(), 1);
-        shader.uniformColor(UNIFORM_SPECULAR_COLOR_NAME, material.specularColor());
-        shader.uniformSampler(UNIFORM_SPECULAR_MAP_NAME, (GLTexture2D) material.specularMap(), 2);
-        shader.uniformColor(UNIFORM_EMISSIVE_COLOR_NAME, material.emissiveColor());
-        shader.uniformSampler(UNIFORM_EMISSIVE_MAP_NAME, (GLTexture2D) material.emissiveMap(), 3);
-        shader.uniformFloat(UNIFORM_SHININESS_NAME, material.shininess());
+        try(MemoryStack stack = stackPush()) {
+            final FloatBuffer uniformBufferData = material.get(stack.mallocFloat(PhongMaterial.FLOAT_BUFFER_MIN_SIZE));
+            uniformBuffer.update(0, uniformBufferData.rewind());
+        }
+
+        shader.uniformSampler(UNIFORM_AMBIENT_MAP_NAME, material.ambientMap(), 0);
+        shader.uniformSampler(UNIFORM_DIFFUSE_MAP_NAME, material.diffuseMap(), 1);
+        shader.uniformSampler(UNIFORM_SPECULAR_MAP_NAME, material.specularMap(), 2);
+        shader.uniformSampler(UNIFORM_EMISSIVE_MAP_NAME, material.emissiveMap(), 3);
     }
 
 }

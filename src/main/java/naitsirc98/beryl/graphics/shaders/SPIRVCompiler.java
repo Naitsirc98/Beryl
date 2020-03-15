@@ -17,7 +17,7 @@ public final class SPIRVCompiler {
             String source = new GLSLPreprocessor(path).process();
             return compileShader(path.toString(), source, stage);
         } catch (Exception e) {
-            Log.error("Failed to compile file " + path + " to SPIRV");
+            Log.error("Failed to compile file " + path + " to SPIRV", e);
         }
         return null;
     }

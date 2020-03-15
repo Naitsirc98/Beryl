@@ -102,18 +102,8 @@ final class VulkanPhongThreadData implements VulkanThreadData {
     }
 
     private void setUniformBufferInfo(int index, PhongMaterial material) {
-
         try(MemoryStack stack = stackPush()) {
-
-            final FloatBuffer uniformBufferData = stack.mallocFloat(UNIFORM_BUFFER_DATA_SIZE);
-
-            // No need to care about alignment in this case
-            material.ambientColor().getRGBA(uniformBufferData);
-            material.diffuseColor().getRGBA(uniformBufferData);
-            material.specularColor().getRGBA(uniformBufferData);
-            material.emissiveColor().getRGBA(uniformBufferData);
-            uniformBufferData.put(material.shininess());
-
+            final FloatBuffer uniformBufferData = material.get(stack.mallocFloat(PhongMaterial.FLOAT_BUFFER_MIN_SIZE));
             uniformBuffers[index].update(0, uniformBufferData.rewind());
         }
     }

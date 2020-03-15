@@ -4,6 +4,7 @@ import naitsirc98.beryl.core.Beryl;
 import naitsirc98.beryl.core.BerylApplication;
 import naitsirc98.beryl.core.BerylConfiguration;
 import naitsirc98.beryl.graphics.GraphicsAPI;
+import naitsirc98.beryl.graphics.rendering.RenderingPaths;
 import naitsirc98.beryl.graphics.window.Window;
 import naitsirc98.beryl.meshes.Mesh;
 import naitsirc98.beryl.materials.PhongMaterial;
@@ -21,6 +22,7 @@ import org.lwjgl.BufferUtils;
 import java.nio.ByteBuffer;
 import java.util.Random;
 
+import static naitsirc98.beryl.graphics.rendering.RenderingPaths.RPATH_PHONG;
 import static naitsirc98.beryl.meshes.vertices.VertexLayout.VERTEX_LAYOUT_3D;
 import static naitsirc98.beryl.util.Maths.radians;
 import static naitsirc98.beryl.util.types.DataType.FLOAT32;
@@ -43,9 +45,9 @@ public class App1 extends BerylApplication {
         // BerylConfiguration.INITIAL_TIME_VALUE.set(4000.0);
         // BerylConfiguration.WINDOW_RESIZABLE.set(false);
         BerylConfiguration.SHOW_DEBUG_INFO.set(true);
-        BerylConfiguration.GRAPHICS_API.set(GraphicsAPI.VULKAN);
+        BerylConfiguration.GRAPHICS_API.set(GraphicsAPI.OPENGL);
         BerylConfiguration.VULKAN_ENABLE_DEBUG_MESSAGES.set(true);
-        BerylConfiguration.VULKAN_ENABLE_VALIDATION_LAYERS.set(false);
+        BerylConfiguration.VULKAN_ENABLE_VALIDATION_LAYERS.set(true);
     }
 
     private App1() {
@@ -90,7 +92,7 @@ public class App1 extends BerylApplication {
 
         Entity camera = scene.newEntity("Camera");
         camera.add(Transform.class).position(100, 0, 300);
-        camera.add(Camera.class).lookAt(0, 0);//.renderingPath(RenderingPaths.get(RPATH_PHONG));
+        camera.add(Camera.class).lookAt(0, 0).renderingPath(RenderingPaths.get(RPATH_PHONG));
         camera.add(CameraController.class);
 
         SceneManager.addScene(scene);
