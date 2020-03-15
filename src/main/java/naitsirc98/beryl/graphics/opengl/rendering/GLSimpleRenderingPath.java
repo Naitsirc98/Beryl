@@ -6,6 +6,7 @@ import naitsirc98.beryl.graphics.opengl.vertex.GLVertexData;
 import naitsirc98.beryl.graphics.rendering.RenderingPath;
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.resources.Resources;
+import naitsirc98.beryl.scenes.Scene;
 import naitsirc98.beryl.scenes.components.camera.Camera;
 import naitsirc98.beryl.scenes.components.meshes.MeshView;
 import org.joml.Matrix4f;
@@ -69,7 +70,7 @@ public final class GLSimpleRenderingPath extends RenderingPath {
     }
 
     @Override
-    public void render(Camera camera, List<MeshView> meshViews) {
+    public void render(Camera camera, Scene scene) {
 
         glEnable(GL_DEPTH_TEST);
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
@@ -86,7 +87,7 @@ public final class GLSimpleRenderingPath extends RenderingPath {
 
             FloatBuffer mvpData = stack.mallocFloat(16);
 
-            for(MeshView meshView : meshViews) {
+            for(MeshView meshView : scene.meshViews()) {
 
                 GLVertexData vertexData = meshView.mesh().vertexData();
 

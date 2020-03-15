@@ -11,8 +11,8 @@ import naitsirc98.beryl.graphics.window.Window;
 import naitsirc98.beryl.images.Image;
 import naitsirc98.beryl.images.ImageFactory;
 import naitsirc98.beryl.images.PixelFormat;
-import naitsirc98.beryl.meshes.Mesh;
 import naitsirc98.beryl.materials.PhongMaterial;
+import naitsirc98.beryl.meshes.Mesh;
 import naitsirc98.beryl.meshes.vertices.VertexData;
 import naitsirc98.beryl.scenes.Entity;
 import naitsirc98.beryl.scenes.Scene;
@@ -21,7 +21,6 @@ import naitsirc98.beryl.scenes.components.behaviours.UpdateMutableBehaviour;
 import naitsirc98.beryl.scenes.components.camera.Camera;
 import naitsirc98.beryl.scenes.components.math.Transform;
 import naitsirc98.beryl.scenes.components.meshes.MeshView;
-import naitsirc98.beryl.util.Color;
 import org.lwjgl.BufferUtils;
 
 import java.nio.ByteBuffer;

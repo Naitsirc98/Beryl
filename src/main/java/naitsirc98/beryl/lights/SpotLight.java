@@ -1,11 +1,16 @@
 package naitsirc98.beryl.lights;
 
+import naitsirc98.beryl.util.types.ByteSize;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
 
 import static java.util.Objects.requireNonNull;
+import static naitsirc98.beryl.util.types.DataType.FLOAT32_SIZEOF;
 
-public class SpotLight extends Light<SpotLight> implements IPointLight<SpotLight>, IDirectionalLight<SpotLight> {
+@ByteSize.Static(SpotLight.SIZEOF)
+public class SpotLight extends Light<SpotLight> implements IPointLight<SpotLight>, IDirectionalLight<SpotLight>, ByteSize {
+
+    public static final int SIZEOF = (3 + 3 + 5) * FLOAT32_SIZEOF;
 
     private final Vector3f position;
     private final Vector3f direction;
@@ -13,7 +18,7 @@ public class SpotLight extends Light<SpotLight> implements IPointLight<SpotLight
     private float linear;
     private float quadratic;
     private float cutOff;
-    private float cutOffAngle;
+    private float outerCutOff;
 
     public SpotLight() {
         position = new Vector3f();
@@ -84,17 +89,22 @@ public class SpotLight extends Light<SpotLight> implements IPointLight<SpotLight
         return this;
     }
 
-    public float cutOffAngle() {
-        return cutOffAngle;
+    public float outerCutOff() {
+        return outerCutOff;
     }
 
-    public SpotLight cutOffAngle(float cutOffAngle) {
-        this.cutOffAngle = cutOff;
+    public SpotLight outerCutOff(float outerCutOff) {
+        this.outerCutOff = outerCutOff;
         return this;
     }
 
     @Override
     protected SpotLight self() {
         return this;
+    }
+
+    @Override
+    public int sizeof() {
+        return SIZEOF;
     }
 }

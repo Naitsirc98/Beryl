@@ -108,6 +108,7 @@ public class VulkanCommandBufferThreadExecutor<T extends VulkanThreadData> imple
 
             if(commandBufferThread.error() != null) {
                 Log.error("Error while recording command buffer thread " + i, commandBufferThread.error());
+                commandBufferThread.error(null);
             }
         }
 

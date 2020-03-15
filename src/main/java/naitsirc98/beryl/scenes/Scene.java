@@ -51,6 +51,10 @@ public final class Scene {
         taskQueue = new ArrayDeque<>();
     }
 
+    public List<MeshView> meshViews() {
+        return meshes.meshViews();
+    }
+
     void start() {
         processTasks();
         started = true;
@@ -80,7 +84,7 @@ public final class Scene {
         Camera camera = camera();
         List<MeshView> meshViews = meshes.meshViews();
         if(camera != null) {
-            camera().renderingPath().render(camera, meshViews);
+            camera().renderingPath().render(camera, this);
         }
     }
 

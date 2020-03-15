@@ -1,9 +1,7 @@
 package naitsirc98.beryl.graphics.rendering;
 
+import naitsirc98.beryl.scenes.Scene;
 import naitsirc98.beryl.scenes.components.camera.Camera;
-import naitsirc98.beryl.scenes.components.meshes.MeshView;
-
-import java.util.List;
 
 public abstract class RenderingPath {
 
@@ -15,5 +13,5 @@ public abstract class RenderingPath {
     protected abstract void terminate();
 
     // TODO
-    public abstract void render(Camera camera, List<MeshView> meshViews);
+    public abstract void render(Camera camera, Scene scene);
 }

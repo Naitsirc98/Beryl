@@ -5,9 +5,11 @@ import naitsirc98.beryl.graphics.opengl.shaders.GLShader;
 import naitsirc98.beryl.graphics.opengl.shaders.GLShaderProgram;
 import naitsirc98.beryl.graphics.opengl.vertex.GLVertexData;
 import naitsirc98.beryl.graphics.rendering.RenderingPath;
+import naitsirc98.beryl.lights.SpotLight;
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.materials.PhongMaterial;
 import naitsirc98.beryl.resources.Resources;
+import naitsirc98.beryl.scenes.Scene;
 import naitsirc98.beryl.scenes.components.camera.Camera;
 import naitsirc98.beryl.scenes.components.meshes.MeshView;
 import org.joml.Matrix4f;
@@ -16,7 +18,6 @@ import org.lwjgl.system.MemoryStack;
 
 import java.nio.FloatBuffer;
 import java.nio.file.Path;
-import java.util.List;
 
 import static naitsirc98.beryl.graphics.ShaderStage.FRAGMENT_STAGE;
 import static naitsirc98.beryl.graphics.ShaderStage.VERTEX_STAGE;
@@ -28,12 +29,17 @@ public class GLPhongRenderingPath extends RenderingPath {
     private static final Path VERTEX_SHADER_PATH;
     private static final Path FRAGMENT_SHADER_PATH;
 
-    private static final int UNIFORM_BUFFER_BINDING = 0;
-    private static final int UNIFORM_BUFFER_SIZE = PhongMaterial.SIZEOF;
-    private static final String UNIFORM_BUFFER_NAME = "MaterialUniformBuffer";
+    private static final int MATERIAL_UNIFORM_BUFFER_SIZE = PhongMaterial.SIZEOF;
+    private static final String MATERIAL_UNIFORM_BUFFER_NAME = "MaterialUniformBuffer";
+
+    private static final int LIGHT_UNIFORM_BUFFER_SIZE = SpotLight.SIZEOF;
+    private static final String LIGHT_UNIFORM_BUFFER_NAME = "LightsUniformBuffer";
+
+    private static final float LIGHT_TYPE_DIRECTIONAL = 0.0f;
+    private static final float LIGHT_TYPE_POINT = 1.0f;
+    private static final float LIGHT_TYPE_SPOT = 2.0f;
 
     private static final String UNIFORM_MVP_NAME = "u_MVP";
-
 
     private static final String UNIFORM_AMBIENT_MAP_NAME = "u_AmbientMap";
     private static final String UNIFORM_DIFFUSE_MAP_NAME = "u_DiffuseMap";
@@ -57,7 +63,8 @@ public class GLPhongRenderingPath extends RenderingPath {
     }
 
     private GLShaderProgram shader;
-    private GLUniformBuffer uniformBuffer;
+    private GLUniformBuffer materialUniformBuffer;
+    private GLUniformBuffer lightsUniformBuffer;
     private Matrix4f projectionViewMatrix;
     private GLVertexData lastVertexData;
     private PhongMaterial lastMaterial;
@@ -74,8 +81,11 @@ public class GLPhongRenderingPath extends RenderingPath {
                 .attach(new GLShader(FRAGMENT_STAGE).source(FRAGMENT_SHADER_PATH).compile())
                 .link();
 
-        uniformBuffer = new GLUniformBuffer(UNIFORM_BUFFER_NAME, shader, UNIFORM_BUFFER_BINDING);
-        uniformBuffer.allocate(UNIFORM_BUFFER_SIZE);
+        materialUniformBuffer = new GLUniformBuffer(MATERIAL_UNIFORM_BUFFER_NAME, shader, 0);
+        materialUniformBuffer.allocate(MATERIAL_UNIFORM_BUFFER_SIZE);
+
+        lightsUniformBuffer = new GLUniformBuffer(LIGHT_UNIFORM_BUFFER_NAME, shader, 1);
+        lightsUniformBuffer.allocate(LIGHT_UNIFORM_BUFFER_SIZE);
 
         projectionViewMatrix = new Matrix4f();
     }
@@ -86,7 +96,7 @@ public class GLPhongRenderingPath extends RenderingPath {
     }
 
     @Override
-    public void render(Camera camera, List<MeshView> meshViews) {
+    public void render(Camera camera, Scene scene) {
 
         glEnable(GL_DEPTH_TEST);
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
@@ -94,7 +104,9 @@ public class GLPhongRenderingPath extends RenderingPath {
 
         shader.use();
 
-        uniformBuffer.bind();
+        materialUniformBuffer.bind();
+
+        lightsUniformBuffer.bind();
 
         final int mvpLocation = shader.uniformLocation(UNIFORM_MVP_NAME);
 
@@ -105,7 +117,7 @@ public class GLPhongRenderingPath extends RenderingPath {
 
             FloatBuffer mvpData = stack.mallocFloat(16);
 
-            for(MeshView meshView : meshViews) {
+            for(MeshView meshView : scene.meshViews()) {
 
                 final GLVertexData vertexData = meshView.mesh().vertexData();
                 final PhongMaterial material = meshView.mesh().material();
@@ -134,7 +146,7 @@ public class GLPhongRenderingPath extends RenderingPath {
 
         try(MemoryStack stack = stackPush()) {
             final FloatBuffer uniformBufferData = material.get(stack.mallocFloat(PhongMaterial.FLOAT_BUFFER_MIN_SIZE));
-            uniformBuffer.update(0, uniformBufferData.rewind());
+            materialUniformBuffer.update(0, uniformBufferData.rewind());
         }
 
         shader.uniformSampler(UNIFORM_AMBIENT_MAP_NAME, material.ambientMap(), 0);

@@ -16,6 +16,7 @@ import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.materials.PhongMaterial;
 import naitsirc98.beryl.meshes.vertices.VertexLayout;
 import naitsirc98.beryl.resources.Resources;
+import naitsirc98.beryl.scenes.Scene;
 import naitsirc98.beryl.scenes.components.camera.Camera;
 import naitsirc98.beryl.scenes.components.meshes.MeshView;
 import org.joml.Matrix4f;
@@ -98,7 +99,9 @@ public final class VulkanPhongRenderingPath extends RenderingPath
     }
 
     @Override
-    public void render(Camera camera, List<MeshView> meshViews) {
+    public void render(Camera camera, Scene scene) {
+
+        final List<MeshView> meshViews = scene.meshViews();
 
         if(meshViews.size() == 0) {
             return;
