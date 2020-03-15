@@ -19,7 +19,11 @@ import static org.lwjgl.vulkan.VK10.*;
 public class VulkanUniformBuffer extends VulkanBuffer {
 
     public VulkanUniformBuffer() {
-        super(getUniformBufferCreateInfo(), getUniformBufferAllocationCreateInfo());
+        super(getUniformBufferCreateInfo(0), getUniformBufferAllocationCreateInfo());
+    }
+
+    public VulkanUniformBuffer(long size) {
+        super(getUniformBufferCreateInfo(size), getUniformBufferAllocationCreateInfo());
     }
 
     @Override
@@ -55,10 +59,11 @@ public class VulkanUniformBuffer extends VulkanBuffer {
                 .usage(VMA_MEMORY_USAGE_CPU_TO_GPU);
     }
 
-    private static VkBufferCreateInfo getUniformBufferCreateInfo() {
+    private static VkBufferCreateInfo getUniformBufferCreateInfo(long size) {
         return VkBufferCreateInfo.malloc()
                 .sType(VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO)
                 .usage(VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT)
-                .sharingMode(VK_SHARING_MODE_EXCLUSIVE);
+                .sharingMode(VK_SHARING_MODE_EXCLUSIVE)
+                .size(size);
     }
 }

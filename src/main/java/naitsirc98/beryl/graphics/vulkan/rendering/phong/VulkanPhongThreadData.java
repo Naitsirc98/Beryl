@@ -27,13 +27,12 @@ import static org.lwjgl.vulkan.VK10.*;
 final class VulkanPhongThreadData implements VulkanThreadData {
 
     private static final int PHONG_MATERIAL_TEXTURE_COUNT = 4;
-    private static final int UNIFORM_BUFFER_DATA_SIZE = 4 * 4 + 4; // 4 colors + shininess
     static final int PUSH_CONSTANT_DATA_SIZE = 4 * 4 * FLOAT32_SIZEOF;
 
     private final VulkanDescriptorPool descriptorPool;
     private final VulkanDescriptorSets descriptorSets;
     private final VkDescriptorBufferInfo.Buffer descriptorBufferInfos;
-    private final VkDescriptorImageInfo.Buffer descriptorImageInfos;
+    private final VkDescriptorImageInfo.Buffer[] descriptorImageInfos;
     private final VkWriteDescriptorSet.Buffer writeDescriptorSets;
     private final VulkanUniformBuffer[] uniformBuffers;
     private final VkDevice logicalDeviceHandle;
@@ -96,7 +95,7 @@ final class VulkanPhongThreadData implements VulkanThreadData {
     }
 
     private void setTextureInfo(int imageInfoIndex, VulkanTexture2D texture) {
-        descriptorImageInfos.get(imageInfoIndex)
+        descriptorImageInfos[imageInfoIndex]
                 .imageView(texture.view().handle())
                 .sampler(texture.sampler().handle());
     }
@@ -113,14 +112,20 @@ final class VulkanPhongThreadData implements VulkanThreadData {
                 .offset(0);
     }
 
-    private VkDescriptorImageInfo.Buffer getDescriptorImageInfos() {
-        return VkDescriptorImageInfo.calloc(PHONG_MATERIAL_TEXTURE_COUNT)
-                .imageLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    private VkDescriptorImageInfo.Buffer[] getDescriptorImageInfos() {
+
+        VkDescriptorImageInfo.Buffer[] descriptorImageInfos = new VkDescriptorImageInfo.Buffer[PHONG_MATERIAL_TEXTURE_COUNT];
+
+        for(int i = 0;i < PHONG_MATERIAL_TEXTURE_COUNT;i++) {
+            descriptorImageInfos[i] = VkDescriptorImageInfo.calloc(1).imageLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+        }
+
+        return descriptorImageInfos;
     }
 
     private VkWriteDescriptorSet.Buffer createWriteDescriptorSets() {
 
-        VkWriteDescriptorSet.Buffer descriptorWrites = VkWriteDescriptorSet.calloc(2);
+        VkWriteDescriptorSet.Buffer descriptorWrites = VkWriteDescriptorSet.calloc(PHONG_MATERIAL_TEXTURE_COUNT + 1);
 
         descriptorWrites.get(0)
                 .sType(VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET)
@@ -130,13 +135,15 @@ final class VulkanPhongThreadData implements VulkanThreadData {
                 .descriptorCount(1)
                 .pBufferInfo(descriptorBufferInfos);
 
-        descriptorWrites.get(1)
-                .sType(VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET)
-                .dstBinding(1)
-                .dstArrayElement(0)
-                .descriptorType(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER)
-                .descriptorCount(PHONG_MATERIAL_TEXTURE_COUNT)
-                .pImageInfo(descriptorImageInfos);
+        for(int i = 1;i < descriptorWrites.capacity();i++) {
+            descriptorWrites.get(i)
+                    .sType(VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET)
+                    .dstBinding(i)
+                    .dstArrayElement(0)
+                    .descriptorType(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER)
+                    .descriptorCount(1)
+                    .pImageInfo(descriptorImageInfos[i]);
+        }
 
         return writeDescriptorSets;
     }
@@ -146,7 +153,7 @@ final class VulkanPhongThreadData implements VulkanThreadData {
         VulkanUniformBuffer[] uniformBuffers = new VulkanUniformBuffer[count];
 
         for(int i = 0;i < count;i++) {
-            uniformBuffers[i] = new VulkanUniformBuffer();
+            uniformBuffers[i] = new VulkanUniformBuffer(PhongMaterial.SIZEOF);
         }
 
         return uniformBuffers;
@@ -157,7 +164,7 @@ final class VulkanPhongThreadData implements VulkanThreadData {
         descriptorSets.free();
         descriptorPool.free();
         descriptorBufferInfos.free();
-        descriptorImageInfos.free();
+        Arrays.stream(descriptorImageInfos).forEach(VkDescriptorImageInfo.Buffer::free);
         writeDescriptorSets.free();
         Arrays.stream(uniformBuffers).forEach(VulkanUniformBuffer::free);
     }
