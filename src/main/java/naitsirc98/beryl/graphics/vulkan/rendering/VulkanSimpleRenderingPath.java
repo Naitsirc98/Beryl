@@ -3,7 +3,8 @@ package naitsirc98.beryl.graphics.vulkan.rendering;
 import naitsirc98.beryl.graphics.Graphics;
 import naitsirc98.beryl.graphics.rendering.RenderingPath;
 import naitsirc98.beryl.graphics.vulkan.commands.VulkanCommandBufferRecorder;
-import naitsirc98.beryl.graphics.vulkan.commands.VulkanCommandBuilderExecutor;
+import naitsirc98.beryl.graphics.vulkan.commands.VulkanCommandBufferThreadExecutor;
+import naitsirc98.beryl.graphics.vulkan.commands.VulkanThreadData;
 import naitsirc98.beryl.graphics.vulkan.pipelines.VulkanGraphicsPipeline;
 import naitsirc98.beryl.graphics.vulkan.pipelines.VulkanPipelineLayout;
 import naitsirc98.beryl.graphics.vulkan.pipelines.VulkanShaderModule;
@@ -30,10 +31,11 @@ import static naitsirc98.beryl.graphics.vulkan.vertex.VulkanVertexInputUtils.ver
 import static naitsirc98.beryl.graphics.vulkan.vertex.VulkanVertexInputUtils.vertexInputBindingsStack;
 import static naitsirc98.beryl.util.types.DataType.FLOAT32;
 import static org.lwjgl.system.MemoryStack.stackPush;
-import static org.lwjgl.system.MemoryUtil.memAddress;
+import static org.lwjgl.system.MemoryUtil.*;
 import static org.lwjgl.vulkan.VK10.*;
 
-public final class VulkanSimpleRenderingPath extends RenderingPath implements VulkanCommandBufferRecorder, VulkanSwapchainDependent {
+public final class VulkanSimpleRenderingPath extends RenderingPath
+        implements VulkanCommandBufferRecorder<VulkanSimpleRenderingPath.ThreadData>, VulkanSwapchainDependent {
 
     public static final VertexLayout VERTEX_LAYOUT = VertexLayout.VERTEX_LAYOUT_3D;
 
@@ -64,7 +66,7 @@ public final class VulkanSimpleRenderingPath extends RenderingPath implements Vu
     private VulkanPipelineLayout pipelineLayout;
     private VulkanGraphicsPipeline graphicsPipeline;
     private VulkanSwapchain swapchain;
-    private VulkanCommandBuilderExecutor commandBuilderExecutor;
+    private VulkanCommandBufferThreadExecutor<ThreadData> commandBufferThreadExecutor;
     private Matrix4f projectionViewMatrix;
     private List<MeshView> meshViews;
     private VkCommandBufferInheritanceInfo inheritanceInfo;
@@ -80,13 +82,13 @@ public final class VulkanSimpleRenderingPath extends RenderingPath implements Vu
         swapchain.addSwapchainDependent(this);
         createPipelineLayout();
         createGraphicsPipeline();
-        commandBuilderExecutor = new VulkanCommandBuilderExecutor();
+        commandBufferThreadExecutor = new VulkanCommandBufferThreadExecutor<>(ThreadData::new);
         projectionViewMatrix = new Matrix4f();
     }
 
     @Override
     protected void terminate() {
-        commandBuilderExecutor.free();
+        commandBufferThreadExecutor.free();
         pipelineLayout.free();
         graphicsPipeline.free();
     }
@@ -110,7 +112,7 @@ public final class VulkanSimpleRenderingPath extends RenderingPath implements Vu
 
             beginPrimaryCommandBuffer(primaryCommandBuffer);
 
-            commandBuilderExecutor.recordCommandBuffers(meshViews.size(), primaryCommandBuffer, this);
+            commandBufferThreadExecutor.recordCommandBuffers(meshViews.size(), primaryCommandBuffer, this);
 
             endPrimaryCommandBuffer(primaryCommandBuffer);
         }
@@ -127,7 +129,10 @@ public final class VulkanSimpleRenderingPath extends RenderingPath implements Vu
     }
 
     @Override
-    public void recordCommandBuffer(int index, VkCommandBuffer commandBuffer, ByteBuffer pushConstantData, Matrix4f mvp) {
+    public void recordCommandBuffer(int index, VkCommandBuffer commandBuffer, ThreadData threadData) {
+
+        final Matrix4f mvp = threadData.matrix;
+        final ByteBuffer pushConstantData = threadData.pushConstantData;
 
         final MeshView meshView = meshViews.get(index);
 
@@ -302,5 +307,31 @@ public final class VulkanSimpleRenderingPath extends RenderingPath implements Vu
     public void onSwapchainRecreate() {
         terminate();
         init();
+    }
+
+    static final class ThreadData implements VulkanThreadData {
+
+        private static final int PUSH_CONSTANT_DATA_SIZE = 4 * 4 * FLOAT32.sizeof();
+
+        private final Matrix4f matrix;
+        private final ByteBuffer pushConstantData;
+
+        public ThreadData() {
+            matrix = new Matrix4f();
+            pushConstantData = memAlloc(PUSH_CONSTANT_DATA_SIZE);
+        }
+
+        public Matrix4f matrix() {
+            return matrix;
+        }
+
+        public ByteBuffer pushConstantData() {
+            return pushConstantData;
+        }
+
+        @Override
+        public void free() {
+            memFree(pushConstantData);
+        }
     }
 }

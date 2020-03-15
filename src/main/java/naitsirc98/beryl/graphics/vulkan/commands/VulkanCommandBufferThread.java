@@ -1,38 +1,34 @@
 package naitsirc98.beryl.graphics.vulkan.commands;
 
 import naitsirc98.beryl.graphics.Graphics;
+import naitsirc98.beryl.graphics.vulkan.VulkanObject;
 import naitsirc98.beryl.graphics.vulkan.rendering.VulkanRenderer;
 import naitsirc98.beryl.logging.Log;
 import org.lwjgl.system.NativeResource;
 import org.lwjgl.vulkan.VkCommandBuffer;
 
-import java.nio.ByteBuffer;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import static java.util.Objects.requireNonNull;
 import static java.util.concurrent.Executors.newSingleThreadExecutor;
-import static org.lwjgl.system.MemoryUtil.memAlloc;
-import static org.lwjgl.system.MemoryUtil.memFree;
 import static org.lwjgl.vulkan.VK10.VK_COMMAND_BUFFER_LEVEL_SECONDARY;
 
-public class VulkanCommandBuilder implements NativeResource {
+public final class VulkanCommandBufferThread<T extends VulkanThreadData> implements VulkanObject {
 
-    public static final int MIN_PUSH_CONSTANT_DATA_SIZE = 128;
-
-
-    private final ExecutorService worker;
+    private ExecutorService worker;
     private VulkanCommandPool commandPool;
     private VkCommandBuffer[] commandBuffers;
-    private ByteBuffer pushConstantData;
+    private T threadData;
 
-    public VulkanCommandBuilder() {
+    public VulkanCommandBufferThread(T threadData) {
         worker = newSingleThreadExecutor();
         commandPool = createCommandPool();
         commandBuffers = createCommandBuffers();
-        pushConstantData = memAlloc(MIN_PUSH_CONSTANT_DATA_SIZE);
+        this.threadData = requireNonNull(threadData);
     }
 
-    public void submitRecordTask(Runnable task) {
+    public void submit(Runnable task) {
         worker.submit(task);
     }
 
@@ -44,8 +40,22 @@ public class VulkanCommandBuilder implements NativeResource {
         return commandBuffers[index];
     }
 
-    public ByteBuffer pushConstantData() {
-        return pushConstantData;
+    public T threadData() {
+        return threadData;
+    }
+
+    @Override
+    public void free() {
+
+        stopWorker();
+        threadData.free();
+        commandPool.freeCommandBuffers(commandBuffers);
+        commandPool.free();
+
+        worker = null;
+        threadData = null;
+        commandBuffers = null;
+        commandPool = null;
     }
 
     private VkCommandBuffer[] createCommandBuffers() {
@@ -60,21 +70,6 @@ public class VulkanCommandBuilder implements NativeResource {
                 Graphics.vulkan().logicalDevice().graphicsQueue(),
                 Graphics.vulkan().physicalDevice().queueFamilyIndices().graphicsFamily()
         );
-    }
-
-    @Override
-    public void free() {
-
-        stopWorker();
-
-        memFree(pushConstantData);
-        pushConstantData = null;
-
-        commandPool.freeCommandBuffers(commandBuffers);
-        commandBuffers = null;
-
-        commandPool.free();
-        commandPool = null;
     }
 
     private void stopWorker() {

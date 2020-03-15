@@ -16,19 +16,19 @@ import static org.lwjgl.vulkan.VK10.*;
 
 public class VulkanCommandPool implements VulkanObject.Long {
 
-    private final long vkCommandPool;
+    private final long handle;
     private final int queueFamily;
     private final VkQueue queue;
 
     public VulkanCommandPool(VkQueue queue, int queueFamily) {
         this.queue = queue;
         this.queueFamily = queueFamily;
-        vkCommandPool = createVkCommandPool();
+        handle = createVkCommandPool();
     }
 
     @Override
     public long handle() {
-        return vkCommandPool;
+        return handle;
     }
 
     public VkQueue queue() {
@@ -58,7 +58,7 @@ public class VulkanCommandPool implements VulkanObject.Long {
             VkCommandBufferAllocateInfo allocInfo = VkCommandBufferAllocateInfo.callocStack(stack)
                 .sType(VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO)
                 .level(level)
-                .commandPool(vkCommandPool)
+                .commandPool(handle)
                 .commandBufferCount(count);
 
             PointerBuffer pCommandBuffers = stack.mallocPointer(count);
@@ -76,11 +76,11 @@ public class VulkanCommandPool implements VulkanObject.Long {
     }
 
     public void freeCommandBuffer(VkCommandBuffer commandBuffer) {
-        vkFreeCommandBuffers(logicalDevice().handle(), vkCommandPool, commandBuffer);
+        vkFreeCommandBuffers(logicalDevice().handle(), handle, commandBuffer);
     }
 
     public void freeCommandBuffers(VkCommandBuffer... commandBuffers) {
-        vkFreeCommandBuffers(logicalDevice().handle(), vkCommandPool, pointers(commandBuffers));
+        vkFreeCommandBuffers(logicalDevice().handle(), handle, pointers(commandBuffers));
     }
 
     public void execute(Consumer<VkCommandBuffer> commandBufferConsumer) {
@@ -120,7 +120,7 @@ public class VulkanCommandPool implements VulkanObject.Long {
 
     @Override
     public void free() {
-        vkDestroyCommandPool(logicalDevice().handle(), vkCommandPool, null);
+        vkDestroyCommandPool(logicalDevice().handle(), handle, null);
     }
 
     private long createVkCommandPool() {

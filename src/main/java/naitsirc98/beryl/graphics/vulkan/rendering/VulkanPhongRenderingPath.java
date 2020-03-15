@@ -3,8 +3,8 @@ package naitsirc98.beryl.graphics.vulkan.rendering;
 import naitsirc98.beryl.graphics.Graphics;
 import naitsirc98.beryl.graphics.rendering.RenderingPath;
 import naitsirc98.beryl.graphics.vulkan.commands.VulkanCommandBufferRecorder;
-import naitsirc98.beryl.graphics.vulkan.commands.VulkanCommandBuilderExecutor;
-import naitsirc98.beryl.graphics.vulkan.descriptors.VulkanDescriptorPool;
+import naitsirc98.beryl.graphics.vulkan.commands.VulkanCommandBufferThreadExecutor;
+import naitsirc98.beryl.graphics.vulkan.commands.VulkanThreadData;
 import naitsirc98.beryl.graphics.vulkan.descriptors.VulkanDescriptorSetLayout;
 import naitsirc98.beryl.graphics.vulkan.pipelines.VulkanGraphicsPipeline;
 import naitsirc98.beryl.graphics.vulkan.pipelines.VulkanPipelineLayout;
@@ -21,7 +21,6 @@ import org.joml.Matrix4f;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
 
-import java.nio.ByteBuffer;
 import java.nio.file.Path;
 import java.util.List;
 
@@ -32,10 +31,12 @@ import static naitsirc98.beryl.graphics.vulkan.vertex.VulkanVertexInputUtils.ver
 import static naitsirc98.beryl.graphics.vulkan.vertex.VulkanVertexInputUtils.vertexInputBindingsStack;
 import static naitsirc98.beryl.util.types.DataType.FLOAT32;
 import static org.lwjgl.system.MemoryStack.stackPush;
-import static org.lwjgl.system.MemoryUtil.memAddress;
 import static org.lwjgl.vulkan.VK10.*;
 
-public final class VulkanPhongRenderingPath extends RenderingPath implements VulkanCommandBufferRecorder, VulkanSwapchainDependent {
+public final class VulkanPhongRenderingPath extends RenderingPath
+        implements VulkanCommandBufferRecorder<VulkanThreadData>, VulkanSwapchainDependent {
+
+    // TODO
 
     public static final VertexLayout VERTEX_LAYOUT = VertexLayout.VERTEX_LAYOUT_3D;
 
@@ -65,10 +66,9 @@ public final class VulkanPhongRenderingPath extends RenderingPath implements Vul
 
     private VulkanPipelineLayout pipelineLayout;
     private VulkanGraphicsPipeline graphicsPipeline;
-    private VulkanDescriptorPool descriptorPool;
     private VulkanDescriptorSetLayout descriptorSetLayout;
     private VulkanSwapchain swapchain;
-    private VulkanCommandBuilderExecutor commandBuilderExecutor;
+    private VulkanCommandBufferThreadExecutor commandBuilderExecutor;
     private Matrix4f projectionViewMatrix;
     private List<MeshView> meshViews;
     private VkCommandBufferInheritanceInfo inheritanceInfo;
@@ -82,9 +82,10 @@ public final class VulkanPhongRenderingPath extends RenderingPath implements Vul
     protected void init() {
         swapchain = Graphics.vulkan().swapchain();
         swapchain.addSwapchainDependent(this);
+        createDescriptorSetLayout();
         createPipelineLayout();
         createGraphicsPipeline();
-        commandBuilderExecutor = new VulkanCommandBuilderExecutor();
+        commandBuilderExecutor = new VulkanCommandBufferThreadExecutor<>(null);
         projectionViewMatrix = new Matrix4f();
     }
 
@@ -104,9 +105,7 @@ public final class VulkanPhongRenderingPath extends RenderingPath implements Vul
 
         this.meshViews = meshViews;
 
-        projectionViewMatrix = projectionViewMatrix.set(camera.projectionMatrix());
-        projectionViewMatrix.m11(-projectionViewMatrix.m11()); // Need this to flip Y coordinate
-        projectionViewMatrix.mul(camera.viewMatrix());
+        projectionViewMatrix.set(camera.projectionViewMatrix());
 
         try(MemoryStack stack = stackPush()) {
 
@@ -133,8 +132,8 @@ public final class VulkanPhongRenderingPath extends RenderingPath implements Vul
     }
 
     @Override
-    public void recordCommandBuffer(int index, VkCommandBuffer commandBuffer, ByteBuffer pushConstantData, Matrix4f mvp) {
-
+    public void recordCommandBuffer(int index, VkCommandBuffer commandBuffer, VulkanThreadData threadData) {
+/*
         final MeshView meshView = meshViews.get(index);
 
         projectionViewMatrix.mul(meshView.modelMatrix(), mvp).get(pushConstantData);
@@ -159,6 +158,8 @@ public final class VulkanPhongRenderingPath extends RenderingPath implements Vul
         } else {
             vkCmdDrawIndexed(commandBuffer, vertexData.indexCount(), 1, 0, 0, 0);
         }
+
+ */
     }
 
     @Override
@@ -201,6 +202,13 @@ public final class VulkanPhongRenderingPath extends RenderingPath implements Vul
 
     private long currentFramebuffer() {
         return swapchain.renderPass().framebuffers().get(VulkanRenderer.get().currentSwapchainImageIndex());
+    }
+
+    private void createDescriptorSetLayout() {
+        descriptorSetLayout = new VulkanDescriptorSetLayout.Builder()
+                .binding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, null, VK_SHADER_STAGE_FRAGMENT_BIT)
+                .binding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 4, null, VK_SHADER_STAGE_FRAGMENT_BIT)
+                .buildAndPop();
     }
 
     private void createPipelineLayout() {
