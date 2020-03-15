@@ -39,7 +39,7 @@ public class PhongMaterial implements Material, ByteSize {
         return ambient.color();
     }
 
-    public Texture2D ambientMap() {
+    public <T extends Texture2D> T ambientMap() {
         return ambient.map();
     }
 
@@ -57,7 +57,7 @@ public class PhongMaterial implements Material, ByteSize {
         return diffuse.color();
     }
 
-    public Texture2D diffuseMap() {
+    public <T extends Texture2D> T diffuseMap() {
         return diffuse.map();
     }
 
@@ -75,7 +75,7 @@ public class PhongMaterial implements Material, ByteSize {
         return specular.color();
     }
 
-    public Texture2D specularMap() {
+    public <T extends Texture2D> T specularMap() {
         return specular.map();
     }
 
@@ -93,7 +93,7 @@ public class PhongMaterial implements Material, ByteSize {
         return emissive.color();
     }
 
-    public Texture2D emissiveMap() {
+    public <T extends Texture2D> T emissiveMap() {
         return emissive.map();
     }
 

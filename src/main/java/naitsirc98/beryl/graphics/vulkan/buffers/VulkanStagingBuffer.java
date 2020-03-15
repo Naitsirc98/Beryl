@@ -112,7 +112,6 @@ public class VulkanStagingBuffer extends VulkanBuffer {
         }
     }
 
-
     private static VmaAllocationCreateInfo getStagingBufferAllocationCreateInfo() {
         return VmaAllocationCreateInfo.malloc()
                 .usage(VMA_MEMORY_USAGE_CPU_ONLY);

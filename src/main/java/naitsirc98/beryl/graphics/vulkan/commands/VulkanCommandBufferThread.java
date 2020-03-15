@@ -4,7 +4,6 @@ import naitsirc98.beryl.graphics.Graphics;
 import naitsirc98.beryl.graphics.vulkan.VulkanObject;
 import naitsirc98.beryl.graphics.vulkan.rendering.VulkanRenderer;
 import naitsirc98.beryl.logging.Log;
-import org.lwjgl.system.NativeResource;
 import org.lwjgl.vulkan.VkCommandBuffer;
 
 import java.util.concurrent.ExecutorService;
@@ -59,10 +58,7 @@ public final class VulkanCommandBufferThread<T extends VulkanThreadData> impleme
     }
 
     private VkCommandBuffer[] createCommandBuffers() {
-
-        final int count = Graphics.vulkan().swapchain().imageCount();
-
-        return commandPool.newCommandBuffers(VK_COMMAND_BUFFER_LEVEL_SECONDARY, count);
+        return commandPool.newCommandBuffers(VK_COMMAND_BUFFER_LEVEL_SECONDARY, swapchain().imageCount());
     }
 
     private VulkanCommandPool createCommandPool() {

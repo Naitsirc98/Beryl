@@ -30,8 +30,9 @@ public class ColorMapProperty implements ByteSize {
         return this;
     }
 
-    public Texture2D map() {
-        return map;
+    @SuppressWarnings("unchecked")
+    public <T extends Texture2D> T map() {
+        return (T) map;
     }
 
     public ColorMapProperty map(Texture2D map) {

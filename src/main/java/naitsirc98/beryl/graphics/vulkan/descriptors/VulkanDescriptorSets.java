@@ -1,6 +1,7 @@
 package naitsirc98.beryl.graphics.vulkan.descriptors;
 
 import naitsirc98.beryl.graphics.vulkan.VulkanObject;
+import naitsirc98.beryl.graphics.vulkan.rendering.VulkanRenderer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkDescriptorSetAllocateInfo;
 
@@ -18,6 +19,10 @@ public class VulkanDescriptorSets implements VulkanObject {
 
     public VulkanDescriptorSets(VulkanDescriptorPool descriptorPool, VulkanDescriptorSetLayout descriptorSetLayout, int count) {
         init(descriptorPool, descriptorSetLayout, count);
+    }
+
+    public long get(int index) {
+        return descriptorSets.get(index);
     }
 
     public LongBuffer descriptorSets() {
