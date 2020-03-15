@@ -4,7 +4,7 @@
 @include "structs/lights.glsl"
 
 #define MAX_LIGHTS_COUNT 64
-#define LIGHT_BUFFER_SIZE SPOT_LIGHT_SIZE * MAX_LIGHTS_COUNT
+#define LIGHT_BUFFER_SIZE (SPOT_LIGHT_SIZE + 1) * MAX_LIGHTS_COUNT
 
 uniform vec3 u_CameraPosition;
 
@@ -86,14 +86,14 @@ float computeAttenuation(vec3 lightPosition, float constant, float linear, float
 
     float distance = length(lightPosition - vertexData.position);
 
-    return 1.0f / 
+    return 1.0f /
         (constant + linear * distance + quadratic * (distance * distance));
 }
 
 float computeIntensity(vec3 normalizedDirection, vec3 lightDirection, float cutOff, float outerCutOff) {
 
     float theta = dot(normalizedDirection, normalize(lightDirection));
-    
+
     float epsilon = (cutOff - outerCutOff);
 
     return clamp((theta - outerCutOff) / epsilon, 0.0f, 1.0f);
@@ -111,7 +111,7 @@ vec4 computeDiffuseColor(vec4 lightColor, vec3 lightDirection) {
 }
 
 vec4 computeSpecularColor(vec4 lightColor, vec3 lightDirection) {
-    
+
 	vec3 reflectDir = reflect(-lightDirection, vertexData.normal);
 
 	float specular = pow(computeAngle(cameraDirection, reflectDir), u_Material.shininess);
@@ -174,7 +174,7 @@ vec4 computeSpotLighting(int offset) {
     );
 
     vec3 direction = normalize(light.position - vertexData.position);
-    
+
     float attenuation = computeAttenuation(light.position, light.constant, light.linear, light.quadratic);
 
     float intensity = computeIntensity(direction, light.direction, light.cutOff, light.outerCutOff);

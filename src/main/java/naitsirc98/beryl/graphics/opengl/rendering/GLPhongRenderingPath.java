@@ -23,6 +23,7 @@ import static naitsirc98.beryl.graphics.ShaderStage.FRAGMENT_STAGE;
 import static naitsirc98.beryl.graphics.ShaderStage.VERTEX_STAGE;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.system.MemoryStack.stackPush;
+import static org.lwjgl.system.MemoryUtil.memAllocFloat;
 
 public class GLPhongRenderingPath extends RenderingPath {
 
@@ -32,8 +33,8 @@ public class GLPhongRenderingPath extends RenderingPath {
     private static final int MATERIAL_UNIFORM_BUFFER_SIZE = PhongMaterial.SIZEOF;
     private static final String MATERIAL_UNIFORM_BUFFER_NAME = "MaterialUniformBuffer";
 
-    private static final int LIGHT_UNIFORM_BUFFER_SIZE = SpotLight.SIZEOF;
-    private static final String LIGHT_UNIFORM_BUFFER_NAME = "LightsUniformBuffer";
+    private static final int LIGHTS_UNIFORM_BUFFER_SIZE = (SpotLight.SIZEOF + 1) * 64;
+    private static final String LIGHTS_UNIFORM_BUFFER_NAME = "LightsUniformBuffer";
 
     private static final float LIGHT_TYPE_DIRECTIONAL = 0.0f;
     private static final float LIGHT_TYPE_POINT = 1.0f;
@@ -65,6 +66,7 @@ public class GLPhongRenderingPath extends RenderingPath {
     private GLShaderProgram shader;
     private GLUniformBuffer materialUniformBuffer;
     private GLUniformBuffer lightsUniformBuffer;
+    private FloatBuffer lightsUniformBufferData;
     private Matrix4f projectionViewMatrix;
     private GLVertexData lastVertexData;
     private PhongMaterial lastMaterial;
@@ -84,8 +86,10 @@ public class GLPhongRenderingPath extends RenderingPath {
         materialUniformBuffer = new GLUniformBuffer(MATERIAL_UNIFORM_BUFFER_NAME, shader, 0);
         materialUniformBuffer.allocate(MATERIAL_UNIFORM_BUFFER_SIZE);
 
-        lightsUniformBuffer = new GLUniformBuffer(LIGHT_UNIFORM_BUFFER_NAME, shader, 1);
-        lightsUniformBuffer.allocate(LIGHT_UNIFORM_BUFFER_SIZE);
+        lightsUniformBuffer = new GLUniformBuffer(LIGHTS_UNIFORM_BUFFER_NAME, shader, 1);
+        lightsUniformBuffer.allocate(LIGHTS_UNIFORM_BUFFER_SIZE);
+
+        lightsUniformBufferData = memAllocFloat(LIGHTS_UNIFORM_BUFFER_SIZE);
 
         projectionViewMatrix = new Matrix4f();
     }

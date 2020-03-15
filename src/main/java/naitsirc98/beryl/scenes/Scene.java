@@ -5,6 +5,8 @@ import naitsirc98.beryl.scenes.components.behaviours.AbstractBehaviour;
 import naitsirc98.beryl.scenes.components.behaviours.BehaviourManager;
 import naitsirc98.beryl.scenes.components.camera.Camera;
 import naitsirc98.beryl.scenes.components.camera.CameraManager;
+import naitsirc98.beryl.scenes.components.lights.LightSource;
+import naitsirc98.beryl.scenes.components.lights.LightSourceManager;
 import naitsirc98.beryl.scenes.components.math.Transform;
 import naitsirc98.beryl.scenes.components.math.TransformManager;
 import naitsirc98.beryl.scenes.components.meshes.MeshView;
@@ -27,6 +29,7 @@ public final class Scene {
     private final TransformManager transforms;
     private final BehaviourManager behaviours;
     private final MeshViewManager meshes;
+    private final LightSourceManager lights;
 
     private final Map<Class<? extends Component>, ComponentManager<?>> componentManagers;
     // ===
@@ -44,6 +47,7 @@ public final class Scene {
         transforms = newInstance(TransformManager.class, this);
         behaviours = newInstance(BehaviourManager.class, this);
         meshes = newInstance(MeshViewManager.class, this);
+        lights = newInstance(LightSourceManager.class, this);
 
         componentManagers = createComponentManagersMap();
         // ===
@@ -53,6 +57,10 @@ public final class Scene {
 
     public List<MeshView> meshViews() {
         return meshes.meshViews();
+    }
+
+    public List<LightSource> lightSources() {
+        return lights.lightSources();
     }
 
     void start() {
@@ -275,6 +283,7 @@ public final class Scene {
         components.put(Transform.class, transforms);
         components.put(Camera.class, cameras);
         components.put(MeshView.class, meshes);
+        components.put(LightSource.class, lights);
 
         return components;
     }
