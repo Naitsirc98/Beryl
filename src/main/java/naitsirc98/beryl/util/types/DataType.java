@@ -15,6 +15,18 @@ public enum DataType implements ByteSize {
     DOUBLE(8, true);
 
 
+    public static final int INT8_SIZEOF = 1;
+    public static final int UINT8_SIZEOF = 1;
+    public static final int INT16_SIZEOF = 2;
+    public static final int UINT16_SIZEOF = 2;
+    public static final int INT32_SIZEOF = 4;
+    public static final int UINT32_SIZEOF = 4;
+    public static final int INT64_SIZEOF = 8;
+    public static final int UINT64_SIZEOF = 8;
+    public static final int FLOAT16_SIZEOF = 2;
+    public static final int FLOAT32_SIZEOF = 4;
+    public static final int DOUBLE_SIZEOF = 8;
+
     public static final int INT32_MIN = Integer.MIN_VALUE;
     public static final int INT32_MAX = Integer.MAX_VALUE;
 

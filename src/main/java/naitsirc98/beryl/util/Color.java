@@ -5,8 +5,12 @@ import naitsirc98.beryl.util.types.ByteSize;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 
-@ByteSize.Static(4 * Float.BYTES)
+import static naitsirc98.beryl.util.types.DataType.FLOAT32_SIZEOF;
+
+@ByteSize.Static(Color.SIZEOF)
 public final class Color implements Cloneable, ByteSize {
+
+    public static final int SIZEOF = 4 * FLOAT32_SIZEOF;
 
     public static final Color NONE = new Color(Float.MIN_VALUE, Float.MIN_VALUE, Float.MIN_VALUE, Float.MIN_VALUE);
     public static final Color WHITE = new Color(1, 1, 1);

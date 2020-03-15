@@ -9,8 +9,7 @@ import naitsirc98.beryl.graphics.vulkan.commands.VulkanCommandPool;
 import naitsirc98.beryl.graphics.vulkan.devices.VulkanLogicalDevice;
 import naitsirc98.beryl.graphics.vulkan.devices.VulkanPhysicalDevice;
 import naitsirc98.beryl.graphics.vulkan.memory.VulkanAllocator;
-import naitsirc98.beryl.graphics.vulkan.rendering.VulkanRenderer;
-import naitsirc98.beryl.graphics.vulkan.rendering.VulkanSimpleRenderingPath;
+import naitsirc98.beryl.graphics.vulkan.rendering.simple.VulkanSimpleRenderingPath;
 import naitsirc98.beryl.graphics.vulkan.swapchain.VulkanSwapchain;
 import org.lwjgl.vulkan.VkInstance;
 

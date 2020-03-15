@@ -101,7 +101,7 @@ public class VulkanCommandBufferThreadExecutor<T extends VulkanThreadData> imple
             recorder.recordCommandBuffer(j + offset, commandBuffer, threadData);
         }
 
-        recorder.endCommandBuffer(commandBuffer);
+        recorder.endCommandBuffer(commandBuffer, threadData);
     }
 
     @Override

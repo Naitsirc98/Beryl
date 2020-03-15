@@ -1,4 +1,4 @@
-package naitsirc98.beryl.meshes.materials;
+package naitsirc98.beryl.materials;
 
 public enum ShadingModel {
 

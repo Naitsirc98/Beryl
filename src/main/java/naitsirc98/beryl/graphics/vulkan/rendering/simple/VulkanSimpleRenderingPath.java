@@ -1,14 +1,13 @@
-package naitsirc98.beryl.graphics.vulkan.rendering;
+package naitsirc98.beryl.graphics.vulkan.rendering.simple;
 
 import naitsirc98.beryl.graphics.Graphics;
 import naitsirc98.beryl.graphics.rendering.RenderingPath;
 import naitsirc98.beryl.graphics.vulkan.commands.VulkanCommandBufferRecorder;
 import naitsirc98.beryl.graphics.vulkan.commands.VulkanCommandBufferThreadExecutor;
-import naitsirc98.beryl.graphics.vulkan.commands.VulkanThreadData;
-import naitsirc98.beryl.graphics.vulkan.descriptors.VulkanDescriptorSetLayout;
 import naitsirc98.beryl.graphics.vulkan.pipelines.VulkanGraphicsPipeline;
 import naitsirc98.beryl.graphics.vulkan.pipelines.VulkanPipelineLayout;
 import naitsirc98.beryl.graphics.vulkan.pipelines.VulkanShaderModule;
+import naitsirc98.beryl.graphics.vulkan.rendering.VulkanRenderer;
 import naitsirc98.beryl.graphics.vulkan.swapchain.VulkanSwapchain;
 import naitsirc98.beryl.graphics.vulkan.swapchain.VulkanSwapchainDependent;
 import naitsirc98.beryl.graphics.vulkan.vertex.VulkanVertexData;
@@ -21,6 +20,7 @@ import org.joml.Matrix4f;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
 
+import java.nio.ByteBuffer;
 import java.nio.file.Path;
 import java.util.List;
 
@@ -29,18 +29,14 @@ import static naitsirc98.beryl.graphics.ShaderStage.VERTEX_STAGE;
 import static naitsirc98.beryl.graphics.vulkan.util.VulkanUtils.vkCall;
 import static naitsirc98.beryl.graphics.vulkan.vertex.VulkanVertexInputUtils.vertexInputAttributesStack;
 import static naitsirc98.beryl.graphics.vulkan.vertex.VulkanVertexInputUtils.vertexInputBindingsStack;
-import static naitsirc98.beryl.util.types.DataType.FLOAT32;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.vulkan.VK10.*;
 
-public final class VulkanPhongRenderingPath extends RenderingPath
-        implements VulkanCommandBufferRecorder<VulkanThreadData>, VulkanSwapchainDependent {
-
-    // TODO
+public final class VulkanSimpleRenderingPath extends RenderingPath
+        implements VulkanCommandBufferRecorder<VulkanSimpleThreadData>, VulkanSwapchainDependent {
 
     public static final VertexLayout VERTEX_LAYOUT = VertexLayout.VERTEX_LAYOUT_3D;
 
-    private static final int PUSH_CONSTANT_SIZE = 16 * FLOAT32.sizeof();
     private static final int RENDER_SUBPASS = 0;
 
     private static final Path VERTEX_SHADER_PATH;
@@ -52,8 +48,8 @@ public final class VulkanPhongRenderingPath extends RenderingPath
         Path fragmentPath = null;
 
         try {
-            vertexPath = Resources.getPath("shaders/vk/phong/phong.vk.vert");
-            fragmentPath = Resources.getPath("shaders/vk/phong/phong.vk.frag");
+            vertexPath = Resources.getPath("shaders/vk/simple/simple.vk.vert");
+            fragmentPath = Resources.getPath("shaders/vk/simple/simple.vk.frag");
         } catch (Exception e) {
             Log.fatal("Failed to get shader files for RenderingPath", e);
         }
@@ -62,19 +58,16 @@ public final class VulkanPhongRenderingPath extends RenderingPath
         FRAGMENT_SHADER_PATH = fragmentPath;
     }
 
-    private static final ThreadLocal<VulkanVertexData> LAST_VERTEX_DATA = new ThreadLocal<>();
-
     private VulkanPipelineLayout pipelineLayout;
     private VulkanGraphicsPipeline graphicsPipeline;
-    private VulkanDescriptorSetLayout descriptorSetLayout;
     private VulkanSwapchain swapchain;
-    private VulkanCommandBufferThreadExecutor commandBuilderExecutor;
+    private VulkanCommandBufferThreadExecutor<VulkanSimpleThreadData> commandBufferThreadExecutor;
     private Matrix4f projectionViewMatrix;
     private List<MeshView> meshViews;
     private VkCommandBufferInheritanceInfo inheritanceInfo;
     private VkCommandBufferBeginInfo beginInfo;
 
-    private VulkanPhongRenderingPath() {
+    private VulkanSimpleRenderingPath() {
 
     }
 
@@ -82,16 +75,15 @@ public final class VulkanPhongRenderingPath extends RenderingPath
     protected void init() {
         swapchain = Graphics.vulkan().swapchain();
         swapchain.addSwapchainDependent(this);
-        createDescriptorSetLayout();
         createPipelineLayout();
         createGraphicsPipeline();
-        commandBuilderExecutor = new VulkanCommandBufferThreadExecutor<>(null);
+        commandBufferThreadExecutor = new VulkanCommandBufferThreadExecutor<>(VulkanSimpleThreadData::new);
         projectionViewMatrix = new Matrix4f();
     }
 
     @Override
     protected void terminate() {
-        commandBuilderExecutor.free();
+        commandBufferThreadExecutor.free();
         pipelineLayout.free();
         graphicsPipeline.free();
     }
@@ -115,7 +107,7 @@ public final class VulkanPhongRenderingPath extends RenderingPath
 
             beginPrimaryCommandBuffer(primaryCommandBuffer);
 
-            commandBuilderExecutor.recordCommandBuffers(meshViews.size(), primaryCommandBuffer, this);
+            commandBufferThreadExecutor.recordCommandBuffers(meshViews.size(), primaryCommandBuffer, this);
 
             endPrimaryCommandBuffer(primaryCommandBuffer);
         }
@@ -132,8 +124,11 @@ public final class VulkanPhongRenderingPath extends RenderingPath
     }
 
     @Override
-    public void recordCommandBuffer(int index, VkCommandBuffer commandBuffer, VulkanThreadData threadData) {
-/*
+    public void recordCommandBuffer(int index, VkCommandBuffer commandBuffer, VulkanSimpleThreadData threadData) {
+
+        final Matrix4f mvp = threadData.matrix;
+        final ByteBuffer pushConstantData = threadData.pushConstantData;
+
         final MeshView meshView = meshViews.get(index);
 
         projectionViewMatrix.mul(meshView.modelMatrix(), mvp).get(pushConstantData);
@@ -143,14 +138,14 @@ public final class VulkanPhongRenderingPath extends RenderingPath
                 pipelineLayout.handle(),
                 VK_SHADER_STAGE_VERTEX_BIT,
                 0,
-                PUSH_CONSTANT_SIZE,
-                memAddress(pushConstantData));
+                VulkanSimpleThreadData.PUSH_CONSTANT_DATA_SIZE,
+                threadData.pushConstantDataAddress);
 
-        VulkanVertexData vertexData = meshView.mesh().vertexData();
+        final VulkanVertexData vertexData = meshView.mesh().vertexData();
 
-        if(LAST_VERTEX_DATA.get() != vertexData) {
+        if(threadData.lastVertexData != vertexData) {
             vertexData.bind(commandBuffer);
-            LAST_VERTEX_DATA.set(vertexData);
+            threadData.lastVertexData = vertexData;
         }
 
         if (vertexData.indexCount() == 0) {
@@ -158,14 +153,12 @@ public final class VulkanPhongRenderingPath extends RenderingPath
         } else {
             vkCmdDrawIndexed(commandBuffer, vertexData.indexCount(), 1, 0, 0, 0);
         }
-
- */
     }
 
     @Override
-    public void endCommandBuffer(VkCommandBuffer commandBuffer) {
+    public void endCommandBuffer(VkCommandBuffer commandBuffer, VulkanSimpleThreadData threadData) {
         vkCall(vkEndCommandBuffer(commandBuffer));
-        LAST_VERTEX_DATA.set(null);
+        threadData.lastVertexData = null;
     }
 
     private void endPrimaryCommandBuffer(VkCommandBuffer commandBuffer) {
@@ -204,16 +197,9 @@ public final class VulkanPhongRenderingPath extends RenderingPath
         return swapchain.renderPass().framebuffers().get(VulkanRenderer.get().currentSwapchainImageIndex());
     }
 
-    private void createDescriptorSetLayout() {
-        descriptorSetLayout = new VulkanDescriptorSetLayout.Builder()
-                .binding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, null, VK_SHADER_STAGE_FRAGMENT_BIT)
-                .binding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 4, null, VK_SHADER_STAGE_FRAGMENT_BIT)
-                .buildAndPop();
-    }
-
     private void createPipelineLayout() {
         pipelineLayout = new VulkanPipelineLayout.Builder()
-                .addPushConstantRange(VK_SHADER_STAGE_VERTEX_BIT, 0, PUSH_CONSTANT_SIZE)
+                .addPushConstantRange(VK_SHADER_STAGE_VERTEX_BIT, 0, VulkanSimpleThreadData.PUSH_CONSTANT_DATA_SIZE)
                 .buildAndPop();
     }
 
@@ -317,4 +303,5 @@ public final class VulkanPhongRenderingPath extends RenderingPath
         terminate();
         init();
     }
+
 }

@@ -6,7 +6,7 @@ import naitsirc98.beryl.core.BerylConfiguration;
 import naitsirc98.beryl.graphics.GraphicsAPI;
 import naitsirc98.beryl.graphics.window.Window;
 import naitsirc98.beryl.meshes.Mesh;
-import naitsirc98.beryl.meshes.materials.PhongMaterial;
+import naitsirc98.beryl.materials.PhongMaterial;
 import naitsirc98.beryl.meshes.vertices.VertexData;
 import naitsirc98.beryl.scenes.Entity;
 import naitsirc98.beryl.scenes.Scene;

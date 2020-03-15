@@ -1,9 +1,15 @@
-package naitsirc98.beryl.meshes.materials;
+package naitsirc98.beryl.materials;
 
 import naitsirc98.beryl.graphics.textures.Texture2D;
 import naitsirc98.beryl.util.Color;
+import naitsirc98.beryl.util.types.ByteSize;
 
-public class PhongMaterial implements Material {
+import static naitsirc98.beryl.util.types.DataType.FLOAT32_SIZEOF;
+
+@ByteSize.Static(PhongMaterial.SIZEOF)
+public class PhongMaterial implements Material, ByteSize {
+
+    public static final int SIZEOF = 4 * ColorMapProperty.SIZEOF + FLOAT32_SIZEOF;
 
     public static final float DEFAULT_SHININESS = 32.0f;
 
@@ -115,4 +121,8 @@ public class PhongMaterial implements Material {
         return ShadingModel.BLINN_PHONG;
     }
 
+    @Override
+    public int sizeof() {
+        return SIZEOF;
+    }
 }

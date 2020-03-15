@@ -6,7 +6,7 @@ import naitsirc98.beryl.graphics.opengl.textures.GLTexture2D;
 import naitsirc98.beryl.graphics.opengl.vertex.GLVertexData;
 import naitsirc98.beryl.graphics.rendering.RenderingPath;
 import naitsirc98.beryl.logging.Log;
-import naitsirc98.beryl.meshes.materials.PhongMaterial;
+import naitsirc98.beryl.materials.PhongMaterial;
 import naitsirc98.beryl.resources.Resources;
 import naitsirc98.beryl.scenes.components.camera.Camera;
 import naitsirc98.beryl.scenes.components.meshes.MeshView;
