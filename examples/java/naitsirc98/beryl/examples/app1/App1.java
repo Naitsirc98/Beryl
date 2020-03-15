@@ -71,7 +71,7 @@ public class App1 extends BerylApplication {
 
         Scene scene = new Scene();
 
-        PhongMaterial material = new PhongMaterial().diffuseColor(Color.BLUE);
+        PhongMaterial material = new PhongMaterial().diffuseColor(Color.GREEN);
 
         Mesh mesh = new Mesh(VertexData.builder(VERTEX_LAYOUT_3D).vertices(getCubeVertices()).build(), material);
 

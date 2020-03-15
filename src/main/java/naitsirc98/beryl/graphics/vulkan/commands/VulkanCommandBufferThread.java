@@ -18,6 +18,7 @@ public final class VulkanCommandBufferThread<T extends VulkanThreadData> impleme
     private ExecutorService worker;
     private VulkanCommandPool commandPool;
     private VkCommandBuffer[] commandBuffers;
+    private Throwable error;
     private T threadData;
 
     public VulkanCommandBufferThread(T threadData) {
@@ -29,6 +30,14 @@ public final class VulkanCommandBufferThread<T extends VulkanThreadData> impleme
 
     public void submit(Runnable task) {
         worker.submit(task);
+    }
+
+    public void error(Throwable error) {
+        this.error = error;
+    }
+
+    public Throwable error() {
+        return error;
     }
 
     public VkCommandBuffer commandBuffer() {

@@ -11,7 +11,6 @@ import org.lwjgl.vulkan.VkCommandBuffer;
 
 import java.util.Arrays;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
 import static java.util.Objects.requireNonNull;
@@ -27,6 +26,7 @@ public class VulkanCommandBufferThreadExecutor<T extends VulkanThreadData> imple
     private VulkanCommandBufferThread<T>[] commandBufferThreads;
     private PointerBuffer[] pCommandBuffers;
     private final int threadCount;
+    private volatile boolean errorOccurred;
 
     public VulkanCommandBufferThreadExecutor(Supplier<T> threadDataSupplier) {
         this(SystemInfo.processorCount(), threadDataSupplier);
@@ -59,15 +59,14 @@ public class VulkanCommandBufferThreadExecutor<T extends VulkanThreadData> imple
         vkCmdExecuteCommands(primaryCommandBuffer, commandBufferThread.commandBuffer());
     }
 
-    private void recordCommandBuffersInParallel(int commandBuilderCount, int objectsPerCommandBuilder, int count,
+    private void recordCommandBuffersInParallel(int commandBufferThreadCount, int objectsPerCommandBuilder, int count,
                                                 VkCommandBuffer primaryCommandBuffer, VulkanCommandBufferRecorder<T> recorder) {
 
         final VulkanCommandBufferThread<T>[] commandBufferThreads = this.commandBufferThreads;
         final PointerBuffer pCommandBuffers = this.pCommandBuffers[VulkanRenderer.get().currentSwapchainImageIndex()];
-        final CountDownLatch countDownLatch = new CountDownLatch(commandBuilderCount);
-        final AtomicReference<Throwable> error = new AtomicReference<>();
+        final CountDownLatch countDownLatch = new CountDownLatch(commandBufferThreadCount);
 
-        range(0, commandBuilderCount).unordered().parallel().forEach(i -> {
+        for(int i = 0;i < commandBufferThreadCount;i++) {
 
             final int offset = i * objectsPerCommandBuilder;
             final int objectCount = min(objectsPerCommandBuilder, count - offset);
@@ -78,28 +77,41 @@ public class VulkanCommandBufferThreadExecutor<T extends VulkanThreadData> imple
 
                 try {
                     recordCommandBuffer(offset, objectCount, commandBufferThread, recorder);
+                } catch(Throwable error) {
+                    errorOccurred = true;
+                    commandBufferThread.error(error);
+                } finally {
                     countDownLatch.countDown();
-                } catch(Throwable e) {
-                    Log.error("Error while recording Vulkan CommandBuffers", e);
-                    error.set(e);
                 }
             });
-        });
+        }
 
-        if(error.get() != null) {
+        try {
+            countDownLatch.await();
+        } catch (InterruptedException e) {
+            Log.fatal("Interrupted exception while waiting for command buffers to be recorded", e);
+        }
 
-            Log.fatal("Error while recording Vulkan CommandBuffers", error.get());
-
-        } else {
-
-            try {
-                countDownLatch.await();
-            } catch (InterruptedException e) {
-                Log.fatal("Interrupted exception while waiting for command buffers to be recorded", e);
-            }
+        if(errorOccurred) {
+            logCommandBufferThreadErrors(commandBufferThreadCount);
+            errorOccurred = false;
         }
 
         vkCmdExecuteCommands(primaryCommandBuffer, pCommandBuffers);
+    }
+
+    private void logCommandBufferThreadErrors(int commandBufferThreadCount) {
+
+        for(int i = 0;i < commandBufferThreadCount;i++) {
+
+            VulkanCommandBufferThread<T> commandBufferThread = commandBufferThreads[i];
+
+            if(commandBufferThread.error() != null) {
+                Log.error("Error while recording command buffer thread " + i, commandBufferThread.error());
+            }
+        }
+
+        Log.fatal("Failed to record Vulkan CommandBuffers");
     }
 
     private void recordCommandBuffer(int offset, int objectCount, VulkanCommandBufferThread<T> commandBufferThread,
