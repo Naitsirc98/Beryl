@@ -213,7 +213,10 @@ public final class VulkanPhongRenderingPath extends RenderingPath
     private void createDescriptorSetLayout() {
         descriptorSetLayout = new VulkanDescriptorSetLayout.Builder()
                 .binding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, null, VK_SHADER_STAGE_FRAGMENT_BIT)
-                .binding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 4, null, VK_SHADER_STAGE_FRAGMENT_BIT)
+                .binding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, null, VK_SHADER_STAGE_FRAGMENT_BIT)
+                .binding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, null, VK_SHADER_STAGE_FRAGMENT_BIT)
+                .binding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, null, VK_SHADER_STAGE_FRAGMENT_BIT)
+                .binding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, null, VK_SHADER_STAGE_FRAGMENT_BIT)
                 .buildAndPop();
     }
 

@@ -8,6 +8,7 @@ import org.lwjgl.vulkan.VkDescriptorPoolSize;
 import java.nio.LongBuffer;
 
 import static naitsirc98.beryl.graphics.vulkan.util.VulkanUtils.vkCall;
+import static naitsirc98.beryl.util.Asserts.assertThat;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.vulkan.VK10.*;
 
@@ -15,14 +16,12 @@ public class VulkanDescriptorPool implements VulkanObject.Long {
 
     private long handle;
 
-    private VulkanDescriptorPool() { } // Disabled
-
     public VulkanDescriptorPool(int descriptorType) {
         init(descriptorType);
     }
 
     public VulkanDescriptorPool(int... descriptorTypes) {
-        init(descriptorTypes);
+        init(assertThat(descriptorTypes, descriptorTypes.length > 0));
     }
 
     @Override

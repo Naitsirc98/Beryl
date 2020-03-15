@@ -38,6 +38,10 @@ public class VulkanTexture2D extends VulkanTexture implements Texture2D {
         return viewInfo;
     }
 
+    public void validate() {
+        sampler.validate();
+    }
+
     @Override
     public Type type() {
         return Type.TEXTURE_2D;

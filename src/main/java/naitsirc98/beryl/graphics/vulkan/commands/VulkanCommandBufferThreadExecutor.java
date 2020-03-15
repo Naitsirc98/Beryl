@@ -11,6 +11,7 @@ import org.lwjgl.vulkan.VkCommandBuffer;
 
 import java.util.Arrays;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
 import static java.util.Objects.requireNonNull;
@@ -64,6 +65,7 @@ public class VulkanCommandBufferThreadExecutor<T extends VulkanThreadData> imple
         final VulkanCommandBufferThread<T>[] commandBufferThreads = this.commandBufferThreads;
         final PointerBuffer pCommandBuffers = this.pCommandBuffers[VulkanRenderer.get().currentSwapchainImageIndex()];
         final CountDownLatch countDownLatch = new CountDownLatch(commandBuilderCount);
+        final AtomicReference<Throwable> error = new AtomicReference<>();
 
         range(0, commandBuilderCount).unordered().parallel().forEach(i -> {
 
@@ -74,16 +76,27 @@ public class VulkanCommandBufferThreadExecutor<T extends VulkanThreadData> imple
 
             commandBufferThread.submit(() -> {
 
-                recordCommandBuffer(offset, objectCount, commandBufferThread, recorder);
-
-                countDownLatch.countDown();
+                try {
+                    recordCommandBuffer(offset, objectCount, commandBufferThread, recorder);
+                    countDownLatch.countDown();
+                } catch(Throwable e) {
+                    Log.error("Error while recording Vulkan CommandBuffers", e);
+                    error.set(e);
+                }
             });
         });
 
-        try {
-            countDownLatch.await();
-        } catch (InterruptedException e) {
-            Log.error("Interrupted exception while waiting for command buffers to be recorded", e);
+        if(error.get() != null) {
+
+            Log.fatal("Error while recording Vulkan CommandBuffers", error.get());
+
+        } else {
+
+            try {
+                countDownLatch.await();
+            } catch (InterruptedException e) {
+                Log.fatal("Interrupted exception while waiting for command buffers to be recorded", e);
+            }
         }
 
         vkCmdExecuteCommands(primaryCommandBuffer, pCommandBuffers);

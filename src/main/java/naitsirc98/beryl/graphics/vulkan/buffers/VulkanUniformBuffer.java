@@ -20,10 +20,12 @@ public class VulkanUniformBuffer extends VulkanBuffer {
 
     public VulkanUniformBuffer() {
         super(getUniformBufferCreateInfo(0), getUniformBufferAllocationCreateInfo());
+        // Need to call allocate(long size) afterwards
     }
 
     public VulkanUniformBuffer(long size) {
         super(getUniformBufferCreateInfo(size), getUniformBufferAllocationCreateInfo());
+        init(allocator().createBuffer(bufferInfo, allocationCreateInfo));
     }
 
     @Override
