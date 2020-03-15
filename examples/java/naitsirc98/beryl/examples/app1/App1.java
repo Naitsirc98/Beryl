@@ -4,8 +4,13 @@ import naitsirc98.beryl.core.Beryl;
 import naitsirc98.beryl.core.BerylApplication;
 import naitsirc98.beryl.core.BerylConfiguration;
 import naitsirc98.beryl.graphics.GraphicsAPI;
+import naitsirc98.beryl.graphics.GraphicsFactory;
 import naitsirc98.beryl.graphics.rendering.RenderingPaths;
+import naitsirc98.beryl.graphics.textures.Texture2D;
 import naitsirc98.beryl.graphics.window.Window;
+import naitsirc98.beryl.images.Image;
+import naitsirc98.beryl.images.ImageFactory;
+import naitsirc98.beryl.images.PixelFormat;
 import naitsirc98.beryl.meshes.Mesh;
 import naitsirc98.beryl.materials.PhongMaterial;
 import naitsirc98.beryl.meshes.vertices.VertexData;
@@ -45,7 +50,7 @@ public class App1 extends BerylApplication {
         // BerylConfiguration.INITIAL_TIME_VALUE.set(4000.0);
         // BerylConfiguration.WINDOW_RESIZABLE.set(false);
         BerylConfiguration.SHOW_DEBUG_INFO.set(true);
-        BerylConfiguration.GRAPHICS_API.set(GraphicsAPI.VULKAN);
+        BerylConfiguration.GRAPHICS_API.set(GraphicsAPI.OPENGL);
         BerylConfiguration.VULKAN_ENABLE_DEBUG_MESSAGES.set(true);
         BerylConfiguration.VULKAN_ENABLE_VALIDATION_LAYERS.set(false);
     }
@@ -71,7 +76,15 @@ public class App1 extends BerylApplication {
 
         Scene scene = new Scene();
 
-        PhongMaterial material = new PhongMaterial().diffuseColor(Color.GREEN);
+        Texture2D diffuseTexture = GraphicsFactory.get().newTexture2D();
+
+        try(Image image = ImageFactory.newImage("C:\\Users\\naits\\Desktop\\milo_raro.jpeg", true, PixelFormat.RGBA)) {
+            diffuseTexture.pixels(1, image);
+        }
+
+        PhongMaterial material = new PhongMaterial()
+                // .diffuseColor(Color.GREEN)
+                .diffuseMap(diffuseTexture);
 
         Mesh mesh = new Mesh(VertexData.builder(VERTEX_LAYOUT_3D).vertices(getCubeVertices()).build(), material);
 
@@ -163,7 +176,7 @@ public class App1 extends BerylApplication {
 
     private void addOrRemoveRandomly(Entity entity, Mesh mesh) {
 
-        if(RAND.nextFloat() < 0.05f) {
+        if(RAND.nextFloat() < 0.005f) {
 
             entity.destroy();
 
