@@ -28,4 +28,9 @@ final class VulkanSimpleThreadData implements VulkanThreadData {
     public void free() {
         memFree(pushConstantData);
     }
+
+    @Override
+    public void end() {
+        lastVertexData = null;
+    }
 }

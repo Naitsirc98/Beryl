@@ -25,7 +25,7 @@ public class VulkanDescriptorSets implements VulkanObject {
         return descriptorSets.get(index);
     }
 
-    public LongBuffer descriptorSets() {
+    public LongBuffer pDescriptorSets() {
         return descriptorSets;
     }
 

@@ -126,12 +126,9 @@ public final class VulkanSimpleRenderingPath extends RenderingPath
     @Override
     public void recordCommandBuffer(int index, VkCommandBuffer commandBuffer, VulkanSimpleThreadData threadData) {
 
-        final Matrix4f mvp = threadData.matrix;
-        final ByteBuffer pushConstantData = threadData.pushConstantData;
-
         final MeshView meshView = meshViews.get(index);
 
-        projectionViewMatrix.mul(meshView.modelMatrix(), mvp).get(pushConstantData);
+        projectionViewMatrix.mul(meshView.modelMatrix(), threadData.matrix).get(threadData.pushConstantData);
 
         nvkCmdPushConstants(
                 commandBuffer,
@@ -156,9 +153,8 @@ public final class VulkanSimpleRenderingPath extends RenderingPath
     }
 
     @Override
-    public void endCommandBuffer(VkCommandBuffer commandBuffer, VulkanSimpleThreadData threadData) {
+    public void endCommandBuffer(VkCommandBuffer commandBuffer) {
         vkCall(vkEndCommandBuffer(commandBuffer));
-        threadData.lastVertexData = null;
     }
 
     private void endPrimaryCommandBuffer(VkCommandBuffer commandBuffer) {

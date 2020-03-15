@@ -30,7 +30,6 @@ import static naitsirc98.beryl.graphics.ShaderStage.VERTEX_STAGE;
 import static naitsirc98.beryl.graphics.vulkan.util.VulkanUtils.vkCall;
 import static naitsirc98.beryl.graphics.vulkan.vertex.VulkanVertexInputUtils.vertexInputAttributesStack;
 import static naitsirc98.beryl.graphics.vulkan.vertex.VulkanVertexInputUtils.vertexInputBindingsStack;
-import static naitsirc98.beryl.util.types.DataType.*;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.vulkan.VK10.*;
 
@@ -38,9 +37,6 @@ public final class VulkanPhongRenderingPath extends RenderingPath
         implements VulkanCommandBufferRecorder<VulkanPhongThreadData>, VulkanSwapchainDependent {
 
     public static final VertexLayout VERTEX_LAYOUT = VertexLayout.VERTEX_LAYOUT_3D;
-
-    private static final int PUSH_CONSTANT_SIZE = 16 * FLOAT32_SIZEOF;
-    private static final int PHONG_MATERIAL_UNIFORM_BUFFER_SIZE = PhongMaterial.SIZEOF - 4 * INT32_SIZEOF;
 
     private static final int RENDER_SUBPASS = 0;
 
@@ -63,9 +59,6 @@ public final class VulkanPhongRenderingPath extends RenderingPath
         FRAGMENT_SHADER_PATH = fragmentPath;
     }
 
-    private static final ThreadLocal<VulkanVertexData> LAST_VERTEX_DATA = new ThreadLocal<>();
-    private static final ThreadLocal<VulkanVertexData> LAST_MATERIAL = new ThreadLocal<>();
-
     private VulkanPipelineLayout pipelineLayout;
     private VulkanGraphicsPipeline graphicsPipeline;
     private VulkanDescriptorSetLayout descriptorSetLayout;
@@ -87,7 +80,7 @@ public final class VulkanPhongRenderingPath extends RenderingPath
         createDescriptorSetLayout();
         createPipelineLayout();
         createGraphicsPipeline();
-        commandBuilderExecutor = new VulkanCommandBufferThreadExecutor<>(null);
+        commandBuilderExecutor = new VulkanCommandBufferThreadExecutor<>(this::createThreadData);
         projectionViewMatrix = new Matrix4f();
     }
 
@@ -96,6 +89,12 @@ public final class VulkanPhongRenderingPath extends RenderingPath
         commandBuilderExecutor.free();
         pipelineLayout.free();
         graphicsPipeline.free();
+    }
+
+    @Override
+    public void onSwapchainRecreate() {
+        terminate();
+        init();
     }
 
     @Override
@@ -135,37 +134,43 @@ public final class VulkanPhongRenderingPath extends RenderingPath
 
     @Override
     public void recordCommandBuffer(int index, VkCommandBuffer commandBuffer, VulkanPhongThreadData threadData) {
-/*
+
         final MeshView meshView = meshViews.get(index);
 
-        projectionViewMatrix.mul(meshView.modelMatrix(), mvp).get(pushConstantData);
+        projectionViewMatrix.mul(meshView.modelMatrix(), threadData.matrix).get(threadData.pushConstantData);
 
         nvkCmdPushConstants(
                 commandBuffer,
                 pipelineLayout.handle(),
                 VK_SHADER_STAGE_VERTEX_BIT,
                 0,
-                PUSH_CONSTANT_SIZE,
-                memAddress(pushConstantData));
+                VulkanPhongThreadData.PUSH_CONSTANT_DATA_SIZE,
+                threadData.pushConstantDataAddress);
 
-        VulkanVertexData vertexData = meshView.mesh().vertexData();
+        final VulkanVertexData vertexData = meshView.mesh().vertexData();
+        final PhongMaterial material = meshView.mesh().material();
 
-        if(LAST_VERTEX_DATA.get() != vertexData) {
+        if(threadData.lastVertexData != vertexData) {
             vertexData.bind(commandBuffer);
-            LAST_VERTEX_DATA.set(vertexData);
+            threadData.lastVertexData = vertexData;
         }
+
+        if(threadData.lastMaterial != material) {
+            threadData.updateMaterialShaderData(material);
+            threadData.lastMaterial = material;
+        }
+
+        threadData.bindDescriptorSets(commandBuffer, pipelineLayout.handle());
 
         if (vertexData.indexCount() == 0) {
             vkCmdDraw(commandBuffer, vertexData.vertexCount(), 1, 0, 0);
         } else {
             vkCmdDrawIndexed(commandBuffer, vertexData.indexCount(), 1, 0, 0, 0);
         }
-
- */
     }
 
     @Override
-    public void endCommandBuffer(VkCommandBuffer commandBuffer, VulkanPhongThreadData threadData) {
+    public void endCommandBuffer(VkCommandBuffer commandBuffer) {
         vkCall(vkEndCommandBuffer(commandBuffer));
     }
 
@@ -214,7 +219,8 @@ public final class VulkanPhongRenderingPath extends RenderingPath
 
     private void createPipelineLayout() {
         pipelineLayout = new VulkanPipelineLayout.Builder()
-                .addPushConstantRange(VK_SHADER_STAGE_VERTEX_BIT, 0, PUSH_CONSTANT_SIZE)
+                .addPushConstantRange(VK_SHADER_STAGE_VERTEX_BIT, 0, VulkanPhongThreadData.PUSH_CONSTANT_DATA_SIZE)
+                .addDescriptorSetLayout(descriptorSetLayout)
                 .buildAndPop();
     }
 
@@ -313,10 +319,8 @@ public final class VulkanPhongRenderingPath extends RenderingPath
                 .flags(VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT);
     }
 
-    @Override
-    public void onSwapchainRecreate() {
-        terminate();
-        init();
+    private VulkanPhongThreadData createThreadData() {
+        return new VulkanPhongThreadData(descriptorSetLayout);
     }
 
 }

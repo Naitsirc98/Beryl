@@ -8,5 +8,5 @@ public interface VulkanCommandBufferRecorder<T extends VulkanThreadData> {
 
     void recordCommandBuffer(int index, VkCommandBuffer commandBuffer, T threadData);
 
-    void endCommandBuffer(VkCommandBuffer commandBuffer, T threadData);
+    void endCommandBuffer(VkCommandBuffer commandBuffer);
 }
