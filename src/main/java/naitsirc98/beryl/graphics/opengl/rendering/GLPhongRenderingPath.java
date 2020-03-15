@@ -20,7 +20,6 @@ import java.util.List;
 
 import static naitsirc98.beryl.graphics.ShaderStage.FRAGMENT_STAGE;
 import static naitsirc98.beryl.graphics.ShaderStage.VERTEX_STAGE;
-import static naitsirc98.beryl.util.types.DataType.FLOAT32_SIZEOF;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.system.MemoryStack.stackPush;
 
@@ -31,10 +30,10 @@ public class GLPhongRenderingPath extends RenderingPath {
 
     private static final int UNIFORM_BUFFER_BINDING = 0;
     private static final int UNIFORM_BUFFER_SIZE = PhongMaterial.SIZEOF;
+    private static final String UNIFORM_BUFFER_NAME = "MaterialUniformBuffer";
 
     private static final String UNIFORM_MVP_NAME = "u_MVP";
 
-    private static final String UNIFORM_MATERIAL_NAME = "u_Material";
 
     private static final String UNIFORM_AMBIENT_MAP_NAME = "u_AmbientMap";
     private static final String UNIFORM_DIFFUSE_MAP_NAME = "u_DiffuseMap";
@@ -75,7 +74,7 @@ public class GLPhongRenderingPath extends RenderingPath {
                 .attach(new GLShader(FRAGMENT_STAGE).source(FRAGMENT_SHADER_PATH).compile())
                 .link();
 
-        uniformBuffer = new GLUniformBuffer(UNIFORM_MATERIAL_NAME, shader, UNIFORM_BUFFER_BINDING);
+        uniformBuffer = new GLUniformBuffer(UNIFORM_BUFFER_NAME, shader, UNIFORM_BUFFER_BINDING);
         uniformBuffer.allocate(UNIFORM_BUFFER_SIZE);
 
         projectionViewMatrix = new Matrix4f();

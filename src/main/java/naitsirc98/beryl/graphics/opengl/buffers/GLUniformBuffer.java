@@ -2,6 +2,7 @@ package naitsirc98.beryl.graphics.opengl.buffers;
 
 import naitsirc98.beryl.graphics.opengl.shaders.GLShaderProgram;
 
+import static naitsirc98.beryl.util.Asserts.assertThat;
 import static org.lwjgl.opengl.GL30.glBindBufferBase;
 import static org.lwjgl.opengl.GL31.*;
 
@@ -11,7 +12,8 @@ public class GLUniformBuffer extends GLBuffer {
 
     public GLUniformBuffer(String name, GLShaderProgram shader, int binding) {
         this.binding = binding;
-        glUniformBlockBinding(shader.handle(), glGetUniformBlockIndex(shader.handle(), name), binding);
+        final int blockIndex = glGetUniformBlockIndex(shader.handle(), name);
+        glUniformBlockBinding(shader.handle(), assertThat(blockIndex, blockIndex >= 0), binding);
     }
 
     public int binding() {
