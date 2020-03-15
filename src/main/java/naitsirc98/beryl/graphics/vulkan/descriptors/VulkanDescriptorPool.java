@@ -16,12 +16,12 @@ public class VulkanDescriptorPool implements VulkanObject.Long {
 
     private long handle;
 
-    public VulkanDescriptorPool(int descriptorType) {
-        init(descriptorType);
+    public VulkanDescriptorPool(int maxSets, int descriptorType) {
+        init(maxSets, descriptorType);
     }
 
-    public VulkanDescriptorPool(int... descriptorTypes) {
-        init(assertThat(descriptorTypes, descriptorTypes.length > 0));
+    public VulkanDescriptorPool(int maxSets, int... descriptorTypes) {
+        init(maxSets, assertThat(descriptorTypes, descriptorTypes.length > 0));
     }
 
     @Override
@@ -35,25 +35,23 @@ public class VulkanDescriptorPool implements VulkanObject.Long {
         handle = VK_NULL_HANDLE;
     }
 
-    private void init(int... descriptorTypes) {
+    private void init(int maxSets, int... descriptorTypes) {
 
         try(MemoryStack stack = stackPush()) {
 
             VkDescriptorPoolSize.Buffer poolSizes = VkDescriptorPoolSize.callocStack(descriptorTypes.length, stack);
 
-            final int swapchainImageCount = swapchain().imageCount();
-
             for(int i = 0;i < descriptorTypes.length;i++) {
 
                 VkDescriptorPoolSize poolSize = poolSizes.get(i);
                 poolSize.type(descriptorTypes[i]);
-                poolSize.descriptorCount(swapchainImageCount);
+                poolSize.descriptorCount(1);
             }
 
             VkDescriptorPoolCreateInfo poolInfo = VkDescriptorPoolCreateInfo.callocStack(stack);
             poolInfo.sType(VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO);
             poolInfo.pPoolSizes(poolSizes);
-            poolInfo.maxSets(swapchainImageCount);
+            poolInfo.maxSets(maxSets);
 
             LongBuffer pDescriptorPool = stack.mallocLong(1);
 

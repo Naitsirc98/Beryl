@@ -15,13 +15,13 @@ import org.lwjgl.vulkan.*;
 
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
+import java.nio.LongBuffer;
 import java.util.Arrays;
 
 import static naitsirc98.beryl.graphics.Graphics.vulkan;
 import static naitsirc98.beryl.util.types.DataType.FLOAT32_SIZEOF;
 import static org.lwjgl.system.MemoryStack.stackPush;
-import static org.lwjgl.system.MemoryUtil.memAddress;
-import static org.lwjgl.system.MemoryUtil.memAlloc;
+import static org.lwjgl.system.MemoryUtil.*;
 import static org.lwjgl.vulkan.VK10.*;
 
 final class VulkanPhongThreadData implements VulkanThreadData {
@@ -34,6 +34,7 @@ final class VulkanPhongThreadData implements VulkanThreadData {
     private final VkDescriptorBufferInfo.Buffer descriptorBufferInfos;
     private final VkDescriptorImageInfo.Buffer[] descriptorImageInfos;
     private final VkWriteDescriptorSet.Buffer writeDescriptorSets;
+    private final LongBuffer pDescriptorSet;
     private final VulkanUniformBuffer[] uniformBuffers;
     private final VkDevice logicalDeviceHandle;
 
@@ -45,8 +46,9 @@ final class VulkanPhongThreadData implements VulkanThreadData {
 
     public VulkanPhongThreadData(VulkanDescriptorSetLayout descriptorSetLayout) {
         final int swapchainImageCount = vulkan().swapchain().imageCount();
-        descriptorPool = createDescriptorPool();
+        descriptorPool = createDescriptorPool(swapchainImageCount);
         descriptorSets = new VulkanDescriptorSets(descriptorPool, descriptorSetLayout, swapchainImageCount);
+        pDescriptorSet = memAllocLong(1);
         descriptorBufferInfos = getDescriptorBufferInfos();
         descriptorImageInfos = getDescriptorImageInfos();
         writeDescriptorSets = createWriteDescriptorSets();
@@ -74,11 +76,12 @@ final class VulkanPhongThreadData implements VulkanThreadData {
     }
 
     void bindDescriptorSets(VkCommandBuffer commandBuffer, long pipelineLayout) {
-        vkCmdBindDescriptorSets(commandBuffer,
+        vkCmdBindDescriptorSets(
+                commandBuffer,
                 VK_PIPELINE_BIND_POINT_GRAPHICS,
                 pipelineLayout,
                 0,
-                descriptorSets.pDescriptorSets(),
+                pDescriptorSet.put(0, currentDescriptorSet()),
                 null);
     }
 
@@ -124,10 +127,14 @@ final class VulkanPhongThreadData implements VulkanThreadData {
         writeDescriptorSets.get(0).dstSet(descriptorSet);
     }
 
+    private long currentDescriptorSet() {
+        return descriptorSets.get(VulkanRenderer.get().currentSwapchainImageIndex());
+    }
+
     private VkDescriptorBufferInfo.Buffer getDescriptorBufferInfos() {
         return VkDescriptorBufferInfo.calloc(1)
                 .offset(0)
-                .range(VK_WHOLE_SIZE);
+                .range(PhongMaterial.SIZEOF);
     }
 
     private VkDescriptorImageInfo.Buffer[] getDescriptorImageInfos() {
@@ -177,8 +184,9 @@ final class VulkanPhongThreadData implements VulkanThreadData {
         return uniformBuffers;
     }
 
-    private VulkanDescriptorPool createDescriptorPool() {
+    private VulkanDescriptorPool createDescriptorPool(int maxSets) {
         return new VulkanDescriptorPool(
+                maxSets,
                 VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
                 VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
                 VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,

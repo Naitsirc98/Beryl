@@ -5,6 +5,7 @@ import naitsirc98.beryl.util.Color;
 import naitsirc98.beryl.util.types.ByteSize;
 import org.lwjgl.system.MemoryStack;
 
+import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 
 import static naitsirc98.beryl.util.Asserts.assertTrue;
@@ -14,7 +15,7 @@ import static org.lwjgl.system.MemoryStack.stackPush;
 @ByteSize.Static(PhongMaterial.SIZEOF)
 public class PhongMaterial implements Material, ByteSize {
 
-    public static final int SIZEOF = 5 * 4 * FLOAT32_SIZEOF; // Do not count the textures
+    public static final int SIZEOF = 5 * 4 * FLOAT32_SIZEOF; // Does not count the textures
     public static final int FLOAT_BUFFER_MIN_SIZE = SIZEOF / FLOAT32_SIZEOF;
 
     public static final float DEFAULT_SHININESS = 32.0f;
@@ -31,6 +32,19 @@ public class PhongMaterial implements Material, ByteSize {
         specular = new ColorMapProperty();
         emissive = new ColorMapProperty();
         shininess = DEFAULT_SHININESS;
+    }
+
+    // This modifies the buffer's position!
+    public ByteBuffer get(ByteBuffer buffer) {
+        assertTrue(buffer.remaining() >= SIZEOF);
+
+        ambientColor().getRGBA(buffer);
+        diffuseColor().getRGBA(buffer);
+        specularColor().getRGBA(buffer);
+        emissiveColor().getRGBA(buffer);
+        buffer.putFloat(shininess());
+
+        return buffer;
     }
 
     // This modifies the buffer's position!

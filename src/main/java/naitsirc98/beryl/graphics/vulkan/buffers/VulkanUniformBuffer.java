@@ -1,22 +1,12 @@
 package naitsirc98.beryl.graphics.vulkan.buffers;
 
-import org.lwjgl.PointerBuffer;
-import org.lwjgl.system.MemoryStack;
 import org.lwjgl.util.vma.VmaAllocationCreateInfo;
 import org.lwjgl.vulkan.VkBufferCreateInfo;
 
-import java.nio.ByteBuffer;
-import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
-
-import static naitsirc98.beryl.graphics.vulkan.util.VulkanUtils.vkCall;
-import static org.lwjgl.system.MemoryStack.stackPush;
-import static org.lwjgl.system.MemoryUtil.memAddress;
-import static org.lwjgl.system.libc.LibCString.nmemcpy;
-import static org.lwjgl.util.vma.Vma.*;
+import static org.lwjgl.util.vma.Vma.VMA_MEMORY_USAGE_CPU_TO_GPU;
 import static org.lwjgl.vulkan.VK10.*;
 
-public class VulkanUniformBuffer extends VulkanBuffer {
+public class VulkanUniformBuffer extends VulkanCPUBuffer {
 
     public VulkanUniformBuffer() {
         super(getUniformBufferCreateInfo(0), getUniformBufferAllocationCreateInfo());
@@ -28,37 +18,10 @@ public class VulkanUniformBuffer extends VulkanBuffer {
         init(allocator().createBuffer(bufferInfo, allocationCreateInfo));
     }
 
-    @Override
-    public void update(long offset, ByteBuffer data) {
-        update(offset, memAddress(data), data.remaining());
-    }
-
-    @Override
-    public void update(long offset, IntBuffer data) {
-        update(offset, memAddress(data), data.remaining());
-    }
-
-    @Override
-    public void update(long offset, FloatBuffer data) {
-        update(offset, memAddress(data), data.remaining());
-    }
-
-    private void update(long offset, long src, int size) {
-        try(MemoryStack stack = stackPush()) {
-
-            PointerBuffer pMemoryData = stack.mallocPointer(1);
-
-            vkCall(vmaMapMemory(allocator().handle(), allocation, pMemoryData));
-
-            nmemcpy(pMemoryData.get(0) + offset, src, size);
-
-            vmaUnmapMemory(allocator().handle(), allocation);
-        }
-    }
-
     private static VmaAllocationCreateInfo getUniformBufferAllocationCreateInfo() {
         return VmaAllocationCreateInfo.malloc()
-                .usage(VMA_MEMORY_USAGE_CPU_TO_GPU);
+                .usage(VMA_MEMORY_USAGE_CPU_TO_GPU)
+                .requiredFlags(VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
     }
 
     private static VkBufferCreateInfo getUniformBufferCreateInfo(long size) {

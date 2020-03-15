@@ -144,7 +144,6 @@ public final class Beryl {
         if(BerylConfiguration.WINDOW_VISIBLE.get(true)) {
             Window.get().show();
         }
-        render();
         update(IDEAL_FRAME_DELAY);
         render();
     }

@@ -2,7 +2,7 @@
 
 @include "structs/phong_material.glsl"
 
-layout(binding = 0) uniform UniformBufferObject {
+layout(binding = 0) uniform MaterialUniformBuffer {
     PhongMaterial u_Material;
 };
 
@@ -16,5 +16,5 @@ layout(location = 0) in vec2 frag_TextureCoords;
 layout(location = 0) out vec4 out_FinalColor;
 
 void main() {
-    out_FinalColor = u_Material.diffuseColor * texture2D(u_DiffuseMap, frag_TextureCoords);
+    out_FinalColor = u_Material.diffuseColor * texture(u_DiffuseMap, frag_TextureCoords);
 }

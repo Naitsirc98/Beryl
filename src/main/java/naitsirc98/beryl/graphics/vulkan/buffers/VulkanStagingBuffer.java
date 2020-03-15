@@ -18,7 +18,7 @@ import static org.lwjgl.system.libc.LibCString.nmemcpy;
 import static org.lwjgl.util.vma.Vma.*;
 import static org.lwjgl.vulkan.VK11.*;
 
-public class VulkanStagingBuffer extends VulkanBuffer {
+public class VulkanStagingBuffer extends VulkanCPUBuffer {
 
     public VulkanStagingBuffer() {
         super(getStagingBufferCreateInfo(), getStagingBufferAllocationCreateInfo());
@@ -81,34 +81,6 @@ public class VulkanStagingBuffer extends VulkanBuffer {
                     .size(buffer.size());
 
             vkCmdCopyBuffer(commandBuffer, handle(), buffer.handle(), copyRegion);
-        }
-    }
-
-    @Override
-    public void update(long offset, ByteBuffer data) {
-        update(offset, memAddress(data), data.remaining());
-    }
-
-    @Override
-    public void update(long offset, IntBuffer data) {
-        update(offset, memAddress(data), data.remaining());
-    }
-
-    @Override
-    public void update(long offset, FloatBuffer data) {
-        update(offset, memAddress(data), data.remaining());
-    }
-
-    private void update(long offset, long src, int size) {
-        try(MemoryStack stack = stackPush()) {
-
-            PointerBuffer pMemoryData = stack.mallocPointer(1);
-
-            vkCall(vmaMapMemory(allocator().handle(), allocation, pMemoryData));
-
-            nmemcpy(pMemoryData.get(0) + offset, src, size);
-
-            vmaUnmapMemory(allocator().handle(), allocation);
         }
     }
 
