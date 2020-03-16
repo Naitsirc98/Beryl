@@ -2,8 +2,9 @@
 
 uniform mat4 u_MVP;
 
-uniform MatricesUniformBuffer {
+layout(std140) uniform MatricesUniformBuffer {
     mat4 u_ModelMatrix;
+    mat4 u_NormalMatrix;
 };
 
 layout(location = 0) in vec3 in_Position;
@@ -18,10 +19,8 @@ out VertexData {
 
 void main() {
 
-    mat3 normalMatrix = transpose(inverse(mat3(u_ModelMatrix)));
-
     vertexData.position = vec3(u_ModelMatrix * vec4(in_Position, 1.0f));
-    vertexData.normal = normalize(normalMatrix * in_Normal);
+    vertexData.normal = normalize(mat3(u_NormalMatrix) * in_Normal);
     vertexData.textureCoords = in_TexCoords;
 
     gl_Position = u_MVP * vec4(in_Position, 1.0f);

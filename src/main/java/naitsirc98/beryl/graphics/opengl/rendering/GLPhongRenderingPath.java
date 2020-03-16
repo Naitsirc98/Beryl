@@ -15,7 +15,6 @@ import naitsirc98.beryl.resources.Resources;
 import naitsirc98.beryl.scenes.Scene;
 import naitsirc98.beryl.scenes.components.camera.Camera;
 import naitsirc98.beryl.scenes.components.lights.LightSource;
-import naitsirc98.beryl.scenes.components.math.Transform;
 import naitsirc98.beryl.scenes.components.meshes.MeshView;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
@@ -29,14 +28,15 @@ import static naitsirc98.beryl.graphics.ShaderStage.VERTEX_STAGE;
 import static naitsirc98.beryl.util.types.DataType.FLOAT32_SIZEOF;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.system.MemoryStack.stackPush;
-import static org.lwjgl.system.MemoryUtil.*;
+import static org.lwjgl.system.MemoryUtil.memAllocFloat;
+import static org.lwjgl.system.MemoryUtil.memFree;
 
 public class GLPhongRenderingPath extends RenderingPath {
 
     private static final Path VERTEX_SHADER_PATH;
     private static final Path FRAGMENT_SHADER_PATH;
 
-    private static final int MATRICES_UNIFORM_BUFFER_SIZE = (16 + 9) * FLOAT32_SIZEOF;
+    private static final int MATRICES_UNIFORM_BUFFER_SIZE = (16 + 16) * FLOAT32_SIZEOF;
     private static final String MATRICES_UNIFORM_BUFFER_NAME = "MatricesUniformBuffer";
 
     private static final int MATERIAL_UNIFORM_BUFFER_SIZE = PhongMaterial.SIZEOF;
@@ -172,7 +172,7 @@ public class GLPhongRenderingPath extends RenderingPath {
         try(MemoryStack stack = stackPush()) {
 
             FloatBuffer mvpData = stack.mallocFloat(16);
-            FloatBuffer matricesUniformBufferData = stack.mallocFloat(16 + 9);
+            FloatBuffer matricesUniformBufferData = stack.mallocFloat(MATRICES_UNIFORM_BUFFER_SIZE / FLOAT32_SIZEOF);
 
             for(MeshView meshView : scene.meshViews()) {
 

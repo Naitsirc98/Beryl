@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
+import static naitsirc98.beryl.util.Asserts.assertEquals;
+
 /**
  * A Transform contains the position, scale and rotation of a {@link naitsirc98.beryl.scenes.SceneObject}.
  * 
@@ -21,7 +23,7 @@ public final class Transform extends Component<Transform> {
     private AxisAngle4f rotationAxis;
     private Vector3f scale;
     private Matrix4f modelMatrix;
-    private Matrix3f normalMatrix;
+    private Matrix4f normalMatrix; // Use Matrix4f to avoid alignment issues in shaders
     private Transform parent;
     private List<Transform> children;
     private boolean modified;
@@ -38,7 +40,7 @@ public final class Transform extends Component<Transform> {
         rotationAxis = rotation.get(new AxisAngle4f());
         scale = new Vector3f(1.0f);
         modelMatrix = new Matrix4f();
-        normalMatrix = new Matrix3f();
+        normalMatrix = new Matrix4f();
         children = new ArrayList<>(0);
         identity();
     }
@@ -325,7 +327,7 @@ public final class Transform extends Component<Transform> {
      *
      * @return the normal matrix.
      */
-    public Matrix3fc normalMatrix() {
+    public Matrix4fc normalMatrix() {
         assertNotDeleted();
         return normalMatrix;
     }
@@ -471,7 +473,8 @@ public final class Transform extends Component<Transform> {
     void update() {
         modelMatrix.translation(position).rotate(rotation).scale(scale);
         // normalMatrix = transpose(inverse(mat3(model)))
-        modelMatrix.get3x3(normalMatrix).invert().transpose();
+        normalMatrix.set(modelMatrix).invert().transpose();
+        normalMatrix._m30(0.0f)._m31(0.0f)._m32(0.0f);
         modified = false;
     }
 
