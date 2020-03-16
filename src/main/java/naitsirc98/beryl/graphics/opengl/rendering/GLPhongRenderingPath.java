@@ -5,12 +5,17 @@ import naitsirc98.beryl.graphics.opengl.shaders.GLShader;
 import naitsirc98.beryl.graphics.opengl.shaders.GLShaderProgram;
 import naitsirc98.beryl.graphics.opengl.vertex.GLVertexData;
 import naitsirc98.beryl.graphics.rendering.RenderingPath;
+import naitsirc98.beryl.lights.DirectionalLight;
+import naitsirc98.beryl.lights.Light;
+import naitsirc98.beryl.lights.PointLight;
 import naitsirc98.beryl.lights.SpotLight;
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.materials.PhongMaterial;
 import naitsirc98.beryl.resources.Resources;
 import naitsirc98.beryl.scenes.Scene;
 import naitsirc98.beryl.scenes.components.camera.Camera;
+import naitsirc98.beryl.scenes.components.lights.LightSource;
+import naitsirc98.beryl.scenes.components.math.Transform;
 import naitsirc98.beryl.scenes.components.meshes.MeshView;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
@@ -21,19 +26,23 @@ import java.nio.file.Path;
 
 import static naitsirc98.beryl.graphics.ShaderStage.FRAGMENT_STAGE;
 import static naitsirc98.beryl.graphics.ShaderStage.VERTEX_STAGE;
+import static naitsirc98.beryl.util.types.DataType.FLOAT32_SIZEOF;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.system.MemoryStack.stackPush;
-import static org.lwjgl.system.MemoryUtil.memAllocFloat;
+import static org.lwjgl.system.MemoryUtil.*;
 
 public class GLPhongRenderingPath extends RenderingPath {
 
     private static final Path VERTEX_SHADER_PATH;
     private static final Path FRAGMENT_SHADER_PATH;
 
+    private static final int MATRICES_UNIFORM_BUFFER_SIZE = (16 + 9) * FLOAT32_SIZEOF;
+    private static final String MATRICES_UNIFORM_BUFFER_NAME = "MatricesUniformBuffer";
+
     private static final int MATERIAL_UNIFORM_BUFFER_SIZE = PhongMaterial.SIZEOF;
     private static final String MATERIAL_UNIFORM_BUFFER_NAME = "MaterialUniformBuffer";
 
-    private static final int LIGHTS_UNIFORM_BUFFER_SIZE = (SpotLight.SIZEOF + 1) * 64;
+    private static final int LIGHTS_UNIFORM_BUFFER_SIZE = (SpotLight.SIZEOF + FLOAT32_SIZEOF) * 64 + FLOAT32_SIZEOF;
     private static final String LIGHTS_UNIFORM_BUFFER_NAME = "LightsUniformBuffer";
 
     private static final float LIGHT_TYPE_DIRECTIONAL = 0.0f;
@@ -64,6 +73,7 @@ public class GLPhongRenderingPath extends RenderingPath {
     }
 
     private GLShaderProgram shader;
+    private GLUniformBuffer matricesUniformBuffer;
     private GLUniformBuffer materialUniformBuffer;
     private GLUniformBuffer lightsUniformBuffer;
     private FloatBuffer lightsUniformBufferData;
@@ -83,13 +93,16 @@ public class GLPhongRenderingPath extends RenderingPath {
                 .attach(new GLShader(FRAGMENT_STAGE).source(FRAGMENT_SHADER_PATH).compile())
                 .link();
 
-        materialUniformBuffer = new GLUniformBuffer(MATERIAL_UNIFORM_BUFFER_NAME, shader, 0);
+        matricesUniformBuffer = new GLUniformBuffer(MATRICES_UNIFORM_BUFFER_NAME, shader, 0);
+        matricesUniformBuffer.allocate(MATRICES_UNIFORM_BUFFER_SIZE);
+
+        materialUniformBuffer = new GLUniformBuffer(MATERIAL_UNIFORM_BUFFER_NAME, shader, 1);
         materialUniformBuffer.allocate(MATERIAL_UNIFORM_BUFFER_SIZE);
 
-        lightsUniformBuffer = new GLUniformBuffer(LIGHTS_UNIFORM_BUFFER_NAME, shader, 1);
+        lightsUniformBuffer = new GLUniformBuffer(LIGHTS_UNIFORM_BUFFER_NAME, shader, 2);
         lightsUniformBuffer.allocate(LIGHTS_UNIFORM_BUFFER_SIZE);
 
-        lightsUniformBufferData = memAllocFloat(LIGHTS_UNIFORM_BUFFER_SIZE);
+        lightsUniformBufferData = memAllocFloat(LIGHTS_UNIFORM_BUFFER_SIZE / FLOAT32_SIZEOF);
 
         projectionViewMatrix = new Matrix4f();
     }
@@ -97,6 +110,10 @@ public class GLPhongRenderingPath extends RenderingPath {
     @Override
     protected void terminate() {
         shader.free();
+        matricesUniformBuffer.free();
+        materialUniformBuffer.free();
+        lightsUniformBuffer.free();
+        memFree(lightsUniformBufferData);
     }
 
     @Override
@@ -108,9 +125,44 @@ public class GLPhongRenderingPath extends RenderingPath {
 
         shader.use();
 
+        matricesUniformBuffer.bind();
+
         materialUniformBuffer.bind();
 
         lightsUniformBuffer.bind();
+
+        shader.uniformVector3f("u_CameraPosition", camera.transform().position());
+
+        final FloatBuffer lightsUniformBufferData = this.lightsUniformBufferData.limit(this.lightsUniformBufferData.capacity());
+
+        lightsUniformBufferData.put(scene.lightSources().size());
+
+        for(LightSource lightSource : scene.lightSources()) {
+
+            Light<?> light = lightSource.light();
+
+            if(light instanceof DirectionalLight) {
+
+                lightsUniformBufferData.put(LIGHT_TYPE_DIRECTIONAL);
+
+            } else if(light instanceof PointLight) {
+
+                lightsUniformBufferData.put(LIGHT_TYPE_POINT);
+
+            } else if(light instanceof SpotLight) {
+
+                lightsUniformBufferData.put(LIGHT_TYPE_SPOT);
+
+            } else {
+
+                Log.fatal("Unknown Light type");
+                return;
+            }
+
+            light.get(lightsUniformBufferData);
+        }
+
+        lightsUniformBuffer.update(0, lightsUniformBufferData.flip());
 
         final int mvpLocation = shader.uniformLocation(UNIFORM_MVP_NAME);
 
@@ -120,6 +172,7 @@ public class GLPhongRenderingPath extends RenderingPath {
         try(MemoryStack stack = stackPush()) {
 
             FloatBuffer mvpData = stack.mallocFloat(16);
+            FloatBuffer matricesUniformBufferData = stack.mallocFloat(16 + 9);
 
             for(MeshView meshView : scene.meshViews()) {
 
@@ -137,6 +190,11 @@ public class GLPhongRenderingPath extends RenderingPath {
                 }
 
                 shader.uniformMatrix4f(mvpLocation, false, projectionView.mul(meshView.modelMatrix(), mvp).get(mvpData));
+
+                meshView.modelMatrix().get(0, matricesUniformBufferData);
+                meshView.normalMatrix().get(16, matricesUniformBufferData);
+
+                matricesUniformBuffer.update(0, matricesUniformBufferData.rewind());
 
                 glDrawArrays(GL_TRIANGLES, vertexData.firstVertex(), vertexData.vertexCount());
             }

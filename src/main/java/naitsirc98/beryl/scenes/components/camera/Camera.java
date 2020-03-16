@@ -201,7 +201,7 @@ public final class Camera extends Component<Camera> {
 		return frustum;
 	}
 
-	private Transform transform() {
+	public Transform transform() {
 		return requires(Transform.class);
 	}
 

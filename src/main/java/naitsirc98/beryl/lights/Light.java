@@ -2,6 +2,8 @@ package naitsirc98.beryl.lights;
 
 import naitsirc98.beryl.util.Color;
 
+import java.nio.FloatBuffer;
+
 import static java.util.Objects.requireNonNull;
 
 public abstract class Light<SELF extends Light<SELF>> {
@@ -22,4 +24,6 @@ public abstract class Light<SELF extends Light<SELF>> {
     }
 
     protected abstract SELF self();
+
+    public abstract FloatBuffer get(FloatBuffer buffer);
 }

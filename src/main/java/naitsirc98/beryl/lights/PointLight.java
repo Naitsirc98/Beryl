@@ -1,11 +1,19 @@
 package naitsirc98.beryl.lights;
 
+import naitsirc98.beryl.util.types.ByteSize;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
 
-import static java.util.Objects.requireNonNull;
+import java.nio.FloatBuffer;
 
-public class PointLight extends Light<PointLight> implements IPointLight<PointLight> {
+import static java.util.Objects.requireNonNull;
+import static naitsirc98.beryl.util.Asserts.assertTrue;
+import static naitsirc98.beryl.util.types.DataType.FLOAT32_SIZEOF;
+
+@ByteSize.Static(PointLight.SIZEOF)
+public class PointLight extends Light<PointLight> implements IPointLight<PointLight>, ByteSize {
+
+    public static final int SIZEOF = (3 + 4 + 3) * FLOAT32_SIZEOF;
 
     private final Vector3f position;
     private float constant;
@@ -14,6 +22,9 @@ public class PointLight extends Light<PointLight> implements IPointLight<PointLi
 
     public PointLight() {
         position = new Vector3f();
+        constant = 1.0f;
+        linear = 0.09f;
+        quadratic = 0.032f;
     }
 
     @Override
@@ -63,5 +74,21 @@ public class PointLight extends Light<PointLight> implements IPointLight<PointLi
     public PointLight quadratic(float quadratic) {
         this.quadratic = quadratic;
         return this;
+    }
+
+    @Override
+    public FloatBuffer get(FloatBuffer buffer) {
+        assertTrue(buffer.remaining() >= SIZEOF / FLOAT32_SIZEOF);
+
+        position.get(buffer).position(buffer.position() + 3);
+        color().getRGBA(buffer);
+        buffer.put(constant).put(linear).put(quadratic);
+
+        return buffer;
+    }
+
+    @Override
+    public int sizeof() {
+        return SIZEOF;
     }
 }

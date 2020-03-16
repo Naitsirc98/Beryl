@@ -27,11 +27,11 @@ public class CameraController extends LateBehaviour {
         float amount = 1 / 60.0f;
 
         if(isKeyPressed(KEY_LEFT_SHIFT)) {
-            amount *= 2.5f;
+            amount *= 4.0f;
         }
 
         if(isKeyPressed(KEY_LEFT_ALT)) {
-            amount *= 10.0f;
+            amount *= 12.0f;
         }
 
         if(isKeyPressed(KEY_W)) {

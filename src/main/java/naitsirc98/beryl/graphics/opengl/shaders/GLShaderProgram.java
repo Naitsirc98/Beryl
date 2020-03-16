@@ -6,6 +6,8 @@ import naitsirc98.beryl.graphics.opengl.textures.GLTexture2D;
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.util.Color;
 import org.joml.Matrix4fc;
+import org.joml.Vector3fc;
+import org.joml.Vector4fc;
 import org.lwjgl.system.MemoryStack;
 
 import java.nio.FloatBuffer;
@@ -77,6 +79,22 @@ public final class GLShaderProgram implements GLObject {
 
     public void uniformMatrix4f(int location, boolean transpose, FloatBuffer value) {
         glUniformMatrix4fv(location, transpose, value);
+    }
+
+    public void uniformVector4f(String name, Vector4fc vector) {
+        uniformVector4f(uniformLocation(name), vector);
+    }
+
+    public void uniformVector4f(int location, Vector4fc data) {
+        glUniform4f(location, data.x(), data.y(), data.z(), data.w());
+    }
+
+    public void uniformVector3f(String name, Vector3fc vector) {
+        uniformVector3f(uniformLocation(name), vector);
+    }
+
+    public void uniformVector3f(int location, Vector3fc data) {
+        glUniform3f(location, data.x(), data.y(), data.z());
     }
 
     public void uniformColor(String name, Color color) {

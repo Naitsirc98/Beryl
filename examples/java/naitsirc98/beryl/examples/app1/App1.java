@@ -11,6 +11,7 @@ import naitsirc98.beryl.graphics.window.Window;
 import naitsirc98.beryl.images.Image;
 import naitsirc98.beryl.images.ImageFactory;
 import naitsirc98.beryl.images.PixelFormat;
+import naitsirc98.beryl.lights.PointLight;
 import naitsirc98.beryl.materials.PhongMaterial;
 import naitsirc98.beryl.meshes.Mesh;
 import naitsirc98.beryl.meshes.vertices.VertexData;
@@ -19,8 +20,11 @@ import naitsirc98.beryl.scenes.Scene;
 import naitsirc98.beryl.scenes.SceneManager;
 import naitsirc98.beryl.scenes.components.behaviours.UpdateMutableBehaviour;
 import naitsirc98.beryl.scenes.components.camera.Camera;
+import naitsirc98.beryl.scenes.components.lights.LightSource;
 import naitsirc98.beryl.scenes.components.math.Transform;
 import naitsirc98.beryl.scenes.components.meshes.MeshView;
+import naitsirc98.beryl.util.Color;
+import org.joml.Vector3f;
 import org.lwjgl.BufferUtils;
 
 import java.nio.ByteBuffer;
@@ -82,7 +86,8 @@ public class App1 extends BerylApplication {
         }
 
         PhongMaterial material = new PhongMaterial()
-                // .diffuseColor(Color.GREEN)
+                // .diffuseColor(Color.GREEN);
+                .ambientMap(diffuseTexture)
                 .diffuseMap(diffuseTexture);
 
         Mesh mesh = new Mesh(VertexData.builder(VERTEX_LAYOUT_3D).vertices(getCubeVertices()).build(), material);
@@ -98,7 +103,7 @@ public class App1 extends BerylApplication {
                 Transform transform = thisBehaviour.get(Transform.class);
                 transform.rotateY(radians(angle));
                 // thisBehaviour.entity().destroy();
-                addOrRemoveRandomly(thisBehaviour.entity(), mesh);
+                // addOrRemoveRandomly(thisBehaviour.entity(), mesh);
             });
         }
 
@@ -106,6 +111,11 @@ public class App1 extends BerylApplication {
         camera.add(Transform.class).position(100, 0, 300);
         camera.add(Camera.class).lookAt(0, 0).renderingPath(RenderingPaths.get(RPATH_PHONG));
         camera.add(CameraController.class);
+
+        Entity light = scene.newEntity("Light");
+        light.add(LightSource.class).light(new PointLight().color(new Color(10, 10, 10, 1)).position(new Vector3f(0.0f)));
+        light.add(Transform.class).position(0, 0, 0);
+        light.add(MeshView.class).mesh(new Mesh(mesh.vertexData(), new PhongMaterial().emissiveColor(Color.WHITE)));
 
         SceneManager.addScene(scene);
     }

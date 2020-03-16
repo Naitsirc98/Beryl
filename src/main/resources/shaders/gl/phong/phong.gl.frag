@@ -4,7 +4,7 @@
 @include "structs/lights.glsl"
 
 #define MAX_LIGHTS_COUNT 64
-#define LIGHT_BUFFER_SIZE (SPOT_LIGHT_SIZE + 1) * MAX_LIGHTS_COUNT
+#define LIGHT_BUFFER_SIZE (SPOT_LIGHT_SIZE + 1) * MAX_LIGHTS_COUNT + 1
 
 uniform vec3 u_CameraPosition;
 
@@ -18,9 +18,6 @@ uniform sampler2D u_SpecularMap;
 uniform sampler2D u_EmissiveMap;
 
 uniform LightsUniformBuffer {
-
-    int u_LightsCount;
-
     float u_LightBuffer[LIGHT_BUFFER_SIZE];
 };
 
@@ -32,7 +29,7 @@ in VertexData {
 
 out vec4 out_FinalColor;
 
-vec3 cameraDirection = normalize(u_CameraPosition.xyz - vertexData.position);
+vec3 cameraDirection = normalize(u_CameraPosition - vertexData.position);
 
 vec4 materialAmbientColor = u_Material.ambientColor * texture(u_AmbientMap, vertexData.textureCoords);
 vec4 materialDiffuseColor = u_Material.diffuseColor * texture(u_DiffuseMap, vertexData.textureCoords);
@@ -46,15 +43,17 @@ vec4 computeSpotLighting(int offset);
 
 
 void main() {
-    out_FinalColor = computeLighting();
+    out_FinalColor = computeLighting() + materialEmissiveColor;
 }
 
 vec4 computeLighting() {
 
-    vec4 result;
-    int offset = 0;
+    vec4 result = vec4(0.0f);
+    int offset = 1;
 
-    for(int i = 0;i < u_LightsCount;++i) {
+    float lightsCount = u_LightBuffer[0];
+
+    for(float i = 0.0f;i < lightsCount;++i) {
 
         float lightType = u_LightBuffer[offset++];
 
@@ -100,23 +99,33 @@ float computeIntensity(vec3 normalizedDirection, vec3 lightDirection, float cutO
 }
 
 vec4 computeAmbientColor(vec4 lightColor) {
-	return lightColor * materialAmbientColor;
+	return vec4(vec3(lightColor * materialAmbientColor), materialAmbientColor.a);
 }
 
 vec4 computeDiffuseColor(vec4 lightColor, vec3 lightDirection) {
 
 	float diffuse = computeAngle(vertexData.normal, lightDirection);
 
-	return lightColor * (diffuse * materialDiffuseColor);
+	return vec4(vec3(lightColor * (diffuse * materialDiffuseColor)), materialDiffuseColor.a);
 }
 
 vec4 computeSpecularColor(vec4 lightColor, vec3 lightDirection) {
 
-	vec3 reflectDir = reflect(-lightDirection, vertexData.normal);
+    // Phong
+	// vec3 reflectDirection = reflect(-lightDirection, vertexData.normal);
 
-	float specular = pow(computeAngle(cameraDirection, reflectDir), u_Material.shininess);
+    // float specular = pow(computeAngle(cameraDirection, reflectDirection), u_Material.shininess);
 
-	return lightColor * (specular * materialSpecularColor);
+    // Blinn-Phong
+    vec3 viewDirection = normalize(u_CameraPosition - vertexData.position);
+
+    vec3 reflectDirection = reflect(-lightDirection, vertexData.normal);
+
+    vec3 halfwayDirection = normalize(lightDirection + viewDirection);
+
+    float specular = pow(computeAngle(vertexData.normal, halfwayDirection), u_Material.shininess);
+
+	return vec4(vec3(lightColor * (specular * materialSpecularColor)), materialSpecularColor.a);
 }
 
 

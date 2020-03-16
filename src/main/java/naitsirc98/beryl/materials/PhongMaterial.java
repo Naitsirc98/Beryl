@@ -31,6 +31,7 @@ public class PhongMaterial implements Material, ByteSize {
         diffuse = new ColorMapProperty();
         specular = new ColorMapProperty();
         emissive = new ColorMapProperty();
+        emissive.color(Color.BLACK);
         shininess = DEFAULT_SHININESS;
     }
 
