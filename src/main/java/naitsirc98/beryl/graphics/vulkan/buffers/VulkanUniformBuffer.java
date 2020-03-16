@@ -8,6 +8,17 @@ import static org.lwjgl.vulkan.VK10.*;
 
 public class VulkanUniformBuffer extends VulkanCPUBuffer {
 
+    public static VulkanUniformBuffer[] create(int count, long size) {
+
+        VulkanUniformBuffer[] uniformBuffers = new VulkanUniformBuffer[count];
+
+        for(int i = 0;i < count;i++) {
+            uniformBuffers[i] = new VulkanUniformBuffer(size);
+        }
+
+        return uniformBuffers;
+    }
+
     public VulkanUniformBuffer() {
         super(getUniformBufferCreateInfo(0), getUniformBufferAllocationCreateInfo());
         // Need to call allocate(long size) afterwards

@@ -1,7 +1,6 @@
 #version 450 core
 
-layout(push_constant) uniform ModelViewProjectionMatrix
-{
+layout(push_constant) uniform ModelViewProjectionMatrix {
     mat4 u_MVP;
 };
 

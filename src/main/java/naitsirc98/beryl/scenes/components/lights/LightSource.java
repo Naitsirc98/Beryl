@@ -17,6 +17,11 @@ public final class LightSource extends Component<LightSource> {
     }
 
     public LightSource light(Light<?> light) {
+        if(this.light != null && light == null) {
+            disable();
+        } else if(this.light == null && light != null) {
+            enabled();
+        }
         this.light = light;
         return this;
     }

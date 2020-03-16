@@ -11,6 +11,7 @@ import naitsirc98.beryl.graphics.window.Window;
 import naitsirc98.beryl.images.Image;
 import naitsirc98.beryl.images.ImageFactory;
 import naitsirc98.beryl.images.PixelFormat;
+import naitsirc98.beryl.lights.LightRange;
 import naitsirc98.beryl.lights.PointLight;
 import naitsirc98.beryl.materials.PhongMaterial;
 import naitsirc98.beryl.meshes.Mesh;
@@ -113,7 +114,10 @@ public class App1 extends BerylApplication {
         camera.add(CameraController.class);
 
         Entity light = scene.newEntity("Light");
-        light.add(LightSource.class).light(new PointLight().color(new Color(10, 10, 10, 1)).position(new Vector3f(0.0f)));
+        light.add(LightSource.class).light(new PointLight()
+                .color(new Color(1, 1, 1, 1))
+                .position(new Vector3f(0.0f))
+                .range(LightRange.LARGE));
         light.add(Transform.class).position(0, 0, 0);
         light.add(MeshView.class).mesh(new Mesh(mesh.vertexData(), new PhongMaterial().emissiveColor(Color.WHITE)));
 

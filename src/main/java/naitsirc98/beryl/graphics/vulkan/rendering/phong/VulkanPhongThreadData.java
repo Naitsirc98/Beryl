@@ -9,7 +9,9 @@ import naitsirc98.beryl.graphics.vulkan.rendering.VulkanRenderer;
 import naitsirc98.beryl.graphics.vulkan.textures.VulkanTexture2D;
 import naitsirc98.beryl.graphics.vulkan.vertex.VulkanVertexData;
 import naitsirc98.beryl.materials.PhongMaterial;
+import naitsirc98.beryl.scenes.components.meshes.MeshView;
 import org.joml.Matrix4f;
+import org.joml.Matrix4fc;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
 
@@ -26,17 +28,28 @@ import static org.lwjgl.vulkan.VK10.*;
 
 final class VulkanPhongThreadData implements VulkanThreadData {
 
-    private static final int PHONG_MATERIAL_TEXTURE_COUNT = 4;
     static final int PUSH_CONSTANT_DATA_SIZE = 4 * 4 * FLOAT32_SIZEOF;
+
+    private static final int UNIFORM_BUFFERS_COUNT = 2;
+    private static final int PHONG_MATERIAL_TEXTURE_COUNT = 4;
+
+    private static final int MATRICES_UNIFORM_BUFFER_INDEX = 0;
+    private static final int MATERIAL_UNIFORM_BUFFER_INDEX = 1;
+
+    private static final int MATRICES_UNIFORM_BUFFER_SIZE = 16 * 2 * FLOAT32_SIZEOF;
+
+    private final VkDevice logicalDeviceHandle;
 
     private final VulkanDescriptorPool descriptorPool;
     private final VulkanDescriptorSets descriptorSets;
-    private final VkDescriptorBufferInfo.Buffer descriptorBufferInfos;
+    private final LongBuffer pDescriptorSet;
+
+    private final VkDescriptorBufferInfo.Buffer[] descriptorBufferInfos;
     private final VkDescriptorImageInfo.Buffer[] descriptorImageInfos;
     private final VkWriteDescriptorSet.Buffer writeDescriptorSets;
-    private final LongBuffer pDescriptorSet;
+
     private final VulkanUniformBuffer[] uniformBuffers;
-    private final VkDevice logicalDeviceHandle;
+    private final FloatBuffer uniformBufferData;
 
     final Matrix4f matrix;
     final ByteBuffer pushConstantData;
@@ -53,20 +66,23 @@ final class VulkanPhongThreadData implements VulkanThreadData {
         descriptorImageInfos = getDescriptorImageInfos();
         writeDescriptorSets = createWriteDescriptorSets();
         logicalDeviceHandle = vulkan().logicalDevice().handle();
-        uniformBuffers = createUniformBuffers(swapchainImageCount);
+        uniformBuffers = VulkanUniformBuffer.create(swapchainImageCount, PhongMaterial.SIZEOF + MATRICES_UNIFORM_BUFFER_SIZE);
         matrix = new Matrix4f();
         pushConstantData = memAlloc(PUSH_CONSTANT_DATA_SIZE);
         pushConstantDataAddress = memAddress(pushConstantData);
+        uniformBufferData = memAllocFloat((MATRICES_UNIFORM_BUFFER_SIZE + PhongMaterial.SIZEOF) / FLOAT32_SIZEOF);
     }
 
     @Override
     public void free() {
         descriptorSets.free();
         descriptorPool.free();
-        descriptorBufferInfos.free();
+        Arrays.stream(descriptorBufferInfos).forEach(VkDescriptorBufferInfo.Buffer::free);
         Arrays.stream(descriptorImageInfos).forEach(VkDescriptorImageInfo.Buffer::free);
         writeDescriptorSets.free();
         Arrays.stream(uniformBuffers).forEach(VulkanUniformBuffer::free);
+        memFree(uniformBufferData);
+        memFree(pushConstantData);
     }
 
     @Override
@@ -75,7 +91,23 @@ final class VulkanPhongThreadData implements VulkanThreadData {
         lastMaterial = null;
     }
 
-    void bindDescriptorSets(VkCommandBuffer commandBuffer, long pipelineLayout) {
+    void updateMeshData(VkCommandBuffer commandBuffer, MeshView meshView, long pipelineLayout) {
+
+        final int index = VulkanRenderer.get().currentSwapchainImageIndex();
+        final long descriptorSet = descriptorSets.get(index);
+        final VulkanUniformBuffer uniformBuffer = uniformBuffers[index];
+        final PhongMaterial material = meshView.mesh().material();
+
+        setMatricesUniformBufferInfo(descriptorSet, uniformBuffer, meshView.modelMatrix(), meshView.normalMatrix());
+
+        if(material != lastMaterial) {
+            setMaterialUniformBufferInfo(descriptorSet, uniformBuffer, material);
+            setTextureInfo(descriptorSet, material);
+            lastMaterial = material;
+        }
+
+        vkUpdateDescriptorSets(logicalDeviceHandle, writeDescriptorSets, null);
+
         vkCmdBindDescriptorSets(
                 commandBuffer,
                 VK_PIPELINE_BIND_POINT_GRAPHICS,
@@ -85,15 +117,18 @@ final class VulkanPhongThreadData implements VulkanThreadData {
                 null);
     }
 
-    void updateMaterialShaderData(PhongMaterial material) {
+    private void setMatricesUniformBufferInfo(long descriptorSet, VulkanUniformBuffer uniformBuffer,
+                                              Matrix4fc modelMatrix, Matrix4fc normalMatrix) {
 
-        final int index = VulkanRenderer.get().currentSwapchainImageIndex();
-        final long descriptorSet = descriptorSets.get(index);
+        final FloatBuffer uniformBufferData = this.uniformBufferData;
 
-        setUniformBufferInfo(descriptorSet, index, material);
-        setTextureInfo(descriptorSet, material);
+        modelMatrix.get(0, uniformBufferData);
+        normalMatrix.get(16, uniformBufferData);
 
-        vkUpdateDescriptorSets(logicalDeviceHandle, writeDescriptorSets, null);
+        uniformBuffer.update(0, uniformBufferData);
+
+        descriptorBufferInfos[MATRICES_UNIFORM_BUFFER_INDEX].buffer(uniformBuffer.handle());
+        writeDescriptorSets.get(MATRICES_UNIFORM_BUFFER_INDEX).dstSet(descriptorSet);
     }
 
     private void setTextureInfo(long descriptorSet, PhongMaterial material) {
@@ -114,27 +149,30 @@ final class VulkanPhongThreadData implements VulkanThreadData {
         writeDescriptorSets.get(imageInfoIndex + 1).dstSet(descriptorSet);
     }
 
-    private void setUniformBufferInfo(long descriptorSet, int index, PhongMaterial material) {
-
-        final VulkanUniformBuffer uniformBuffer = uniformBuffers[index];
+    private void setMaterialUniformBufferInfo(long descriptorSet, VulkanUniformBuffer uniformBuffer, PhongMaterial material) {
 
         try(MemoryStack stack = stackPush()) {
             final FloatBuffer uniformBufferData = material.get(stack.mallocFloat(PhongMaterial.FLOAT_BUFFER_MIN_SIZE));
-            uniformBuffer.update(0, uniformBufferData.rewind());
+            uniformBuffer.update(MATRICES_UNIFORM_BUFFER_SIZE, uniformBufferData.rewind());
         }
 
-        descriptorBufferInfos.buffer(uniformBuffer.handle());
-        writeDescriptorSets.get(0).dstSet(descriptorSet);
+        descriptorBufferInfos[MATERIAL_UNIFORM_BUFFER_INDEX].buffer(uniformBuffer.handle());
+        writeDescriptorSets.get(MATERIAL_UNIFORM_BUFFER_INDEX).dstSet(descriptorSet);
     }
 
     private long currentDescriptorSet() {
         return descriptorSets.get(VulkanRenderer.get().currentSwapchainImageIndex());
     }
 
-    private VkDescriptorBufferInfo.Buffer getDescriptorBufferInfos() {
-        return VkDescriptorBufferInfo.calloc(1)
-                .offset(0)
-                .range(PhongMaterial.SIZEOF);
+    private VkDescriptorBufferInfo.Buffer[] getDescriptorBufferInfos() {
+
+        VkDescriptorBufferInfo.Buffer[] descriptorBufferInfos =  new VkDescriptorBufferInfo.Buffer[2];
+
+        descriptorBufferInfos[0] = VkDescriptorBufferInfo.calloc(1).offset(0).range(MATRICES_UNIFORM_BUFFER_SIZE);
+
+        descriptorBufferInfos[1] = VkDescriptorBufferInfo.calloc(1).offset(MATRICES_UNIFORM_BUFFER_SIZE).range(PhongMaterial.SIZEOF);
+
+        return descriptorBufferInfos;
     }
 
     private VkDescriptorImageInfo.Buffer[] getDescriptorImageInfos() {
@@ -150,15 +188,23 @@ final class VulkanPhongThreadData implements VulkanThreadData {
 
     private VkWriteDescriptorSet.Buffer createWriteDescriptorSets() {
 
-        VkWriteDescriptorSet.Buffer writeDescriptorSets = VkWriteDescriptorSet.calloc(PHONG_MATERIAL_TEXTURE_COUNT + 1);
+        VkWriteDescriptorSet.Buffer writeDescriptorSets = VkWriteDescriptorSet.calloc(UNIFORM_BUFFERS_COUNT + PHONG_MATERIAL_TEXTURE_COUNT);
 
-        writeDescriptorSets.get(0)
+        writeDescriptorSets.get(MATRICES_UNIFORM_BUFFER_INDEX)
                 .sType(VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET)
                 .dstBinding(0)
                 .dstArrayElement(0)
                 .descriptorType(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER)
                 .descriptorCount(1)
-                .pBufferInfo(descriptorBufferInfos);
+                .pBufferInfo(descriptorBufferInfos[MATRICES_UNIFORM_BUFFER_INDEX]);
+
+        writeDescriptorSets.get(MATERIAL_UNIFORM_BUFFER_INDEX)
+                .sType(VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET)
+                .dstBinding(1)
+                .dstArrayElement(0)
+                .descriptorType(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER)
+                .descriptorCount(1)
+                .pBufferInfo(descriptorBufferInfos[MATERIAL_UNIFORM_BUFFER_INDEX]);
 
         for(int i = 1;i < writeDescriptorSets.capacity();i++) {
             writeDescriptorSets.get(i)
@@ -173,20 +219,10 @@ final class VulkanPhongThreadData implements VulkanThreadData {
         return writeDescriptorSets;
     }
 
-    private VulkanUniformBuffer[] createUniformBuffers(int count) {
-
-        VulkanUniformBuffer[] uniformBuffers = new VulkanUniformBuffer[count];
-
-        for(int i = 0;i < count;i++) {
-            uniformBuffers[i] = new VulkanUniformBuffer(PhongMaterial.SIZEOF);
-        }
-
-        return uniformBuffers;
-    }
-
     private VulkanDescriptorPool createDescriptorPool(int maxSets) {
         return new VulkanDescriptorPool(
                 maxSets,
+                VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
                 VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
                 VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
                 VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,

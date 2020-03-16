@@ -122,11 +122,20 @@ public class SpotLight extends Light<SpotLight> implements IPointLight<SpotLight
         assertTrue(buffer.remaining() >= SIZEOF / FLOAT32_SIZEOF);
 
         position.get(buffer).position(buffer.position() + 3);
+
         direction.get(buffer).position(buffer.position() + 3);
+
         color().getRGBA(buffer);
+
         buffer.put(constant).put(linear).put(quadratic);
+
         buffer.put(cutOff).put(outerCutOff);
 
         return buffer;
+    }
+
+    @Override
+    public float type() {
+        return LIGHT_TYPE_SPOT;
     }
 }

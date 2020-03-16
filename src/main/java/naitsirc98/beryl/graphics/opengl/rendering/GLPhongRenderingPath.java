@@ -6,8 +6,8 @@ import naitsirc98.beryl.graphics.opengl.shaders.GLShaderProgram;
 import naitsirc98.beryl.graphics.opengl.vertex.GLVertexData;
 import naitsirc98.beryl.graphics.rendering.RenderingPath;
 import naitsirc98.beryl.lights.DirectionalLight;
+import naitsirc98.beryl.lights.IPointLight;
 import naitsirc98.beryl.lights.Light;
-import naitsirc98.beryl.lights.PointLight;
 import naitsirc98.beryl.lights.SpotLight;
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.materials.PhongMaterial;
@@ -22,9 +22,11 @@ import org.lwjgl.system.MemoryStack;
 
 import java.nio.FloatBuffer;
 import java.nio.file.Path;
+import java.util.List;
 
 import static naitsirc98.beryl.graphics.ShaderStage.FRAGMENT_STAGE;
 import static naitsirc98.beryl.graphics.ShaderStage.VERTEX_STAGE;
+import static naitsirc98.beryl.util.types.ByteSizeUtils.sizeof;
 import static naitsirc98.beryl.util.types.DataType.FLOAT32_SIZEOF;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.system.MemoryStack.stackPush;
@@ -44,10 +46,6 @@ public class GLPhongRenderingPath extends RenderingPath {
 
     private static final int LIGHTS_UNIFORM_BUFFER_SIZE = (SpotLight.SIZEOF + FLOAT32_SIZEOF) * 64 + FLOAT32_SIZEOF;
     private static final String LIGHTS_UNIFORM_BUFFER_NAME = "LightsUniformBuffer";
-
-    private static final float LIGHT_TYPE_DIRECTIONAL = 0.0f;
-    private static final float LIGHT_TYPE_POINT = 1.0f;
-    private static final float LIGHT_TYPE_SPOT = 2.0f;
 
     private static final String UNIFORM_MVP_NAME = "u_MVP";
 
@@ -73,10 +71,15 @@ public class GLPhongRenderingPath extends RenderingPath {
     }
 
     private GLShaderProgram shader;
+
     private GLUniformBuffer matricesUniformBuffer;
     private GLUniformBuffer materialUniformBuffer;
     private GLUniformBuffer lightsUniformBuffer;
+
+    private FloatBuffer matricesUniformBufferData;
     private FloatBuffer lightsUniformBufferData;
+    private FloatBuffer mvpData;
+
     private Matrix4f projectionViewMatrix;
     private GLVertexData lastVertexData;
     private PhongMaterial lastMaterial;
@@ -96,6 +99,8 @@ public class GLPhongRenderingPath extends RenderingPath {
         matricesUniformBuffer = new GLUniformBuffer(MATRICES_UNIFORM_BUFFER_NAME, shader, 0);
         matricesUniformBuffer.allocate(MATRICES_UNIFORM_BUFFER_SIZE);
 
+        matricesUniformBufferData = memAllocFloat(MATRICES_UNIFORM_BUFFER_SIZE / FLOAT32_SIZEOF);
+
         materialUniformBuffer = new GLUniformBuffer(MATERIAL_UNIFORM_BUFFER_NAME, shader, 1);
         materialUniformBuffer.allocate(MATERIAL_UNIFORM_BUFFER_SIZE);
 
@@ -104,16 +109,23 @@ public class GLPhongRenderingPath extends RenderingPath {
 
         lightsUniformBufferData = memAllocFloat(LIGHTS_UNIFORM_BUFFER_SIZE / FLOAT32_SIZEOF);
 
+        mvpData = memAllocFloat(16);
+
         projectionViewMatrix = new Matrix4f();
     }
 
     @Override
     protected void terminate() {
+
         shader.free();
+
         matricesUniformBuffer.free();
         materialUniformBuffer.free();
         lightsUniformBuffer.free();
+
+        memFree(matricesUniformBufferData);
         memFree(lightsUniformBufferData);
+        memFree(mvpData);
     }
 
     @Override
@@ -123,85 +135,86 @@ public class GLPhongRenderingPath extends RenderingPath {
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        final GLShaderProgram shader = this.shader;
+        final GLUniformBuffer matricesUniformBuffer = this.matricesUniformBuffer;
+
         shader.use();
+
+        shader.uniformVector3f("u_CameraPosition", camera.transform().position());
+
+        setLightsUniformBuffer(scene.lightSources());
 
         matricesUniformBuffer.bind();
 
         materialUniformBuffer.bind();
 
-        lightsUniformBuffer.bind();
-
-        shader.uniformVector3f("u_CameraPosition", camera.transform().position());
-
-        final FloatBuffer lightsUniformBufferData = this.lightsUniformBufferData.limit(this.lightsUniformBufferData.capacity());
-
-        lightsUniformBufferData.put(scene.lightSources().size());
-
-        for(LightSource lightSource : scene.lightSources()) {
-
-            Light<?> light = lightSource.light();
-
-            if(light instanceof DirectionalLight) {
-
-                lightsUniformBufferData.put(LIGHT_TYPE_DIRECTIONAL);
-
-            } else if(light instanceof PointLight) {
-
-                lightsUniformBufferData.put(LIGHT_TYPE_POINT);
-
-            } else if(light instanceof SpotLight) {
-
-                lightsUniformBufferData.put(LIGHT_TYPE_SPOT);
-
-            } else {
-
-                Log.fatal("Unknown Light type");
-                return;
-            }
-
-            light.get(lightsUniformBufferData);
-        }
-
-        lightsUniformBuffer.update(0, lightsUniformBufferData.flip());
-
         final int mvpLocation = shader.uniformLocation(UNIFORM_MVP_NAME);
 
         final Matrix4fc projectionView = camera.projectionViewMatrix();
         final Matrix4f mvp = projectionViewMatrix;
+        final FloatBuffer mvpData = this.mvpData;
+        final FloatBuffer matricesUniformBufferData = this.matricesUniformBufferData;
 
-        try(MemoryStack stack = stackPush()) {
+        for(MeshView meshView : scene.meshViews()) {
 
-            FloatBuffer mvpData = stack.mallocFloat(16);
-            FloatBuffer matricesUniformBufferData = stack.mallocFloat(MATRICES_UNIFORM_BUFFER_SIZE / FLOAT32_SIZEOF);
+            final GLVertexData vertexData = meshView.mesh().vertexData();
+            final PhongMaterial material = meshView.mesh().material();
 
-            for(MeshView meshView : scene.meshViews()) {
-
-                final GLVertexData vertexData = meshView.mesh().vertexData();
-                final PhongMaterial material = meshView.mesh().material();
-
-                if(lastVertexData != vertexData) {
-                    vertexData.bind();
-                    lastVertexData = vertexData;
-                }
-
-                if(lastMaterial != material) {
-                    setMaterialUniforms(shader, material);
-                    lastMaterial = material;
-                }
-
-                shader.uniformMatrix4f(mvpLocation, false, projectionView.mul(meshView.modelMatrix(), mvp).get(mvpData));
-
-                meshView.modelMatrix().get(0, matricesUniformBufferData);
-                meshView.normalMatrix().get(16, matricesUniformBufferData);
-
-                matricesUniformBuffer.update(0, matricesUniformBufferData.rewind());
-
-                glDrawArrays(GL_TRIANGLES, vertexData.firstVertex(), vertexData.vertexCount());
+            if(lastVertexData != vertexData) {
+                vertexData.bind();
+                lastVertexData = vertexData;
             }
+
+            if(lastMaterial != material) {
+                setMaterialUniforms(shader, material);
+                lastMaterial = material;
+            }
+
+            shader.uniformMatrix4f(mvpLocation, false, projectionView.mul(meshView.modelMatrix(), mvp).get(mvpData));
+
+            meshView.modelMatrix().get(0, matricesUniformBufferData);
+            meshView.normalMatrix().get(16, matricesUniformBufferData);
+
+            matricesUniformBuffer.update(0, matricesUniformBufferData.rewind());
+
+            glDrawArrays(GL_TRIANGLES, vertexData.firstVertex(), vertexData.vertexCount());
         }
 
         lastVertexData = null;
         lastMaterial = null;
+    }
+
+    private void setLightsUniformBuffer(List<LightSource> lightSources) {
+
+        if(lightSources.isEmpty()) {
+            return;
+        }
+
+        lightsUniformBuffer.bind();
+
+        final FloatBuffer lightsUniformBufferData = this.lightsUniformBufferData;
+
+        lightsUniformBufferData.put(lightSources.size());
+
+        final int minLightSize = DirectionalLight.SIZEOF;
+
+        for(LightSource lightSource : lightSources) {
+
+            final Light<?> light = lightSource.light();
+
+            if(sizeof(light) <= lightsUniformBufferData.remaining()) {
+                lightsUniformBufferData.put(light.type());
+                light.get(lightsUniformBufferData);
+            }
+
+            if(lightsUniformBufferData.remaining() < minLightSize) {
+                break;
+            }
+        }
+
+        lightsUniformBuffer.update(0, lightsUniformBufferData.flip());
+
+        lightsUniformBufferData.limit(lightsUniformBufferData.capacity());
     }
 
     private void setMaterialUniforms(GLShaderProgram shader, PhongMaterial material) {

@@ -42,9 +42,15 @@ public class DirectionalLight extends Light<DirectionalLight> implements IDirect
         assertTrue(buffer.remaining() >= SIZEOF / FLOAT32_SIZEOF);
 
         direction.get(buffer).position(buffer.position() + 3);
+
         color().getRGBA(buffer);
 
         return buffer;
+    }
+
+    @Override
+    public float type() {
+        return LIGHT_TYPE_DIRECTIONAL;
     }
 
     @Override

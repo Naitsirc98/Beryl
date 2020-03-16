@@ -160,11 +160,9 @@ vec4 computePointLighting(int offset) {
 
     float attenuation = computeAttenuation(light.position, light.constant, light.linear, light.quadratic);
 
-    vec4 lightColor = light.color * attenuation;
-
-    return computeAmbientColor(lightColor)
-         + computeDiffuseColor(lightColor, direction)
-         + computeSpecularColor(lightColor, direction);
+    return (computeAmbientColor(light.color)
+         + computeDiffuseColor(light.color, direction)
+         + computeSpecularColor(light.color, direction)) * attenuation;
 }
 
 
@@ -188,9 +186,7 @@ vec4 computeSpotLighting(int offset) {
 
     float intensity = computeIntensity(direction, light.direction, light.cutOff, light.outerCutOff);
 
-    vec4 lightColor = light.color * attenuation;
-
-    return computeAmbientColor(lightColor)
-         + computeDiffuseColor(lightColor * intensity, direction)
-         + computeSpecularColor(lightColor * intensity, direction);
+    return (computeAmbientColor(light.color)
+         + computeDiffuseColor(light.color * intensity, direction)
+         + computeSpecularColor(light.color * intensity, direction)) * attenuation;
 }

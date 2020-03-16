@@ -81,10 +81,17 @@ public class PointLight extends Light<PointLight> implements IPointLight<PointLi
         assertTrue(buffer.remaining() >= SIZEOF / FLOAT32_SIZEOF);
 
         position.get(buffer).position(buffer.position() + 3);
+
         color().getRGBA(buffer);
+
         buffer.put(constant).put(linear).put(quadratic);
 
         return buffer;
+    }
+
+    @Override
+    public float type() {
+        return LIGHT_TYPE_POINT;
     }
 
     @Override
