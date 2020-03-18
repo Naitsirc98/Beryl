@@ -6,8 +6,9 @@
 #define MAX_LIGHTS_COUNT 64
 #define LIGHT_BUFFER_SIZE (SPOT_LIGHT_SIZE + 1) * MAX_LIGHTS_COUNT + 1
 
-layout(push_constant) uniform CameraPushConstant {
-    vec3 u_CameraPosition;
+layout(push_constant) uniform PushConstant {
+    mat4 u_MVP;
+    vec4 u_CameraPosition;
 };
 
 layout(binding = 1) uniform MaterialUniformBuffer {
@@ -20,7 +21,7 @@ layout(binding = 4) uniform sampler2D u_SpecularMap;
 layout(binding = 5) uniform sampler2D u_EmissiveMap;
 
 layout(binding = 6) uniform LightsUniformBuffer {
-    float u_LightBuffer[LIGHT_BUFFER_SIZE];
+    vec4 u_LightBuffer[256];
 };
 
 layout(location = 0) in VertexData {
@@ -31,7 +32,7 @@ layout(location = 0) in VertexData {
 
 layout(location = 0) out vec4 out_FinalColor;
 
-vec3 cameraDirection = normalize(u_CameraPosition - vertexData.position);
+vec3 cameraDirection = normalize(u_CameraPosition.xyz - vertexData.position);
 
 vec4 materialAmbientColor = u_Material.ambientColor * texture(u_AmbientMap, vertexData.textureCoords);
 vec4 materialDiffuseColor = u_Material.diffuseColor * texture(u_DiffuseMap, vertexData.textureCoords);
@@ -48,16 +49,20 @@ void main() {
     out_FinalColor = computeLighting() + materialEmissiveColor;
 }
 
+float u_LightBufferGet(int index) {
+    return u_LightBuffer[index / 4][index % 4];
+}
+
 vec4 computeLighting() {
 
     vec4 result = vec4(0.0f);
     int offset = 1;
 
-    float lightsCount = u_LightBuffer[0];
+    float lightsCount = u_LightBufferGet(0);
 
     for(float i = 0.0f;i < lightsCount;++i) {
 
-        float lightType = u_LightBuffer[offset++];
+        float lightType = u_LightBufferGet(offset++);
 
         if(lightType == LIGHT_TYPE_DIRECTIONAL) {
 
@@ -119,7 +124,7 @@ vec4 computeSpecularColor(vec4 lightColor, vec3 lightDirection) {
     // float specular = pow(computeAngle(cameraDirection, reflectDirection), u_Material.shininess);
 
     // Blinn-Phong
-    vec3 viewDirection = normalize(u_CameraPosition - vertexData.position);
+    vec3 viewDirection = normalize(u_CameraPosition.xyz - vertexData.position);
 
     vec3 reflectDirection = reflect(-lightDirection, vertexData.normal);
 
@@ -135,8 +140,8 @@ vec4 computeDirectionalLighting(int offset) {
 
     DirectionalLight light = DirectionalLight(
 
-        vec3(u_LightBuffer[offset], u_LightBuffer[offset+1], u_LightBuffer[offset+2]),
-        vec4(u_LightBuffer[offset+3], u_LightBuffer[offset+4], u_LightBuffer[offset+5], u_LightBuffer[offset+6])
+        vec3(u_LightBufferGet(offset), u_LightBufferGet(offset+1), u_LightBufferGet(offset+2)),
+        vec4(u_LightBufferGet(offset+3), u_LightBufferGet(offset+4), u_LightBufferGet(offset+5), u_LightBufferGet(offset+6))
     );
 
     vec3 direction = normalize(-light.direction);
@@ -151,11 +156,11 @@ vec4 computePointLighting(int offset) {
 
     PointLight light = PointLight(
 
-        vec3(u_LightBuffer[offset], u_LightBuffer[offset+1], u_LightBuffer[offset+2]),
-        vec4(u_LightBuffer[offset+3], u_LightBuffer[offset+4], u_LightBuffer[offset+5], u_LightBuffer[offset+6]),
-        u_LightBuffer[offset+7],
-        u_LightBuffer[offset+8],
-        u_LightBuffer[offset+9]
+        vec3(u_LightBufferGet(offset), u_LightBufferGet(offset+1), u_LightBufferGet(offset+2)),
+        vec4(u_LightBufferGet(offset+3), u_LightBufferGet(offset+4), u_LightBufferGet(offset+5), u_LightBufferGet(offset+6)),
+        u_LightBufferGet(offset+7),
+        u_LightBufferGet(offset+8),
+        u_LightBufferGet(offset+9)
     );
 
     vec3 direction = normalize(light.position - vertexData.position);
@@ -172,14 +177,14 @@ vec4 computeSpotLighting(int offset) {
 
     SpotLight light = SpotLight(
 
-        vec3(u_LightBuffer[offset], u_LightBuffer[offset+1], u_LightBuffer[offset+2]),
-        vec3(u_LightBuffer[offset+3], u_LightBuffer[offset+4], u_LightBuffer[offset+5]),
-        vec4(u_LightBuffer[offset+6], u_LightBuffer[offset+7], u_LightBuffer[offset+8], u_LightBuffer[offset+9]),
-        u_LightBuffer[offset+10],
-        u_LightBuffer[offset+11],
-        u_LightBuffer[offset+12],
-        u_LightBuffer[offset+13],
-        u_LightBuffer[offset+14]
+        vec3(u_LightBufferGet(offset), u_LightBufferGet(offset+1), u_LightBufferGet(offset+2)),
+        vec3(u_LightBufferGet(offset+3), u_LightBufferGet(offset+4), u_LightBufferGet(offset+5)),
+        vec4(u_LightBufferGet(offset+6), u_LightBufferGet(offset+7), u_LightBufferGet(offset+8), u_LightBufferGet(offset+9)),
+        u_LightBufferGet(offset+10),
+        u_LightBufferGet(offset+11),
+        u_LightBufferGet(offset+12),
+        u_LightBufferGet(offset+13),
+        u_LightBufferGet(offset+14)
     );
 
     vec3 direction = normalize(light.position - vertexData.position);

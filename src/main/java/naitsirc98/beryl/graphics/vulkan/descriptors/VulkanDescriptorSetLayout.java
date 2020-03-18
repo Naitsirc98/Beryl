@@ -61,9 +61,9 @@ public class VulkanDescriptorSetLayout implements VulkanObject.Long {
             bindings = new ArrayList<>(4);
         }
 
-        public Builder binding(int type, int count, LongBuffer immutableSamplers, int stageFlags) {
+        public Builder binding(int binding, int type, int count, LongBuffer immutableSamplers, int stageFlags) {
             return binding(VkDescriptorSetLayoutBinding.callocStack()
-                .binding(bindings.size())
+                .binding(binding)
                 .descriptorType(type)
                 .descriptorCount(count)
                 .pImmutableSamplers(immutableSamplers)

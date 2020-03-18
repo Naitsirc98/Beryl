@@ -11,12 +11,36 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
 import static naitsirc98.beryl.graphics.vulkan.util.VulkanUtils.vkCall;
+import static naitsirc98.beryl.util.Asserts.assertTrue;
+import static org.lwjgl.system.MemoryStack.stackMallocPointer;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.libc.LibCString.memcpy;
+import static org.lwjgl.system.libc.LibCString.nmemcpy;
 import static org.lwjgl.util.vma.Vma.vmaMapMemory;
 import static org.lwjgl.util.vma.Vma.vmaUnmapMemory;
 
 public abstract class VulkanCPUBuffer extends VulkanBuffer {
+
+    public static void copy(VulkanCPUBuffer src, VulkanCPUBuffer dst, long size) {
+        assertTrue(src.size() >= size);
+
+        if(dst.size() < size) {
+            dst.allocate(size);
+        }
+
+        try(MemoryStack stack = stackPush()) {
+
+            final long srcMemory = src.mapMemory(0).get(0);
+
+            final long dstMemory = dst.mapMemory(0).get(0);
+
+            nmemcpy(dstMemory, srcMemory, size);
+
+            dst.unmapMemory();
+
+            src.unmapMemory();
+        }
+    }
 
     public VulkanCPUBuffer(VkBufferCreateInfo bufferCreateInfo, VmaAllocationCreateInfo allocationCreateInfo) {
         super(bufferCreateInfo, allocationCreateInfo);
@@ -30,13 +54,11 @@ public abstract class VulkanCPUBuffer extends VulkanBuffer {
     public void update(long offset, ByteBuffer data) {
         try(MemoryStack stack = stackPush()) {
 
-            PointerBuffer pMemoryData = stack.mallocPointer(1);
+            PointerBuffer pMemoryData = mapMemory(offset);
 
-            vkCall(vmaMapMemory(allocator().handle(), allocation, pMemoryData));
+            memcpy(pMemoryData.getByteBuffer(0, data.remaining()), data);
 
-            memcpy(pMemoryData.getByteBuffer(0, data.remaining()).position((int) offset), data);
-
-            vmaUnmapMemory(allocator().handle(), allocation);
+            unmapMemory();
         }
     }
 
@@ -44,13 +66,11 @@ public abstract class VulkanCPUBuffer extends VulkanBuffer {
     public void update(long offset, IntBuffer data) {
         try(MemoryStack stack = stackPush()) {
 
-            PointerBuffer pMemoryData = stack.mallocPointer(1);
+            PointerBuffer pMemoryData = mapMemory(offset);
 
-            vkCall(vmaMapMemory(allocator().handle(), allocation, pMemoryData));
+            memcpy(pMemoryData.getIntBuffer(0, data.remaining()), data);
 
-            memcpy(pMemoryData.getIntBuffer(0, data.remaining()).position((int) offset), data);
-
-            vmaUnmapMemory(allocator().handle(), allocation);
+            unmapMemory();
         }
     }
 
@@ -58,13 +78,26 @@ public abstract class VulkanCPUBuffer extends VulkanBuffer {
     public void update(long offset, FloatBuffer data) {
         try(MemoryStack stack = stackPush()) {
 
-            PointerBuffer pMemoryData = stack.mallocPointer(1);
+            PointerBuffer pMemoryData = mapMemory(offset);
 
-            vkCall(vmaMapMemory(allocator().handle(), allocation, pMemoryData));
+            memcpy(pMemoryData.getFloatBuffer(0, data.remaining()), data);
 
-            memcpy(pMemoryData.getFloatBuffer(0, data.remaining()).position((int) offset), data);
-
-            vmaUnmapMemory(allocator().handle(), allocation);
+            unmapMemory();
         }
+    }
+
+    private PointerBuffer mapMemory(long offset) {
+
+        PointerBuffer pMemoryData = stackMallocPointer(1);
+
+        vkCall(vmaMapMemory(allocator().handle(), allocation, pMemoryData));
+
+        pMemoryData.put(pMemoryData.get(0) + offset);
+
+        return pMemoryData;
+    }
+
+    private void unmapMemory() {
+        vmaUnmapMemory(allocator().handle(), allocation);
     }
 }

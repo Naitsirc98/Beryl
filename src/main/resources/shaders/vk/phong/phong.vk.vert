@@ -1,12 +1,12 @@
 #version 450 core
 
-layout(push_constant) uniform ModelViewProjectionMatrix {
+layout(push_constant) uniform PushConstant {
     mat4 u_MVP;
+    vec4 u_CameraPosition;
 };
 
 layout(std140, binding = 0) uniform MatricesUniformBuffer {
     mat4 u_ModelMatrix;
-    mat4 u_NormalMatrix;
 };
 
 layout(location = 0) in vec3 in_Position;
@@ -21,8 +21,10 @@ layout(location = 0) out VertexData {
 
 void main() {
 
+    mat3 normalMatrix = transpose(inverse(mat3(u_ModelMatrix)));
+
     vertexData.position = vec3(u_ModelMatrix * vec4(in_Position, 1.0f));
-    vertexData.normal = normalize(mat3(u_NormalMatrix) * in_Normal);
+    vertexData.normal = normalize(normalMatrix * in_Normal);
     vertexData.textureCoords = in_TexCoords;
 
     gl_Position = u_MVP * vec4(in_Position, 1.0f);

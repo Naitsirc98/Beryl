@@ -6,6 +6,7 @@ import naitsirc98.beryl.graphics.vulkan.VulkanObject;
 import naitsirc98.beryl.graphics.vulkan.buffers.VulkanUniformBuffer;
 import naitsirc98.beryl.graphics.vulkan.commands.VulkanCommandBufferRecorder;
 import naitsirc98.beryl.graphics.vulkan.commands.VulkanCommandBufferThreadExecutor;
+import naitsirc98.beryl.graphics.vulkan.descriptors.VulkanDescriptorPool;
 import naitsirc98.beryl.graphics.vulkan.descriptors.VulkanDescriptorSetLayout;
 import naitsirc98.beryl.graphics.vulkan.pipelines.VulkanGraphicsPipeline;
 import naitsirc98.beryl.graphics.vulkan.pipelines.VulkanPipelineLayout;
@@ -16,8 +17,8 @@ import naitsirc98.beryl.graphics.vulkan.swapchain.VulkanSwapchainDependent;
 import naitsirc98.beryl.graphics.vulkan.vertex.VulkanVertexData;
 import naitsirc98.beryl.lights.DirectionalLight;
 import naitsirc98.beryl.lights.Light;
-import naitsirc98.beryl.lights.SpotLight;
 import naitsirc98.beryl.logging.Log;
+import naitsirc98.beryl.materials.Material;
 import naitsirc98.beryl.meshes.vertices.VertexLayout;
 import naitsirc98.beryl.resources.Resources;
 import naitsirc98.beryl.scenes.Scene;
@@ -25,17 +26,18 @@ import naitsirc98.beryl.scenes.components.camera.Camera;
 import naitsirc98.beryl.scenes.components.lights.LightSource;
 import naitsirc98.beryl.scenes.components.meshes.MeshView;
 import org.joml.Matrix4f;
-import org.joml.Matrix4fc;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
 
+import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.file.Path;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 import static naitsirc98.beryl.graphics.ShaderStage.FRAGMENT_STAGE;
 import static naitsirc98.beryl.graphics.ShaderStage.VERTEX_STAGE;
+import static naitsirc98.beryl.graphics.vulkan.rendering.phong.VulkanPhongThreadData.*;
 import static naitsirc98.beryl.graphics.vulkan.util.VulkanUtils.vkCall;
 import static naitsirc98.beryl.graphics.vulkan.vertex.VulkanVertexInputUtils.vertexInputAttributesStack;
 import static naitsirc98.beryl.graphics.vulkan.vertex.VulkanVertexInputUtils.vertexInputBindingsStack;
@@ -50,10 +52,6 @@ public final class VulkanPhongRenderingPath extends RenderingPath
         implements VulkanObject, VulkanCommandBufferRecorder<VulkanPhongThreadData>, VulkanSwapchainDependent {
 
     public static final VertexLayout VERTEX_LAYOUT = VertexLayout.VERTEX_LAYOUT_3D;
-
-    private static final int CAMERA_POSITION_PUSH_CONSTANT_SIZE = 3 * FLOAT32_SIZEOF;
-
-    private static final int LIGHTS_UNIFORM_BUFFER_SIZE = (SpotLight.SIZEOF + FLOAT32_SIZEOF) * 64 + FLOAT32_SIZEOF;
 
     private static final int RENDER_SUBPASS = 0;
 
@@ -78,15 +76,20 @@ public final class VulkanPhongRenderingPath extends RenderingPath
 
     private VulkanPipelineLayout pipelineLayout;
     private VulkanGraphicsPipeline graphicsPipeline;
-    private VulkanDescriptorSetLayout descriptorSetLayout;
+    private VulkanDescriptorSetLayout matricesDescriptorSetLayout;
+    private VulkanDescriptorSetLayout materialDescriptorSetLayout;
+    private VulkanDescriptorSetLayout lightsDescriptorSetLayout;
+    private VulkanDescriptorPool lightsDescriptorPool;
+    private long lightsDescriptorSet;
     private VulkanSwapchain swapchain;
     private VulkanCommandBufferThreadExecutor<VulkanPhongThreadData> commandBuilderExecutor;
 
-    private VulkanUniformBuffer[] lightsUniformBuffers;
+    private VulkanUniformBuffer lightsUniformBuffer;
     private FloatBuffer lightsUniformBufferData;
 
     private Matrix4f projectionViewMatrix;
     private List<MeshView> meshViews;
+    private Set<Material> materials;
     private Camera camera;
 
     private VkCommandBufferInheritanceInfo inheritanceInfo;
@@ -100,11 +103,14 @@ public final class VulkanPhongRenderingPath extends RenderingPath
     protected void init() {
         swapchain = Graphics.vulkan().swapchain();
         swapchain.addSwapchainDependent(this);
-        createDescriptorSetLayout();
+        createDescriptorSetLayouts();
         createPipelineLayout();
         createGraphicsPipeline();
-        lightsUniformBuffers = VulkanUniformBuffer.create(swapchain.imageCount(), LIGHTS_UNIFORM_BUFFER_SIZE);
+        lightsUniformBuffer = new VulkanUniformBuffer(LIGHTS_UNIFORM_BUFFER_SIZE);
         lightsUniformBufferData = memAllocFloat(LIGHTS_UNIFORM_BUFFER_SIZE / FLOAT32_SIZEOF);
+        lightsDescriptorPool = new VulkanDescriptorPool(lightsDescriptorSetLayout, 1, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+        lightsDescriptorSet = lightsDescriptorPool.descriptorSet(0);
+        initLightsDescriptorSet();
         commandBuilderExecutor = new VulkanCommandBufferThreadExecutor<>(this::createThreadData);
         projectionViewMatrix = new Matrix4f();
     }
@@ -119,7 +125,8 @@ public final class VulkanPhongRenderingPath extends RenderingPath
         commandBuilderExecutor.free();
         pipelineLayout.free();
         graphicsPipeline.free();
-        Arrays.stream(lightsUniformBuffers).forEach(VulkanUniformBuffer::free);
+        lightsDescriptorPool.free();
+        lightsUniformBuffer.free();
         memFree(lightsUniformBufferData);
     }
 
@@ -140,6 +147,7 @@ public final class VulkanPhongRenderingPath extends RenderingPath
 
         this.camera = camera;
         this.meshViews = meshViews;
+        this.materials = scene.materials();
 
         projectionViewMatrix.set(camera.projectionViewMatrix());
 
@@ -170,8 +178,10 @@ public final class VulkanPhongRenderingPath extends RenderingPath
             return;
         }
 
-        final VulkanUniformBuffer lightsUniformBuffer = lightsUniformBuffers[VulkanRenderer.get().currentSwapchainImageIndex()];
+        final VulkanUniformBuffer lightsUniformBuffer = this.lightsUniformBuffer;
         final FloatBuffer lightsUniformBufferData = this.lightsUniformBufferData;
+
+        lightsUniformBufferData.limit(lightsUniformBufferData.capacity());
 
         lightsUniformBufferData.put(lightSources.size());
 
@@ -192,14 +202,16 @@ public final class VulkanPhongRenderingPath extends RenderingPath
         }
 
         lightsUniformBuffer.update(0, lightsUniformBufferData.flip());
-
-        lightsUniformBufferData.limit(lightsUniformBufferData.capacity());
     }
 
     @Override
-    public void beginCommandBuffer(VkCommandBuffer commandBuffer) {
+    public void beginCommandBuffer(VkCommandBuffer commandBuffer, VulkanPhongThreadData threadData) {
+
         vkCall(vkBeginCommandBuffer(commandBuffer, beginInfo));
+
         vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline.handle());
+
+        threadData.begin(meshViews, materials);
     }
 
     @Override
@@ -207,13 +219,18 @@ public final class VulkanPhongRenderingPath extends RenderingPath
 
         final MeshView meshView = meshViews.get(index);
 
-        updateMVPPushConstant(commandBuffer, meshView.modelMatrix(), threadData);
-
-        updateCameraPositionPushConstant(commandBuffer, camera, threadData);
+        updatePushConstants(commandBuffer, meshView, threadData);
 
         final VulkanVertexData vertexData = meshView.mesh().vertexData();
 
-        threadData.updateMeshData(commandBuffer, meshView, pipelineLayout.handle());
+        if(threadData.lastVertexData != vertexData) {
+            vertexData.bind(commandBuffer);
+            threadData.lastVertexData = vertexData;
+        }
+
+        threadData.updateUniformData(index, meshView, lightsDescriptorSet);
+
+        threadData.bindDescriptorSets(commandBuffer, pipelineLayout.handle());
 
         if (vertexData.indexCount() == 0) {
             vkCmdDraw(commandBuffer, vertexData.vertexCount(), 1, 0, 0);
@@ -222,34 +239,24 @@ public final class VulkanPhongRenderingPath extends RenderingPath
         }
     }
 
-    private void updateCameraPositionPushConstant(VkCommandBuffer commandBuffer, Camera camera, VulkanPhongThreadData threadData) {
+    private void updatePushConstants(VkCommandBuffer commandBuffer, MeshView meshView, VulkanPhongThreadData threadData) {
 
-        camera.transform().position().get(threadData.pushConstantData);
+        final ByteBuffer pushConstantData = threadData.pushConstantData;
 
-        nvkCmdPushConstants(
-                commandBuffer,
-                pipelineLayout.handle(),
-                VK_SHADER_STAGE_FRAGMENT_BIT,
-                0,
-                CAMERA_POSITION_PUSH_CONSTANT_SIZE,
-                threadData.pushConstantDataAddress);
-    }
-
-    private void updateMVPPushConstant(VkCommandBuffer commandBuffer, Matrix4fc modelMatrix, VulkanPhongThreadData threadData) {
-
-        projectionViewMatrix.mul(modelMatrix, threadData.matrix).get(threadData.pushConstantData);
+        projectionViewMatrix.mul(meshView.modelMatrix(), threadData.matrix).get(0, pushConstantData);
+        camera.transform().position().get(MVP_PUSH_CONSTANT_SIZE, pushConstantData);
 
         nvkCmdPushConstants(
                 commandBuffer,
                 pipelineLayout.handle(),
-                VK_SHADER_STAGE_VERTEX_BIT,
+                VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
                 0,
-                VulkanPhongThreadData.PUSH_CONSTANT_DATA_SIZE,
+                PUSH_CONSTANT_SIZE,
                 threadData.pushConstantDataAddress);
     }
 
     @Override
-    public void endCommandBuffer(VkCommandBuffer commandBuffer) {
+    public void endCommandBuffer(VkCommandBuffer commandBuffer, VulkanPhongThreadData threadData) {
         vkCall(vkEndCommandBuffer(commandBuffer));
     }
 
@@ -289,23 +296,52 @@ public final class VulkanPhongRenderingPath extends RenderingPath
         return swapchain.renderPass().framebuffers().get(VulkanRenderer.get().currentSwapchainImageIndex());
     }
 
-    private void createDescriptorSetLayout() {
-        descriptorSetLayout = new VulkanDescriptorSetLayout.Builder()
-                .binding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, null, VK_SHADER_STAGE_VERTEX_BIT) // Matrices
-                .binding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, null, VK_SHADER_STAGE_FRAGMENT_BIT) // Material
-                .binding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, null, VK_SHADER_STAGE_FRAGMENT_BIT) // AmbientMap
-                .binding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, null, VK_SHADER_STAGE_FRAGMENT_BIT) // DiffuseMap
-                .binding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, null, VK_SHADER_STAGE_FRAGMENT_BIT) // SpecularMap
-                .binding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, null, VK_SHADER_STAGE_FRAGMENT_BIT) // EmissiveMap
-                .binding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, null, VK_SHADER_STAGE_FRAGMENT_BIT) // Lights
+    private void createDescriptorSetLayouts() {
+
+        matricesDescriptorSetLayout = new VulkanDescriptorSetLayout.Builder()
+                .binding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1, null, VK_SHADER_STAGE_VERTEX_BIT) // Matrices
                 .buildAndPop();
+
+        materialDescriptorSetLayout = new VulkanDescriptorSetLayout.Builder()
+                .binding(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, null, VK_SHADER_STAGE_FRAGMENT_BIT) // Material
+                .binding(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, null, VK_SHADER_STAGE_FRAGMENT_BIT) // AmbientMap
+                .binding(3, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, null, VK_SHADER_STAGE_FRAGMENT_BIT) // DiffuseMap
+                .binding(4, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, null, VK_SHADER_STAGE_FRAGMENT_BIT) // SpecularMap
+                .binding(5, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, null, VK_SHADER_STAGE_FRAGMENT_BIT) // EmissiveMap
+                .buildAndPop();
+
+        lightsDescriptorSetLayout = new VulkanDescriptorSetLayout.Builder()
+                .binding(6, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, null, VK_SHADER_STAGE_FRAGMENT_BIT) // Lights
+                .buildAndPop();
+    }
+
+    private void initLightsDescriptorSet() {
+
+        try(MemoryStack stack = stackPush()) {
+
+            VkDescriptorBufferInfo.Buffer bufferInfos = VkDescriptorBufferInfo.callocStack(1, stack)
+                    .buffer(lightsUniformBuffer.handle())
+                    .offset(0)
+                    .range(VK_WHOLE_SIZE);
+
+            VkWriteDescriptorSet.Buffer writeDescriptorSets = VkWriteDescriptorSet.callocStack(1, stack)
+                    .sType(VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET)
+                    .dstBinding(6)
+                    .dstSet(lightsDescriptorSet)
+                    .descriptorType(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER)
+                    .descriptorCount(1)
+                    .pBufferInfo(bufferInfos);
+
+            vkUpdateDescriptorSets(logicalDevice().handle(), writeDescriptorSets, null);
+        }
     }
 
     private void createPipelineLayout() {
         pipelineLayout = new VulkanPipelineLayout.Builder()
-                .addPushConstantRange(VK_SHADER_STAGE_VERTEX_BIT, 0, VulkanPhongThreadData.PUSH_CONSTANT_DATA_SIZE)
-                .addPushConstantRange(VK_SHADER_STAGE_FRAGMENT_BIT, 0, CAMERA_POSITION_PUSH_CONSTANT_SIZE)
-                .addDescriptorSetLayout(descriptorSetLayout)
+                .addPushConstantRange(VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, PUSH_CONSTANT_SIZE)
+                .addDescriptorSetLayout(matricesDescriptorSetLayout)
+                .addDescriptorSetLayout(materialDescriptorSetLayout)
+                .addDescriptorSetLayout(lightsDescriptorSetLayout)
                 .buildAndPop();
     }
 
@@ -405,7 +441,7 @@ public final class VulkanPhongRenderingPath extends RenderingPath
     }
 
     private VulkanPhongThreadData createThreadData() {
-        return new VulkanPhongThreadData(descriptorSetLayout);
+        return new VulkanPhongThreadData(matricesDescriptorSetLayout, materialDescriptorSetLayout);
     }
 
 }

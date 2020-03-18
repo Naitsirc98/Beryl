@@ -21,6 +21,11 @@ public class ColorMapProperty implements ByteSize {
         map = GraphicsFactory.get().blankTexture2D();
     }
 
+    public ColorMapProperty(Color color) {
+        this.color = requireNonNull(color);
+        map = GraphicsFactory.get().blankTexture2D();
+    }
+
     public Color color() {
         return color;
     }

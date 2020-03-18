@@ -4,9 +4,9 @@ import org.lwjgl.vulkan.VkCommandBuffer;
 
 public interface VulkanCommandBufferRecorder<T extends VulkanThreadData> {
 
-    void beginCommandBuffer(VkCommandBuffer commandBuffer);
+    void beginCommandBuffer(VkCommandBuffer commandBuffer, T threadData);
 
     void recordCommandBuffer(int index, VkCommandBuffer commandBuffer, T threadData);
 
-    void endCommandBuffer(VkCommandBuffer commandBuffer);
+    void endCommandBuffer(VkCommandBuffer commandBuffer, T threadData);
 }

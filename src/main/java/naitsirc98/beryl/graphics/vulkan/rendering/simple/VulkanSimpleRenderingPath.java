@@ -121,7 +121,7 @@ public final class VulkanSimpleRenderingPath extends RenderingPath
     }
 
     @Override
-    public void beginCommandBuffer(VkCommandBuffer commandBuffer) {
+    public void beginCommandBuffer(VkCommandBuffer commandBuffer, VulkanSimpleThreadData threadData) {
         vkCall(vkBeginCommandBuffer(commandBuffer, beginInfo));
         vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline.handle());
     }
@@ -156,7 +156,7 @@ public final class VulkanSimpleRenderingPath extends RenderingPath
     }
 
     @Override
-    public void endCommandBuffer(VkCommandBuffer commandBuffer) {
+    public void endCommandBuffer(VkCommandBuffer commandBuffer, VulkanSimpleThreadData threadData) {
         vkCall(vkEndCommandBuffer(commandBuffer));
     }
 

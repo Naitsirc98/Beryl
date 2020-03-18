@@ -121,13 +121,13 @@ public class VulkanCommandBufferThreadExecutor<T extends VulkanThreadData> imple
         final VkCommandBuffer commandBuffer = commandBufferThread.commandBuffer();
         final T threadData = commandBufferThread.threadData();
 
-        recorder.beginCommandBuffer(commandBuffer);
+        recorder.beginCommandBuffer(commandBuffer, threadData);
 
         for (int j = 0; j < objectCount; j++) {
             recorder.recordCommandBuffer(j + offset, commandBuffer, threadData);
         }
 
-        recorder.endCommandBuffer(commandBuffer);
+        recorder.endCommandBuffer(commandBuffer, threadData);
 
         threadData.end();
     }

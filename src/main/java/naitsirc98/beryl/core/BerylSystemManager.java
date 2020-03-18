@@ -6,6 +6,7 @@ import naitsirc98.beryl.graphics.rendering.RenderSystem;
 import naitsirc98.beryl.graphics.rendering.RenderingPaths;
 import naitsirc98.beryl.input.Input;
 import naitsirc98.beryl.logging.Log;
+import naitsirc98.beryl.resources.ResourceManager;
 import naitsirc98.beryl.scenes.SceneManager;
 import naitsirc98.beryl.tasks.TaskManager;
 
@@ -18,6 +19,7 @@ import static naitsirc98.beryl.util.types.TypeUtils.newInstance;
 public class BerylSystemManager {
 
     final Log log;
+    final ResourceManager resourceManager;
     final GLFWLibrary glfwLibrary;
     final Time time;
     final EventManager eventManager;
@@ -32,6 +34,7 @@ public class BerylSystemManager {
     public BerylSystemManager() {
         systems = new BerylSystem[] {
                 log = createSystem(Log.class),
+                resourceManager = createSystem(ResourceManager.class),
                 glfwLibrary = createSystem(GLFWLibrary.class),
                 time = createSystem(Time.class),
                 eventManager = createSystem(EventManager.class),

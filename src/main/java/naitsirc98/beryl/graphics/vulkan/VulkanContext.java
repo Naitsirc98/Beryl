@@ -26,6 +26,7 @@ import static naitsirc98.beryl.graphics.vulkan.VulkanDebugMessenger.newVulkanDeb
 import static naitsirc98.beryl.graphics.vulkan.VulkanInstanceFactory.newVkInstance;
 import static naitsirc98.beryl.graphics.vulkan.VulkanValidationLayers.defaultValidationLayers;
 import static naitsirc98.beryl.util.types.TypeUtils.newInstance;
+import static org.lwjgl.vulkan.EXTDescriptorIndexing.VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME;
 import static org.lwjgl.vulkan.KHRSwapchain.VK_KHR_SWAPCHAIN_EXTENSION_NAME;
 import static org.lwjgl.vulkan.VK10.vkDestroyInstance;
 
@@ -42,7 +43,8 @@ public final class VulkanContext implements GraphicsContext {
         return Stream.of(
                 VK_KHR_SWAPCHAIN_EXTENSION_NAME,
                 "VK_KHR_dedicated_allocation",
-                "VK_KHR_get_memory_requirements2"
+                "VK_KHR_get_memory_requirements2",
+                VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME
                 )
                 .collect(toSet());
     }

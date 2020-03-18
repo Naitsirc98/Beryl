@@ -1,6 +1,7 @@
 package naitsirc98.beryl.scenes;
 
 import naitsirc98.beryl.logging.Log;
+import naitsirc98.beryl.materials.Material;
 import naitsirc98.beryl.scenes.components.behaviours.AbstractBehaviour;
 import naitsirc98.beryl.scenes.components.behaviours.BehaviourManager;
 import naitsirc98.beryl.scenes.components.camera.Camera;
@@ -57,6 +58,10 @@ public final class Scene {
 
     public List<MeshView> meshViews() {
         return meshes.meshViews();
+    }
+
+    public Set<Material> materials() {
+        return meshes.materials();
     }
 
     public List<LightSource> lightSources() {
