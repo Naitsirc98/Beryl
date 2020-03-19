@@ -11,10 +11,8 @@ import static java.util.Objects.requireNonNull;
 import static naitsirc98.beryl.util.Asserts.assertTrue;
 import static naitsirc98.beryl.util.types.DataType.FLOAT32_SIZEOF;
 
-@ByteSize.Static(DirectionalLight.SIZEOF)
-public class DirectionalLight extends Light<DirectionalLight> implements IDirectionalLight<DirectionalLight>, ByteSize {
-
-    public static final int SIZEOF = (3 + 4) * FLOAT32_SIZEOF;
+@ByteSize.Static(Light.SIZEOF)
+public class DirectionalLight extends Light<DirectionalLight> implements IDirectionalLight<DirectionalLight> {
 
     private final Vector3f direction;
 
@@ -39,23 +37,20 @@ public class DirectionalLight extends Light<DirectionalLight> implements IDirect
     }
 
     @Override
-    public ByteBuffer get(ByteBuffer buffer) {
+    public ByteBuffer get(int offset, ByteBuffer buffer) {
         assertTrue(buffer.remaining() >= SIZEOF);
 
-        direction.get(buffer).position(buffer.position() + 3 * FLOAT32_SIZEOF);
+        color().getRGBA(offset + COLOR_OFFSET, buffer);
 
-        color().getRGBA(buffer);
+        direction.get(offset + DIRECTION_OFFSET, buffer);
+
+        buffer.putInt(offset + TYPE_OFFSET, type());
 
         return buffer;
     }
 
     @Override
-    public float type() {
+    public int type() {
         return LIGHT_TYPE_DIRECTIONAL;
-    }
-
-    @Override
-    public int sizeof() {
-        return SIZEOF;
     }
 }

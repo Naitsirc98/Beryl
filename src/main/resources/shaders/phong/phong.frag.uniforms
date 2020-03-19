@@ -1,0 +1,45 @@
+#ifdef OPENGL
+
+layout(std140) uniform MatricesUniformBuffer {
+    mat4 u_MVP;
+    mat4 u_ModelMatrix;
+    mat4 u_NormalMatrix;
+    vec4 u_CameraPosition;
+};
+
+layout(std140) uniform MaterialUniformBuffer {
+    PhongMaterial u_Material;
+};
+
+uniform sampler2D u_AmbientMap;
+uniform sampler2D u_DiffuseMap;
+uniform sampler2D u_SpecularMap;
+uniform sampler2D u_EmissiveMap;
+
+layout(std140) uniform LightsUniformBuffer {
+    Light u_Lights[MAX_LIGHTS_COUNT];
+    int u_LightsCount;
+};
+
+#else // VULKAN
+
+layout(push_constant) uniform PushConstant {
+    mat4 u_MVP;
+    vec4 u_CameraPosition;
+};
+
+layout(std140, set = 1, binding = 1) uniform MaterialUniformBuffer {
+    PhongMaterial u_Material;
+};
+
+layout(set = 1, binding = 2) uniform sampler2D u_AmbientMap;
+layout(set = 1, binding = 3) uniform sampler2D u_DiffuseMap;
+layout(set = 1, binding = 4) uniform sampler2D u_SpecularMap;
+layout(set = 1, binding = 5) uniform sampler2D u_EmissiveMap;
+
+layout(std140, set = 2, binding = 6) uniform LightsUniformBuffer {
+    Light u_Lights[MAX_LIGHTS_COUNT];
+    int u_LightsCount;
+};
+
+#endif

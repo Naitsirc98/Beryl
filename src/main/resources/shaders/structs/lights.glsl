@@ -1,41 +1,24 @@
 
-#define DIRECTIONAL_LIGHT_SIZE 7
-#define POINT_LIGHT_SIZE 10
-#define SPOT_LIGHT_SIZE 15
-
 #define LIGHT_TYPE_DIRECTIONAL 0
 #define LIGHT_TYPE_POINT 1
 #define LIGHT_TYPE_SPOT 2
 
-struct DirectionalLight {
+#define LIGHT_SIZEOF = 80
 
-    vec3 direction;
-    
-    vec4 color;
-};
-
-struct PointLight {
-
-    vec3 position;
+struct Light {
 
     vec4 color;
+
+    vec4 position;
+    vec4 direction;
 
     float constant;
     float linear;
     float quadratic;
-};
-
-struct SpotLight {
-
-    vec3 position;
-    vec3 direction;
-
-    vec4 color;
-
-    float constant;
-    float linear;
-    float quadratic;
+    float _pad1;
 
     float cutOff;
     float outerCutOff;
+    float _pad2;
+    int type;
 };

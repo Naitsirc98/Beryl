@@ -88,16 +88,31 @@ public final class Color implements Cloneable, ByteSize {
         return buffer.put(red).put(green).put(blue);
     }
 
+    public FloatBuffer getRGB(int pos, FloatBuffer buffer) {
+        return buffer.put(pos, red).put(pos + 1, green).put(pos + 2, blue);
+    }
+
     public ByteBuffer getRGB(ByteBuffer buffer) {
         return buffer.putFloat(red).putFloat(green).putFloat(blue);
+    }
+
+    public ByteBuffer getRGB(int pos, ByteBuffer buffer) {
+        return buffer.putFloat(pos, red).putFloat(pos + 4, green).putFloat(pos + 8, blue);
     }
 
     public FloatBuffer getRGBA(FloatBuffer buffer) {
         return buffer.put(red).put(green).put(blue).put(alpha);
     }
 
+    public FloatBuffer getRGBA(int pos, FloatBuffer buffer) {
+        return buffer.put(pos, red).put(pos + 1, green).put(pos + 2, blue).put(pos + 3, alpha);
+    }
+
     public ByteBuffer getRGBA(ByteBuffer buffer) {
         return buffer.putFloat(red).putFloat(green).putFloat(blue).putFloat(alpha);
     }
 
+    public ByteBuffer getRGBA(int pos, ByteBuffer buffer) {
+        return buffer.putFloat(pos, red).putFloat(pos + 4, green).putFloat(pos + 8, blue).putFloat(pos + 12, alpha);
+    }
 }

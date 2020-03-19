@@ -1,5 +1,7 @@
 package naitsirc98.beryl.graphics.shaders;
 
+import naitsirc98.beryl.graphics.GraphicsAPI;
+import naitsirc98.beryl.graphics.ShaderStage;
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.resources.Resources;
 
@@ -7,32 +9,36 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import static java.nio.file.Files.exists;
+
 public final class GLSLPreprocessor {
 
     private static final String DIRECTIVE_CHARACTER = "@";
     private static final Path SHADERS_ROOT = Resources.getPath("shaders");
+    private static final String BERYL_GLSL_METADATA = createBerylGLSLMetadata();
 
     private final StringBuffer sourceBuffer;
     private final Path path;
+    private final ShaderStage stage;
 
-    public GLSLPreprocessor(Path path) {
+    public GLSLPreprocessor(Path path, ShaderStage stage) {
         this.path = path;
+        this.stage = stage;
         sourceBuffer = new StringBuffer();
     }
 
-    public void reset() {
-        sourceBuffer.delete(0, sourceBuffer.length());
-    }
-
     public String process() {
+
         if(sourceBuffer.length() > 0) {
             return sourceBuffer.toString();
         }
+
         try {
             processShaderLines();
         } catch (IOException e) {
             Log.error("Could not process shader file: " + path, e);
         }
+
         return sourceBuffer.toString();
     }
 
@@ -54,10 +60,10 @@ public final class GLSLPreprocessor {
             return line;
         }
 
-        final int directiveEnd = line.indexOf(' ');
+        int directiveEnd = line.indexOf(' ');
 
         if(directiveEnd < 0) {
-            throw new RuntimeException("Bad GLSL Directive syntax: " + line);
+            directiveEnd = line.length();
         }
 
         return getDirective(line.substring(1, directiveEnd)).process(line.substring(directiveEnd).trim());
@@ -65,6 +71,8 @@ public final class GLSLPreprocessor {
 
     private Directive getDirective(String name) {
         switch(name) {
+            case "beryl":
+                return new BerylMetadataDirective();
             case "include":
                 return new IncludeDirective();
         }
@@ -76,18 +84,48 @@ public final class GLSLPreprocessor {
         String process(String arg);
     }
 
-    private static class IncludeDirective implements Directive {
+    private class BerylMetadataDirective implements Directive {
+
+        @Override
+        public String process(String arg) {
+            return BERYL_GLSL_METADATA + define(stage.name()) + '\n';
+        }
+    }
+
+    private class IncludeDirective implements Directive {
 
         @Override
         public String process(String file) {
 
-            Path path = SHADERS_ROOT.resolve(file.replaceAll("\"", ""));
+            file = file.replaceAll("\"", "");
 
-            if(!Files.exists(path)) {
-                throw new RuntimeException("Trying to include file " + path + " to GLSL Shader, but it does not exists");
+            Path includePath;
+
+            if(!exists(includePath = path.getParent().resolve(file)) && !exists(includePath = SHADERS_ROOT.resolve(file))) {
+                throw new RuntimeException("Trying to include file " + includePath + " to GLSL Shader, but it does not exists");
             }
 
-            return new GLSLPreprocessor(path).process();
+            return new GLSLPreprocessor(includePath, stage).process();
         }
+    }
+
+    private static String createBerylGLSLMetadata() {
+
+        StringBuilder builder = new StringBuilder();
+
+        builder.append("#version ").append(GraphicsAPI.get().minGLSLVersion()).append('\n');
+        builder.append("#ifndef ").append(GraphicsAPI.get().name()).append('\n');
+        builder.append(define(GraphicsAPI.get().name()));
+        builder.append("#endif\n");
+
+        return builder.toString();
+    }
+
+    private static String define(Object name, Object value) {
+        return "#define " + name + " " + value + "\n";
+    }
+
+    private static String define(Object name) {
+        return "#define " + name + "\n";
     }
 }

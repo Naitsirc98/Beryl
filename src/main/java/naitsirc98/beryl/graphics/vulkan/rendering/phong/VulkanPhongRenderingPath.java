@@ -15,9 +15,7 @@ import naitsirc98.beryl.graphics.vulkan.rendering.VulkanRenderer;
 import naitsirc98.beryl.graphics.vulkan.swapchain.VulkanSwapchain;
 import naitsirc98.beryl.graphics.vulkan.swapchain.VulkanSwapchainDependent;
 import naitsirc98.beryl.graphics.vulkan.vertex.VulkanVertexData;
-import naitsirc98.beryl.lights.DirectionalLight;
 import naitsirc98.beryl.lights.Light;
-import naitsirc98.beryl.lights.SpotLight;
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.materials.Material;
 import naitsirc98.beryl.meshes.vertices.VertexLayout;
@@ -31,23 +29,22 @@ import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
 
 import java.nio.ByteBuffer;
-import java.nio.FloatBuffer;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Set;
 
+import static java.lang.Math.min;
 import static naitsirc98.beryl.graphics.ShaderStage.FRAGMENT_STAGE;
 import static naitsirc98.beryl.graphics.ShaderStage.VERTEX_STAGE;
-import static naitsirc98.beryl.graphics.vulkan.rendering.phong.VulkanPhongThreadData.*;
+import static naitsirc98.beryl.graphics.vulkan.rendering.phong.VulkanPhongThreadData.MVP_PUSH_CONSTANT_SIZE;
+import static naitsirc98.beryl.graphics.vulkan.rendering.phong.VulkanPhongThreadData.PUSH_CONSTANT_SIZE;
 import static naitsirc98.beryl.graphics.vulkan.util.VulkanUtils.vkCall;
 import static naitsirc98.beryl.graphics.vulkan.vertex.VulkanVertexInputUtils.vertexInputAttributesStack;
 import static naitsirc98.beryl.graphics.vulkan.vertex.VulkanVertexInputUtils.vertexInputBindingsStack;
 import static naitsirc98.beryl.util.handles.LongHandle.NULL;
-import static naitsirc98.beryl.util.types.ByteSizeUtils.sizeof;
-import static naitsirc98.beryl.util.types.DataType.FLOAT32_SIZEOF;
 import static naitsirc98.beryl.util.types.DataType.INT32_SIZEOF;
 import static org.lwjgl.system.MemoryStack.stackPush;
-import static org.lwjgl.system.MemoryUtil.*;
+import static org.lwjgl.system.MemoryUtil.memAddress;
 import static org.lwjgl.system.libc.LibCString.nmemcpy;
 import static org.lwjgl.vulkan.VK10.*;
 
@@ -61,7 +58,9 @@ public final class VulkanPhongRenderingPath extends RenderingPath
     private static final Path VERTEX_SHADER_PATH;
     private static final Path FRAGMENT_SHADER_PATH;
 
-    private static final int LIGHTS_UNIFORM_BUFFER_SIZE = 4 * 256 * FLOAT32_SIZEOF;
+    private static final int LIGHTS_MAX_COUNT = 100;
+    private static final int LIGHTS_UNIFORM_BUFFER_SIZE = LIGHTS_MAX_COUNT * Light.SIZEOF + INT32_SIZEOF;
+    private static final int LIGHTS_UNIFORM_BUFFER_COUNT_OFFSET = LIGHTS_UNIFORM_BUFFER_SIZE - INT32_SIZEOF;
 
     static {
 
@@ -69,8 +68,8 @@ public final class VulkanPhongRenderingPath extends RenderingPath
         Path fragmentPath = null;
 
         try {
-            vertexPath = Resources.getPath("shaders/vk/phong/phong.vk.vert");
-            fragmentPath = Resources.getPath("shaders/vk/phong/phong.vk.frag");
+            vertexPath = Resources.getPath("shaders/phong/phong.vert");
+            fragmentPath = Resources.getPath("shaders/phong/phong.frag");
         } catch (Exception e) {
             Log.fatal("Failed to get shader files for RenderingPath", e);
         }
@@ -167,7 +166,7 @@ public final class VulkanPhongRenderingPath extends RenderingPath
 
         try(MemoryStack stack = stackPush()) {
 
-            updateLightsUniformBuffer(scene.lightSources());
+            updateLightsUniformBuffer(scene.lightSources(), stack);
 
             setupCommandBufferInfos(stack);
 
@@ -186,33 +185,27 @@ public final class VulkanPhongRenderingPath extends RenderingPath
         }
     }
 
-    private void updateLightsUniformBuffer(List<LightSource> lightSources) {
+    private void updateLightsUniformBuffer(List<LightSource> lightSources, MemoryStack stack) {
 
         if(lightSources.isEmpty()) {
             return;
         }
 
-        int offset = FLOAT32_SIZEOF;
+        final long lightsUniformBufferData = this.lightsUniformBufferData;
 
-        try(MemoryStack stack = stackPush()) {
+        final int lightsCount = min(lightSources.size(), LIGHTS_MAX_COUNT);
 
-            nmemcpy(lightsUniformBufferData, memAddress(stack.malloc(FLOAT32_SIZEOF).putFloat(0, lightSources.size())), FLOAT32_SIZEOF);
+        final ByteBuffer buffer = stack.malloc(Light.SIZEOF);
 
-            ByteBuffer buffer = stack.malloc(SpotLight.SIZEOF + FLOAT32_SIZEOF);
+        final long srcAddress = memAddress(buffer);
 
-            for(LightSource lightSource : lightSources) {
+        buffer.putInt(0, lightsCount);
 
-                final Light<?> light = lightSource.light();
+        nmemcpy(lightsUniformBufferData + LIGHTS_UNIFORM_BUFFER_COUNT_OFFSET, srcAddress, INT32_SIZEOF);
 
-                buffer.putFloat(light.type());
-                light.get(buffer).flip();
-
-                nmemcpy(lightsUniformBufferData + offset, memAddress0(buffer), buffer.limit());
-
-                offset += buffer.limit();
-
-                buffer.limit(buffer.capacity());
-            }
+        for(int i = 0; i < lightsCount; i++) {
+            lightSources.get(i).light().get(0, buffer);
+            nmemcpy(lightsUniformBufferData + i * Light.SIZEOF, srcAddress, Light.SIZEOF);
         }
     }
 

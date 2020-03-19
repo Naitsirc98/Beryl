@@ -1,12 +1,17 @@
 package naitsirc98.beryl.graphics.opengl.buffers;
 
+import naitsirc98.beryl.graphics.buffers.GraphicsCPUBuffer;
 import naitsirc98.beryl.graphics.opengl.shaders.GLShaderProgram;
+import org.lwjgl.PointerBuffer;
 
+import static java.util.Objects.requireNonNull;
 import static naitsirc98.beryl.util.Asserts.assertThat;
 import static org.lwjgl.opengl.GL30.glBindBufferBase;
 import static org.lwjgl.opengl.GL31.*;
+import static org.lwjgl.opengl.GL45.*;
+import static org.lwjgl.system.MemoryUtil.memAddress;
 
-public class GLUniformBuffer extends GLBuffer {
+public class GLUniformBuffer extends GLBuffer implements GraphicsCPUBuffer {
 
     private final int binding;
 
@@ -31,5 +36,21 @@ public class GLUniformBuffer extends GLBuffer {
     @Override
     public Type type() {
         return Type.UNIFORM_BUFFER;
+    }
+
+    @Override
+    public PointerBuffer mapMemory(long offset) {
+        return PointerBuffer.allocateDirect(1)
+                .put(nglMapNamedBufferRange(handle(), offset, size(), GL_MAP_WRITE_BIT));
+    }
+
+    @Override
+    public void unmapMemory() {
+        glUnmapNamedBuffer(handle());
+    }
+
+    @Override
+    protected int storageFlags() {
+        return GL_DYNAMIC_STORAGE_BIT | GL_MAP_WRITE_BIT;
     }
 }

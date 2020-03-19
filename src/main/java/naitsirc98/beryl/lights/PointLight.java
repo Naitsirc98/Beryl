@@ -5,16 +5,13 @@ import org.joml.Vector3f;
 import org.joml.Vector3fc;
 
 import java.nio.ByteBuffer;
-import java.nio.FloatBuffer;
 
 import static java.util.Objects.requireNonNull;
 import static naitsirc98.beryl.util.Asserts.assertTrue;
 import static naitsirc98.beryl.util.types.DataType.FLOAT32_SIZEOF;
 
-@ByteSize.Static(PointLight.SIZEOF)
-public class PointLight extends Light<PointLight> implements IPointLight<PointLight>, ByteSize {
-
-    public static final int SIZEOF = (3 + 4 + 3) * FLOAT32_SIZEOF;
+@ByteSize.Static(Light.SIZEOF)
+public class PointLight extends Light<PointLight> implements IPointLight<PointLight> {
 
     private final Vector3f position;
     private float constant;
@@ -78,25 +75,25 @@ public class PointLight extends Light<PointLight> implements IPointLight<PointLi
     }
 
     @Override
-    public ByteBuffer get(ByteBuffer buffer) {
+    public ByteBuffer get(int offset, ByteBuffer buffer) {
         assertTrue(buffer.remaining() >= SIZEOF);
 
-        position.get(buffer).position(buffer.position() + 3 * FLOAT32_SIZEOF);
+        color().getRGBA(offset + COLOR_OFFSET, buffer);
 
-        color().getRGBA(buffer);
+        position.get(offset + POSITION_OFFSET, buffer);
 
-        buffer.putFloat(constant).putFloat(linear).putFloat(quadratic);
+        buffer.putFloat(offset + CONSTANT_OFFSET, constant);
+        buffer.putFloat(offset + LINEAR_OFFSET, linear);
+        buffer.putFloat(offset + QUADRATIC_OFFSET, quadratic);
+
+        buffer.putInt(offset + TYPE_OFFSET, type());
 
         return buffer;
     }
 
     @Override
-    public float type() {
+    public int type() {
         return LIGHT_TYPE_POINT;
     }
 
-    @Override
-    public int sizeof() {
-        return SIZEOF;
-    }
 }

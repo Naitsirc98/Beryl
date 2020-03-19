@@ -23,24 +23,28 @@ public abstract class GLBuffer implements GLObject, GraphicsBuffer {
         return handle;
     }
 
+    public long size() {
+        return glGetNamedBufferParameteri64(handle(), GL_BUFFER_SIZE);
+    }
+
     @Override
     public void allocate(long size) {
-        glNamedBufferStorage(handle, size, GL_DYNAMIC_STORAGE_BIT);
+        glNamedBufferStorage(handle, size, storageFlags());
     }
 
     @Override
     public void data(ByteBuffer data) {
-        glNamedBufferStorage(handle, data, GL_DYNAMIC_STORAGE_BIT);
+        glNamedBufferStorage(handle, data, storageFlags());
     }
 
     @Override
     public void data(FloatBuffer data) {
-        glNamedBufferStorage(handle, data, GL_DYNAMIC_STORAGE_BIT);
+        glNamedBufferStorage(handle, data, storageFlags());
     }
 
     @Override
     public void data(IntBuffer data) {
-        glNamedBufferStorage(handle, data, GL_DYNAMIC_STORAGE_BIT);
+        glNamedBufferStorage(handle, data, storageFlags());
     }
 
     @Override
@@ -63,4 +67,6 @@ public abstract class GLBuffer implements GLObject, GraphicsBuffer {
         glDeleteBuffers(handle);
         handle = NULL;
     }
+
+    protected abstract int storageFlags();
 }

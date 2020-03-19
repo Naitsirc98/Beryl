@@ -32,7 +32,7 @@ public final class GLShader implements GLObject {
 
     public GLShader source(Path path) {
         this.path = requireNonNull(path);
-        glShaderSource(handle, new GLSLPreprocessor(path).process());
+        glShaderSource(handle, new GLSLPreprocessor(path, stage).process());
         return this;
     }
 

@@ -132,7 +132,7 @@ final class VulkanPhongThreadData implements VulkanThreadData {
 
             try(MemoryStack stack = stackPush()) {
                 ByteBuffer buffer = stack.malloc(MATRICES_UNIFORM_BUFFER_SIZE);
-                materialUniformBuffer.update(descriptorSetIndex * MATERIAL_UNIFORM_BUFFER_SIZE, material.get(buffer).rewind());
+                materialUniformBuffer.update(descriptorSetIndex * MATERIAL_UNIFORM_BUFFER_SIZE, material.get(0, buffer));
             }
 
             ++descriptorSetIndex;

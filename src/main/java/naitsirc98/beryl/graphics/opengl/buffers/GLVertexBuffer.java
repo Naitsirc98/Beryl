@@ -6,4 +6,9 @@ public class GLVertexBuffer extends GLBuffer {
     public Type type() {
         return Type.VERTEX_BUFFER;
     }
+
+    @Override
+    protected int storageFlags() {
+        return 0;
+    }
 }

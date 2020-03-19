@@ -5,17 +5,14 @@ import org.joml.Vector3f;
 import org.joml.Vector3fc;
 
 import java.nio.ByteBuffer;
-import java.nio.FloatBuffer;
 
 import static java.util.Objects.requireNonNull;
 import static naitsirc98.beryl.util.Asserts.assertTrue;
 import static naitsirc98.beryl.util.Maths.radians;
 import static naitsirc98.beryl.util.types.DataType.FLOAT32_SIZEOF;
 
-@ByteSize.Static(SpotLight.SIZEOF)
-public class SpotLight extends Light<SpotLight> implements IPointLight<SpotLight>, IDirectionalLight<SpotLight>, ByteSize {
-
-    public static final int SIZEOF = (3 + 3 + 5) * FLOAT32_SIZEOF;
+@ByteSize.Static(Light.SIZEOF)
+public class SpotLight extends Light<SpotLight> implements IPointLight<SpotLight>, IDirectionalLight<SpotLight> {
 
     private final Vector3f position;
     private final Vector3f direction;
@@ -114,29 +111,29 @@ public class SpotLight extends Light<SpotLight> implements IPointLight<SpotLight
     }
 
     @Override
-    public int sizeof() {
-        return SIZEOF;
-    }
-
-    @Override
-    public ByteBuffer get(ByteBuffer buffer) {
+    public ByteBuffer get(int offset, ByteBuffer buffer) {
         assertTrue(buffer.remaining() >= SIZEOF);
 
-        position.get(buffer).position(buffer.position() + 3 * FLOAT32_SIZEOF);
+        color().getRGBA(offset + COLOR_OFFSET, buffer);
 
-        direction.get(buffer).position(buffer.position() + 3 * FLOAT32_SIZEOF);
+        position.get(offset + POSITION_OFFSET, buffer);
 
-        color().getRGBA(buffer);
+        direction.get(offset + DIRECTION_OFFSET, buffer);
 
-        buffer.putFloat(constant).putFloat(linear).putFloat(quadratic);
+        buffer.putFloat(offset + CONSTANT_OFFSET, constant);
+        buffer.putFloat(offset + LINEAR_OFFSET, linear);
+        buffer.putFloat(offset + QUADRATIC_OFFSET, quadratic);
 
-        buffer.putFloat(cutOff).putFloat(outerCutOff);
+        buffer.putFloat(offset + CUTOFF_OFFSET, cutOff);
+        buffer.putFloat(offset + OUTER_CUTOFF_OFFSET, outerCutOff);
+
+        buffer.putInt(offset + TYPE_OFFSET, type());
 
         return buffer;
     }
 
     @Override
-    public float type() {
+    public int type() {
         return LIGHT_TYPE_SPOT;
     }
 }

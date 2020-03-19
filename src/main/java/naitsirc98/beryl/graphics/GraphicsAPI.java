@@ -4,8 +4,8 @@ import naitsirc98.beryl.util.types.Singleton;
 
 public enum GraphicsAPI {
 
-    VULKAN(1, 1),
-    OPENGL(4, 5);
+    VULKAN(1, 1, "450 core"),
+    OPENGL(4, 5, "330 core");
 
     @Singleton
     private static GraphicsAPI currentGraphicsAPI;
@@ -18,12 +18,14 @@ public enum GraphicsAPI {
         return get() == VULKAN ? valueIfVulkan : valueIfOpenGL;
     }
 
-    private int versionMajor;
-    private int versionMinor;
+    private final int versionMajor;
+    private final int versionMinor;
+    private final String minGLSLVersion;
 
-    GraphicsAPI(int versionMajor, int versionMinor) {
+    GraphicsAPI(int versionMajor, int versionMinor, String minGLSLVersion) {
         this.versionMajor = versionMajor;
         this.versionMinor = versionMinor;
+        this.minGLSLVersion = minGLSLVersion;
     }
 
     public int versionMajor() {
@@ -37,5 +39,9 @@ public enum GraphicsAPI {
     @Override
     public String toString() {
         return name() + " v" + versionMajor + "." + versionMinor;
+    }
+
+    public String minGLSLVersion() {
+        return minGLSLVersion;
     }
 }

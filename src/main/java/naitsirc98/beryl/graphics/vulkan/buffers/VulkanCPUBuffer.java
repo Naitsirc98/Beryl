@@ -1,5 +1,6 @@
 package naitsirc98.beryl.graphics.vulkan.buffers;
 
+import naitsirc98.beryl.graphics.buffers.GraphicsCPUBuffer;
 import naitsirc98.beryl.graphics.vulkan.memory.VmaBufferAllocation;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
@@ -12,14 +13,13 @@ import java.nio.IntBuffer;
 
 import static naitsirc98.beryl.graphics.vulkan.util.VulkanUtils.vkCall;
 import static naitsirc98.beryl.util.Asserts.assertTrue;
-import static org.lwjgl.system.MemoryStack.stackMallocPointer;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.libc.LibCString.memcpy;
 import static org.lwjgl.system.libc.LibCString.nmemcpy;
 import static org.lwjgl.util.vma.Vma.vmaMapMemory;
 import static org.lwjgl.util.vma.Vma.vmaUnmapMemory;
 
-public abstract class VulkanCPUBuffer extends VulkanBuffer {
+public abstract class VulkanCPUBuffer extends VulkanBuffer implements GraphicsCPUBuffer {
 
     public static void copy(VulkanCPUBuffer src, VulkanCPUBuffer dst, long size) {
         assertTrue(src.size() >= size);
@@ -28,18 +28,15 @@ public abstract class VulkanCPUBuffer extends VulkanBuffer {
             dst.allocate(size);
         }
 
-        try(MemoryStack stack = stackPush()) {
+        final long srcMemory = src.mapMemory(0).get(0);
 
-            final long srcMemory = src.mapMemory(0).get(0);
+        final long dstMemory = dst.mapMemory(0).get(0);
 
-            final long dstMemory = dst.mapMemory(0).get(0);
+        nmemcpy(dstMemory, srcMemory, size);
 
-            nmemcpy(dstMemory, srcMemory, size);
+        dst.unmapMemory();
 
-            dst.unmapMemory();
-
-            src.unmapMemory();
-        }
+        src.unmapMemory();
     }
 
     public VulkanCPUBuffer(VkBufferCreateInfo bufferCreateInfo, VmaAllocationCreateInfo allocationCreateInfo) {
@@ -86,9 +83,10 @@ public abstract class VulkanCPUBuffer extends VulkanBuffer {
         }
     }
 
+    @Override
     public PointerBuffer mapMemory(long offset) {
 
-        PointerBuffer pMemoryData = stackMallocPointer(1);
+        PointerBuffer pMemoryData = PointerBuffer.allocateDirect(1);
 
         vkCall(vmaMapMemory(allocator().handle(), allocation, pMemoryData));
 
@@ -97,6 +95,7 @@ public abstract class VulkanCPUBuffer extends VulkanBuffer {
         return pMemoryData;
     }
 
+    @Override
     public void unmapMemory() {
         vmaUnmapMemory(allocator().handle(), allocation);
     }

@@ -14,7 +14,7 @@ public final class SPIRVCompiler {
 
     public static SPIRVBytecode compileShaderFile(Path path, ShaderStage stage) {
         try {
-            String source = new GLSLPreprocessor(path).process();
+            String source = new GLSLPreprocessor(path, stage).process();
             return compileShader(path.toString(), source, stage);
         } catch (Exception e) {
             Log.error("Failed to compile file " + path + " to SPIRV", e);

@@ -38,28 +38,14 @@ public class PhongMaterial extends Material implements ByteSize {
         this.shininess = shininess;
     }
 
-    // This modifies the buffer's position!
-    public ByteBuffer get(ByteBuffer buffer) {
-        assertTrue(buffer.remaining() >= SIZEOF);
+    public ByteBuffer get(int offset, ByteBuffer buffer) {
+        assertTrue(buffer.remaining() - offset >= SIZEOF);
 
-        ambientColor().getRGBA(buffer);
-        diffuseColor().getRGBA(buffer);
-        specularColor().getRGBA(buffer);
-        emissiveColor().getRGBA(buffer);
-        buffer.putFloat(shininess());
-
-        return buffer;
-    }
-
-    // This modifies the buffer's position!
-    public FloatBuffer get(FloatBuffer buffer) {
-        assertTrue(buffer.remaining() >= FLOAT_BUFFER_MIN_SIZE);
-
-        ambientColor().getRGBA(buffer);
-        diffuseColor().getRGBA(buffer);
-        specularColor().getRGBA(buffer);
-        emissiveColor().getRGBA(buffer);
-        buffer.put(shininess());
+        ambientColor().getRGBA(offset, buffer);
+        diffuseColor().getRGBA(offset + Color.SIZEOF, buffer);
+        specularColor().getRGBA(offset + Color.SIZEOF * 2, buffer);
+        emissiveColor().getRGBA(offset + Color.SIZEOF * 3, buffer);
+        buffer.putFloat(offset + Color.SIZEOF * 4, shininess());
 
         return buffer;
     }
