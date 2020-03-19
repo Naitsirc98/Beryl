@@ -40,13 +40,13 @@ public class VulkanCommandBufferThreadExecutor<T extends VulkanThreadData> imple
 
     public void recordCommandBuffers(int count, VkCommandBuffer primaryCommandBuffer, VulkanCommandBufferRecorder<T> recorder) {
 
-        final int commandBuilderCount = threadCount;
-        final int objectsPerCommandBuilder = min(round((float)count / commandBuilderCount), count);
+        final int commandBufferThreadCount = threadCount;
+        final int objectsPerCommandBufferThread = min(round((float)count / commandBufferThreadCount), count) + 1;
 
-        if(count <= objectsPerCommandBuilder) {
+        if(count <= objectsPerCommandBufferThread) {
             recordCommandBuffersInThisThread(count, primaryCommandBuffer, recorder);
         } else {
-            recordCommandBuffersInParallel(commandBuilderCount, objectsPerCommandBuilder, count, primaryCommandBuffer, recorder);
+            recordCommandBuffersInParallel(commandBufferThreadCount, objectsPerCommandBufferThread, count, primaryCommandBuffer, recorder);
         }
     }
 
@@ -59,7 +59,7 @@ public class VulkanCommandBufferThreadExecutor<T extends VulkanThreadData> imple
         vkCmdExecuteCommands(primaryCommandBuffer, commandBufferThread.commandBuffer());
     }
 
-    private void recordCommandBuffersInParallel(int commandBufferThreadCount, int objectsPerCommandBuilder, int count,
+    private void recordCommandBuffersInParallel(int commandBufferThreadCount, int objectsPerCommandBufferThread, int count,
                                                 VkCommandBuffer primaryCommandBuffer, VulkanCommandBufferRecorder<T> recorder) {
 
         final VulkanCommandBufferThread<T>[] commandBufferThreads = this.commandBufferThreads;
@@ -68,8 +68,8 @@ public class VulkanCommandBufferThreadExecutor<T extends VulkanThreadData> imple
 
         for(int i = 0;i < commandBufferThreadCount;i++) {
 
-            final int offset = i * objectsPerCommandBuilder;
-            final int objectCount = min(objectsPerCommandBuilder, count - offset);
+            final int offset = i * objectsPerCommandBufferThread;
+            final int objectCount = min(objectsPerCommandBufferThread, count - offset);
 
             final VulkanCommandBufferThread<T> commandBufferThread = commandBufferThreads[i];
 

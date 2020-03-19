@@ -86,7 +86,7 @@ public abstract class VulkanCPUBuffer extends VulkanBuffer {
         }
     }
 
-    private PointerBuffer mapMemory(long offset) {
+    public PointerBuffer mapMemory(long offset) {
 
         PointerBuffer pMemoryData = stackMallocPointer(1);
 
@@ -97,7 +97,7 @@ public abstract class VulkanCPUBuffer extends VulkanBuffer {
         return pMemoryData;
     }
 
-    private void unmapMemory() {
+    public void unmapMemory() {
         vmaUnmapMemory(allocator().handle(), allocation);
     }
 }

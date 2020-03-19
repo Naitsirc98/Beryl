@@ -4,6 +4,7 @@ import naitsirc98.beryl.util.types.ByteSize;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
 
+import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 
 import static java.util.Objects.requireNonNull;
@@ -118,18 +119,18 @@ public class SpotLight extends Light<SpotLight> implements IPointLight<SpotLight
     }
 
     @Override
-    public FloatBuffer get(FloatBuffer buffer) {
-        assertTrue(buffer.remaining() >= SIZEOF / FLOAT32_SIZEOF);
+    public ByteBuffer get(ByteBuffer buffer) {
+        assertTrue(buffer.remaining() >= SIZEOF);
 
-        position.get(buffer).position(buffer.position() + 3);
+        position.get(buffer).position(buffer.position() + 3 * FLOAT32_SIZEOF);
 
-        direction.get(buffer).position(buffer.position() + 3);
+        direction.get(buffer).position(buffer.position() + 3 * FLOAT32_SIZEOF);
 
         color().getRGBA(buffer);
 
-        buffer.put(constant).put(linear).put(quadratic);
+        buffer.putFloat(constant).putFloat(linear).putFloat(quadratic);
 
-        buffer.put(cutOff).put(outerCutOff);
+        buffer.putFloat(cutOff).putFloat(outerCutOff);
 
         return buffer;
     }

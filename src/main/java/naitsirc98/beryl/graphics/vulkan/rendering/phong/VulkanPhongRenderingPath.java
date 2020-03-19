@@ -17,6 +17,7 @@ import naitsirc98.beryl.graphics.vulkan.swapchain.VulkanSwapchainDependent;
 import naitsirc98.beryl.graphics.vulkan.vertex.VulkanVertexData;
 import naitsirc98.beryl.lights.DirectionalLight;
 import naitsirc98.beryl.lights.Light;
+import naitsirc98.beryl.lights.SpotLight;
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.materials.Material;
 import naitsirc98.beryl.meshes.vertices.VertexLayout;
@@ -41,11 +42,13 @@ import static naitsirc98.beryl.graphics.vulkan.rendering.phong.VulkanPhongThread
 import static naitsirc98.beryl.graphics.vulkan.util.VulkanUtils.vkCall;
 import static naitsirc98.beryl.graphics.vulkan.vertex.VulkanVertexInputUtils.vertexInputAttributesStack;
 import static naitsirc98.beryl.graphics.vulkan.vertex.VulkanVertexInputUtils.vertexInputBindingsStack;
+import static naitsirc98.beryl.util.handles.LongHandle.NULL;
 import static naitsirc98.beryl.util.types.ByteSizeUtils.sizeof;
 import static naitsirc98.beryl.util.types.DataType.FLOAT32_SIZEOF;
+import static naitsirc98.beryl.util.types.DataType.INT32_SIZEOF;
 import static org.lwjgl.system.MemoryStack.stackPush;
-import static org.lwjgl.system.MemoryUtil.memAllocFloat;
-import static org.lwjgl.system.MemoryUtil.memFree;
+import static org.lwjgl.system.MemoryUtil.*;
+import static org.lwjgl.system.libc.LibCString.nmemcpy;
 import static org.lwjgl.vulkan.VK10.*;
 
 public final class VulkanPhongRenderingPath extends RenderingPath
@@ -57,6 +60,8 @@ public final class VulkanPhongRenderingPath extends RenderingPath
 
     private static final Path VERTEX_SHADER_PATH;
     private static final Path FRAGMENT_SHADER_PATH;
+
+    private static final int LIGHTS_UNIFORM_BUFFER_SIZE = 4 * 256 * FLOAT32_SIZEOF;
 
     static {
 
@@ -85,7 +90,7 @@ public final class VulkanPhongRenderingPath extends RenderingPath
     private VulkanCommandBufferThreadExecutor<VulkanPhongThreadData> commandBuilderExecutor;
 
     private VulkanUniformBuffer lightsUniformBuffer;
-    private FloatBuffer lightsUniformBufferData;
+    private long lightsUniformBufferData;
 
     private Matrix4f projectionViewMatrix;
     private List<MeshView> meshViews;
@@ -104,13 +109,13 @@ public final class VulkanPhongRenderingPath extends RenderingPath
         swapchain = Graphics.vulkan().swapchain();
         swapchain.addSwapchainDependent(this);
         createDescriptorSetLayouts();
-        createPipelineLayout();
-        createGraphicsPipeline();
         lightsUniformBuffer = new VulkanUniformBuffer(LIGHTS_UNIFORM_BUFFER_SIZE);
-        lightsUniformBufferData = memAllocFloat(LIGHTS_UNIFORM_BUFFER_SIZE / FLOAT32_SIZEOF);
+        lightsUniformBufferData = lightsUniformBuffer.mapMemory(0).get(0);
         lightsDescriptorPool = new VulkanDescriptorPool(lightsDescriptorSetLayout, 1, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
         lightsDescriptorSet = lightsDescriptorPool.descriptorSet(0);
         initLightsDescriptorSet();
+        createPipelineLayout();
+        createGraphicsPipeline();
         commandBuilderExecutor = new VulkanCommandBufferThreadExecutor<>(this::createThreadData);
         projectionViewMatrix = new Matrix4f();
     }
@@ -122,18 +127,27 @@ public final class VulkanPhongRenderingPath extends RenderingPath
 
     @Override
     public void free() {
+
+        if(lightsUniformBufferData != NULL) {
+            lightsUniformBuffer.unmapMemory();
+            lightsUniformBufferData = NULL;
+        }
+
         commandBuilderExecutor.free();
         pipelineLayout.free();
         graphicsPipeline.free();
         lightsDescriptorPool.free();
         lightsUniformBuffer.free();
-        memFree(lightsUniformBufferData);
     }
 
     @Override
     public void onSwapchainRecreate() {
-        terminate();
-        init();
+
+        pipelineLayout.free();
+        graphicsPipeline.free();
+
+        createPipelineLayout();
+        createGraphicsPipeline();
     }
 
     @Override
@@ -178,30 +192,28 @@ public final class VulkanPhongRenderingPath extends RenderingPath
             return;
         }
 
-        final VulkanUniformBuffer lightsUniformBuffer = this.lightsUniformBuffer;
-        final FloatBuffer lightsUniformBufferData = this.lightsUniformBufferData;
+        int offset = FLOAT32_SIZEOF;
 
-        lightsUniformBufferData.limit(lightsUniformBufferData.capacity());
+        try(MemoryStack stack = stackPush()) {
 
-        lightsUniformBufferData.put(lightSources.size());
+            nmemcpy(lightsUniformBufferData, memAddress(stack.malloc(FLOAT32_SIZEOF).putFloat(0, lightSources.size())), FLOAT32_SIZEOF);
 
-        final int minLightSize = DirectionalLight.SIZEOF;
+            ByteBuffer buffer = stack.malloc(SpotLight.SIZEOF + FLOAT32_SIZEOF);
 
-        for(LightSource lightSource : lightSources) {
+            for(LightSource lightSource : lightSources) {
 
-            final Light<?> light = lightSource.light();
+                final Light<?> light = lightSource.light();
 
-            if(sizeof(light) <= lightsUniformBufferData.remaining()) {
-                lightsUniformBufferData.put(light.type());
-                light.get(lightsUniformBufferData);
-            }
+                buffer.putFloat(light.type());
+                light.get(buffer).flip();
 
-            if(lightsUniformBufferData.remaining() < minLightSize) {
-                break;
+                nmemcpy(lightsUniformBufferData + offset, memAddress0(buffer), buffer.limit());
+
+                offset += buffer.limit();
+
+                buffer.limit(buffer.capacity());
             }
         }
-
-        lightsUniformBuffer.update(0, lightsUniformBufferData.flip());
     }
 
     @Override
@@ -303,7 +315,7 @@ public final class VulkanPhongRenderingPath extends RenderingPath
                 .buildAndPop();
 
         materialDescriptorSetLayout = new VulkanDescriptorSetLayout.Builder()
-                .binding(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, null, VK_SHADER_STAGE_FRAGMENT_BIT) // Material
+                .binding(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1, null, VK_SHADER_STAGE_FRAGMENT_BIT) // Material
                 .binding(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, null, VK_SHADER_STAGE_FRAGMENT_BIT) // AmbientMap
                 .binding(3, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, null, VK_SHADER_STAGE_FRAGMENT_BIT) // DiffuseMap
                 .binding(4, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, null, VK_SHADER_STAGE_FRAGMENT_BIT) // SpecularMap

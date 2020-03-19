@@ -60,6 +60,10 @@ public class VulkanDescriptorPool implements VulkanObject.Long {
             reallocatePool(size() + descriptorSetsCount);
         }
 
+        if(descriptorSetsCount - size() <= 0) {
+            return;
+        }
+
         allocateDescriptorSets(descriptorSetsCount - size());
     }
 
@@ -87,10 +91,10 @@ public class VulkanDescriptorPool implements VulkanObject.Long {
                 layouts.put(i, descriptorSetLayout.handle());
             }
 
-            VkDescriptorSetAllocateInfo allocInfo = VkDescriptorSetAllocateInfo.callocStack(stack);
-            allocInfo.sType(VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO);
-            allocInfo.descriptorPool(handle);
-            allocInfo.pSetLayouts(layouts);
+            VkDescriptorSetAllocateInfo allocInfo = VkDescriptorSetAllocateInfo.callocStack(stack)
+                    .sType(VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO)
+                    .descriptorPool(handle)
+                    .pSetLayouts(layouts);
 
             descriptorSets.position(size()).limit(size() + descriptorSetsCount);
 
@@ -159,6 +163,7 @@ public class VulkanDescriptorPool implements VulkanObject.Long {
             } else {
                 descriptorSets = memAllocLong(poolInfo.maxSets());
             }
+
             descriptorSets.limit(0);
         }
     }

@@ -11,16 +11,16 @@ layout(push_constant) uniform PushConstant {
     vec4 u_CameraPosition;
 };
 
-layout(binding = 1) uniform MaterialUniformBuffer {
+layout(set = 1, binding = 1) uniform MaterialUniformBuffer {
     PhongMaterial u_Material;
 };
 
-layout(binding = 2) uniform sampler2D u_AmbientMap;
-layout(binding = 3) uniform sampler2D u_DiffuseMap;
-layout(binding = 4) uniform sampler2D u_SpecularMap;
-layout(binding = 5) uniform sampler2D u_EmissiveMap;
+layout(set = 1, binding = 2) uniform sampler2D u_AmbientMap;
+layout(set = 1, binding = 3) uniform sampler2D u_DiffuseMap;
+layout(set = 1, binding = 4) uniform sampler2D u_SpecularMap;
+layout(set = 1, binding = 5) uniform sampler2D u_EmissiveMap;
 
-layout(binding = 6) uniform LightsUniformBuffer {
+layout(set = 2, binding = 6) uniform LightsUniformBuffer {
     vec4 u_LightBuffer[256];
 };
 

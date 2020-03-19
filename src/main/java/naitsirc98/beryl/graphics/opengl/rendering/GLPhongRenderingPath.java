@@ -20,6 +20,7 @@ import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
 import org.lwjgl.system.MemoryStack;
 
+import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.file.Path;
 import java.util.List;
@@ -30,8 +31,7 @@ import static naitsirc98.beryl.util.types.ByteSizeUtils.sizeof;
 import static naitsirc98.beryl.util.types.DataType.FLOAT32_SIZEOF;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.system.MemoryStack.stackPush;
-import static org.lwjgl.system.MemoryUtil.memAllocFloat;
-import static org.lwjgl.system.MemoryUtil.memFree;
+import static org.lwjgl.system.MemoryUtil.*;
 
 public class GLPhongRenderingPath extends RenderingPath {
 
@@ -77,7 +77,7 @@ public class GLPhongRenderingPath extends RenderingPath {
     private GLUniformBuffer lightsUniformBuffer;
 
     private FloatBuffer matricesUniformBufferData;
-    private FloatBuffer lightsUniformBufferData;
+    private ByteBuffer lightsUniformBufferData;
     private FloatBuffer mvpData;
 
     private Matrix4f projectionViewMatrix;
@@ -107,7 +107,7 @@ public class GLPhongRenderingPath extends RenderingPath {
         lightsUniformBuffer = new GLUniformBuffer(LIGHTS_UNIFORM_BUFFER_NAME, shader, 2);
         lightsUniformBuffer.allocate(LIGHTS_UNIFORM_BUFFER_SIZE);
 
-        lightsUniformBufferData = memAllocFloat(LIGHTS_UNIFORM_BUFFER_SIZE / FLOAT32_SIZEOF);
+        lightsUniformBufferData = memAlloc(LIGHTS_UNIFORM_BUFFER_SIZE);
 
         mvpData = memAllocFloat(16);
 
@@ -192,9 +192,9 @@ public class GLPhongRenderingPath extends RenderingPath {
 
         lightsUniformBuffer.bind();
 
-        final FloatBuffer lightsUniformBufferData = this.lightsUniformBufferData;
+        final ByteBuffer lightsUniformBufferData = this.lightsUniformBufferData;
 
-        lightsUniformBufferData.put(lightSources.size());
+        lightsUniformBufferData.putFloat(lightSources.size());
 
         final int minLightSize = DirectionalLight.SIZEOF;
 
@@ -203,7 +203,7 @@ public class GLPhongRenderingPath extends RenderingPath {
             final Light<?> light = lightSource.light();
 
             if(sizeof(light) <= lightsUniformBufferData.remaining()) {
-                lightsUniformBufferData.put(light.type());
+                lightsUniformBufferData.putFloat(light.type());
                 light.get(lightsUniformBufferData);
             }
 

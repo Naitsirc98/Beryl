@@ -31,8 +31,8 @@ public class VulkanUniformBuffer extends VulkanCPUBuffer {
 
     private static VmaAllocationCreateInfo getUniformBufferAllocationCreateInfo() {
         return VmaAllocationCreateInfo.malloc()
-                .usage(VMA_MEMORY_USAGE_CPU_TO_GPU)
-                .requiredFlags(VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+                .usage(VMA_MEMORY_USAGE_CPU_TO_GPU);
+                // .requiredFlags(VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
     }
 
     private static VkBufferCreateInfo getUniformBufferCreateInfo(long size) {

@@ -4,6 +4,7 @@ import naitsirc98.beryl.util.types.ByteSize;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
 
+import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 
 import static java.util.Objects.requireNonNull;
@@ -38,10 +39,10 @@ public class DirectionalLight extends Light<DirectionalLight> implements IDirect
     }
 
     @Override
-    public FloatBuffer get(FloatBuffer buffer) {
-        assertTrue(buffer.remaining() >= SIZEOF / FLOAT32_SIZEOF);
+    public ByteBuffer get(ByteBuffer buffer) {
+        assertTrue(buffer.remaining() >= SIZEOF);
 
-        direction.get(buffer).position(buffer.position() + 3);
+        direction.get(buffer).position(buffer.position() + 3 * FLOAT32_SIZEOF);
 
         color().getRGBA(buffer);
 
