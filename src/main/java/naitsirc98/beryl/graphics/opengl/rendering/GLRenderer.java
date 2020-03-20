@@ -19,7 +19,6 @@ public final class GLRenderer implements Renderer {
 
     private GLRenderer() {
         glContext = opengl().handle();
-        glfwSwapInterval(0);
     }
 
     @Override

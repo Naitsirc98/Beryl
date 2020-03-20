@@ -3,6 +3,7 @@ package naitsirc98.beryl.graphics.vulkan.buffers;
 import org.lwjgl.util.vma.VmaAllocationCreateInfo;
 import org.lwjgl.vulkan.VkBufferCreateInfo;
 
+import static org.lwjgl.util.vma.Vma.VMA_ALLOCATION_CREATE_MAPPED_BIT;
 import static org.lwjgl.util.vma.Vma.VMA_MEMORY_USAGE_CPU_TO_GPU;
 import static org.lwjgl.vulkan.VK10.*;
 
@@ -31,7 +32,8 @@ public class VulkanUniformBuffer extends VulkanCPUBuffer {
 
     private static VmaAllocationCreateInfo getUniformBufferAllocationCreateInfo() {
         return VmaAllocationCreateInfo.malloc()
-                .usage(VMA_MEMORY_USAGE_CPU_TO_GPU);
+                .usage(VMA_MEMORY_USAGE_CPU_TO_GPU)
+                .flags(VMA_ALLOCATION_CREATE_MAPPED_BIT);
                 // .requiredFlags(VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
     }
 

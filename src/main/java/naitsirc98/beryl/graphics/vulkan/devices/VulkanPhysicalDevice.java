@@ -79,7 +79,7 @@ public class VulkanPhysicalDevice implements VulkanObject.Custom<VkPhysicalDevic
             vkEnumeratePhysicalDevices(vkInstance(), deviceCount, ppPhysicalDevices);
 
             VkPhysicalDevice physicalDevice = null;
-            QueueFamilyIndices queueFamilyIndices = null;
+            QueueFamilyIndices queueFamilyIndices;
 
             for(int i = 0;i < ppPhysicalDevices.capacity();i++) {
 

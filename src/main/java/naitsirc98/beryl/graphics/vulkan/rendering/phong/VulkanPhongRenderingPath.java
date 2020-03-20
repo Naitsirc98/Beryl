@@ -46,6 +46,7 @@ import static naitsirc98.beryl.util.types.DataType.INT32_SIZEOF;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.memAddress;
 import static org.lwjgl.system.libc.LibCString.nmemcpy;
+import static org.lwjgl.util.vma.Vma.vmaFlushAllocation;
 import static org.lwjgl.vulkan.VK10.*;
 
 public final class VulkanPhongRenderingPath extends RenderingPath
@@ -142,6 +143,11 @@ public final class VulkanPhongRenderingPath extends RenderingPath
     @Override
     public void onSwapchainRecreate() {
 
+        if(lightsUniformBufferData != NULL) {
+            lightsUniformBuffer.unmapMemory();
+            lightsUniformBufferData = lightsUniformBuffer.mapMemory(0).get(0);
+        }
+
         pipelineLayout.free();
         graphicsPipeline.free();
 
@@ -164,6 +170,10 @@ public final class VulkanPhongRenderingPath extends RenderingPath
 
         projectionViewMatrix.set(camera.projectionViewMatrix());
 
+        if(swapchain.vsync()) {
+            lightsUniformBufferData = lightsUniformBuffer.mapMemory(0).get(0);
+        }
+
         try(MemoryStack stack = stackPush()) {
 
             updateLightsUniformBuffer(scene.lightSources(), stack);
@@ -177,6 +187,12 @@ public final class VulkanPhongRenderingPath extends RenderingPath
             commandBuilderExecutor.recordCommandBuffers(meshViews.size(), primaryCommandBuffer, this);
 
             endPrimaryCommandBuffer(primaryCommandBuffer);
+
+            if(swapchain.vsync()) {
+                vmaFlushAllocation(allocator().handle(), lightsUniformBuffer.allocation(), 0, lightsUniformBuffer.size());
+                lightsUniformBuffer.unmapMemory();
+                lightsUniformBufferData = NULL;
+            }
 
             this.camera = null;
             this.meshViews = null;

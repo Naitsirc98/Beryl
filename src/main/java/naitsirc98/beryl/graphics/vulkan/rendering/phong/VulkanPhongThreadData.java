@@ -1,5 +1,7 @@
 package naitsirc98.beryl.graphics.vulkan.rendering.phong;
 
+import naitsirc98.beryl.graphics.Graphics;
+import naitsirc98.beryl.graphics.vulkan.VulkanObject;
 import naitsirc98.beryl.graphics.vulkan.buffers.VulkanCPUBuffer;
 import naitsirc98.beryl.graphics.vulkan.buffers.VulkanUniformBuffer;
 import naitsirc98.beryl.graphics.vulkan.commands.VulkanThreadData;
@@ -23,18 +25,18 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static naitsirc98.beryl.graphics.Graphics.vulkan;
 import static naitsirc98.beryl.util.Maths.roundUp2;
 import static naitsirc98.beryl.util.types.DataType.FLOAT32_SIZEOF;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.*;
 import static org.lwjgl.system.libc.LibCString.nmemcpy;
+import static org.lwjgl.util.vma.Vma.vmaFlushAllocation;
 import static org.lwjgl.vulkan.VK10.*;
 
-final class VulkanPhongThreadData implements VulkanThreadData {
+final class VulkanPhongThreadData implements VulkanThreadData, VulkanObject {
 
     private static final int MIN_UNIFORM_BUFFER_OFFSET_ALIGNMENT
-            = (int) vulkan().physicalDevice().properties().limits().minUniformBufferOffsetAlignment();
+            = (int) Graphics.vulkan().physicalDevice().properties().limits().minUniformBufferOffsetAlignment();
 
     static final int CAMERA_POSITION_PUSH_CONSTANT_SIZE = 4 * FLOAT32_SIZEOF;
     static final int MVP_PUSH_CONSTANT_SIZE =  4 * 4 * FLOAT32_SIZEOF;
@@ -64,7 +66,7 @@ final class VulkanPhongThreadData implements VulkanThreadData {
 
     public VulkanPhongThreadData(VulkanDescriptorSetLayout matricesDescriptorLayout, VulkanDescriptorSetLayout materialDescriptorLayout) {
 
-        logicalDeviceHandle = vulkan().logicalDevice().handle();
+        logicalDeviceHandle = logicalDevice().handle();
 
         matricesDescriptorPool = createMatricesDescriptorPool(matricesDescriptorLayout, 1);
         materialDescriptorPool = createMaterialDescriptorPool(materialDescriptorLayout, 1);
@@ -86,7 +88,16 @@ final class VulkanPhongThreadData implements VulkanThreadData {
     public void begin(List<MeshView> meshViews, Set<Material> materials) {
 
         if(matricesUniformBuffer.size() < meshViews.size() * MATRICES_UNIFORM_BUFFER_SIZE) {
+
+            if(matricesUniformBufferData != NULL) {
+                vmaFlushAllocation(allocator().handle(), matricesUniformBuffer.allocation(), 0, MATRICES_UNIFORM_BUFFER_SIZE);
+                matricesUniformBuffer.unmapMemory();
+                matricesUniformBufferData = NULL;
+            }
+
             reallocateMatricesUniformBuffer(meshViews.size());
+
+            matricesUniformBufferData = matricesUniformBuffer.mapMemory(0).get(0);
         }
 
         if(materials.stream()
@@ -106,6 +117,12 @@ final class VulkanPhongThreadData implements VulkanThreadData {
         if(!newMaterials.isEmpty()) {
             createMaterialsDescriptorSets(newMaterials);
         }
+    }
+
+    @Override
+    public void end() {
+        lastVertexData = null;
+        lastMaterial = null;
     }
 
     private void createMaterialsDescriptorSets(List<PhongMaterial> newMaterials) {
@@ -141,11 +158,6 @@ final class VulkanPhongThreadData implements VulkanThreadData {
 
     private void reallocateMatricesUniformBuffer(int matricesCount) {
 
-        if(matricesUniformBufferData != NULL) {
-            matricesUniformBuffer.unmapMemory();
-            matricesUniformBufferData = NULL;
-        }
-
         final int newSize = matricesCount * MATRICES_UNIFORM_BUFFER_SIZE;
 
         matricesUniformBuffer.allocate(newSize);
@@ -153,8 +165,6 @@ final class VulkanPhongThreadData implements VulkanThreadData {
         initMatricesDescriptorSets();
 
         pDescriptorSets.put(0, matricesDescriptorPool.descriptorSet(0));
-
-        matricesUniformBufferData = matricesUniformBuffer.mapMemory(0).get(0);
     }
 
     @Override
@@ -169,15 +179,10 @@ final class VulkanPhongThreadData implements VulkanThreadData {
         materialDescriptorPool.free();
         matricesUniformBuffer.free();
         materialUniformBuffer.free();
+
         memFree(pDescriptorSets);
         memFree(pDynamicOffsets);
         memFree(pushConstantData);
-    }
-
-    @Override
-    public void end() {
-        lastVertexData = null;
-        lastMaterial = null;
     }
 
     void bindDescriptorSets(VkCommandBuffer commandBuffer, long pipelineLayout) {

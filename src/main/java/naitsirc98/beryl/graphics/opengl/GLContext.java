@@ -20,6 +20,7 @@ import static naitsirc98.beryl.graphics.rendering.RenderingPaths.RPATH_PHONG;
 import static naitsirc98.beryl.graphics.rendering.RenderingPaths.RPATH_SIMPLE3D;
 import static naitsirc98.beryl.util.types.TypeUtils.newInstance;
 import static org.lwjgl.glfw.GLFW.glfwMakeContextCurrent;
+import static org.lwjgl.glfw.GLFW.glfwSwapInterval;
 
 public class GLContext implements GraphicsContext, LongHandle {
 
@@ -30,6 +31,7 @@ public class GLContext implements GraphicsContext, LongHandle {
     private GLCapabilities capabilities;
     private GLGraphicsFactory graphicsFactory;
     private GLMapper mapper;
+    private boolean vsync;
 
     private GLContext() {
 
@@ -43,6 +45,20 @@ public class GLContext implements GraphicsContext, LongHandle {
         debugMessenger = newGLDebugMessenger();
         graphicsFactory = new GLGraphicsFactory();
         mapper = new GLMapper();
+        glfwSwapInterval(0);
+    }
+
+    @Override
+    public boolean vsync() {
+        return vsync;
+    }
+
+    @Override
+    public void vsync(boolean vsync) {
+        if(this.vsync != vsync) {
+            this.vsync = vsync;
+            glfwSwapInterval(vsync ? 1 : 0);
+        }
     }
 
     @Override

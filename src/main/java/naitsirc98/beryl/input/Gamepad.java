@@ -8,6 +8,8 @@ import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.util.EnumMap;
 
+import static java.lang.Math.abs;
+import static java.lang.Math.max;
 import static naitsirc98.beryl.input.Joystick.Axis.asJoystickAxis;
 import static naitsirc98.beryl.input.Joystick.Button.asJoystickButton;
 import static naitsirc98.beryl.input.State.asState;
@@ -18,6 +20,8 @@ import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.memASCIISafe;
 
 public class Gamepad implements GLFWWrapper {
+
+    private static final float AXIS_THRESHOLD = 0.2f;
 
     public static Gamepad of(Joystick joystick) {
         return Input.gamepad(joystick);
@@ -69,6 +73,18 @@ public class Gamepad implements GLFWWrapper {
         return buttons;
     }
 
+    public float axis(Joystick.Axis axis) {
+        return axes.getOrDefault(axis, 0.0f);
+    }
+
+    public boolean moved(Joystick.Axis axis, Joystick.AxisDirection direction) {
+        final float state = axis(axis);
+        if(state == 0) {
+            return false;
+        }
+        return Math.signum(state) == direction.direction();
+    }
+
     public EnumMap<Joystick.Axis, Float> axes() {
         return axes;
     }
@@ -94,7 +110,14 @@ public class Gamepad implements GLFWWrapper {
         FloatBuffer states = gamepadState.axes();
         axes.clear();
         for(int i = 0;i < states.limit();i++) {
-            axes.put(asJoystickAxis(i), states.get(i));
+
+            float state = states.get(i);
+
+            if(abs(state) < AXIS_THRESHOLD) {
+                state = 0;
+            }
+
+            axes.put(asJoystickAxis(i), state);
         }
     }
 

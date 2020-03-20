@@ -14,8 +14,9 @@ public final class Materials {
         return MATERIALS.containsKey(name);
     }
 
-    public static Material get(String name) {
-        return MATERIALS.get(name);
+    @SuppressWarnings("unchecked")
+    public static <T extends Material> T get(String name) {
+        return (T) MATERIALS.get(name);
     }
 
     static synchronized int nextHashCode() {

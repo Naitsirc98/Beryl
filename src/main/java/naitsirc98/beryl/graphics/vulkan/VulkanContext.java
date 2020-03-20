@@ -79,6 +79,16 @@ public final class VulkanContext implements GraphicsContext {
     }
 
     @Override
+    public boolean vsync() {
+        return swapchain.vsync();
+    }
+
+    @Override
+    public void vsync(boolean vsync) {
+        swapchain.vsync(vsync);
+    }
+
+    @Override
     public VulkanMapper mapper() {
         return mapper;
     }

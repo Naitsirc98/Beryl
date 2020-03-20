@@ -55,7 +55,7 @@ public class App1 extends BerylApplication {
         // BerylConfiguration.WINDOW_RESIZABLE.set(false);
         BerylConfiguration.SHOW_DEBUG_INFO.set(true);
         BerylConfiguration.GRAPHICS_API.set(GraphicsAPI.VULKAN);
-        BerylConfiguration.VULKAN_ENABLE_DEBUG_MESSAGES.set(false);
+        BerylConfiguration.VULKAN_ENABLE_DEBUG_MESSAGES.set(true);
         BerylConfiguration.VULKAN_ENABLE_VALIDATION_LAYERS.set(false);
     }
 
@@ -86,11 +86,9 @@ public class App1 extends BerylApplication {
             diffuseTexture.pixels(1, image);
         }
 
-        PhongMaterial material = new PhongMaterial.Builder("MyMaterial")
-                // .diffuseColor(Color.GREEN);
-                .ambientMap(diffuseTexture)
-                .diffuseMap(diffuseTexture)
-                .build();
+        PhongMaterial material = PhongMaterial.get("MyMaterial", builder ->
+                builder.ambientMap(diffuseTexture)
+                .diffuseMap(diffuseTexture));
 
         Mesh mesh = new Mesh(VertexData.builder(VERTEX_LAYOUT_3D).vertices(getCubeVertices()).build(), material);
 
@@ -105,7 +103,7 @@ public class App1 extends BerylApplication {
                 Transform transform = thisBehaviour.get(Transform.class);
                 transform.rotateY(radians(angle));
                 // thisBehaviour.entity().destroy();
-                // addOrRemoveRandomly(thisBehaviour.entity(), mesh);
+                addOrRemoveRandomly(thisBehaviour.entity(), mesh);
             });
         }
 
@@ -118,10 +116,10 @@ public class App1 extends BerylApplication {
         light.add(LightSource.class).light(new PointLight()
                 .color(new Color(1, 1, 1, 1))
                 .position(new Vector3f(0.0f))
-                .range(LightRange.MEDIUM)); // 0.972, 0.796, 0.407
+                .range(LightRange.MEDIUM));
         light.add(Transform.class).position(0, 0, 0);
         light.add(MeshView.class).mesh(new Mesh(mesh.vertexData(),
-                new PhongMaterial.Builder("LightMaterial").emissiveColor(Color.WHITE).build()));
+                PhongMaterial.get("LightMaterial", builder -> builder.emissiveColor(Color.WHITE))));
 
         SceneManager.addScene(scene);
     }
@@ -185,13 +183,11 @@ public class App1 extends BerylApplication {
     @Override
     protected void onUpdate() {
 
-
-
     }
 
     private void addOrRemoveRandomly(Entity entity, Mesh mesh) {
 
-        if(RAND.nextFloat() < 0.005f) {
+        if(RAND.nextFloat() < 0.001f) {
 
             entity.destroy();
 

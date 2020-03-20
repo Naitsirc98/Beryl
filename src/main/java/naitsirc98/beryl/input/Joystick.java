@@ -221,4 +221,22 @@ public enum Joystick implements GLFWWrapper {
 
     }
 
+    public enum AxisDirection {
+
+        LEFT(-1),
+        RIGHT(1),
+        UP(-1),
+        DOWN(1);
+
+        private final float direction;
+
+        AxisDirection(int direction) {
+            this.direction = direction;
+        }
+
+        public float direction() {
+            return direction;
+        }
+    }
+
 }

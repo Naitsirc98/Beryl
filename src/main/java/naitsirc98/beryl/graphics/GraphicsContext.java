@@ -9,6 +9,10 @@ public interface GraphicsContext extends NativeResource {
 
     void init();
 
+    boolean vsync();
+
+    void vsync(boolean vsync);
+
     GraphicsMapper mapper();
 
     Map<Integer, RenderingPath> renderingPaths();

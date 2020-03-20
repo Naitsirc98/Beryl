@@ -6,7 +6,7 @@ import naitsirc98.beryl.util.types.ByteSize;
 import naitsirc98.beryl.util.types.IBuilder;
 
 import java.nio.ByteBuffer;
-import java.nio.FloatBuffer;
+import java.util.function.Consumer;
 
 import static java.util.Objects.requireNonNull;
 import static naitsirc98.beryl.util.Asserts.assertTrue;
@@ -19,6 +19,15 @@ public class PhongMaterial extends Material implements ByteSize {
     public static final int FLOAT_BUFFER_MIN_SIZE = SIZEOF / FLOAT32_SIZEOF;
 
     public static final float DEFAULT_SHININESS = 32.0f;
+
+    public static PhongMaterial get(String name, Consumer<Builder> builderIfNotExists) {
+        if(Materials.exists(name)) {
+            return Materials.get(name);
+        }
+        final Builder builder = new Builder(name);
+        builderIfNotExists.accept(builder);
+        return builder.build();
+    }
 
     private final ColorMapProperty ambient;
     private final ColorMapProperty diffuse;
@@ -100,7 +109,7 @@ public class PhongMaterial extends Material implements ByteSize {
         private final ColorMapProperty emissive;
         private float shininess;
 
-        public Builder(String name) {
+        private Builder(String name) {
             this.name = requireNonNull(name);
             ambient = new ColorMapProperty();
             diffuse = new ColorMapProperty();

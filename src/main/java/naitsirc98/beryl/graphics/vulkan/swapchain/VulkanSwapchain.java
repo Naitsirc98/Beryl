@@ -38,16 +38,25 @@ public class VulkanSwapchain implements VulkanObject.Long {
     private static final int COLOR_ATTACHMENT_INDEX = 0;
     private static final int DEPTH_ATTACHMENT_INDEX = 1;
 
+    private static final int NO_PRESENT_MODE = -1;
+
     private long vkSwapchain;
     private int swapChainImageFormat;
     private VkExtent2D swapChainExtent;
     private VulkanImageView[] swapchainImages;
     private VulkanRenderImage depthImage;
     private VulkanRenderPass renderPass;
+    private int presentMode = -1;
     // Objects that need to be reinitialized when the swapchain is recreated
     private final Queue<VulkanSwapchainDependent> swapchainDependents;
 
     public VulkanSwapchain() {
+        init();
+        swapchainDependents = new ArrayDeque<>();
+    }
+
+    public VulkanSwapchain(int presentMode) {
+        this.presentMode = presentMode;
         init();
         swapchainDependents = new ArrayDeque<>();
     }
@@ -89,6 +98,25 @@ public class VulkanSwapchain implements VulkanObject.Long {
 
     public void removeSwapchainDependent(VulkanSwapchainDependent dependent) {
         swapchainDependents.remove(dependent);
+    }
+
+    public boolean vsync() {
+        return presentMode == VK_PRESENT_MODE_FIFO_KHR;
+    }
+
+    public void vsync(boolean vsync) {
+        changePresentMode(vsync ? VK_PRESENT_MODE_FIFO_KHR : NO_PRESENT_MODE);
+    }
+
+    public int presentMode() {
+        return presentMode;
+    }
+
+    public void changePresentMode(int newPresentMode) {
+        if(presentMode != newPresentMode) {
+            presentMode = newPresentMode;
+            recreate();
+        }
     }
 
     public void recreate() {
@@ -162,7 +190,11 @@ public class VulkanSwapchain implements VulkanObject.Long {
             SwapChainSupportDetails swapChainSupport = physicalDevice.swapChainSupportDetails();
 
             VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(swapChainSupport.formats());
-            int presentMode = chooseSwapPresentMode(swapChainSupport.presentModes());
+
+            if(presentMode == NO_PRESENT_MODE) {
+                presentMode = chooseSwapPresentMode(swapChainSupport.presentModes());
+            }
+
             VkExtent2D extent = chooseSwapExtent(swapChainSupport.capabilities());
 
             IntBuffer imageCount = stack.ints(swapChainSupport.capabilities().minImageCount() + 1);

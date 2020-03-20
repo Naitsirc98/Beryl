@@ -138,6 +138,7 @@ public class VulkanRenderer implements VulkanObject, Renderer, VulkanSwapchainDe
 
     @Override
     public void onSwapchainRecreate() {
+        logicalDevice().waitIdle();
         commandPool.freeCommandBuffers(commandBuffers);
         init0();
     }
