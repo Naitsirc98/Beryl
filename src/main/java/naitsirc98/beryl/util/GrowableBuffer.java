@@ -1,6 +1,6 @@
 package naitsirc98.beryl.util;
 
-import org.lwjgl.system.NativeResource;
+import naitsirc98.beryl.resources.ManagedResource;
 
 import java.nio.ByteBuffer;
 
@@ -10,7 +10,7 @@ import static naitsirc98.beryl.util.Asserts.assertTrue;
 import static naitsirc98.beryl.util.types.DataType.*;
 import static org.lwjgl.system.MemoryUtil.*;
 
-public final class GrowableBuffer implements NativeResource {
+public final class GrowableBuffer extends ManagedResource {
 
     private static final int DEFAULT_INITIAL_CAPACITY = 16;
     private static final float DEFAULT_RESIZE_FACTOR = 1.5f;
@@ -262,12 +262,12 @@ public final class GrowableBuffer implements NativeResource {
     }
 
     // Make this GrowableBuffer to not free the internal buffer. This is useful if you want to 'unwrap' the internal buffer.
-    public void release() {
+    public void unwrap() {
         data = null;
     }
 
     @Override
-    public void free() {
+    protected void free() {
         memFree(data);
         data = null;
     }

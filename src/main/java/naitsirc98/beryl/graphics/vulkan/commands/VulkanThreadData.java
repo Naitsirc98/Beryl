@@ -1,8 +1,8 @@
 package naitsirc98.beryl.graphics.vulkan.commands;
 
-import org.lwjgl.system.NativeResource;
+import naitsirc98.beryl.resources.Resource;
 
-public interface VulkanThreadData extends NativeResource {
+public interface VulkanThreadData extends Resource {
 
     void end();
 }

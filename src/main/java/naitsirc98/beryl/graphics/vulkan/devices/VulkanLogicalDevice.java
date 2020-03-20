@@ -43,7 +43,7 @@ public class VulkanLogicalDevice implements VulkanObject.Custom<VkDevice> {
     }
 
     @Override
-    public void free() {
+    public void release() {
         vkDestroyDevice(vkDevice, null);
     }
 

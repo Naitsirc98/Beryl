@@ -84,7 +84,7 @@ public class VulkanAllocator implements VulkanObject.Long {
     }
 
     @Override
-    public void free() {
+    public void release() {
         vmaDestroyAllocator(vmaAllocator);
         vmaAllocator = VK_NULL_HANDLE;
     }

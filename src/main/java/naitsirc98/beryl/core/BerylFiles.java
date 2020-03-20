@@ -1,4 +1,4 @@
-package naitsirc98.beryl.resources;
+package naitsirc98.beryl.core;
 
 import naitsirc98.beryl.logging.Log;
 
@@ -10,10 +10,10 @@ import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-public final class Resources {
+public final class BerylFiles {
 
     public static URL getURL(String path) {
-       return Resources.class.getResource(normalize(path));
+       return BerylFiles.class.getResource(normalize(path));
     }
 
     public static String getString(String path) {
@@ -38,12 +38,12 @@ public final class Resources {
     }
 
     public static InputStream getStream(String path) {
-        return Resources.class.getResourceAsStream(normalize(path));
+        return BerylFiles.class.getResourceAsStream(normalize(path));
     }
 
     private static String normalize(String path) {
         return path.startsWith("/") ? path : '/' + path;
     }
 
-    private Resources() {}
+    private BerylFiles() {}
 }

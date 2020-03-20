@@ -2,19 +2,11 @@ package naitsirc98.beryl.graphics.vulkan.textures;
 
 import naitsirc98.beryl.graphics.vulkan.VulkanObject;
 import naitsirc98.beryl.util.types.IBuilder;
-import org.lwjgl.system.MemoryStack;
 import org.lwjgl.util.vma.VmaAllocationCreateInfo;
-import org.lwjgl.vulkan.VkCommandBuffer;
 import org.lwjgl.vulkan.VkImageCreateInfo;
-import org.lwjgl.vulkan.VkImageMemoryBarrier;
 import org.lwjgl.vulkan.VkImageViewCreateInfo;
 
-import java.nio.IntBuffer;
-
 import static java.util.Objects.requireNonNull;
-import static naitsirc98.beryl.graphics.vulkan.util.VulkanFormatUtils.formatHasStencilComponent;
-import static org.lwjgl.system.MemoryStack.stackPush;
-import static org.lwjgl.vulkan.VK10.*;
 
 public class VulkanRenderImage implements VulkanObject {
 
@@ -54,15 +46,15 @@ public class VulkanRenderImage implements VulkanObject {
     }
 
     @Override
-    public void free() {
+    public void release() {
 
         if(image != null) {
-            image.free();
+            image.release();
             image = null;
         }
 
         if(imageView != null) {
-            imageView.free();
+            imageView.release();
             imageView = null;
         }
     }

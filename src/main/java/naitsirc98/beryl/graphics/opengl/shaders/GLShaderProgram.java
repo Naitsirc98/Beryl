@@ -57,7 +57,7 @@ public final class GLShaderProgram implements GLObject {
     public void deleteShaders() {
         for(GLShader shader : shaders) {
             glDetachShader(handle, shader.handle());
-            shader.free();
+            shader.release();
         }
         shaders.clear();
     }
@@ -123,7 +123,7 @@ public final class GLShaderProgram implements GLObject {
     }
 
     @Override
-    public void free() {
+    public void release() {
         glDeleteProgram(handle);
         shaders = null;
         uniformLocations = null;

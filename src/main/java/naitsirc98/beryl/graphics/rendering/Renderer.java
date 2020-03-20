@@ -1,8 +1,8 @@
 package naitsirc98.beryl.graphics.rendering;
 
-import org.lwjgl.system.NativeResource;
+import naitsirc98.beryl.resources.Resource;
 
-public interface Renderer extends NativeResource {
+public interface Renderer extends Resource {
 
     @SuppressWarnings("unchecked")
     static <T extends Renderer> T get() {

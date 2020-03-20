@@ -53,7 +53,7 @@ public class VulkanDebugMessenger implements VulkanObject.Long {
     }
 
     @Override
-    public void free() {
+    public void release() {
         debugCallback.free();
         destroyDebugMessenger();
     }

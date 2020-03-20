@@ -44,9 +44,9 @@ public class GLGraphicsFactory implements GraphicsFactory {
     }
 
     @Override
-    public void free() {
+    public void release() {
         if(blankTexture2D != null) {
-            blankTexture2D.free();
+            blankTexture2D.release();
         }
     }
 }

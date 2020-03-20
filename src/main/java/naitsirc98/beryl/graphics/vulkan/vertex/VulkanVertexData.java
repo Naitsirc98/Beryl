@@ -44,13 +44,13 @@ public final class VulkanVertexData extends VertexData {
     }
 
     @Override
-    public void free() {
+    protected void free() {
 
-        vertexBuffers.free();
+        vertexBuffers.release();
         vertexBuffers = null;
 
         if(indexBuffer != null) {
-            indexBuffer.free();
+            indexBuffer.release();
             indexBuffer = null;
         }
     }

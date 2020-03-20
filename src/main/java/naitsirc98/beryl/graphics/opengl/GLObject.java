@@ -1,11 +1,11 @@
 package naitsirc98.beryl.graphics.opengl;
 
+import naitsirc98.beryl.resources.Resource;
 import naitsirc98.beryl.util.handles.IntHandle;
-import org.lwjgl.system.NativeResource;
 
 import static naitsirc98.beryl.graphics.Graphics.opengl;
 
-public interface GLObject extends IntHandle, NativeResource {
+public interface GLObject extends IntHandle, Resource {
 
     default GLMapper mapper() {
         return opengl().mapper();

@@ -2,8 +2,8 @@ package naitsirc98.beryl.graphics.opengl;
 
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.logging.Log.Level;
+import naitsirc98.beryl.resources.Resource;
 import org.lwjgl.opengl.GLDebugMessageCallback;
-import org.lwjgl.system.NativeResource;
 
 import static naitsirc98.beryl.graphics.opengl.GLContext.OPENGL_DEBUG_MESSAGES_ENABLED;
 import static org.lwjgl.opengl.GL43.GL_DEBUG_OUTPUT;
@@ -11,7 +11,7 @@ import static org.lwjgl.opengl.GL43.glEnable;
 import static org.lwjgl.opengl.GL43C.*;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
-public class GLDebugMessenger implements NativeResource {
+public class GLDebugMessenger implements Resource {
 
     static GLDebugMessenger newGLDebugMessenger() {
         return OPENGL_DEBUG_MESSAGES_ENABLED ? new GLDebugMessenger() : null;
@@ -26,7 +26,7 @@ public class GLDebugMessenger implements NativeResource {
     }
 
     @Override
-    public void free() {
+    public void release() {
         debugCallback.free();
     }
 
@@ -93,5 +93,10 @@ public class GLDebugMessenger implements NativeResource {
             default:
                 return Level.TRACE;
         }
+    }
+
+    @Override
+    public boolean released() {
+        return false; // Not used
     }
 }

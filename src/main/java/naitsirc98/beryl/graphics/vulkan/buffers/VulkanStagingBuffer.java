@@ -1,7 +1,6 @@
 package naitsirc98.beryl.graphics.vulkan.buffers;
 
 import naitsirc98.beryl.graphics.vulkan.textures.VulkanImage;
-import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.util.vma.VmaAllocationCreateInfo;
 import org.lwjgl.vulkan.*;
@@ -10,33 +9,30 @@ import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
-import static naitsirc98.beryl.graphics.vulkan.util.VulkanUtils.vkCall;
 import static naitsirc98.beryl.util.Asserts.assertTrue;
 import static org.lwjgl.system.MemoryStack.stackPush;
-import static org.lwjgl.system.MemoryUtil.memAddress;
-import static org.lwjgl.system.libc.LibCString.nmemcpy;
-import static org.lwjgl.util.vma.Vma.*;
+import static org.lwjgl.util.vma.Vma.VMA_MEMORY_USAGE_CPU_ONLY;
 import static org.lwjgl.vulkan.VK11.*;
 
 public class VulkanStagingBuffer extends VulkanCPUBuffer {
 
-    public VulkanStagingBuffer() {
+    VulkanStagingBuffer() {
         super(getStagingBufferCreateInfo(), getStagingBufferAllocationCreateInfo());
     }
 
-    public VulkanStagingBuffer(ByteBuffer data) {
+    VulkanStagingBuffer(ByteBuffer data) {
         this();
         allocate(data.remaining());
         update(0, data);
     }
 
-    public VulkanStagingBuffer(IntBuffer data) {
+    VulkanStagingBuffer(IntBuffer data) {
         this();
         allocate(data.remaining());
         update(0, data);
     }
 
-    public VulkanStagingBuffer(FloatBuffer data) {
+    VulkanStagingBuffer(FloatBuffer data) {
         this();
         allocate(data.remaining());
         update(0, data);

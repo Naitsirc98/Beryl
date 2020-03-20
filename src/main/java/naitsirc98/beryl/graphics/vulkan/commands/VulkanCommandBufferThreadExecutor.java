@@ -3,10 +3,10 @@ package naitsirc98.beryl.graphics.vulkan.commands;
 import naitsirc98.beryl.graphics.Graphics;
 import naitsirc98.beryl.graphics.vulkan.rendering.VulkanRenderer;
 import naitsirc98.beryl.logging.Log;
+import naitsirc98.beryl.resources.Resource;
 import naitsirc98.beryl.util.SystemInfo;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryUtil;
-import org.lwjgl.system.NativeResource;
 import org.lwjgl.vulkan.VkCommandBuffer;
 
 import java.util.Arrays;
@@ -21,7 +21,7 @@ import static org.joml.Math.round;
 import static org.lwjgl.system.MemoryUtil.memAllocPointer;
 import static org.lwjgl.vulkan.VK10.vkCmdExecuteCommands;
 
-public class VulkanCommandBufferThreadExecutor<T extends VulkanThreadData> implements NativeResource {
+public class VulkanCommandBufferThreadExecutor<T extends VulkanThreadData> implements Resource {
 
     private VulkanCommandBufferThread<T>[] commandBufferThreads;
     private PointerBuffer[] pCommandBuffers;
@@ -133,9 +133,14 @@ public class VulkanCommandBufferThreadExecutor<T extends VulkanThreadData> imple
     }
 
     @Override
-    public void free() {
+    public boolean released() {
+        return false; // Not used
+    }
 
-        Arrays.stream(commandBufferThreads).parallel().forEach(VulkanCommandBufferThread::free);
+    @Override
+    public void release() {
+
+        Arrays.stream(commandBufferThreads).parallel().forEach(VulkanCommandBufferThread::release);
         Arrays.stream(pCommandBuffers).parallel().forEach(MemoryUtil::memFree);
 
         commandBufferThreads = null;

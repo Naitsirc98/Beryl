@@ -33,17 +33,17 @@ public final class GLVertexData extends VertexData {
     }
 
     @Override
-    public void free() {
+    protected void free() {
 
-        vertexArray.free();
+        vertexArray.release();
 
         for(int i = 0;i < vertexBuffers.length;i++) {
-            vertexBuffers[i].free();
+            vertexBuffers[i].release();
             vertexBuffers[i] = null;
         }
 
         if(indexBuffer != null) {
-            indexBuffer.free();
+            indexBuffer.release();
         }
 
         vertexArray = null;

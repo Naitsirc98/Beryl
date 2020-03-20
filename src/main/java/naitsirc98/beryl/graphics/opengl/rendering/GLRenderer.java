@@ -36,7 +36,7 @@ public final class GLRenderer implements Renderer {
     }
 
     @Override
-    public void free() {
+    public void release() {
 
     }
 }

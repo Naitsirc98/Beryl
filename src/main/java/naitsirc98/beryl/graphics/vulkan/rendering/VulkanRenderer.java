@@ -130,10 +130,10 @@ public class VulkanRenderer implements VulkanObject, Renderer, VulkanSwapchainDe
     }
 
     @Override
-    public void free() {
+    public void release() {
         logicalDevice().waitIdle();
         commandPool.freeCommandBuffers(commandBuffers);
-        frameManager.free();
+        frameManager.release();
     }
 
     @Override

@@ -30,7 +30,7 @@ public class VulkanDescriptorSetLayout implements VulkanObject.Long {
     }
 
     @Override
-    public void free() {
+    public void release() {
         vkDestroyDescriptorSetLayout(Graphics.vulkan().logicalDevice().handle(), vkDescriptorSetLayout, null);
         vkDescriptorSetLayout = VK_NULL_HANDLE;
     }

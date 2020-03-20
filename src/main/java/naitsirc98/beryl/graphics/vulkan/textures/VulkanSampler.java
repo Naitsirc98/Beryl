@@ -18,11 +18,11 @@ public class VulkanSampler implements VulkanObject.Long, Sampler {
     private VkSamplerCreateInfo info;
     private boolean modified = true;
 
-    public VulkanSampler() {
+    VulkanSampler() {
         init(createDefaultSamplerCreateInfo());
     }
 
-    public VulkanSampler(VkSamplerCreateInfo info) {
+    VulkanSampler(VkSamplerCreateInfo info) {
         init(info);
     }
 
@@ -33,7 +33,9 @@ public class VulkanSampler implements VulkanObject.Long, Sampler {
 
     public void validate() {
         if(modified) {
+            vkDestroySampler(logicalDevice().handle(), handle, null);
             init(info);
+            modified = false;
         }
     }
 
@@ -190,7 +192,7 @@ public class VulkanSampler implements VulkanObject.Long, Sampler {
     }
 
     @Override
-    public void free() {
+    public void release() {
 
         vkDestroySampler(logicalDevice().handle(), handle, null);
         info.free();
@@ -211,8 +213,6 @@ public class VulkanSampler implements VulkanObject.Long, Sampler {
 
             handle = pSampler.get(0);
         }
-
-        modified = false;
     }
 
     private VkSamplerCreateInfo createDefaultSamplerCreateInfo() {

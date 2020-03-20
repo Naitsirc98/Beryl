@@ -1,6 +1,7 @@
 package naitsirc98.beryl.meshes.vertices;
 
 import naitsirc98.beryl.graphics.GraphicsFactory;
+import naitsirc98.beryl.resources.ManagedResource;
 import org.lwjgl.system.NativeResource;
 
 import java.nio.ByteBuffer;
@@ -8,7 +9,7 @@ import java.nio.ByteBuffer;
 import static java.util.Objects.requireNonNull;
 import static naitsirc98.beryl.util.Asserts.assertTrue;
 
-public abstract class VertexData implements NativeResource {
+public abstract class VertexData extends ManagedResource {
 
     public static Builder builder(VertexLayout layout) {
         return GraphicsFactory.get().newVertexDataBuilder(layout);

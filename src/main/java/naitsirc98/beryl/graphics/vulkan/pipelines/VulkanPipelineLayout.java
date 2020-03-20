@@ -30,7 +30,7 @@ public class VulkanPipelineLayout implements VulkanObject.Long {
     }
 
     @Override
-    public void free() {
+    public void release() {
         vkDestroyPipelineLayout(Graphics.vulkan().logicalDevice().handle(), vkPipelineLayout, null);
         vkPipelineLayout = VK_NULL_HANDLE;
     }

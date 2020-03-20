@@ -2,6 +2,7 @@ package naitsirc98.beryl.graphics.vulkan.swapchain;
 
 import naitsirc98.beryl.graphics.Graphics;
 import naitsirc98.beryl.logging.Log;
+import naitsirc98.beryl.resources.Resource;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.NativeResource;
 import org.lwjgl.vulkan.VkDevice;
@@ -18,7 +19,7 @@ import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.vulkan.VK10.*;
 
 
-public class FrameManager implements NativeResource {
+public class FrameManager implements Resource {
 
     private Frame[] frames;
     private Map<Integer, Frame> inFlight;
@@ -89,11 +90,16 @@ public class FrameManager implements NativeResource {
     }
 
     @Override
-    public void free() {
+    public void release() {
         for(int i = 0;i < frames.length;i++) {
-            frames[i].free();
+            frames[i].release();
             frames[i] = null;
         }
+    }
+
+    @Override
+    public boolean released() {
+        return false;
     }
 
     /**
@@ -102,7 +108,7 @@ public class FrameManager implements NativeResource {
      * This frame's sync objects must be deleted manually
      * */
 
-    public class Frame implements NativeResource {
+    public class Frame implements Resource {
 
         public final long imageAvailableSemaphore;
         public final long renderFinishedSemaphore;
@@ -115,11 +121,12 @@ public class FrameManager implements NativeResource {
         }
 
         @Override
-        public void free() {
+        public void release() {
             VkDevice device = Graphics.vulkan().logicalDevice().handle();
             vkDestroySemaphore(device, imageAvailableSemaphore, null);
             vkDestroySemaphore(device, renderFinishedSemaphore, null);
             vkDestroyFence(device, fence, null);
         }
+
     }
 }

@@ -25,7 +25,7 @@ public class VulkanSurface implements VulkanObject.Long {
     }
 
     @Override
-    public void free() {
+    public void release() {
         vkDestroySurfaceKHR(vkInstance(), vkSurface, null);
         vkSurface = VK_NULL_HANDLE;
     }

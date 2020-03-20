@@ -167,7 +167,7 @@ public class GLSampler implements GLObject, Sampler {
     }
 
     @Override
-    public void free() {
+    public void release() {
         glDeleteSamplers(handle);
         handle = NULL;
     }

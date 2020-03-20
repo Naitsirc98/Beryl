@@ -16,6 +16,7 @@ import naitsirc98.beryl.lights.PointLight;
 import naitsirc98.beryl.materials.PhongMaterial;
 import naitsirc98.beryl.meshes.Mesh;
 import naitsirc98.beryl.meshes.vertices.VertexData;
+import naitsirc98.beryl.resources.ResourceManager;
 import naitsirc98.beryl.scenes.Entity;
 import naitsirc98.beryl.scenes.Scene;
 import naitsirc98.beryl.scenes.SceneManager;
@@ -56,7 +57,7 @@ public class App1 extends BerylApplication {
         BerylConfiguration.SHOW_DEBUG_INFO.set(true);
         BerylConfiguration.GRAPHICS_API.set(GraphicsAPI.VULKAN);
         BerylConfiguration.VULKAN_ENABLE_DEBUG_MESSAGES.set(true);
-        BerylConfiguration.VULKAN_ENABLE_VALIDATION_LAYERS.set(false);
+        BerylConfiguration.VULKAN_ENABLE_VALIDATION_LAYERS.set(true);
     }
 
     private App1() {
@@ -81,6 +82,8 @@ public class App1 extends BerylApplication {
         Scene scene = new Scene();
 
         Texture2D diffuseTexture = GraphicsFactory.get().newTexture2D();
+
+        ResourceManager.track(diffuseTexture);
 
         try(Image image = ImageFactory.newImage("C:\\Users\\naits\\Desktop\\milo_raro.jpeg", true, PixelFormat.RGBA)) {
             diffuseTexture.pixels(1, image);

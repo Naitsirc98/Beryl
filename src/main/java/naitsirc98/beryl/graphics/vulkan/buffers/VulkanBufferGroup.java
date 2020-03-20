@@ -50,10 +50,10 @@ public class VulkanBufferGroup implements VulkanObject {
     }
 
     @Override
-    public void free() {
+    public void release() {
 
         for(VulkanBuffer buffer : buffers) {
-            buffer.free();
+            buffer.release();
         }
         memFree(pBuffers);
         memFree(pOffsets);

@@ -2,12 +2,13 @@ package naitsirc98.beryl.graphics.opengl.textures;
 
 import naitsirc98.beryl.graphics.opengl.GLObject;
 import naitsirc98.beryl.graphics.textures.Texture;
+import naitsirc98.beryl.resources.ManagedResource;
 
 import static org.lwjgl.opengl.GL11.glDeleteTextures;
 import static org.lwjgl.opengl.GL45.glCreateTextures;
 import static org.lwjgl.opengl.GL45C.glBindTextureUnit;
 
-public abstract class GLTexture implements GLObject, Texture {
+public abstract class GLTexture extends ManagedResource implements GLObject, Texture {
 
     protected int handle;
     private GLSampler sampler;
@@ -33,9 +34,9 @@ public abstract class GLTexture implements GLObject, Texture {
     }
 
     @Override
-    public void free() {
+    protected void free() {
         glDeleteTextures(handle);
-        sampler.free();
+        sampler.release();
 
         handle = NULL;
         sampler = null;

@@ -57,7 +57,7 @@ public class VulkanPhysicalDevice implements VulkanObject.Custom<VkPhysicalDevic
     }
 
     @Override
-    public void free() {
+    public void release() {
         vkPhysicalDevice = null;
     }
 

@@ -13,7 +13,7 @@ import naitsirc98.beryl.graphics.vulkan.swapchain.VulkanSwapchainDependent;
 import naitsirc98.beryl.graphics.vulkan.vertex.VulkanVertexData;
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.meshes.vertices.VertexLayout;
-import naitsirc98.beryl.resources.Resources;
+import naitsirc98.beryl.core.BerylFiles;
 import naitsirc98.beryl.scenes.Scene;
 import naitsirc98.beryl.scenes.components.camera.Camera;
 import naitsirc98.beryl.scenes.components.meshes.MeshView;
@@ -21,7 +21,6 @@ import org.joml.Matrix4f;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
 
-import java.nio.ByteBuffer;
 import java.nio.file.Path;
 import java.util.List;
 
@@ -49,8 +48,8 @@ public final class VulkanSimpleRenderingPath extends RenderingPath
         Path fragmentPath = null;
 
         try {
-            vertexPath = Resources.getPath("shaders/vk/simple/simple.vk.vert");
-            fragmentPath = Resources.getPath("shaders/vk/simple/simple.vk.frag");
+            vertexPath = BerylFiles.getPath("shaders/vk/simple/simple.vk.vert");
+            fragmentPath = BerylFiles.getPath("shaders/vk/simple/simple.vk.frag");
         } catch (Exception e) {
             Log.fatal("Failed to get shader files for RenderingPath", e);
         }
@@ -84,9 +83,9 @@ public final class VulkanSimpleRenderingPath extends RenderingPath
 
     @Override
     protected void terminate() {
-        commandBufferThreadExecutor.free();
-        pipelineLayout.free();
-        graphicsPipeline.free();
+        commandBufferThreadExecutor.release();
+        pipelineLayout.release();
+        graphicsPipeline.release();
     }
 
     @Override
@@ -223,8 +222,8 @@ public final class VulkanSimpleRenderingPath extends RenderingPath
                 .addColorBlendAttachment(false, getColorBlendFlags())
                 .buildAndPop();
 
-        vertexShaderModule.free();
-        fragmentShaderModule.free();
+        vertexShaderModule.release();
+        fragmentShaderModule.release();
     }
 
     private VkViewport.Buffer getViewports() {

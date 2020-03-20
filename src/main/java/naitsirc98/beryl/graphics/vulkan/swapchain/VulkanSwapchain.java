@@ -133,7 +133,7 @@ public class VulkanSwapchain implements VulkanObject.Long {
 
         double time = System.nanoTime();
 
-        free();
+        release();
 
         init();
 
@@ -147,12 +147,12 @@ public class VulkanSwapchain implements VulkanObject.Long {
     }
 
     @Override
-    public void free() {
+    public void release() {
 
-        depthImage.free();
+        depthImage.release();
         depthImage = null;
 
-        renderPass.free();
+        renderPass.release();
         renderPass = null;
 
         freeSwapchainImages();
@@ -174,7 +174,7 @@ public class VulkanSwapchain implements VulkanObject.Long {
 
     private void freeSwapchainImages() {
         for(int i = 0; i < swapchainImages.length; i++) {
-            swapchainImages[i].free();
+            swapchainImages[i].release();
             swapchainImages[i] = null;
         }
     }

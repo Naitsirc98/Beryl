@@ -97,10 +97,12 @@ public class GLContext implements GraphicsContext, LongHandle {
     }
 
     @Override
-    public void free() {
+    public void release() {
+
+        graphicsFactory.release();
 
         if(OPENGL_DEBUG_MESSAGES_ENABLED) {
-            debugMessenger.free();
+            debugMessenger.release();
         }
 
         GL.destroy();

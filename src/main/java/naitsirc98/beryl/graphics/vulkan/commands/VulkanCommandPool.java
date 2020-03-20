@@ -119,7 +119,7 @@ public class VulkanCommandPool implements VulkanObject.Long {
     }
 
     @Override
-    public void free() {
+    public void release() {
         vkDestroyCommandPool(logicalDevice().handle(), handle, null);
     }
 

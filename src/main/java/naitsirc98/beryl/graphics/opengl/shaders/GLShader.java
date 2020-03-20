@@ -50,7 +50,7 @@ public final class GLShader implements GLObject {
     }
 
     @Override
-    public void free() {
+    public void release() {
         glDeleteShader(handle);
         path = null;
     }

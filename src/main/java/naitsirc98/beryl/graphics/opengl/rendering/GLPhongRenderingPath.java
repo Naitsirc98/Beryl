@@ -8,7 +8,7 @@ import naitsirc98.beryl.graphics.rendering.RenderingPath;
 import naitsirc98.beryl.lights.Light;
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.materials.PhongMaterial;
-import naitsirc98.beryl.resources.Resources;
+import naitsirc98.beryl.core.BerylFiles;
 import naitsirc98.beryl.scenes.Scene;
 import naitsirc98.beryl.scenes.components.camera.Camera;
 import naitsirc98.beryl.scenes.components.lights.LightSource;
@@ -61,8 +61,8 @@ public class GLPhongRenderingPath extends RenderingPath {
         Path fragmentPath = null;
 
         try {
-            vertexPath = Resources.getPath("shaders/phong/phong.vert");
-            fragmentPath = Resources.getPath("shaders/phong/phong.frag");
+            vertexPath = BerylFiles.getPath("shaders/phong/phong.vert");
+            fragmentPath = BerylFiles.getPath("shaders/phong/phong.frag");
         } catch (Exception e) {
             Log.fatal("Failed to get shader files for RenderingPath", e);
         }
@@ -108,11 +108,11 @@ public class GLPhongRenderingPath extends RenderingPath {
     @Override
     protected void terminate() {
 
-        shader.free();
+        shader.release();
 
-        matricesUniformBuffer.free();
-        materialUniformBuffer.free();
-        lightsUniformBuffer.free();
+        matricesUniformBuffer.release();
+        materialUniformBuffer.release();
+        lightsUniformBuffer.release();
     }
 
     @Override

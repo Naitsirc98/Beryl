@@ -53,12 +53,12 @@ public final class VulkanCommandBufferThread<T extends VulkanThreadData> impleme
     }
 
     @Override
-    public void free() {
+    public void release() {
 
         stopWorker();
-        threadData.free();
+        threadData.release();
         commandPool.freeCommandBuffers(commandBuffers);
-        commandPool.free();
+        commandPool.release();
 
         worker = null;
         threadData = null;

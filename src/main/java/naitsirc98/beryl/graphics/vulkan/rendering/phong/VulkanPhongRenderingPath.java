@@ -1,5 +1,6 @@
 package naitsirc98.beryl.graphics.vulkan.rendering.phong;
 
+import naitsirc98.beryl.core.BerylFiles;
 import naitsirc98.beryl.graphics.Graphics;
 import naitsirc98.beryl.graphics.rendering.RenderingPath;
 import naitsirc98.beryl.graphics.vulkan.VulkanObject;
@@ -19,7 +20,6 @@ import naitsirc98.beryl.lights.Light;
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.materials.Material;
 import naitsirc98.beryl.meshes.vertices.VertexLayout;
-import naitsirc98.beryl.resources.Resources;
 import naitsirc98.beryl.scenes.Scene;
 import naitsirc98.beryl.scenes.components.camera.Camera;
 import naitsirc98.beryl.scenes.components.lights.LightSource;
@@ -69,8 +69,8 @@ public final class VulkanPhongRenderingPath extends RenderingPath
         Path fragmentPath = null;
 
         try {
-            vertexPath = Resources.getPath("shaders/phong/phong.vert");
-            fragmentPath = Resources.getPath("shaders/phong/phong.frag");
+            vertexPath = BerylFiles.getPath("shaders/phong/phong.vert");
+            fragmentPath = BerylFiles.getPath("shaders/phong/phong.frag");
         } catch (Exception e) {
             Log.fatal("Failed to get shader files for RenderingPath", e);
         }
@@ -122,22 +122,28 @@ public final class VulkanPhongRenderingPath extends RenderingPath
 
     @Override
     protected void terminate() {
-        free();
+        release();
     }
 
     @Override
-    public void free() {
+    public void release() {
 
         if(lightsUniformBufferData != NULL) {
             lightsUniformBuffer.unmapMemory();
             lightsUniformBufferData = NULL;
         }
 
-        commandBuilderExecutor.free();
-        pipelineLayout.free();
-        graphicsPipeline.free();
-        lightsDescriptorPool.free();
-        lightsUniformBuffer.free();
+        commandBuilderExecutor.release();
+
+        pipelineLayout.release();
+        graphicsPipeline.release();
+
+        lightsDescriptorPool.release();
+        lightsUniformBuffer.release();
+
+        matricesDescriptorSetLayout.release();
+        materialDescriptorSetLayout.release();
+        lightsDescriptorSetLayout.release();
     }
 
     @Override
@@ -148,8 +154,8 @@ public final class VulkanPhongRenderingPath extends RenderingPath
             lightsUniformBufferData = lightsUniformBuffer.mapMemory(0).get(0);
         }
 
-        pipelineLayout.free();
-        graphicsPipeline.free();
+        pipelineLayout.release();
+        graphicsPipeline.release();
 
         createPipelineLayout();
         createGraphicsPipeline();
@@ -387,8 +393,8 @@ public final class VulkanPhongRenderingPath extends RenderingPath
                 .addColorBlendAttachment(false, getColorBlendFlags())
                 .buildAndPop();
 
-        vertexShaderModule.free();
-        fragmentShaderModule.free();
+        vertexShaderModule.release();
+        fragmentShaderModule.release();
     }
 
     private VkViewport.Buffer getViewports() {

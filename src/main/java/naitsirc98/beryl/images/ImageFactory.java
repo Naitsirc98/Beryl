@@ -132,7 +132,7 @@ public final class ImageFactory {
         }
 
         @Override
-        public void free() {
+        protected void free() {
             nstbi_image_free(memAddress((Buffer)pixels()));
         }
     }
@@ -144,7 +144,7 @@ public final class ImageFactory {
         }
 
         @Override
-        public void free() {
+        protected void free() {
             memFree(pixels());
         }
     }

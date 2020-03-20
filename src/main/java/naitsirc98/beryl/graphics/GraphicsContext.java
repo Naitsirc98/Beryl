@@ -1,11 +1,11 @@
 package naitsirc98.beryl.graphics;
 
 import naitsirc98.beryl.graphics.rendering.RenderingPath;
-import org.lwjgl.system.NativeResource;
+import naitsirc98.beryl.resources.Resource;
 
 import java.util.Map;
 
-public interface GraphicsContext extends NativeResource {
+public interface GraphicsContext extends Resource {
 
     void init();
 

@@ -41,7 +41,7 @@ public class VulkanRenderPass implements VulkanObject.Long {
     }
 
     @Override
-    public void free() {
+    public void release() {
 
         for(int i = 0;i < framebuffers.capacity();i++) {
             vkDestroyFramebuffer(logicalDevice().handle(), framebuffers.get(i), null);

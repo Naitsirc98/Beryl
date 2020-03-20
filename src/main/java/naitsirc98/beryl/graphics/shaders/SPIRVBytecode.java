@@ -1,12 +1,12 @@
 package naitsirc98.beryl.graphics.shaders;
 
-import org.lwjgl.system.NativeResource;
+import naitsirc98.beryl.resources.Resource;
 
 import java.nio.ByteBuffer;
 
 import static org.lwjgl.util.shaderc.Shaderc.shaderc_result_release;
 
-public final class SPIRVBytecode implements NativeResource {
+public final class SPIRVBytecode implements Resource {
 
     private final long handle;
     private ByteBuffer bytecode;
@@ -21,7 +21,7 @@ public final class SPIRVBytecode implements NativeResource {
     }
 
     @Override
-    public void free() {
+    public void release() {
         shaderc_result_release(handle);
         bytecode = null; // Help the GC
     }

@@ -168,17 +168,17 @@ final class VulkanPhongThreadData implements VulkanThreadData, VulkanObject {
     }
 
     @Override
-    public void free() {
+    public void release() {
 
         if(matricesUniformBufferData != NULL) {
             matricesUniformBuffer.unmapMemory();
             matricesUniformBufferData = NULL;
         }
 
-        matricesDescriptorPool.free();
-        materialDescriptorPool.free();
-        matricesUniformBuffer.free();
-        materialUniformBuffer.free();
+        matricesDescriptorPool.release();
+        materialDescriptorPool.release();
+        matricesUniformBuffer.release();
+        materialUniformBuffer.release();
 
         memFree(pDescriptorSets);
         memFree(pDynamicOffsets);

@@ -32,7 +32,7 @@ public final class RenderSystem extends BerylSystem {
 
     @Override
     protected void terminate() {
-        renderer.free();
+        renderer.release();
         renderer = null;
     }
 }

@@ -1,5 +1,6 @@
 package naitsirc98.beryl.images;
 
+import naitsirc98.beryl.resources.ManagedResource;
 import org.lwjgl.system.NativeResource;
 
 import java.nio.Buffer;
@@ -14,7 +15,7 @@ import java.nio.FloatBuffer;
  * be used inside a try-with-resources block to automatically free the memory
  */
 
-public abstract class Image implements NativeResource {
+public abstract class Image extends ManagedResource {
 
     private final int width;
     private final int height;
@@ -100,11 +101,4 @@ public abstract class Image implements NativeResource {
     public FloatBuffer pixelsf() {
         return (FloatBuffer) pixels;
     }
-
-    /**
-     * Free this image pixel buffer
-     *
-     * */
-    @Override
-    public abstract void free();
 }

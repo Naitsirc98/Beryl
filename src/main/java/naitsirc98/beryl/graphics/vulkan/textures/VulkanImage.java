@@ -263,7 +263,7 @@ public class VulkanImage implements VmaAllocated, VulkanObject.Long {
     }
 
     @Override
-    public void free() {
+    public void release() {
 
         if(vkImage == VK_NULL_HANDLE) {
             return;

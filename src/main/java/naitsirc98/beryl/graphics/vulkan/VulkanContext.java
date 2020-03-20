@@ -98,7 +98,7 @@ public final class VulkanContext implements GraphicsContext {
 
         Map<Integer, RenderingPath> renderingPaths = new HashMap<>();
 
-        renderingPaths.put(RPATH_SIMPLE3D, newInstance(VulkanSimpleRenderingPath.class));
+        // renderingPaths.put(RPATH_SIMPLE3D, newInstance(VulkanSimpleRenderingPath.class));
         renderingPaths.put(RPATH_PHONG, newInstance(VulkanPhongRenderingPath.class));
 
         return renderingPaths;
@@ -142,20 +142,24 @@ public final class VulkanContext implements GraphicsContext {
     }
 
     @Override
-    public void free() {
+    public void release() {
 
-        graphicsCommandPool.free();
+        graphicsCommandPool.release();
 
-        swapchain.free();
+        swapchain.release();
 
-        logicalDevice.free();
+        graphicsFactory.release();
 
-        physicalDevice.free();
+        allocator.release();
 
-        surface.free();
+        logicalDevice.release();
+
+        physicalDevice.release();
+
+        surface.release();
 
         if(VULKAN_DEBUG_MESSAGES_ENABLED) {
-            debugMessenger.free();
+            debugMessenger.release();
         }
 
         vkDestroyInstance(vkInstance, null);

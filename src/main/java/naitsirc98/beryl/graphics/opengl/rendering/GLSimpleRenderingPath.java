@@ -5,7 +5,7 @@ import naitsirc98.beryl.graphics.opengl.shaders.GLShaderProgram;
 import naitsirc98.beryl.graphics.opengl.vertex.GLVertexData;
 import naitsirc98.beryl.graphics.rendering.RenderingPath;
 import naitsirc98.beryl.logging.Log;
-import naitsirc98.beryl.resources.Resources;
+import naitsirc98.beryl.core.BerylFiles;
 import naitsirc98.beryl.scenes.Scene;
 import naitsirc98.beryl.scenes.components.camera.Camera;
 import naitsirc98.beryl.scenes.components.meshes.MeshView;
@@ -15,7 +15,6 @@ import org.lwjgl.system.MemoryStack;
 
 import java.nio.FloatBuffer;
 import java.nio.file.Path;
-import java.util.List;
 
 import static naitsirc98.beryl.graphics.ShaderStage.FRAGMENT_STAGE;
 import static naitsirc98.beryl.graphics.ShaderStage.VERTEX_STAGE;
@@ -35,8 +34,8 @@ public final class GLSimpleRenderingPath extends RenderingPath {
         Path fragmentPath = null;
 
         try {
-            vertexPath = Resources.getPath("shaders/gl/simple/simple.gl.vert");
-            fragmentPath = Resources.getPath("shaders/gl/simple/simple.gl.frag");
+            vertexPath = BerylFiles.getPath("shaders/gl/simple/simple.gl.vert");
+            fragmentPath = BerylFiles.getPath("shaders/gl/simple/simple.gl.frag");
         } catch (Exception e) {
             Log.fatal("Failed to get shader files for RenderingPath", e);
         }
@@ -66,7 +65,7 @@ public final class GLSimpleRenderingPath extends RenderingPath {
 
     @Override
     protected void terminate() {
-        shader.free();
+        shader.release();
     }
 
     @Override

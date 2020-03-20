@@ -4,10 +4,11 @@ import naitsirc98.beryl.graphics.textures.Texture;
 import naitsirc98.beryl.graphics.vulkan.VulkanObject;
 import naitsirc98.beryl.images.PixelFormat;
 import naitsirc98.beryl.logging.Log;
+import naitsirc98.beryl.resources.ManagedResource;
 
 import static naitsirc98.beryl.graphics.vulkan.util.VulkanFormatUtils.vkToPixelFormat;
 
-public abstract class VulkanTexture implements VulkanObject, Texture {
+public abstract class VulkanTexture extends ManagedResource implements VulkanObject, Texture {
 
     protected VulkanRenderImage renderImage;
     protected VulkanSampler sampler;
@@ -50,14 +51,14 @@ public abstract class VulkanTexture implements VulkanObject, Texture {
     }
 
     @Override
-    public void free() {
+    protected void free() {
 
         if(renderImage != null) {
-            renderImage.free();
+            renderImage.release();
             renderImage = null;
         }
 
-        sampler.free();
+        sampler.release();
         sampler = null;
     }
 }

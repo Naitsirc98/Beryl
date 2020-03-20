@@ -1,9 +1,9 @@
 package naitsirc98.beryl.graphics.textures;
 
 import naitsirc98.beryl.images.PixelFormat;
-import org.lwjgl.system.NativeResource;
+import naitsirc98.beryl.resources.Resource;
 
-public interface Texture extends NativeResource {
+public interface Texture extends Resource {
 
     Type type();
 

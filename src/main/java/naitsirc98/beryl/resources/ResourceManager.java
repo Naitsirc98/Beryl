@@ -2,10 +2,10 @@ package naitsirc98.beryl.resources;
 
 import naitsirc98.beryl.core.BerylSystem;
 import naitsirc98.beryl.util.types.Singleton;
-import org.lwjgl.system.NativeResource;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 
 import static java.util.Objects.requireNonNull;
 
@@ -14,33 +14,27 @@ public final class ResourceManager extends BerylSystem {
     @Singleton
     private static ResourceManager instance;
 
-    public static boolean contains(Object key) {
-        return instance.resources.containsKey(key);
+    public static boolean tracked(Resource resource) {
+        return instance.resources.contains(resource);
     }
 
-    @SuppressWarnings("unchecked")
-    public static <T extends NativeResource> T get(Object key) {
-        return (T) instance.resources.get(requireNonNull(key));
-    }
-
-    public static void track(Object key, NativeResource resource) {
-        instance.resources.put(requireNonNull(key), requireNonNull(resource));
-    }
-
-    public static void untrack(Object key) {
-        instance.resources.remove(key);
-    }
-
-    public static void free(Object key) {
-        if(instance.resources.containsKey(key)) {
-            instance.resources.remove(key).free();
+    public static synchronized void track(Resource resource) {
+        if(!instance.terminating) {
+            instance.resources.add(requireNonNull(resource));
         }
     }
 
-    private final Map<Object, NativeResource> resources;
+    public static synchronized void untrack(Resource resource) {
+        if(!instance.terminating) {
+            instance.resources.remove(resource);
+        }
+    }
+
+    private final Set<Resource> resources;
+    private boolean terminating;
 
     private ResourceManager() {
-        resources = new HashMap<>();
+        resources = new HashSet<>();
     }
 
     @Override
@@ -50,7 +44,22 @@ public final class ResourceManager extends BerylSystem {
 
     @Override
     protected void terminate() {
-        resources.values().forEach(NativeResource::free);
-        resources.clear();
+
+        terminating = true;
+
+        Iterator<Resource> iterator = resources.iterator();
+
+        while(iterator.hasNext()) {
+
+            final Resource resource = iterator.next();
+
+            iterator.remove();
+
+            if(resource instanceof ManagedResource) {
+                ((ManagedResource) resource).releaseNoUntrack();
+            } else {
+                resource.release();
+            }
+        }
     }
 }

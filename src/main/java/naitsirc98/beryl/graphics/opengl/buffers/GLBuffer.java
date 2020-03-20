@@ -63,7 +63,7 @@ public abstract class GLBuffer implements GLObject, GraphicsBuffer {
     }
 
     @Override
-    public void free() {
+    public void release() {
         glDeleteBuffers(handle);
         handle = NULL;
     }

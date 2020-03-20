@@ -64,7 +64,7 @@ public final class GLVertexArray implements GLObject {
     }
 
     @Override
-    public void free() {
+    public void release() {
         glDeleteVertexArrays(handle);
     }
 }

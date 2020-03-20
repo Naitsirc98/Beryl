@@ -5,16 +5,14 @@ import naitsirc98.beryl.graphics.vulkan.commands.VulkanCommandPool;
 import naitsirc98.beryl.graphics.vulkan.devices.VulkanLogicalDevice;
 import naitsirc98.beryl.graphics.vulkan.devices.VulkanPhysicalDevice;
 import naitsirc98.beryl.graphics.vulkan.memory.VulkanAllocator;
-import naitsirc98.beryl.graphics.vulkan.rendering.VulkanRenderer;
 import naitsirc98.beryl.graphics.vulkan.swapchain.VulkanSwapchain;
+import naitsirc98.beryl.resources.Resource;
 import naitsirc98.beryl.util.handles.Handle;
-import naitsirc98.beryl.util.handles.IntHandle;
 import naitsirc98.beryl.util.handles.LongHandle;
-import org.lwjgl.system.NativeResource;
 import org.lwjgl.vulkan.VkInstance;
 
 
-public interface VulkanObject extends NativeResource {
+public interface VulkanObject extends Resource {
 
     default VulkanContext vulkan() {
         return Graphics.vulkan();

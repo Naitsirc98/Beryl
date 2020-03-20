@@ -512,7 +512,7 @@ public final class Window implements LongHandle {
      * Destroys this window
      * */
     public void destroy() {
-        callbacks.free();
+        callbacks.release();
         glfwDestroyWindow(handle);
     }
 

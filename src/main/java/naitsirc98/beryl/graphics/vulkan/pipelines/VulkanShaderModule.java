@@ -36,7 +36,7 @@ public class VulkanShaderModule implements VulkanObject.Long {
     }
 
     @Override
-    public void free() {
+    public void release() {
         vkDestroyShaderModule(logicalDevice().handle(), vkShaderModule, null);
         vkShaderModule = VK_NULL_HANDLE;
     }
@@ -55,7 +55,7 @@ public class VulkanShaderModule implements VulkanObject.Long {
 
             vkCall(vkCreateShaderModule(logicalDevice().handle(), createInfo, null, pShaderModule));
 
-            spirvShader.free();
+            spirvShader.release();
 
             return pShaderModule.get(0);
         }

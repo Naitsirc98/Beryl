@@ -3,7 +3,7 @@ package naitsirc98.beryl.graphics.shaders;
 import naitsirc98.beryl.graphics.GraphicsAPI;
 import naitsirc98.beryl.graphics.ShaderStage;
 import naitsirc98.beryl.logging.Log;
-import naitsirc98.beryl.resources.Resources;
+import naitsirc98.beryl.core.BerylFiles;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -14,7 +14,7 @@ import static java.nio.file.Files.exists;
 public final class GLSLPreprocessor {
 
     private static final String DIRECTIVE_CHARACTER = "@";
-    private static final Path SHADERS_ROOT = Resources.getPath("shaders");
+    private static final Path SHADERS_ROOT = BerylFiles.getPath("shaders");
     private static final String BERYL_GLSL_METADATA = createBerylGLSLMetadata();
 
     private final StringBuffer sourceBuffer;

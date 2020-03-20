@@ -110,6 +110,10 @@ public class CameraController extends LateBehaviour {
 
         Gamepad gamepad = Gamepad.of(Joystick.JOYSTICK_1);
 
+        if(gamepad == null || !gamepad.isPresent()) {
+            return;
+        }
+
         if(gamepad.buttons().isPressed(Joystick.Button.BUTTON_A)) {
             amount *= 4.0f;
         }

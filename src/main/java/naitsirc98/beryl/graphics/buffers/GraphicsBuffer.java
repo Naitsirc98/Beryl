@@ -1,12 +1,12 @@
 package naitsirc98.beryl.graphics.buffers;
 
-import org.lwjgl.system.NativeResource;
+import naitsirc98.beryl.resources.Resource;
 
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
-public interface GraphicsBuffer extends NativeResource {
+public interface GraphicsBuffer extends Resource {
 
     Type type();
 

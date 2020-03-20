@@ -12,6 +12,7 @@ import naitsirc98.beryl.events.window.*;
 import naitsirc98.beryl.input.Key;
 import naitsirc98.beryl.input.KeyModifier;
 import naitsirc98.beryl.input.MouseButton;
+import naitsirc98.beryl.resources.Resource;
 import org.lwjgl.glfw.*;
 import org.lwjgl.system.Callback;
 import org.lwjgl.system.NativeResource;
@@ -23,7 +24,7 @@ import java.util.Set;
 import static naitsirc98.beryl.events.EventManager.triggerEvent;
 import static org.lwjgl.glfw.GLFW.*;
 
-class CallbackManager implements NativeResource {
+class CallbackManager implements Resource {
 
     private final List<Callback> callbacks;
     private int keyRepeatCount;
@@ -33,7 +34,7 @@ class CallbackManager implements NativeResource {
     }
 
     @Override
-    public void free() {
+    public void release() {
         callbacks.forEach(Callback::free);
         callbacks.clear();
     }

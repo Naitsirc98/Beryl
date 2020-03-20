@@ -4,12 +4,10 @@ import naitsirc98.beryl.graphics.buffers.GraphicsCPUBuffer;
 import naitsirc98.beryl.graphics.opengl.shaders.GLShaderProgram;
 import org.lwjgl.PointerBuffer;
 
-import static java.util.Objects.requireNonNull;
 import static naitsirc98.beryl.util.Asserts.assertThat;
 import static org.lwjgl.opengl.GL30.glBindBufferBase;
 import static org.lwjgl.opengl.GL31.*;
 import static org.lwjgl.opengl.GL45.*;
-import static org.lwjgl.system.MemoryUtil.memAddress;
 
 public class GLUniformBuffer extends GLBuffer implements GraphicsCPUBuffer {
 

@@ -4,6 +4,7 @@ import naitsirc98.beryl.graphics.buffers.GraphicsBuffer;
 import naitsirc98.beryl.graphics.vulkan.VulkanObject;
 import naitsirc98.beryl.graphics.vulkan.memory.VmaAllocated;
 import naitsirc98.beryl.graphics.vulkan.memory.VmaBufferAllocation;
+import naitsirc98.beryl.resources.ManagedResource;
 import org.lwjgl.util.vma.VmaAllocationCreateInfo;
 import org.lwjgl.vulkan.VkBufferCreateInfo;
 
@@ -15,7 +16,7 @@ import static java.util.Objects.requireNonNull;
 import static org.lwjgl.BufferUtils.createIntBuffer;
 import static org.lwjgl.vulkan.VK10.VK_NULL_HANDLE;
 
-public abstract class VulkanBuffer implements VulkanObject.Long, VmaAllocated, GraphicsBuffer {
+public abstract class VulkanBuffer extends ManagedResource implements VulkanObject.Long, VmaAllocated, GraphicsBuffer {
 
     protected long handle;
     protected long allocation;
@@ -73,7 +74,7 @@ public abstract class VulkanBuffer implements VulkanObject.Long, VmaAllocated, G
 
         if(!available()) {
 
-            allocator().destroyBuffer(handle(), allocation());
+            destroyVkBuffer();
 
             init(allocator().createBuffer(bufferInfo, allocationCreateInfo));
         }
@@ -86,7 +87,13 @@ public abstract class VulkanBuffer implements VulkanObject.Long, VmaAllocated, G
 
     @Override
     public void allocate(long bytes) {
+
         bufferInfo.size(bytes);
+
+        if(handle != VK_NULL_HANDLE && allocation != VK_NULL_HANDLE) {
+            destroyVkBuffer();
+        }
+
         init(allocator().createBuffer(bufferInfo, allocationCreateInfo));
     }
 
@@ -115,16 +122,26 @@ public abstract class VulkanBuffer implements VulkanObject.Long, VmaAllocated, G
     }
 
     @Override
-    public void free() {
+    public boolean released() {
+        return false;
+    }
 
-        allocator().destroyBuffer(handle(), allocation());
+    @Override
+    protected void free() {
+
+        destroyVkBuffer();
+
         bufferInfo.free();
         allocationCreateInfo.free();
 
-        handle = VK_NULL_HANDLE;
-        allocation = VK_NULL_HANDLE;
         bufferInfo = null;
         allocationCreateInfo = null;
+    }
+
+    private void destroyVkBuffer() {
+        allocator().destroyBuffer(handle(), allocation());
+        handle = VK_NULL_HANDLE;
+        allocation = VK_NULL_HANDLE;
     }
 
     protected void init(VmaBufferAllocation bufferAllocation) {

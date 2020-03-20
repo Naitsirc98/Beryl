@@ -31,7 +31,7 @@ public class VulkanImageView implements VulkanObject.Long {
             Log.fatal("ImageViewCreateInfo.image is VK_NULL_HANDLE");
         }
 
-        free();
+        release();
 
         try(MemoryStack stack = stackPush()) {
 
@@ -75,7 +75,7 @@ public class VulkanImageView implements VulkanObject.Long {
     }
 
     @Override
-    public void free() {
+    public void release() {
 
         if(vkImageView == VK_NULL_HANDLE) {
             return;

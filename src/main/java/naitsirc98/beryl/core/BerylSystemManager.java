@@ -19,12 +19,12 @@ import static naitsirc98.beryl.util.types.TypeUtils.newInstance;
 public class BerylSystemManager {
 
     final Log log;
-    final ResourceManager resourceManager;
     final GLFWLibrary glfwLibrary;
     final Time time;
     final EventManager eventManager;
     final Input input;
     final Graphics graphics;
+    final ResourceManager resourceManager;
     final RenderingPaths renderingPaths;
     final RenderSystem renderSystem;
     final TaskManager taskManager;
@@ -34,12 +34,12 @@ public class BerylSystemManager {
     public BerylSystemManager() {
         systems = new BerylSystem[] {
                 log = createSystem(Log.class),
-                resourceManager = createSystem(ResourceManager.class),
                 glfwLibrary = createSystem(GLFWLibrary.class),
                 time = createSystem(Time.class),
                 eventManager = createSystem(EventManager.class),
                 input = createSystem(Input.class),
                 graphics = createSystem(Graphics.class),
+                resourceManager = createSystem(ResourceManager.class),
                 renderingPaths = createSystem(RenderingPaths.class),
                 renderSystem = createSystem(RenderSystem.class),
                 taskManager = createSystem(TaskManager.class),
