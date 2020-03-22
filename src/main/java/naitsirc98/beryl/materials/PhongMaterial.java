@@ -6,6 +6,7 @@ import naitsirc98.beryl.util.types.ByteSize;
 import naitsirc98.beryl.util.types.IBuilder;
 
 import java.nio.ByteBuffer;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 import static java.util.Objects.requireNonNull;
@@ -98,6 +99,15 @@ public class PhongMaterial extends Material implements ByteSize {
     @Override
     public int sizeof() {
         return SIZEOF;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        PhongMaterial material = (PhongMaterial) o;
+        return hashCode() == material.hashCode();
     }
 
     public static final class Builder implements IBuilder<PhongMaterial> {

@@ -4,11 +4,12 @@ import naitsirc98.beryl.logging.Log;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public final class Materials {
 
     private static final Map<String, Material> MATERIALS = new HashMap<>();
-    private static int nextHashCode;
+    private static final AtomicInteger HASHCODE = new AtomicInteger(0);
 
     public static boolean exists(String name) {
         return MATERIALS.containsKey(name);
@@ -19,8 +20,8 @@ public final class Materials {
         return (T) MATERIALS.get(name);
     }
 
-    static synchronized int nextHashCode() {
-        return nextHashCode++;
+    static int nextHashCode() {
+        return HASHCODE.getAndIncrement();
     }
 
     static synchronized void register(Material material) {

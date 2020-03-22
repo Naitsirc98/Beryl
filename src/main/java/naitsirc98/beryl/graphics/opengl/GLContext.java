@@ -26,6 +26,8 @@ public class GLContext implements GraphicsContext, LongHandle {
 
     public static final boolean OPENGL_DEBUG_MESSAGES_ENABLED = BerylConfiguration.OPENGL_ENABLE_DEBUG_MESSAGES.get(Beryl.DEBUG);
 
+    private static final boolean INITIAL_VSYNC = BerylConfiguration.VSYNC.get(false);
+
     private long glContext;
     private GLDebugMessenger debugMessenger;
     private GLCapabilities capabilities;
@@ -45,7 +47,7 @@ public class GLContext implements GraphicsContext, LongHandle {
         debugMessenger = newGLDebugMessenger();
         graphicsFactory = new GLGraphicsFactory();
         mapper = new GLMapper();
-        glfwSwapInterval(0);
+        glfwSwapInterval(INITIAL_VSYNC ? 1 : 0);
     }
 
     @Override

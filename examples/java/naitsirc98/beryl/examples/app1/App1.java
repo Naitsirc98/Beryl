@@ -3,15 +3,18 @@ package naitsirc98.beryl.examples.app1;
 import naitsirc98.beryl.core.Beryl;
 import naitsirc98.beryl.core.BerylApplication;
 import naitsirc98.beryl.core.BerylConfiguration;
+import naitsirc98.beryl.core.Time;
 import naitsirc98.beryl.graphics.GraphicsAPI;
 import naitsirc98.beryl.graphics.GraphicsFactory;
 import naitsirc98.beryl.graphics.rendering.RenderingPaths;
 import naitsirc98.beryl.graphics.textures.Texture2D;
-import naitsirc98.beryl.graphics.window.DisplayMode;
 import naitsirc98.beryl.graphics.window.Window;
 import naitsirc98.beryl.images.Image;
 import naitsirc98.beryl.images.ImageFactory;
 import naitsirc98.beryl.images.PixelFormat;
+import naitsirc98.beryl.input.Input;
+import naitsirc98.beryl.input.Key;
+import naitsirc98.beryl.input.MouseButton;
 import naitsirc98.beryl.lights.LightRange;
 import naitsirc98.beryl.lights.PointLight;
 import naitsirc98.beryl.materials.PhongMaterial;
@@ -20,7 +23,6 @@ import naitsirc98.beryl.meshes.vertices.VertexData;
 import naitsirc98.beryl.resources.ResourceManager;
 import naitsirc98.beryl.scenes.Entity;
 import naitsirc98.beryl.scenes.Scene;
-import naitsirc98.beryl.scenes.SceneManager;
 import naitsirc98.beryl.scenes.components.behaviours.UpdateMutableBehaviour;
 import naitsirc98.beryl.scenes.components.camera.Camera;
 import naitsirc98.beryl.scenes.components.lights.LightSource;
@@ -35,6 +37,8 @@ import java.util.Random;
 
 import static naitsirc98.beryl.graphics.rendering.RenderingPaths.RPATH_PHONG;
 import static naitsirc98.beryl.meshes.vertices.VertexLayout.VERTEX_LAYOUT_3D;
+import static naitsirc98.beryl.scenes.Entity.newEntity;
+import static naitsirc98.beryl.scenes.SceneManager.newScene;
 import static naitsirc98.beryl.util.Maths.radians;
 import static naitsirc98.beryl.util.types.DataType.FLOAT32;
 
@@ -82,7 +86,7 @@ public class App1 extends BerylApplication {
 
     private void addScene() {
 
-        Scene scene = new Scene();
+        Scene scene = newScene();
 
         Texture2D diffuseTexture = GraphicsFactory.get().newTexture2D();
 
@@ -98,6 +102,7 @@ public class App1 extends BerylApplication {
 
         Mesh mesh = new Mesh(VertexData.builder(VERTEX_LAYOUT_3D).vertices(getCubeVertices()).build(), material);
 
+        /*
         for(int i = 0;i < 10000;i++) {
 
             final float angle = RAND.nextFloat();
@@ -113,21 +118,42 @@ public class App1 extends BerylApplication {
             });
         }
 
+         */
+
+        Entity a = newEntity();
+        a.add(Transform.class).position(5, 0, 0);
+        a.add(MeshView.class).mesh(mesh).material(PhongMaterial.get("RED", builder -> builder.emissiveColor(Color.RED)));
+
+        Entity b = newEntity();
+        b.add(Transform.class).position(7, 2.2f, 0).addChild(a.get(Transform.class));
+        b.add(MeshView.class).mesh(mesh).material(PhongMaterial.get("GREEN", builder -> builder.emissiveColor(Color.GREEN)));
+        b.add(UpdateMutableBehaviour.class).onUpdate(self -> {
+
+            self.get(Transform.class).rotate(Time.time(), 0, 1, 0);
+
+            if(Input.isKeyTyped(Key.KEY_RIGHT)) {
+                self.get(Transform.class).translate(1, 0, 0);
+            } else if(Input.isKeyTyped(Key.KEY_LEFT)) {
+                self.get(Transform.class).translate(-1, 0, 0);
+            }
+        });
+
+
         Entity camera = scene.newEntity("Camera");
         camera.add(Transform.class).position(100, 0, 300);
         camera.add(Camera.class).lookAt(0, 0).renderingPath(RenderingPaths.get(RPATH_PHONG));
         camera.add(CameraController.class);
 
+        /*
         Entity light = scene.newEntity("Light");
         light.add(LightSource.class).light(new PointLight()
                 .color(new Color(1, 1, 1, 1))
                 .position(new Vector3f(0.0f))
                 .range(LightRange.MEDIUM));
         light.add(Transform.class).position(0, 0, 0);
-        light.add(MeshView.class).mesh(new Mesh(mesh.vertexData(),
-                PhongMaterial.get("LightMaterial", builder -> builder.emissiveColor(Color.WHITE))));
-
-        SceneManager.addScene(scene);
+        light.add(MeshView.class).mesh(mesh).material(
+                PhongMaterial.get("LightMaterial", builder -> builder.emissiveColor(Color.WHITE)));
+    */
     }
 
     private ByteBuffer getCubeVertices() {

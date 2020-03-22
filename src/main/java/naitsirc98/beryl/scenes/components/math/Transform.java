@@ -517,13 +517,10 @@ public final class Transform extends Component<Transform> {
         }
 
         final float deltaRads = radians - angle();
-        final float deltaX = newX - rotationAxis.x;
-        final float deltaY = newY - rotationAxis.y;
-        final float deltaZ = newZ - rotationAxis.z;
 
         for(Transform child : children) {
             if(child.enabled()) {
-                child.rotate(child.angle() + deltaRads, deltaX, deltaY, deltaZ);
+                child.rotate(child.angle() + deltaRads, newX, newY, newZ);
             }
         }
     }

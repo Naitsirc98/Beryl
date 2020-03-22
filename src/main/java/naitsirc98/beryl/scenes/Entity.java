@@ -27,7 +27,7 @@ public final class Entity extends SceneObject implements Iterable<Component> {
      *
      * @return the entity
      */
-    public static Entity create() {
+    public static Entity newEntity() {
         if(noAvailableScene()) {
             return null;
         }
@@ -41,7 +41,7 @@ public final class Entity extends SceneObject implements Iterable<Component> {
      * @param name the name
      * @return the entity
      */
-    public static Entity create(String name) {
+    public static Entity newEntity(String name) {
         if(noAvailableScene()) {
             return null;
         }
@@ -56,7 +56,7 @@ public final class Entity extends SceneObject implements Iterable<Component> {
      * @param tag  the tag
      * @return the entity
      */
-    public static Entity create(String name, String tag) {
+    public static Entity newEntity(String name, String tag) {
         if(noAvailableScene()) {
             return null;
         }

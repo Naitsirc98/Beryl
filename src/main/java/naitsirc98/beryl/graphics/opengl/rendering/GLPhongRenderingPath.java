@@ -145,7 +145,7 @@ public class GLPhongRenderingPath extends RenderingPath {
             for(MeshView meshView : scene.meshViews()) {
 
                 final GLVertexData vertexData = meshView.mesh().vertexData();
-                final PhongMaterial material = meshView.mesh().material();
+                final PhongMaterial material = meshView.material();
 
                 if(lastVertexData != vertexData) {
                     vertexData.bind();

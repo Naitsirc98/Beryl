@@ -30,7 +30,7 @@ public final class MeshViewManager extends AbstractComponentManager<MeshView> {
     protected void add(MeshView component) {
         if(component.enabled() && component.mesh() != null) {
             components.enabled().add(component);
-            addMaterial(component.mesh().material());
+            addMaterial(component.material());
         } else {
             components.disabled().add(component);
         }
@@ -39,19 +39,19 @@ public final class MeshViewManager extends AbstractComponentManager<MeshView> {
     @Override
     protected void remove(MeshView component) {
         super.remove(component);
-        removeMaterial(component.mesh().material());
+        removeMaterial(component.material());
     }
 
     @Override
     protected void enable(MeshView component) {
         super.enable(component);
-        addMaterial(component.mesh().material());
+        addMaterial(component.material());
     }
 
     @Override
     protected void disable(MeshView component) {
         super.disable(component);
-        removeMaterial(component.mesh().material());
+        removeMaterial(component.material());
     }
 
     @Override

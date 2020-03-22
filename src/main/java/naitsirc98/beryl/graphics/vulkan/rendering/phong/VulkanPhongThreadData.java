@@ -199,7 +199,7 @@ final class VulkanPhongThreadData implements VulkanThreadData, VulkanObject {
 
         updateMatrices(index, meshView);
 
-        final MaterialDescriptorSet materialDescriptorSet = materialDescriptorSets.get(meshView.mesh().material());
+        final MaterialDescriptorSet materialDescriptorSet = materialDescriptorSets.get(meshView.material());
 
         pDescriptorSets.put(1, materialDescriptorSet.descriptorSet);
         pDescriptorSets.put(2, lightsDescriptorSet);
