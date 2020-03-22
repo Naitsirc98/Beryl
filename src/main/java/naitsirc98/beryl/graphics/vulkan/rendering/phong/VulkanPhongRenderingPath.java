@@ -176,10 +176,6 @@ public final class VulkanPhongRenderingPath extends RenderingPath
 
         projectionViewMatrix.set(camera.projectionViewMatrix());
 
-        if(swapchain.vsync()) {
-            lightsUniformBufferData = lightsUniformBuffer.mapMemory(0).get(0);
-        }
-
         try(MemoryStack stack = stackPush()) {
 
             updateLightsUniformBuffer(scene.lightSources(), stack);
@@ -193,12 +189,6 @@ public final class VulkanPhongRenderingPath extends RenderingPath
             commandBuilderExecutor.recordCommandBuffers(meshViews.size(), primaryCommandBuffer, this);
 
             endPrimaryCommandBuffer(primaryCommandBuffer);
-
-            if(swapchain.vsync()) {
-                vmaFlushAllocation(allocator().handle(), lightsUniformBuffer.allocation(), 0, lightsUniformBuffer.size());
-                lightsUniformBuffer.unmapMemory();
-                lightsUniformBufferData = NULL;
-            }
 
             this.camera = null;
             this.meshViews = null;

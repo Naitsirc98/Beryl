@@ -99,6 +99,10 @@ public class VulkanRenderer implements VulkanObject, Renderer, VulkanSwapchainDe
                 return;
             }
 
+            if(swapchain.vsync()) {
+                vkQueueWaitIdle(graphicsQueue);
+            }
+
             VkPresentInfoKHR presentInfo = VkPresentInfoKHR.callocStack(stack);
             presentInfo.sType(VK_STRUCTURE_TYPE_PRESENT_INFO_KHR);
 

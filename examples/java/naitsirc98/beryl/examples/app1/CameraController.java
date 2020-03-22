@@ -1,6 +1,7 @@
 package naitsirc98.beryl.examples.app1;
 
 
+import naitsirc98.beryl.graphics.Graphics;
 import naitsirc98.beryl.graphics.window.Window;
 import naitsirc98.beryl.input.Gamepad;
 import naitsirc98.beryl.input.Joystick;
@@ -43,6 +44,11 @@ public class CameraController extends LateBehaviour {
             } else {
                 window.cursorType(NORMAL);
             }
+        }
+
+        if(isKeyTyped(KEY_V)) {
+            System.out.println("V");
+            Graphics.get().vsync(!Graphics.get().vsync());
         }
 
         // Window.get().focus();

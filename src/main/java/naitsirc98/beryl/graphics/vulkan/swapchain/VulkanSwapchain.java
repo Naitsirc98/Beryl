@@ -1,5 +1,6 @@
 package naitsirc98.beryl.graphics.vulkan.swapchain;
 
+import naitsirc98.beryl.core.BerylConfiguration;
 import naitsirc98.beryl.graphics.vulkan.VulkanObject;
 import naitsirc98.beryl.graphics.vulkan.devices.VulkanLogicalDevice;
 import naitsirc98.beryl.graphics.vulkan.devices.VulkanPhysicalDevice;
@@ -39,6 +40,9 @@ public class VulkanSwapchain implements VulkanObject.Long {
     private static final int DEPTH_ATTACHMENT_INDEX = 1;
 
     private static final int NO_PRESENT_MODE = -1;
+    private static final int PRESENT_MODE_NO_VSYNC = -2;
+
+    private static final boolean INITIAL_VSYNC = BerylConfiguration.VSYNC.get(false);
 
     private long vkSwapchain;
     private int swapChainImageFormat;
@@ -101,11 +105,11 @@ public class VulkanSwapchain implements VulkanObject.Long {
     }
 
     public boolean vsync() {
-        return presentMode == VK_PRESENT_MODE_FIFO_KHR;
+        return presentMode == VK_PRESENT_MODE_FIFO_KHR || presentMode == VK_PRESENT_MODE_FIFO_RELAXED_KHR;
     }
 
     public void vsync(boolean vsync) {
-        changePresentMode(vsync ? VK_PRESENT_MODE_FIFO_KHR : NO_PRESENT_MODE);
+        changePresentMode(vsync ? VK_PRESENT_MODE_FIFO_KHR : PRESENT_MODE_NO_VSYNC);
     }
 
     public int presentMode() {
@@ -192,6 +196,14 @@ public class VulkanSwapchain implements VulkanObject.Long {
             VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(swapChainSupport.formats());
 
             if(presentMode == NO_PRESENT_MODE) {
+                if(INITIAL_VSYNC) {
+                    presentMode = VK_PRESENT_MODE_FIFO_KHR;
+                } else {
+                    presentMode = chooseSwapPresentMode(swapChainSupport.presentModes());
+                }
+            }
+
+            if(presentMode == PRESENT_MODE_NO_VSYNC) {
                 presentMode = chooseSwapPresentMode(swapChainSupport.presentModes());
             }
 

@@ -8,7 +8,7 @@ import naitsirc98.beryl.resources.Resource;
 public interface GraphicsFactory extends Resource {
 
     static GraphicsFactory get() {
-        return Graphics.graphicsContext().graphicsFactory();
+        return Graphics.get().graphicsFactory();
     }
 
     VertexData.Builder newVertexDataBuilder(VertexLayout layout);

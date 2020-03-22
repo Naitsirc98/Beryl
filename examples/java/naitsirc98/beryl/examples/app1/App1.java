@@ -7,6 +7,7 @@ import naitsirc98.beryl.graphics.GraphicsAPI;
 import naitsirc98.beryl.graphics.GraphicsFactory;
 import naitsirc98.beryl.graphics.rendering.RenderingPaths;
 import naitsirc98.beryl.graphics.textures.Texture2D;
+import naitsirc98.beryl.graphics.window.DisplayMode;
 import naitsirc98.beryl.graphics.window.Window;
 import naitsirc98.beryl.images.Image;
 import naitsirc98.beryl.images.ImageFactory;
@@ -57,7 +58,9 @@ public class App1 extends BerylApplication {
         BerylConfiguration.SHOW_DEBUG_INFO.set(true);
         BerylConfiguration.GRAPHICS_API.set(GraphicsAPI.VULKAN);
         BerylConfiguration.VULKAN_ENABLE_DEBUG_MESSAGES.set(true);
-        BerylConfiguration.VULKAN_ENABLE_VALIDATION_LAYERS.set(true);
+        BerylConfiguration.VULKAN_ENABLE_VALIDATION_LAYERS.set(false);
+        // BerylConfiguration.WINDOW_DISPLAY_MODE.set(DisplayMode.FULLSCREEN);
+        BerylConfiguration.VSYNC.set(true);
     }
 
     private App1() {

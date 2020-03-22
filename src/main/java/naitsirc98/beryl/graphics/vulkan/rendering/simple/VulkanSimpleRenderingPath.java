@@ -298,7 +298,8 @@ public final class VulkanSimpleRenderingPath extends RenderingPath
 
     @Override
     public void onSwapchainRecreate() {
-        terminate();
+        pipelineLayout.release();
+        graphicsPipeline.release();
         init();
     }
 
