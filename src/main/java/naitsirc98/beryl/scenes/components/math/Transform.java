@@ -8,8 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
-import static naitsirc98.beryl.util.Asserts.assertEquals;
-
 /**
  * A Transform contains the position, scale and rotation of a {@link naitsirc98.beryl.scenes.SceneObject}.
  * 
@@ -96,9 +94,11 @@ public final class Transform extends Component<Transform> {
      */
     public Transform position(float x, float y, float z) {
         assertNotDeleted();
-        updateChildrenPosition(x, y, z);
-        position.set(x, y, z);
-        modify();
+        if(enabled()) {
+            updateChildrenPosition(x, y, z);
+            position.set(x, y, z);
+            modify();
+        }
         return this;
     }
 
@@ -123,9 +123,11 @@ public final class Transform extends Component<Transform> {
      */
     public Transform translate(float x, float y, float z) {
         assertNotDeleted();
-        updateChildrenPosition(position.x + x, position.y + y, position.z + z);
-        position.add(x, y, z);
-        modify();
+        if(enabled()) {
+            updateChildrenPosition(position.x + x, position.y + y, position.z + z);
+            position.add(x, y, z);
+            modify();
+        }
         return this;
     }
 
@@ -160,9 +162,11 @@ public final class Transform extends Component<Transform> {
      */
     public Transform scale(float x, float y, float z) {
         assertNotDeleted();
-        updateChildrenScale(x, y, z);
-        scale.set(x, y, z);
-        modify();
+        if(enabled()) {
+            updateChildrenScale(x, y, z);
+            scale.set(x, y, z);
+            modify();
+        }
         return this;
     }
 
@@ -229,10 +233,12 @@ public final class Transform extends Component<Transform> {
      */
     public Transform rotate(float radians, float x, float y, float z) {
         assertNotDeleted();
-        updateChildrenRotation(radians, x, y, z);
-        rotationAxis.set(radians, x, y, z);
-        rotation.set(rotationAxis);
-        modify();
+        if(enabled()) {
+            updateChildrenRotation(radians, x, y, z);
+            rotationAxis.set(radians, x, y, z);
+            rotation.set(rotationAxis);
+            modify();
+        }
         return this;
     }
 
@@ -278,9 +284,11 @@ public final class Transform extends Component<Transform> {
      */
     public Transform rotateX(float radians) {
         assertNotDeleted();
-        updateChildrenRotation(radians, 1, 0, 0);
-        rotation.rotateX(radians);
-        modify();
+        if(enabled()) {
+            updateChildrenRotation(radians, 1, 0, 0);
+            rotation.rotateX(radians);
+            modify();
+        }
         return this;
     }
 
@@ -292,9 +300,11 @@ public final class Transform extends Component<Transform> {
      */
     public Transform rotateY(float radians) {
         assertNotDeleted();
-        updateChildrenRotation(radians, 0, 1, 0);
-        rotation.rotateY(radians);
-        modify();
+        if(enabled()) {
+            updateChildrenRotation(radians, 0, 1, 0);
+            rotation.rotateY(radians);
+            modify();
+        }
         return this;
     }
 
@@ -306,9 +316,11 @@ public final class Transform extends Component<Transform> {
      */
     public Transform rotateZ(float radians) {
         assertNotDeleted();
-        updateChildrenRotation(radians, 0, 0, 1);
-        rotation.rotateZ(radians);
-        modify();
+        if(enabled()) {
+            updateChildrenRotation(radians, 0, 0, 1);
+            rotation.rotateZ(radians);
+            modify();
+        }
         return this;
     }
 

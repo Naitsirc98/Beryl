@@ -65,6 +65,9 @@ public final class MeshViewManager extends AbstractComponentManager<MeshView> {
     }
 
     private void removeMaterial(Material material) {
+        if(!materials.containsKey(material)) {
+            return;
+        }
         if(materials.get(material) == 0) {
             materials.remove(material);
         } else {

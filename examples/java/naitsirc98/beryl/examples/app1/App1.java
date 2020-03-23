@@ -40,6 +40,7 @@ import static naitsirc98.beryl.meshes.vertices.VertexLayout.VERTEX_LAYOUT_3D;
 import static naitsirc98.beryl.scenes.Entity.newEntity;
 import static naitsirc98.beryl.scenes.SceneManager.newScene;
 import static naitsirc98.beryl.util.Maths.radians;
+import static naitsirc98.beryl.util.Maths.sin;
 import static naitsirc98.beryl.util.types.DataType.FLOAT32;
 
 
@@ -120,24 +121,36 @@ public class App1 extends BerylApplication {
 
          */
 
-        Entity a = newEntity();
+        Entity a = newEntity("a");
         a.add(Transform.class).position(5, 0, 0);
         a.add(MeshView.class).mesh(mesh).material(PhongMaterial.get("RED", builder -> builder.emissiveColor(Color.RED)));
 
-        Entity b = newEntity();
+        Entity b = newEntity("b");
         b.add(Transform.class).position(7, 2.2f, 0).addChild(a.get(Transform.class));
         b.add(MeshView.class).mesh(mesh).material(PhongMaterial.get("GREEN", builder -> builder.emissiveColor(Color.GREEN)));
-        b.add(UpdateMutableBehaviour.class).onUpdate(self -> {
 
-            self.get(Transform.class).rotate(Time.time(), 0, 1, 0);
+
+        Entity c = newEntity();
+        c.add(UpdateMutableBehaviour.class).onUpdate(self -> {
+
+            b.get(Transform.class).rotate(Time.time(), 0, 1, 0).scale(sin(Time.time()));
 
             if(Input.isKeyTyped(Key.KEY_RIGHT)) {
-                self.get(Transform.class).translate(1, 0, 0);
+                b.get(Transform.class).translate(1, 0, 0);
             } else if(Input.isKeyTyped(Key.KEY_LEFT)) {
-                self.get(Transform.class).translate(-1, 0, 0);
+                b.get(Transform.class).translate(-1, 0, 0);
+            }
+
+            if(Input.isKeyTyped(Key.KEY_L)) {
+                a.get(Transform.class).translate(1, 0, 0);
+            } else if(Input.isKeyTyped(Key.KEY_K)) {
+                a.get(Transform.class).translate(-1, 0, 0);
+            }
+
+            if(Input.isKeyTyped(Key.KEY_Q)) {
+                b.enable(!b.enabled());
             }
         });
-
 
         Entity camera = scene.newEntity("Camera");
         camera.add(Transform.class).position(100, 0, 300);

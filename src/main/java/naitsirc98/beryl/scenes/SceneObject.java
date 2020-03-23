@@ -36,6 +36,17 @@ public abstract class SceneObject {
      */
     public abstract boolean enabled();
 
+
+    /**
+     * Enables of disables this scene object.
+     *
+     * @param enable true if you want to enable this scene object, false otherwise
+     * @return this scene object
+     */
+    public final SceneObject enable(boolean enable) {
+        return enable ? enable() : disable();
+    }
+
     /**
      * Enables this object
      *

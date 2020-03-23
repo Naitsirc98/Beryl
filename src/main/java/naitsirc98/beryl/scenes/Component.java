@@ -114,8 +114,10 @@ public abstract class Component<SELF extends Component> extends SceneObject {
     public final SELF enable() {
         assertNotDeleted();
         if(!enabled() && active()) {
-            manager.enable(self());
-            onEnable();
+            doLater(() -> {
+                manager.enable(self());
+                onEnable();
+            });
         }
         return self();
     }
@@ -124,8 +126,10 @@ public abstract class Component<SELF extends Component> extends SceneObject {
     public final SELF disable() {
         assertNotDeleted();
         if(enabled() && active()) {
-            manager.disable(self());
-            onDisable();
+            doLater(() -> {
+                manager.disable(self());
+                onDisable();
+            });
         }
         return self();
     }

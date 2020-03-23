@@ -286,8 +286,8 @@ public final class Entity extends SceneObject implements Iterable<Component> {
     public Entity enable() {
         assertNotDeleted();
         if(!enabled) {
-            enabled = true;
             components.values().forEach(Component::enable);
+            enabled = true;
         }
         return this;
     }
@@ -296,8 +296,8 @@ public final class Entity extends SceneObject implements Iterable<Component> {
     public Entity disable() {
         assertNotDeleted();
         if(enabled) {
-            enabled = false;
             components.values().forEach(Component::disable);
+            enabled = false;
         }
         return this;
     }

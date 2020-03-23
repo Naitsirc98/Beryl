@@ -225,9 +225,7 @@ public final class Scene {
         assertNonNull(component);
         ComponentManager<T> manager = managerOf(component.type());
 
-        // synchronized(manager) {
-            manager.add(component);
-        // }
+        manager.add(component);
 
         component.manager = manager;
     }
@@ -267,9 +265,7 @@ public final class Scene {
 
         ComponentManager<T> manager = managerOf(component.type());
 
-        // synchronized(manager) {
-            manager.remove(component);
-        // }
+        manager.remove(component);
 
         component.delete();
     }
