@@ -30,7 +30,7 @@ public final class MeshViewManager extends AbstractComponentManager<MeshView> {
     protected void add(MeshView component) {
         if(component.enabled() && component.mesh() != null) {
             components.enabled().add(component);
-            addMaterial(component.material());
+            component.materials().forEach(this::addMaterial);
         } else {
             components.disabled().add(component);
         }
@@ -39,19 +39,19 @@ public final class MeshViewManager extends AbstractComponentManager<MeshView> {
     @Override
     protected void remove(MeshView component) {
         super.remove(component);
-        removeMaterial(component.material());
+        component.materials().forEach(this::removeMaterial);
     }
 
     @Override
     protected void enable(MeshView component) {
         super.enable(component);
-        addMaterial(component.material());
+        component.materials().forEach(this::addMaterial);
     }
 
     @Override
     protected void disable(MeshView component) {
         super.disable(component);
-        removeMaterial(component.material());
+        component.materials().forEach(this::removeMaterial);
     }
 
     @Override
@@ -60,11 +60,11 @@ public final class MeshViewManager extends AbstractComponentManager<MeshView> {
         materials.clear();
     }
 
-    private void addMaterial(Material material) {
+    void addMaterial(Material material) {
         materials.compute(material, (mat, count) -> count == null ? 1 : ++count);
     }
 
-    private void removeMaterial(Material material) {
+    void removeMaterial(Material material) {
         if(!materials.containsKey(material)) {
             return;
         }
@@ -74,5 +74,4 @@ public final class MeshViewManager extends AbstractComponentManager<MeshView> {
             materials.put(material, materials.get(material) - 1);
         }
     }
-
 }

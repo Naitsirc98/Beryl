@@ -25,6 +25,9 @@ module Beryl {
     requires org.lwjgl.shaderc;
     requires org.lwjgl.shaderc.natives;
 
+    requires org.lwjgl.assimp;
+    requires org.lwjgl.assimp.natives;
+
     requires org.joml;
 
     // <===

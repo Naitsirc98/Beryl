@@ -6,21 +6,22 @@ import naitsirc98.beryl.util.types.DataType;
 import static java.util.Objects.requireNonNull;
 import static naitsirc98.beryl.util.types.DataType.FLOAT32;
 
-public final class VertexAttribute implements ByteSize {
+public enum VertexAttribute implements ByteSize {
 
-    public static final VertexAttribute POSITION2D = new VertexAttribute(FLOAT32, 2);
-    public static final VertexAttribute POSITION3D = new VertexAttribute(FLOAT32, 3);
-    public static final VertexAttribute POSITION4D = new VertexAttribute(FLOAT32, 4);
-    public static final VertexAttribute NORMAL = new VertexAttribute(FLOAT32, 3);
-    public static final VertexAttribute TEXCOORDS = new VertexAttribute(FLOAT32, 2);
-    public static final VertexAttribute COLOR = new VertexAttribute(FLOAT32, 3);
-    public static final VertexAttribute COLOR_ALPHA = new VertexAttribute(FLOAT32, 4);
-
+    POSITION2D(FLOAT32, 2),
+    POSITION3D(FLOAT32, 3),
+    POSITION4D(FLOAT32, 4),
+    NORMAL(FLOAT32, 3),
+    TEXCOORDS(FLOAT32, 2),
+    TANGENT(FLOAT32, 3),
+    BITANGENT(FLOAT32, 3),
+    COLOR(FLOAT32, 3),
+    COLOR_ALPHA(FLOAT32, 4);
 
     private final DataType dataType;
     private final int size;
 
-    public VertexAttribute(DataType dataType, int size) {
+    VertexAttribute(DataType dataType, int size) {
         this.dataType = requireNonNull(dataType);
         this.size = size;
     }
@@ -36,25 +37,5 @@ public final class VertexAttribute implements ByteSize {
     @Override
     public int sizeof() {
         return size * dataType.sizeof();
-    }
-
-    public static final class Builder {
-
-        private DataType dataType;
-        private int size;
-
-        public Builder dataType(DataType dataType) {
-            this.dataType = dataType;
-            return this;
-        }
-
-        public Builder size(int size) {
-            this.size = size;
-            return this;
-        }
-
-        public VertexAttribute build() {
-            return new VertexAttribute(dataType, size);
-        }
     }
 }

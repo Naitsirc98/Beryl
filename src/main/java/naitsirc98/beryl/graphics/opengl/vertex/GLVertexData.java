@@ -20,7 +20,7 @@ public final class GLVertexData extends VertexData {
         vertexArray = new GLVertexArray();
 
         for(int i = 0;i < layout.bindings();i++) {
-            vertexArray.addVertexBuffer(i, layout.attributes(i), vertexBuffers[i]);
+            vertexArray.addVertexBuffer(i, layout.attributeList(i), vertexBuffers[i]);
         }
 
         if(indexBuffer != null) {

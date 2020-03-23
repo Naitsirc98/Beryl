@@ -9,6 +9,7 @@ import naitsirc98.beryl.lights.Light;
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.materials.PhongMaterial;
 import naitsirc98.beryl.core.BerylFiles;
+import naitsirc98.beryl.meshes.Mesh;
 import naitsirc98.beryl.scenes.Scene;
 import naitsirc98.beryl.scenes.components.camera.Camera;
 import naitsirc98.beryl.scenes.components.lights.LightSource;
@@ -144,26 +145,29 @@ public class GLPhongRenderingPath extends RenderingPath {
 
             for(MeshView meshView : scene.meshViews()) {
 
-                final GLVertexData vertexData = meshView.mesh().vertexData();
-                final PhongMaterial material = meshView.material();
-
-                if(lastVertexData != vertexData) {
-                    vertexData.bind();
-                    lastVertexData = vertexData;
-                }
-
-                if(lastMaterial != material) {
-                    setMaterialUniforms(shader, material, stack);
-                    lastMaterial = material;
-                }
-
                 projectionView.mul(meshView.modelMatrix(), mvp).get(MATRICES_UNIFORM_BUFFER_MVP_OFFSET, matricesBuffer);
                 meshView.modelMatrix().get(MATRICES_UNIFORM_BUFFER_MODEL_MATRIX_OFFSET, matricesBuffer);
                 meshView.normalMatrix().get(MATRICES_UNIFORM_BUFFER_NORMAL_MATRIX_OFFSET, matricesBuffer);
 
                 matricesUniformBuffer.update(0, matricesBuffer);
 
-                glDrawArrays(GL_TRIANGLES, vertexData.firstVertex(), vertexData.vertexCount());
+                for(Mesh mesh : meshView) {
+
+                    final GLVertexData vertexData = mesh.vertexData();
+                    final PhongMaterial material = meshView.material(mesh);
+
+                    if(lastVertexData != vertexData) {
+                        vertexData.bind();
+                        lastVertexData = vertexData;
+                    }
+
+                    if(lastMaterial != material) {
+                        setMaterialUniforms(shader, material, stack);
+                        lastMaterial = material;
+                    }
+
+                    glDrawArrays(GL_TRIANGLES, vertexData.firstVertex(), vertexData.vertexCount());
+                }
             }
 
         }

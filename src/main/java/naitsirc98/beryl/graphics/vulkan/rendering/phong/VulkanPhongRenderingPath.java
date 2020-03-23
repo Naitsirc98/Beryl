@@ -19,6 +19,7 @@ import naitsirc98.beryl.graphics.vulkan.vertex.VulkanVertexData;
 import naitsirc98.beryl.lights.Light;
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.materials.Material;
+import naitsirc98.beryl.meshes.Mesh;
 import naitsirc98.beryl.meshes.vertices.VertexLayout;
 import naitsirc98.beryl.scenes.Scene;
 import naitsirc98.beryl.scenes.components.camera.Camera;
@@ -46,7 +47,6 @@ import static naitsirc98.beryl.util.types.DataType.INT32_SIZEOF;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.memAddress;
 import static org.lwjgl.system.libc.LibCString.nmemcpy;
-import static org.lwjgl.util.vma.Vma.vmaFlushAllocation;
 import static org.lwjgl.vulkan.VK10.*;
 
 public final class VulkanPhongRenderingPath extends RenderingPath
@@ -238,21 +238,26 @@ public final class VulkanPhongRenderingPath extends RenderingPath
 
         updatePushConstants(commandBuffer, meshView, threadData);
 
-        final VulkanVertexData vertexData = meshView.mesh().vertexData();
+        threadData.updateMatrices(index, meshView);
 
-        if(threadData.lastVertexData != vertexData) {
-            vertexData.bind(commandBuffer);
-            threadData.lastVertexData = vertexData;
-        }
+        for(Mesh mesh : meshView) {
 
-        threadData.updateUniformData(index, meshView, lightsDescriptorSet);
+            final VulkanVertexData vertexData = mesh.vertexData();
 
-        threadData.bindDescriptorSets(commandBuffer, pipelineLayout.handle());
+            if(threadData.lastVertexData != vertexData) {
+                vertexData.bind(commandBuffer);
+                threadData.lastVertexData = vertexData;
+            }
 
-        if (vertexData.indexCount() == 0) {
-            vkCmdDraw(commandBuffer, vertexData.vertexCount(), 1, 0, 0);
-        } else {
-            vkCmdDrawIndexed(commandBuffer, vertexData.indexCount(), 1, 0, 0, 0);
+            threadData.updateMaterialsAndLights(meshView.material(mesh), lightsDescriptorSet);
+
+            threadData.bindDescriptorSets(commandBuffer, pipelineLayout.handle());
+
+            if (vertexData.indexCount() == 0) {
+                vkCmdDraw(commandBuffer, vertexData.vertexCount(), 1, 0, 0);
+            } else {
+                vkCmdDrawIndexed(commandBuffer, vertexData.indexCount(), 1, 0, 0, 0);
+            }
         }
     }
 

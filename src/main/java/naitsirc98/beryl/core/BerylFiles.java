@@ -42,7 +42,7 @@ public final class BerylFiles {
     }
 
     private static String normalize(String path) {
-        return path.startsWith("/") ? path : '/' + path;
+        return path.charAt(0) == File.pathSeparatorChar ? path : '/' + path;
     }
 
     private BerylFiles() {}

@@ -195,11 +195,9 @@ final class VulkanPhongThreadData implements VulkanThreadData, VulkanObject {
                 pDynamicOffsets);
     }
 
-    void updateUniformData(int index, MeshView meshView, long lightsDescriptorSet) {
+    void updateMaterialsAndLights(PhongMaterial material, long lightsDescriptorSet) {
 
-        updateMatrices(index, meshView);
-
-        final MaterialDescriptorSet materialDescriptorSet = materialDescriptorSets.get(meshView.material());
+        final MaterialDescriptorSet materialDescriptorSet = materialDescriptorSets.get(material);
 
         pDescriptorSets.put(1, materialDescriptorSet.descriptorSet);
         pDescriptorSets.put(2, lightsDescriptorSet);
@@ -207,7 +205,7 @@ final class VulkanPhongThreadData implements VulkanThreadData, VulkanObject {
         pDynamicOffsets.put(1, materialDescriptorSet.dynamicOffset);
     }
 
-    private void updateMatrices(int index, MeshView meshView) {
+    void updateMatrices(int index, MeshView meshView) {
 
         final int offset = index * MATRICES_UNIFORM_BUFFER_SIZE; // Check for alignment
 

@@ -2,7 +2,6 @@ package naitsirc98.beryl.meshes.vertices;
 
 import naitsirc98.beryl.graphics.GraphicsFactory;
 import naitsirc98.beryl.resources.ManagedResource;
-import org.lwjgl.system.NativeResource;
 
 import java.nio.ByteBuffer;
 
@@ -54,6 +53,10 @@ public abstract class VertexData extends ManagedResource {
             this.layout = requireNonNull(layout);
         }
 
+        public final VertexLayout vertexLayout() {
+            return vertexLayout();
+        }
+
         public final Builder firstVertex(int firstVertex) {
             this.firstVertex = firstVertex;
             return this;
@@ -75,7 +78,7 @@ public abstract class VertexData extends ManagedResource {
             int vertexCount = 0;
 
             for(int i = 0;i < vertices.length;i++) {
-                vertexCount += vertices[i].remaining() / layout.attributes(i).sizeof();
+                vertexCount += vertices[i].remaining() / layout.attributeList(i).sizeof();
             }
 
             return vertexCount;

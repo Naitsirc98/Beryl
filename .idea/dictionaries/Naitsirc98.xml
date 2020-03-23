@@ -2,8 +2,10 @@
   <dictionary name="Naitsirc98">
     <words>
       <w>anysotropy</w>
+      <w>assimp</w>
       <w>attributef</w>
       <w>attributei</w>
+      <w>bitangent</w>
       <w>blinn</w>
       <w>calloc</w>
       <w>emissive</w>

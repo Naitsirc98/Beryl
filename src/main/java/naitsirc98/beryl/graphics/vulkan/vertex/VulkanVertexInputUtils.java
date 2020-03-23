@@ -18,7 +18,7 @@ public final class VulkanVertexInputUtils {
         VkVertexInputBindingDescription.Buffer bindingDescriptions = VkVertexInputBindingDescription.callocStack(layout.bindings());
 
         for(int i = 0;i < layout.bindings();i++) {
-            VertexAttributeList attributes = layout.attributes(i);
+            VertexAttributeList attributes = layout.attributeList(i);
             bindingDescriptions.get(i).set(i, attributes.stride(), getVkInputRate(attributes));
         }
 
@@ -30,14 +30,14 @@ public final class VulkanVertexInputUtils {
         int descriptionCount = 0;
 
         for(int i = 0;i < layout.bindings();i++) {
-            descriptionCount += layout.attributes(i).count();
+            descriptionCount += layout.attributeList(i).count();
         }
 
         var descriptions = VkVertexInputAttributeDescription.callocStack(descriptionCount);
 
         for(int binding = 0;binding < layout.bindings();binding++) {
 
-            VertexAttributeList attributes = layout.attributes(binding);
+            VertexAttributeList attributes = layout.attributeList(binding);
 
             VertexAttributeListIterator iterator = attributes.iterator();
 

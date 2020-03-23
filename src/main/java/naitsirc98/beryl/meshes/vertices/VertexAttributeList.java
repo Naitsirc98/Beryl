@@ -4,12 +4,13 @@ import naitsirc98.beryl.util.types.ByteSize;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.stream.Stream;
 
 public final class VertexAttributeList implements ByteSize, Iterable<VertexAttribute> {
 
     // TODO: This should be Map<Integer, VertexAttribute> (Location, Attribute) instead
-    private final ArrayList<VertexAttribute> attributes;
+    private final List<VertexAttribute> attributes;
     private int offset;
     private int stride;
     private boolean instancing;
@@ -70,7 +71,6 @@ public final class VertexAttributeList implements ByteSize, Iterable<VertexAttri
         VertexAttributeList copy = new VertexAttributeList();
 
         copy.attributes.addAll(attributes);
-        copy.attributes.trimToSize();
         copy.stride = stride;
         copy.instancing = instancing;
 
