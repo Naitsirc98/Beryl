@@ -6,7 +6,6 @@ import naitsirc98.beryl.meshes.vertices.VertexAttributeList;
 import naitsirc98.beryl.meshes.vertices.VertexAttributeList.VertexAttributeIterator;
 import naitsirc98.beryl.meshes.vertices.VertexData;
 import naitsirc98.beryl.meshes.vertices.VertexLayout;
-import naitsirc98.beryl.util.GrowableBuffer;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
 import org.lwjgl.BufferUtils;
@@ -20,24 +19,20 @@ import java.nio.file.Path;
 import java.util.EnumMap;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import static java.util.Objects.requireNonNull;
 import static naitsirc98.beryl.graphics.GraphicsAPI.VULKAN;
 import static naitsirc98.beryl.meshes.vertices.VertexAttribute.*;
-import static naitsirc98.beryl.util.types.DataType.FLOAT32_SIZEOF;
-import static naitsirc98.beryl.util.types.DataType.INT32_SIZEOF;
+import static naitsirc98.beryl.util.types.DataType.*;
 import static org.lwjgl.assimp.Assimp.*;
-import static org.lwjgl.system.MemoryUtil.memAlloc;
-import static org.lwjgl.system.MemoryUtil.memFree;
 
 public class AssimpModelLoader implements ModelLoader {
 
-    private static final int DEFAULT_FLAGS =
-                      aiProcess_OptimizeMeshes
-                    | aiProcess_OptimizeGraph
-                    | aiProcess_Triangulate
-                    | aiProcess_JoinIdenticalVertices;
+    private static final int DEFAULT_FLAGS = aiProcess_OptimizeMeshes
+            | aiProcess_OptimizeGraph
+            | aiProcess_Triangulate
+            | aiProcess_FlipUVs
+            | aiProcess_JoinIdenticalVertices;
 
     private static final EnumMap<VertexAttribute, AttributeDataProcessor> ATTRIBUTE_DATA_PROCESSORS = createAttributeDataProcessors();
 
@@ -147,7 +142,7 @@ public class AssimpModelLoader implements ModelLoader {
             vertexDataBuilder.vertices(i, vertices.rewind());
 
             if(indices != null) {
-                vertexDataBuilder.indices(indices.rewind());
+                vertexDataBuilder.indices(indices.rewind(), INT32);
             }
 
         }

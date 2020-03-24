@@ -3,7 +3,7 @@ package naitsirc98.beryl.examples.app1;
 import naitsirc98.beryl.core.Beryl;
 import naitsirc98.beryl.core.BerylApplication;
 import naitsirc98.beryl.core.BerylConfiguration;
-import naitsirc98.beryl.core.Time;
+import naitsirc98.beryl.core.BerylFiles;
 import naitsirc98.beryl.graphics.GraphicsAPI;
 import naitsirc98.beryl.graphics.GraphicsFactory;
 import naitsirc98.beryl.graphics.rendering.RenderingPaths;
@@ -12,8 +12,6 @@ import naitsirc98.beryl.graphics.window.Window;
 import naitsirc98.beryl.images.Image;
 import naitsirc98.beryl.images.ImageFactory;
 import naitsirc98.beryl.images.PixelFormat;
-import naitsirc98.beryl.input.Input;
-import naitsirc98.beryl.input.Key;
 import naitsirc98.beryl.materials.PhongMaterial;
 import naitsirc98.beryl.meshes.Mesh;
 import naitsirc98.beryl.meshes.models.AssimpModelLoader;
@@ -37,7 +35,6 @@ import static naitsirc98.beryl.meshes.vertices.VertexLayout.VERTEX_LAYOUT_3D;
 import static naitsirc98.beryl.scenes.Entity.newEntity;
 import static naitsirc98.beryl.scenes.SceneManager.newScene;
 import static naitsirc98.beryl.util.Maths.radians;
-import static naitsirc98.beryl.util.Maths.sin;
 import static naitsirc98.beryl.util.types.DataType.FLOAT32;
 
 
@@ -90,7 +87,7 @@ public class App1 extends BerylApplication {
 
         ResourceManager.track(diffuseTexture);
 
-        try(Image image = ImageFactory.newImage("C:\\Users\\naits\\Desktop\\milo_raro.jpeg", true, PixelFormat.RGBA)) {
+        try(Image image = ImageFactory.newImage("C:\\Users\\naits\\Desktop\\milo_raro.jpeg", GraphicsAPI.flipTexCoords(), PixelFormat.RGBA)) {
             diffuseTexture.pixels(1, image);
         }
 
@@ -100,8 +97,7 @@ public class App1 extends BerylApplication {
 
         Mesh mesh = new Mesh(VertexData.builder(VERTEX_LAYOUT_3D).vertices(getCubeVertices()).build(), material);
 
-        Model model = new AssimpModelLoader()
-                .load("C:\\Users\\naits\\Downloads\\Cerberus_by_Andrew_Maximov\\Cerberus_by_Andrew_Maximov\\Cerberus_LP.FBX");
+        Model model = new AssimpModelLoader().load(BerylFiles.getPath("models/chalet.obj"));
 
         model.forEach(node -> {
 
@@ -123,10 +119,17 @@ public class App1 extends BerylApplication {
             System.out.println();
         });
 
-        Mesh modelMesh = new Mesh(model.mesh(0).vertexData(), PhongMaterial.get("MODEL", builder -> builder.emissiveColor(Color.WHITE)));
+        Texture2D modelTexture = GraphicsFactory.get().newTexture2D();
+
+        try(Image image = ImageFactory.newImage(BerylFiles.getString("textures/chalet.jpg"), GraphicsAPI.flipTexCoords(), PixelFormat.RGBA)) {
+            modelTexture.pixels(1, image);
+        }
+
+        Mesh modelMesh = new Mesh(model.mesh(0).vertexData(), PhongMaterial.get("MODEL",
+                builder -> builder.emissiveMap(modelTexture).emissiveColor(Color.WHITE)));
 
         Entity modelEntity = newEntity("model");
-        modelEntity.add(Transform.class).transformation(model.node(0).transformation());
+        modelEntity.add(Transform.class).scale(10).rotate(radians(-90), 1, 0, 0);
         modelEntity.add(MeshView.class).mesh(modelMesh);
 
         /*
@@ -148,6 +151,7 @@ public class App1 extends BerylApplication {
          */
 
 
+        /*
 
         Entity a = newEntity("a");
         a.add(Transform.class).position(5, 0, 0);
@@ -179,6 +183,8 @@ public class App1 extends BerylApplication {
             }
         });
 
+
+         */
 
 
         Entity camera = scene.newEntity("Camera");

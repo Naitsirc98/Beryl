@@ -2,6 +2,7 @@ package naitsirc98.beryl.graphics.vulkan.vertex;
 
 import naitsirc98.beryl.meshes.vertices.VertexData;
 import naitsirc98.beryl.meshes.vertices.VertexLayout;
+import naitsirc98.beryl.util.types.DataType;
 
 import java.nio.ByteBuffer;
 
@@ -22,13 +23,14 @@ public class VulkanVertexDataBuilder extends VertexData.Builder {
     }
 
     @Override
-    public VulkanVertexDataBuilder indices(ByteBuffer indices) {
+    public VulkanVertexDataBuilder indices(ByteBuffer indices, DataType indexType) {
         this.indices = indices;
+        this.indexCount = indices.remaining() / indexType.sizeof();
         return this;
     }
 
     @Override
     public VulkanVertexData build() {
-        return new VulkanVertexData(layout, firstVertex, getVertexCount(vertices), vertices, indices);
+        return new VulkanVertexData(layout, firstVertex, getVertexCount(vertices), vertices, indices, indexCount);
     }
 }

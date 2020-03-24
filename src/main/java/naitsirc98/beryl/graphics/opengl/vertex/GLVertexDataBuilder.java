@@ -5,6 +5,7 @@ import naitsirc98.beryl.graphics.opengl.buffers.GLIndexBuffer;
 import naitsirc98.beryl.graphics.opengl.buffers.GLVertexBuffer;
 import naitsirc98.beryl.meshes.vertices.VertexData;
 import naitsirc98.beryl.meshes.vertices.VertexLayout;
+import naitsirc98.beryl.util.types.DataType;
 
 import java.nio.ByteBuffer;
 
@@ -25,8 +26,9 @@ public final class GLVertexDataBuilder extends VertexData.Builder {
     }
 
     @Override
-    public GLVertexDataBuilder indices(ByteBuffer indices) {
+    public GLVertexDataBuilder indices(ByteBuffer indices, DataType indexType) {
         this.indices = indices;
+        indexCount = indices.remaining() / indexType.sizeof();
         return this;
     }
 
@@ -35,12 +37,10 @@ public final class GLVertexDataBuilder extends VertexData.Builder {
 
         GLBuffer indexBuffer = null;
 
-        if(indices != null && indices.hasRemaining()) {
+        if(indexCount > 0) {
             indexBuffer = new GLIndexBuffer();
             indexBuffer.data(indices);
         }
-
-        final int indexCount = indices == null ? 0 : indices.remaining();
 
         return new GLVertexData(layout, firstVertex, getVertexCount(vertices), indexCount, createVertexBuffers(), indexBuffer);
     }

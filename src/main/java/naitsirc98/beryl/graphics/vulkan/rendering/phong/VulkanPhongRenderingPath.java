@@ -253,10 +253,10 @@ public final class VulkanPhongRenderingPath extends RenderingPath
 
             threadData.bindDescriptorSets(commandBuffer, pipelineLayout.handle());
 
-            if (vertexData.indexCount() == 0) {
-                vkCmdDraw(commandBuffer, vertexData.vertexCount(), 1, 0, 0);
-            } else {
+            if (vertexData.indexCount() > 0) {
                 vkCmdDrawIndexed(commandBuffer, vertexData.indexCount(), 1, 0, 0, 0);
+            } else {
+                vkCmdDraw(commandBuffer, vertexData.vertexCount(), 1, 0, 0);
             }
         }
     }

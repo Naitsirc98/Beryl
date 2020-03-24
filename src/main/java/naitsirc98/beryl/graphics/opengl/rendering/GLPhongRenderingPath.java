@@ -29,6 +29,7 @@ import static naitsirc98.beryl.util.types.DataType.FLOAT32_SIZEOF;
 import static naitsirc98.beryl.util.types.DataType.INT32_SIZEOF;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.system.MemoryStack.stackPush;
+import static org.lwjgl.system.MemoryUtil.NULL;
 
 public class GLPhongRenderingPath extends RenderingPath {
 
@@ -166,7 +167,11 @@ public class GLPhongRenderingPath extends RenderingPath {
                         lastMaterial = material;
                     }
 
-                    glDrawArrays(GL_TRIANGLES, vertexData.firstVertex(), vertexData.vertexCount());
+                    if(vertexData.indexCount() > 0) {
+                        glDrawElements(GL_TRIANGLES, vertexData.indexCount(), GL_UNSIGNED_INT, NULL);
+                    } else {
+                        glDrawArrays(GL_TRIANGLES, vertexData.firstVertex(), vertexData.vertexCount());
+                    }
                 }
             }
 

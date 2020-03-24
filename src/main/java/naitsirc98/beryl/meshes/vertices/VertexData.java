@@ -2,6 +2,7 @@ package naitsirc98.beryl.meshes.vertices;
 
 import naitsirc98.beryl.graphics.GraphicsFactory;
 import naitsirc98.beryl.resources.ManagedResource;
+import naitsirc98.beryl.util.types.DataType;
 
 import java.nio.ByteBuffer;
 
@@ -47,6 +48,7 @@ public abstract class VertexData extends ManagedResource {
 
         protected final VertexLayout layout;
         protected int firstVertex;
+        protected int indexCount;
         private int bindingIndex;
 
         protected Builder(VertexLayout layout) {
@@ -69,7 +71,7 @@ public abstract class VertexData extends ManagedResource {
 
         public abstract Builder vertices(int binding, ByteBuffer vertices);
 
-        public abstract Builder indices(ByteBuffer indices);
+        public abstract Builder indices(ByteBuffer indices, DataType indexType);
 
         public abstract VertexData build();
 

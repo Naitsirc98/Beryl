@@ -10,6 +10,10 @@ public enum GraphicsAPI {
     @Singleton
     private static GraphicsAPI currentGraphicsAPI;
 
+    public static boolean flipTexCoords() {
+        return currentGraphicsAPI == VULKAN;
+    }
+
     public static GraphicsAPI get() {
         return currentGraphicsAPI;
     }

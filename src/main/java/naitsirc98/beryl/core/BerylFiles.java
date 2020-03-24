@@ -17,7 +17,11 @@ public final class BerylFiles {
     }
 
     public static String getString(String path) {
-        return getURL(path).toExternalForm();
+        String newPath = getURI(path).getPath();
+        if(newPath.charAt(0) == '/') {
+            return newPath.substring(1);
+        }
+        return newPath;
     }
 
     public static URI getURI(String path) {

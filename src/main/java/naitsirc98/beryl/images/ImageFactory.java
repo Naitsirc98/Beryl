@@ -3,6 +3,7 @@ package naitsirc98.beryl.images;
 import naitsirc98.beryl.logging.Log;
 import org.lwjgl.system.MemoryStack;
 
+import java.io.IOException;
 import java.nio.Buffer;
 import java.nio.IntBuffer;
 
@@ -98,6 +99,10 @@ public final class ImageFactory {
             int desiredChannels = pixelFormat == null ? STBI_default : pixelFormat.channels();
 
             Buffer pixels = readPixelsFromFile(filename, width, height, channels, desiredChannels, pixelFormat, flipY);
+
+            if(pixels == null) {
+                throw new IOException();
+            }
 
             if(pixelFormat == null) {
                 pixelFormat = PixelFormat.of(pixels, channels.get(0));
