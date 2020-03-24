@@ -17,7 +17,7 @@ import static org.lwjgl.system.MemoryUtil.*;
 public final class ImageFactory {
 
     /**
-     * Creates a 1x1 blank image backed by a new buffer in memory. The buffer must be manually freed by calling {@link Image#free}
+     * Creates a 1x1 blank image backed by a new buffer in memory. The buffer must be manually freed by calling {@link Image#release()}
      *
      * @param format the pixel format
      * @return the new image
@@ -27,7 +27,7 @@ public final class ImageFactory {
     }
 
     /**
-     * Creates a blank image backed by a new buffer in memory. The buffer must be manually freed by calling {@link Image#free}
+     * Creates a blank image backed by a new buffer in memory. The buffer must be manually freed by calling {@link Image#release()}
      *
      * @param width  the width
      * @param height the height
@@ -45,7 +45,7 @@ public final class ImageFactory {
     }
 
     /**
-     * Creates an image backed by a new buffer in memory. The buffer must be manually freed by calling {@link Image#free}
+     * Creates an image backed by a new buffer in memory. The buffer must be manually freed by calling {@link Image#release()}
      *
      * @param width  the width
      * @param height the height
@@ -58,7 +58,7 @@ public final class ImageFactory {
 
     /**
      * Creates a new image backed by the specified buffer. If the buffer has been allocated with {@link org.lwjgl.system.MemoryUtil},
-     * then it must be manually freed by calling {@link Image#free}
+     * then it must be manually freed by calling {@link Image#release}
      *
      * @param width  the width
      * @param height the height
@@ -74,22 +74,20 @@ public final class ImageFactory {
      * Creates a new image suitable for window icons. An icon must be RGBA
      *
      * @param filename the filename of the icon
-     * @param flipY tells whether this image should be flipped vertically on load
      * @return the icon image
      */
-    public static Image newIcon(String filename, boolean flipY) {
-        return newImage(filename, flipY, PixelFormat.RGBA);
+    public static Image newIcon(String filename) {
+        return newImage(filename, PixelFormat.RGBA);
     }
 
     /**
      * Creates a new image from the specified filename
      *
      * @param filename    the filename of the image
-     * @param flipY       tells whether this image should be flipped vertically on load
      * @param pixelFormat the pixel format
      * @return the image
      */
-    public static Image newImage(String filename, boolean flipY, PixelFormat pixelFormat) {
+    public static Image newImage(String filename, PixelFormat pixelFormat) {
 
         try(MemoryStack stack = stackPush()) {
 
@@ -98,7 +96,7 @@ public final class ImageFactory {
             IntBuffer channels = stack.mallocInt(1);
             int desiredChannels = pixelFormat == null ? STBI_default : pixelFormat.channels();
 
-            Buffer pixels = readPixelsFromFile(filename, width, height, channels, desiredChannels, pixelFormat, flipY);
+            Buffer pixels = readPixelsFromFile(filename, width, height, channels, desiredChannels, pixelFormat, false);
 
             if(pixels == null) {
                 throw new IOException();

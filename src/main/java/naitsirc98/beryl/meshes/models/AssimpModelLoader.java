@@ -1,6 +1,5 @@
 package naitsirc98.beryl.meshes.models;
 
-import naitsirc98.beryl.graphics.GraphicsAPI;
 import naitsirc98.beryl.meshes.vertices.VertexAttribute;
 import naitsirc98.beryl.meshes.vertices.VertexAttributeList;
 import naitsirc98.beryl.meshes.vertices.VertexAttributeList.VertexAttributeIterator;
@@ -21,7 +20,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static java.util.Objects.requireNonNull;
-import static naitsirc98.beryl.graphics.GraphicsAPI.VULKAN;
 import static naitsirc98.beryl.meshes.vertices.VertexAttribute.*;
 import static naitsirc98.beryl.util.types.DataType.*;
 import static org.lwjgl.assimp.Assimp.*;
@@ -207,10 +205,6 @@ public class AssimpModelLoader implements ModelLoader {
 
         if (attributes.contains(TANGENTS) || attributes.contains(BITANGENTS)) {
             flags |= aiProcess_CalcTangentSpace;
-        }
-
-        if (GraphicsAPI.get() == VULKAN) {
-            flags |= aiProcess_ConvertToLeftHanded;
         }
 
         // TODO bones, etc ...

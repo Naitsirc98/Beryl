@@ -77,7 +77,9 @@ final class VulkanPhongThreadData implements VulkanThreadData, VulkanObject {
 
         matricesUniformBuffer = new VulkanUniformBuffer(MATRICES_UNIFORM_BUFFER_SIZE);
         materialUniformBuffer = new VulkanUniformBuffer(MATERIAL_UNIFORM_BUFFER_SIZE);
+        matricesUniformBufferData = matricesUniformBuffer.mapMemory(0).get(0);
         initMatricesDescriptorSets();
+        pDescriptorSets.put(0, matricesDescriptorPool.descriptorSet(0));
 
         matrix = new Matrix4f();
 

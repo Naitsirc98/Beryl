@@ -7,6 +7,8 @@ import naitsirc98.beryl.scenes.components.math.Transform;
 import org.joml.Matrix4fc;
 
 import java.util.*;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import static java.util.Objects.requireNonNull;
 import static naitsirc98.beryl.util.Asserts.assertTrue;
@@ -179,7 +181,7 @@ public final class MeshView extends Component<MeshView> implements Iterable<Mesh
         return meshes;
     }
 
-    Collection<Material> materials() {
-        return materials.values();
+    Stream<Material> materials() {
+        return IntStream.range(0, size()).mapToObj(this::material);
     }
 }

@@ -55,7 +55,7 @@ public class App1 extends BerylApplication {
         // BerylConfiguration.INITIAL_TIME_VALUE.set(4000.0);
         // BerylConfiguration.WINDOW_RESIZABLE.set(false);
         BerylConfiguration.SHOW_DEBUG_INFO.set(true);
-        BerylConfiguration.GRAPHICS_API.set(GraphicsAPI.OPENGL);
+        BerylConfiguration.GRAPHICS_API.set(GraphicsAPI.VULKAN);
         BerylConfiguration.VULKAN_ENABLE_DEBUG_MESSAGES.set(true);
         BerylConfiguration.VULKAN_ENABLE_VALIDATION_LAYERS.set(true);
         // BerylConfiguration.WINDOW_DISPLAY_MODE.set(DisplayMode.FULLSCREEN);
@@ -87,7 +87,7 @@ public class App1 extends BerylApplication {
 
         ResourceManager.track(diffuseTexture);
 
-        try(Image image = ImageFactory.newImage("C:\\Users\\naits\\Desktop\\milo_raro.jpeg", GraphicsAPI.flipTexCoords(), PixelFormat.RGBA)) {
+        try(Image image = ImageFactory.newImage("C:\\Users\\naits\\Desktop\\milo_raro.jpeg", PixelFormat.RGBA)) {
             diffuseTexture.pixels(1, image);
         }
 
@@ -121,7 +121,7 @@ public class App1 extends BerylApplication {
 
         Texture2D modelTexture = GraphicsFactory.get().newTexture2D();
 
-        try(Image image = ImageFactory.newImage(BerylFiles.getString("textures/chalet.jpg"), GraphicsAPI.flipTexCoords(), PixelFormat.RGBA)) {
+        try(Image image = ImageFactory.newImage(BerylFiles.getString("textures/chalet.jpg"), PixelFormat.RGBA)) {
             modelTexture.pixels(1, image);
         }
 
