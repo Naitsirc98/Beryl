@@ -16,6 +16,8 @@ import naitsirc98.beryl.input.Input;
 import naitsirc98.beryl.input.Key;
 import naitsirc98.beryl.materials.PhongMaterial;
 import naitsirc98.beryl.meshes.Mesh;
+import naitsirc98.beryl.meshes.models.AssimpModelLoader;
+import naitsirc98.beryl.meshes.models.Model;
 import naitsirc98.beryl.meshes.vertices.VertexData;
 import naitsirc98.beryl.resources.ResourceManager;
 import naitsirc98.beryl.scenes.Entity;
@@ -56,11 +58,11 @@ public class App1 extends BerylApplication {
         // BerylConfiguration.INITIAL_TIME_VALUE.set(4000.0);
         // BerylConfiguration.WINDOW_RESIZABLE.set(false);
         BerylConfiguration.SHOW_DEBUG_INFO.set(true);
-        BerylConfiguration.GRAPHICS_API.set(GraphicsAPI.VULKAN);
+        BerylConfiguration.GRAPHICS_API.set(GraphicsAPI.OPENGL);
         BerylConfiguration.VULKAN_ENABLE_DEBUG_MESSAGES.set(true);
-        BerylConfiguration.VULKAN_ENABLE_VALIDATION_LAYERS.set(false);
+        BerylConfiguration.VULKAN_ENABLE_VALIDATION_LAYERS.set(true);
         // BerylConfiguration.WINDOW_DISPLAY_MODE.set(DisplayMode.FULLSCREEN);
-        BerylConfiguration.VSYNC.set(true);
+        // BerylConfiguration.VSYNC.set(true);
     }
 
     private App1() {
@@ -98,6 +100,35 @@ public class App1 extends BerylApplication {
 
         Mesh mesh = new Mesh(VertexData.builder(VERTEX_LAYOUT_3D).vertices(getCubeVertices()).build(), material);
 
+        Model model = new AssimpModelLoader()
+                .load("C:\\Users\\naits\\Downloads\\Cerberus_by_Andrew_Maximov\\Cerberus_by_Andrew_Maximov\\Cerberus_LP.FBX");
+
+        model.forEach(node -> {
+
+            System.out.println(">>>" + node.name());
+
+            System.out.println("    >> Meshes: ");
+            for(int i = 0;i < node.meshCount();i++) {
+                System.out.println("    " + node.mesh(i).name());
+            }
+
+            if(node.childCount() > 0) {
+
+                System.out.println("    >> Children:");
+                for(int i = 0;i < node.childCount();i++) {
+                    System.out.println("    " + node.child(i));
+                }
+            }
+
+            System.out.println();
+        });
+
+        Mesh modelMesh = new Mesh(model.mesh(0).vertexData(), PhongMaterial.get("MODEL", builder -> builder.emissiveColor(Color.WHITE)));
+
+        Entity modelEntity = newEntity("model");
+        modelEntity.add(Transform.class).transformation(model.node(0).transformation());
+        modelEntity.add(MeshView.class).mesh(modelMesh);
+
         /*
         for(int i = 0;i < 10000;i++) {
 
@@ -116,6 +147,8 @@ public class App1 extends BerylApplication {
 
          */
 
+
+
         Entity a = newEntity("a");
         a.add(Transform.class).position(5, 0, 0);
         a.add(MeshView.class).mesh(mesh).material(PhongMaterial.get("RED", builder -> builder.emissiveColor(Color.RED)));
@@ -123,7 +156,6 @@ public class App1 extends BerylApplication {
         Entity b = newEntity("b");
         b.add(Transform.class).position(7, 2.2f, 0).addChild(a.get(Transform.class));
         b.add(MeshView.class).mesh(mesh).material(PhongMaterial.get("GREEN", builder -> builder.emissiveColor(Color.GREEN)));
-
 
         Entity c = newEntity();
         c.add(UpdateMutableBehaviour.class).onUpdate(self -> {
@@ -146,6 +178,8 @@ public class App1 extends BerylApplication {
                 b.enable(!b.enabled());
             }
         });
+
+
 
         Entity camera = scene.newEntity("Camera");
         camera.add(Transform.class).position(100, 0, 300);

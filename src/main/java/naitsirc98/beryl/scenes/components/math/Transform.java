@@ -324,6 +324,25 @@ public final class Transform extends Component<Transform> {
         return this;
     }
 
+
+    /**
+     * Apply the given transformations to this transform.
+     *
+     * @param transformation the transformation matrix
+     * @return this transform
+     */
+    public Transform transformation(Matrix4fc transformation) {
+        Vector3f vector = new Vector3f();
+        AxisAngle4f axisAngle4f = new AxisAngle4f();
+        transformation.getTranslation(vector);
+        position(vector);
+        transformation.getScale(vector);
+        scale(vector);
+        transformation.getRotation(axisAngle4f);
+        rotate(axisAngle4f);
+        return this;
+    }
+
     /**
      * Returns the model matrix of this transform. If this transform is modified, then this matrix need to be updated.
      *

@@ -2,7 +2,7 @@ package naitsirc98.beryl.graphics.vulkan.vertex;
 
 import naitsirc98.beryl.meshes.vertices.VertexAttribute;
 import naitsirc98.beryl.meshes.vertices.VertexAttributeList;
-import naitsirc98.beryl.meshes.vertices.VertexAttributeList.VertexAttributeListIterator;
+import naitsirc98.beryl.meshes.vertices.VertexAttributeList.VertexAttributeIterator;
 import naitsirc98.beryl.meshes.vertices.VertexLayout;
 import org.lwjgl.vulkan.VkVertexInputAttributeDescription;
 import org.lwjgl.vulkan.VkVertexInputBindingDescription;
@@ -39,7 +39,7 @@ public final class VulkanVertexInputUtils {
 
             VertexAttributeList attributes = layout.attributeList(binding);
 
-            VertexAttributeListIterator iterator = attributes.iterator();
+            VertexAttributeIterator iterator = attributes.iterator();
 
             for(int i = 0;i < attributes.count();i++) {
                 VertexAttribute attribute = iterator.next();

@@ -12,11 +12,12 @@ public enum VertexAttribute implements ByteSize {
     POSITION3D(FLOAT32, 3),
     POSITION4D(FLOAT32, 4),
     NORMAL(FLOAT32, 3),
-    TEXCOORDS(FLOAT32, 2),
-    TANGENT(FLOAT32, 3),
-    BITANGENT(FLOAT32, 3),
-    COLOR(FLOAT32, 3),
-    COLOR_ALPHA(FLOAT32, 4);
+    TEXCOORDS2D(FLOAT32, 2),
+    TEXCOORDS3D(FLOAT32, 3),
+    TANGENTS(FLOAT32, 3),
+    BITANGENTS(FLOAT32, 3),
+    COLOR3D(FLOAT32, 3),
+    COLOR4D(FLOAT32, 4);
 
     private final DataType dataType;
     private final int size;

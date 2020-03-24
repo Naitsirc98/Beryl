@@ -27,7 +27,7 @@ public final class VertexAttributeList implements ByteSize, Iterable<VertexAttri
         return offset;
     }
 
-    public void offset(int offset) {
+    void offset(int offset) {
         this.offset = offset;
     }
 
@@ -58,8 +58,8 @@ public final class VertexAttributeList implements ByteSize, Iterable<VertexAttri
     }
 
     @Override
-    public VertexAttributeListIterator iterator() {
-        return new VertexAttributeListIterator();
+    public VertexAttributeIterator iterator() {
+        return new VertexAttributeIterator();
     }
 
     public Stream<VertexAttribute> attributes() {
@@ -77,14 +77,14 @@ public final class VertexAttributeList implements ByteSize, Iterable<VertexAttri
         return copy;
     }
 
-    public final class VertexAttributeListIterator implements Iterator<VertexAttribute> {
+    public final class VertexAttributeIterator implements Iterator<VertexAttribute> {
 
         private final Iterator<VertexAttribute> iterator;
         private VertexAttribute previous;
         private int location;
         private int offset;
 
-        private VertexAttributeListIterator() {
+        private VertexAttributeIterator() {
             iterator = attributes.iterator();
             offset = VertexAttributeList.this.offset;
         }

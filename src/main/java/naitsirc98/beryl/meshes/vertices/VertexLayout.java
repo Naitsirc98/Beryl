@@ -10,7 +10,7 @@ import static naitsirc98.beryl.util.Asserts.*;
 
 public final class VertexLayout implements ByteSize {
 
-    public static final VertexLayout VERTEX_LAYOUT_3D = new Builder().put(0, POSITION3D, NORMAL, TEXCOORDS).build();
+    public static final VertexLayout VERTEX_LAYOUT_3D = new Builder().put(0, POSITION3D, NORMAL, TEXCOORDS2D).build();
     public static final VertexLayout VERTEX_LAYOUT_INSTANCING_3D = new Builder(VERTEX_LAYOUT_3D).instancing(0, true).build();
 
     private final VertexAttributeList[] attributes;

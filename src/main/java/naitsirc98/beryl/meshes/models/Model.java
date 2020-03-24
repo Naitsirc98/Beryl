@@ -127,6 +127,10 @@ public final class Model implements Iterable<Model.Node> {
             return nodes.get(childIndices[index]);
         }
 
+        public int meshCount() {
+            return meshIndices.length;
+        }
+
         public Mesh mesh(int index) {
             return Model.this.meshes.get(meshIndices[index]);
         }

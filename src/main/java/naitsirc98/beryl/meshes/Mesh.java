@@ -3,14 +3,16 @@ package naitsirc98.beryl.meshes;
 import naitsirc98.beryl.materials.Material;
 import naitsirc98.beryl.meshes.vertices.VertexData;
 
+import static java.util.Objects.requireNonNull;
+
 public class Mesh {
 
     private final VertexData vertexData;
     private final Material material;
 
     public Mesh(VertexData vertexData, Material material) {
-        this.vertexData = vertexData;
-        this.material = material;
+        this.vertexData = requireNonNull(vertexData);
+        this.material = requireNonNull(material);
     }
 
     @SuppressWarnings("unchecked")

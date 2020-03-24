@@ -4,7 +4,7 @@ import naitsirc98.beryl.graphics.opengl.GLObject;
 import naitsirc98.beryl.graphics.opengl.buffers.GLBuffer;
 import naitsirc98.beryl.meshes.vertices.VertexAttribute;
 import naitsirc98.beryl.meshes.vertices.VertexAttributeList;
-import naitsirc98.beryl.meshes.vertices.VertexAttributeList.VertexAttributeListIterator;
+import naitsirc98.beryl.meshes.vertices.VertexAttributeList.VertexAttributeIterator;
 
 import static org.lwjgl.opengl.GL30.glDeleteVertexArrays;
 import static org.lwjgl.opengl.GL45.*;
@@ -32,7 +32,7 @@ public final class GLVertexArray implements GLObject {
 
     public void addVertexBuffer(int binding, VertexAttributeList attributes, GLBuffer vertexBuffer) {
         glVertexArrayVertexBuffer(handle, binding, vertexBuffer.handle(), 0, attributes.stride());
-        VertexAttributeListIterator it = attributes.iterator();
+        VertexAttributeIterator it = attributes.iterator();
         while(it.hasNext()) {
             setVertexAttribute(binding, it.next(), it.location(), it.offset(), attributes.stride());
         }
