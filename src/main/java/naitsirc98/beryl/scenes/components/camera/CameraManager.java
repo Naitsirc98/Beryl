@@ -20,7 +20,11 @@ public final class CameraManager extends AbstractComponentManager<Camera> {
     }
 
     public void update() {
-        components.enabled().parallelStream().filter(Camera::modified).forEach(Camera::update);
+        for(Camera camera : components.enabled()) {
+            if(camera.modified()) {
+                camera.update();
+            }
+        }
     }
 
     @Override

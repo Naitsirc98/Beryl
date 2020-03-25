@@ -74,9 +74,10 @@ public final class BerylConfiguration<T> {
 
     public static final BerylConfiguration<Boolean> OPENGL_ENABLE_DEBUG_MESSAGES = new BerylConfiguration<>();
 
+
     private T value;
 
-    public BerylConfiguration() {
+    private BerylConfiguration() {
     }
 
     public boolean empty() {

@@ -32,7 +32,6 @@ import java.util.Random;
 
 import static naitsirc98.beryl.graphics.rendering.RenderingPaths.RPATH_PHONG;
 import static naitsirc98.beryl.meshes.vertices.VertexLayout.VERTEX_LAYOUT_3D;
-import static naitsirc98.beryl.scenes.Entity.newEntity;
 import static naitsirc98.beryl.scenes.SceneManager.newScene;
 import static naitsirc98.beryl.util.Maths.radians;
 import static naitsirc98.beryl.util.types.DataType.FLOAT32;
@@ -57,7 +56,7 @@ public class App1 extends BerylApplication {
         BerylConfiguration.SHOW_DEBUG_INFO.set(true);
         BerylConfiguration.GRAPHICS_API.set(GraphicsAPI.VULKAN);
         BerylConfiguration.VULKAN_ENABLE_DEBUG_MESSAGES.set(true);
-        BerylConfiguration.VULKAN_ENABLE_VALIDATION_LAYERS.set(true);
+        BerylConfiguration.VULKAN_ENABLE_VALIDATION_LAYERS.set(false);
         // BerylConfiguration.WINDOW_DISPLAY_MODE.set(DisplayMode.FULLSCREEN);
         // BerylConfiguration.VSYNC.set(true);
     }
@@ -97,7 +96,8 @@ public class App1 extends BerylApplication {
 
         Mesh mesh = new Mesh(VertexData.builder(VERTEX_LAYOUT_3D).vertices(getCubeVertices()).build(), material);
 
-        Model model = new AssimpModelLoader().load(BerylFiles.getPath("models/chalet.obj"));
+        Model model = new AssimpModelLoader().load(
+                ("C:\\Users\\naits\\Downloads\\Cerberus_by_Andrew_Maximov\\Cerberus_by_Andrew_Maximov\\Cerberus_LP.FBX"));
 
         model.forEach(node -> {
 
@@ -128,28 +128,24 @@ public class App1 extends BerylApplication {
         Mesh modelMesh = new Mesh(model.mesh(0).vertexData(), PhongMaterial.get("MODEL",
                 builder -> builder.emissiveMap(modelTexture).emissiveColor(Color.WHITE)));
 
-        Entity modelEntity = newEntity("model");
-        modelEntity.add(Transform.class).scale(10).rotate(radians(-90), 1, 0, 0);
-        modelEntity.add(MeshView.class).mesh(modelMesh);
+        // Entity modelEntity = newEntity("model");
+        // modelEntity.add(Transform.class).scale(10).rotate(radians(-90), 1, 0, 0);
+        // modelEntity.add(MeshView.class).mesh(modelMesh);
 
-        /*
-        for(int i = 0;i < 10000;i++) {
+        for(int i = 0;i < 1000;i++) {
 
             final float angle = RAND.nextFloat();
 
-            Entity model = scene.newEntity();
-            model.add(Transform.class).position(RAND.nextInt(200), -RAND.nextInt(200), -RAND.nextInt(200));
-            model.add(MeshView.class).mesh(mesh);
-            model.add(UpdateMutableBehaviour.class).onUpdate(thisBehaviour -> {
+            Entity entity = scene.newEntity();
+            entity.add(Transform.class).scale(2).rotate(radians(-90), 1, 0, 0).position(RAND.nextInt(200), -RAND.nextInt(200), -RAND.nextInt(200));
+            entity.add(MeshView.class).mesh(modelMesh);
+            entity.add(UpdateMutableBehaviour.class).onUpdate(thisBehaviour -> {
                 Transform transform = thisBehaviour.get(Transform.class);
                 transform.rotateY(radians(angle));
                 // thisBehaviour.entity().destroy();
-                addOrRemoveRandomly(thisBehaviour.entity(), mesh);
+                addOrRemoveRandomly(thisBehaviour.entity(), modelMesh);
             });
         }
-
-         */
-
 
         /*
 

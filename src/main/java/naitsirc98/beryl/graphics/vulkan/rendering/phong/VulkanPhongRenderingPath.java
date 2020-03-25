@@ -19,6 +19,7 @@ import naitsirc98.beryl.graphics.vulkan.vertex.VulkanVertexData;
 import naitsirc98.beryl.lights.Light;
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.materials.Material;
+import naitsirc98.beryl.materials.PhongMaterial;
 import naitsirc98.beryl.meshes.Mesh;
 import naitsirc98.beryl.meshes.vertices.VertexLayout;
 import naitsirc98.beryl.scenes.Scene;
@@ -243,13 +244,16 @@ public final class VulkanPhongRenderingPath extends RenderingPath
         for(Mesh mesh : meshView) {
 
             final VulkanVertexData vertexData = mesh.vertexData();
+            final PhongMaterial material = meshView.material(mesh);
 
             if(threadData.lastVertexData != vertexData) {
                 vertexData.bind(commandBuffer);
                 threadData.lastVertexData = vertexData;
             }
 
-            threadData.updateMaterialsAndLights(meshView.material(mesh), lightsDescriptorSet);
+            if(threadData.lastMaterial != material) {
+                threadData.updateMaterialsAndLights(material, lightsDescriptorSet);
+            }
 
             threadData.bindDescriptorSets(commandBuffer, pipelineLayout.handle());
 

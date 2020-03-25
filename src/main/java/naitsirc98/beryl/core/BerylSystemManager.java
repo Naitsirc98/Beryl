@@ -70,7 +70,7 @@ public class BerylSystemManager {
             }
 
             system.init();
-            system.initialized(true);
+            system.markInitialized();
 
             time = (System.nanoTime() - time) / 1e6;
 
