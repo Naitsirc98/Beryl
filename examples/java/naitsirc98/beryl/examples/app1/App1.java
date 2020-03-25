@@ -12,6 +12,8 @@ import naitsirc98.beryl.graphics.window.Window;
 import naitsirc98.beryl.images.Image;
 import naitsirc98.beryl.images.ImageFactory;
 import naitsirc98.beryl.images.PixelFormat;
+import naitsirc98.beryl.lights.LightRange;
+import naitsirc98.beryl.lights.PointLight;
 import naitsirc98.beryl.materials.PhongMaterial;
 import naitsirc98.beryl.meshes.Mesh;
 import naitsirc98.beryl.meshes.models.AssimpModelLoader;
@@ -22,9 +24,11 @@ import naitsirc98.beryl.scenes.Entity;
 import naitsirc98.beryl.scenes.Scene;
 import naitsirc98.beryl.scenes.components.behaviours.UpdateMutableBehaviour;
 import naitsirc98.beryl.scenes.components.camera.Camera;
+import naitsirc98.beryl.scenes.components.lights.LightSource;
 import naitsirc98.beryl.scenes.components.math.Transform;
 import naitsirc98.beryl.scenes.components.meshes.MeshView;
 import naitsirc98.beryl.util.Color;
+import org.joml.Vector3f;
 import org.lwjgl.BufferUtils;
 
 import java.nio.ByteBuffer;
@@ -56,7 +60,7 @@ public class App1 extends BerylApplication {
         BerylConfiguration.SHOW_DEBUG_INFO.set(true);
         BerylConfiguration.GRAPHICS_API.set(GraphicsAPI.VULKAN);
         BerylConfiguration.VULKAN_ENABLE_DEBUG_MESSAGES.set(true);
-        BerylConfiguration.VULKAN_ENABLE_VALIDATION_LAYERS.set(false);
+        BerylConfiguration.VULKAN_ENABLE_VALIDATION_LAYERS.set(true);
         // BerylConfiguration.WINDOW_DISPLAY_MODE.set(DisplayMode.FULLSCREEN);
         // BerylConfiguration.VSYNC.set(true);
     }
@@ -126,18 +130,20 @@ public class App1 extends BerylApplication {
         }
 
         Mesh modelMesh = new Mesh(model.mesh(0).vertexData(), PhongMaterial.get("MODEL",
-                builder -> builder.emissiveMap(modelTexture).emissiveColor(Color.WHITE)));
+                builder -> builder.emissiveMap(GraphicsFactory.get().blankTexture2D()).emissiveColor(Color.WHITE)));
 
         // Entity modelEntity = newEntity("model");
         // modelEntity.add(Transform.class).scale(10).rotate(radians(-90), 1, 0, 0);
         // modelEntity.add(MeshView.class).mesh(modelMesh);
+
+
 
         for(int i = 0;i < 1000;i++) {
 
             final float angle = RAND.nextFloat();
 
             Entity entity = scene.newEntity();
-            entity.add(Transform.class).scale(2).rotate(radians(-90), 1, 0, 0).position(RAND.nextInt(200), -RAND.nextInt(200), -RAND.nextInt(200));
+            entity.add(Transform.class).rotate(radians(-90), 1, 0, 0).position(RAND.nextInt(500), -RAND.nextInt(500), -RAND.nextInt(500));
             entity.add(MeshView.class).mesh(modelMesh);
             entity.add(UpdateMutableBehaviour.class).onUpdate(thisBehaviour -> {
                 Transform transform = thisBehaviour.get(Transform.class);
@@ -146,6 +152,7 @@ public class App1 extends BerylApplication {
                 addOrRemoveRandomly(thisBehaviour.entity(), modelMesh);
             });
         }
+
 
         /*
 
@@ -188,6 +195,7 @@ public class App1 extends BerylApplication {
         camera.add(Camera.class).lookAt(0, 0).renderingPath(RenderingPaths.get(RPATH_PHONG));
         camera.add(CameraController.class);
 
+
         /*
         Entity light = scene.newEntity("Light");
         light.add(LightSource.class).light(new PointLight()
@@ -197,7 +205,28 @@ public class App1 extends BerylApplication {
         light.add(Transform.class).position(0, 0, 0);
         light.add(MeshView.class).mesh(mesh).material(
                 PhongMaterial.get("LightMaterial", builder -> builder.emissiveColor(Color.WHITE)));
-    */
+
+
+         */
+        /*
+
+        for(int i = 0;i < 10000;i++) {
+
+            final float angle = RAND.nextFloat();
+
+            Entity entity = scene.newEntity();
+            entity.add(Transform.class).position(RAND.nextInt(200), -RAND.nextInt(200), -RAND.nextInt(200));
+            entity.add(MeshView.class).mesh(mesh);
+            entity.add(UpdateMutableBehaviour.class).onUpdate(thisBehaviour -> {
+                Transform transform = thisBehaviour.get(Transform.class);
+                transform.rotateY(radians(angle));
+                // thisBehaviour.entity().destroy();
+                addOrRemoveRandomly(thisBehaviour.entity(), mesh);
+            });
+        }
+
+         */
+
     }
 
     private ByteBuffer getCubeVertices() {
