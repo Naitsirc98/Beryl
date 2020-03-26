@@ -137,6 +137,8 @@ public class GLPhongRenderingPath extends RenderingPath {
 
         try(MemoryStack stack = stackPush()) {
 
+            ByteBuffer materialBufferData = stack.malloc(PhongMaterial.SIZEOF);
+
             setLightsUniformBuffer(scene.lightSources(), stack);
 
             final ByteBuffer matricesBuffer = stack.malloc(MATRICES_UNIFORM_BUFFER_SIZE - 4  * FLOAT32_SIZEOF);
@@ -163,7 +165,7 @@ public class GLPhongRenderingPath extends RenderingPath {
                     }
 
                     if(lastMaterial != material) {
-                        setMaterialUniforms(shader, material, stack);
+                        setMaterialUniforms(shader, material, materialBufferData);
                         lastMaterial = material;
                     }
 
@@ -201,9 +203,9 @@ public class GLPhongRenderingPath extends RenderingPath {
         }
     }
 
-    private void setMaterialUniforms(GLShaderProgram shader, PhongMaterial material, MemoryStack stack) {
+    private void setMaterialUniforms(GLShaderProgram shader, PhongMaterial material, ByteBuffer buffer) {
 
-        materialUniformBuffer.update(0, material.get(0, stack.malloc(PhongMaterial.SIZEOF)));
+        materialUniformBuffer.update(0, material.get(0, buffer));
 
         shader.uniformSampler(UNIFORM_AMBIENT_MAP_NAME, material.ambientMap(), 0);
         shader.uniformSampler(UNIFORM_DIFFUSE_MAP_NAME, material.diffuseMap(), 1);

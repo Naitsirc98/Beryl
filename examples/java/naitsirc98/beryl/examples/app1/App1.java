@@ -12,6 +12,9 @@ import naitsirc98.beryl.graphics.window.Window;
 import naitsirc98.beryl.images.Image;
 import naitsirc98.beryl.images.ImageFactory;
 import naitsirc98.beryl.images.PixelFormat;
+import naitsirc98.beryl.lights.LightRange;
+import naitsirc98.beryl.lights.PointLight;
+import naitsirc98.beryl.materials.Material;
 import naitsirc98.beryl.materials.PhongMaterial;
 import naitsirc98.beryl.meshes.Mesh;
 import naitsirc98.beryl.meshes.models.AssimpModelLoader;
@@ -21,9 +24,11 @@ import naitsirc98.beryl.scenes.Entity;
 import naitsirc98.beryl.scenes.Scene;
 import naitsirc98.beryl.scenes.components.behaviours.UpdateMutableBehaviour;
 import naitsirc98.beryl.scenes.components.camera.Camera;
+import naitsirc98.beryl.scenes.components.lights.LightSource;
 import naitsirc98.beryl.scenes.components.math.Transform;
 import naitsirc98.beryl.scenes.components.meshes.MeshView;
 import naitsirc98.beryl.util.Color;
+import org.joml.Vector3f;
 
 import java.util.Random;
 
@@ -49,9 +54,9 @@ public class App1 extends BerylApplication {
         // BerylConfiguration.INITIAL_TIME_VALUE.set(4000.0);
         // BerylConfiguration.WINDOW_RESIZABLE.set(false);
         BerylConfiguration.SHOW_DEBUG_INFO.set(true);
-        BerylConfiguration.GRAPHICS_API.set(GraphicsAPI.VULKAN);
+        BerylConfiguration.GRAPHICS_API.set(GraphicsAPI.OPENGL);
         BerylConfiguration.VULKAN_ENABLE_DEBUG_MESSAGES.set(true);
-        BerylConfiguration.VULKAN_ENABLE_VALIDATION_LAYERS.set(true);
+        BerylConfiguration.VULKAN_ENABLE_VALIDATION_LAYERS.set(false);
         // BerylConfiguration.WINDOW_DISPLAY_MODE.set(DisplayMode.FULLSCREEN);
         // BerylConfiguration.VSYNC.set(true);
     }
@@ -93,6 +98,7 @@ public class App1 extends BerylApplication {
 
         Mesh cubeMesh = new Mesh(modelLoader.load(BerylFiles.getPath("models/cube.obj")).mesh(0).vertexData(), PhongMaterial.getDefault());
         Mesh quadMesh = new Mesh(modelLoader.load(BerylFiles.getPath("models/quad.obj")).mesh(0).vertexData(), PhongMaterial.getDefault());
+        Mesh sphereMesh = new Mesh(modelLoader.load(BerylFiles.getPath("models/sphere.obj")).mesh(0).vertexData(), PhongMaterial.getDefault());
 
         Model model = new AssimpModelLoader().load(
                 // BerylFiles.getPath("models/chalet.obj"));
@@ -127,61 +133,23 @@ public class App1 extends BerylApplication {
         Mesh modelMesh = new Mesh(model.mesh(0).vertexData(), PhongMaterial.get("MODEL",
                 builder -> builder.emissiveMap(modelTexture).emissiveColor(Color.WHITE)));
 
-        // Entity modelEntity = newEntity("model");
-        // modelEntity.add(Transform.class).scale(10).rotate(radians(-90), 1, 0, 0);
-        // modelEntity.add(MeshView.class).mesh(modelMesh);
-
-
-        for(int i = 0;i < 1;i++) {
+        for(int i = 0;i < 10000;i++) {
 
             final float angle = RAND.nextFloat();
 
+            PhongMaterial mat = PhongMaterial.get(i +"",
+                    builder -> builder.color(new Color(RAND.nextFloat(), RAND.nextFloat(), RAND.nextFloat())));
+
             Entity entity = scene.newEntity();
-            entity.add(Transform.class).scale(1).rotate(radians(-90), 1, 0, 0).position(RAND.nextInt(500), -RAND.nextInt(500), -RAND.nextInt(500));
-            entity.add(MeshView.class).mesh(modelMesh);
+            entity.add(Transform.class).scale(0.25f).rotate(radians(-90), 1, 0, 0).position(RAND.nextInt(500), -RAND.nextInt(500), -RAND.nextInt(500));
+            entity.add(MeshView.class).mesh(sphereMesh).material(mat);
             entity.add(UpdateMutableBehaviour.class).onUpdate(thisBehaviour -> {
                 Transform transform = thisBehaviour.get(Transform.class);
                 transform.rotateY(radians(angle));
                 // thisBehaviour.entity().destroy();
-                // addOrRemoveRandomly(thisBehaviour.entity(), modelMesh);
+                addOrRemoveRandomly(thisBehaviour.entity(), sphereMesh, mat);
             });
         }
-
-
-        /*
-
-        Entity a = newEntity("a");
-        a.add(Transform.class).position(5, 0, 0);
-        a.add(MeshView.class).mesh(mesh).material(PhongMaterial.get("RED", builder -> builder.emissiveColor(Color.RED)));
-
-        Entity b = newEntity("b");
-        b.add(Transform.class).position(7, 2.2f, 0).addChild(a.get(Transform.class));
-        b.add(MeshView.class).mesh(mesh).material(PhongMaterial.get("GREEN", builder -> builder.emissiveColor(Color.GREEN)));
-
-        Entity c = newEntity();
-        c.add(UpdateMutableBehaviour.class).onUpdate(self -> {
-
-            b.get(Transform.class).rotate(Time.time(), 0, 1, 0).scale(sin(Time.time()));
-
-            if(Input.isKeyTyped(Key.KEY_RIGHT)) {
-                b.get(Transform.class).translate(1, 0, 0);
-            } else if(Input.isKeyTyped(Key.KEY_LEFT)) {
-                b.get(Transform.class).translate(-1, 0, 0);
-            }
-
-            if(Input.isKeyTyped(Key.KEY_L)) {
-                a.get(Transform.class).translate(1, 0, 0);
-            } else if(Input.isKeyTyped(Key.KEY_K)) {
-                a.get(Transform.class).translate(-1, 0, 0);
-            }
-
-            if(Input.isKeyTyped(Key.KEY_Q)) {
-                b.enable(!b.enabled());
-            }
-        });
-
-
-         */
 
 
         Entity camera = scene.newEntity("Camera");
@@ -190,37 +158,15 @@ public class App1 extends BerylApplication {
         camera.add(CameraController.class);
 
 
-        /*
+
         Entity light = scene.newEntity("Light");
         light.add(LightSource.class).light(new PointLight()
                 .color(new Color(1, 1, 1, 1))
                 .position(new Vector3f(0.0f))
                 .range(LightRange.MEDIUM));
         light.add(Transform.class).position(0, 0, 0);
-        light.add(MeshView.class).mesh(mesh).material(
+        light.add(MeshView.class).mesh(cubeMesh).material(
                 PhongMaterial.get("LightMaterial", builder -> builder.emissiveColor(Color.WHITE)));
-
-
-         */
-        /*
-
-        for(int i = 0;i < 10000;i++) {
-
-            final float angle = RAND.nextFloat();
-
-            Entity entity = scene.newEntity();
-            entity.add(Transform.class).position(RAND.nextInt(200), -RAND.nextInt(200), -RAND.nextInt(200));
-            entity.add(MeshView.class).mesh(mesh);
-            entity.add(UpdateMutableBehaviour.class).onUpdate(thisBehaviour -> {
-                Transform transform = thisBehaviour.get(Transform.class);
-                transform.rotateY(radians(angle));
-                // thisBehaviour.entity().destroy();
-                addOrRemoveRandomly(thisBehaviour.entity(), mesh);
-            });
-        }
-
-         */
-
     }
 
     @Override
@@ -228,7 +174,7 @@ public class App1 extends BerylApplication {
 
     }
 
-    private void addOrRemoveRandomly(Entity entity, Mesh mesh) {
+    private void addOrRemoveRandomly(Entity entity, Mesh mesh, Material material) {
 
         if(RAND.nextFloat() < 0.001f) {
 
@@ -237,12 +183,12 @@ public class App1 extends BerylApplication {
             final float angle = RAND.nextFloat();
 
             Entity model = entity.scene().newEntity();
-            model.add(Transform.class).position(RAND.nextInt(200), -RAND.nextInt(200), -RAND.nextInt(200));
-            model.add(MeshView.class).mesh(mesh);
+            model.add(Transform.class).scale(0.25f).position(RAND.nextInt(500), -RAND.nextInt(500), -RAND.nextInt(500));
+            model.add(MeshView.class).mesh(mesh).material(material);
             model.add(UpdateMutableBehaviour.class).onUpdate(thisBehaviour -> {
                 Transform transform = thisBehaviour.get(Transform.class);
                 transform.rotateY(radians(angle));
-                addOrRemoveRandomly(thisBehaviour.entity(), mesh);
+                addOrRemoveRandomly(thisBehaviour.entity(), mesh, material);
             });
         }
     }
