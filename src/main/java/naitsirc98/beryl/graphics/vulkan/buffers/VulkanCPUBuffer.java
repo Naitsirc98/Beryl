@@ -3,7 +3,6 @@ package naitsirc98.beryl.graphics.vulkan.buffers;
 import naitsirc98.beryl.graphics.buffers.GraphicsCPUBuffer;
 import naitsirc98.beryl.graphics.vulkan.memory.VmaBufferAllocation;
 import org.lwjgl.PointerBuffer;
-import org.lwjgl.system.MemoryStack;
 import org.lwjgl.util.vma.VmaAllocationCreateInfo;
 import org.lwjgl.vulkan.VkBufferCreateInfo;
 
@@ -13,7 +12,6 @@ import java.nio.IntBuffer;
 
 import static naitsirc98.beryl.graphics.vulkan.util.VulkanUtils.vkCall;
 import static naitsirc98.beryl.util.Asserts.assertTrue;
-import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.libc.LibCString.memcpy;
 import static org.lwjgl.system.libc.LibCString.nmemcpy;
 import static org.lwjgl.util.vma.Vma.vmaMapMemory;
@@ -49,38 +47,32 @@ public abstract class VulkanCPUBuffer extends VulkanBuffer implements GraphicsCP
 
     @Override
     public void update(long offset, ByteBuffer data) {
-        try(MemoryStack stack = stackPush()) {
 
-            PointerBuffer pMemoryData = mapMemory(offset);
+        PointerBuffer pMemoryData = mapMemory(offset);
 
-            memcpy(pMemoryData.getByteBuffer(0, data.remaining()), data);
+        memcpy(pMemoryData.getByteBuffer(0, data.remaining()), data);
 
-            unmapMemory();
-        }
+        unmapMemory();
     }
 
     @Override
     public void update(long offset, IntBuffer data) {
-        try(MemoryStack stack = stackPush()) {
 
-            PointerBuffer pMemoryData = mapMemory(offset);
+        PointerBuffer pMemoryData = mapMemory(offset);
 
-            memcpy(pMemoryData.getIntBuffer(0, data.remaining()), data);
+        memcpy(pMemoryData.getIntBuffer(0, data.remaining()), data);
 
-            unmapMemory();
-        }
+        unmapMemory();
     }
 
     @Override
     public void update(long offset, FloatBuffer data) {
-        try(MemoryStack stack = stackPush()) {
 
-            PointerBuffer pMemoryData = mapMemory(offset);
+        PointerBuffer pMemoryData = mapMemory(offset);
 
-            memcpy(pMemoryData.getFloatBuffer(0, data.remaining()), data);
+        memcpy(pMemoryData.getFloatBuffer(0, data.remaining()), data);
 
-            unmapMemory();
-        }
+        unmapMemory();
     }
 
     @Override

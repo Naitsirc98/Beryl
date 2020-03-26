@@ -19,7 +19,7 @@ public final class VulkanVertexData extends VertexData {
     protected VulkanVertexData(VertexLayout layout, int firstVertex, int vertexCount, ByteBuffer[] vertices, ByteBuffer indices, int indexCount) {
         super(layout, firstVertex, vertexCount, indexCount);
         vertexBuffers = createVertexBuffers(vertices);
-        if(indices != null) {
+        if(indexCount > 0) {
             indexBuffer = new VulkanIndexBuffer();
             indexBuffer.data(indices);
         }

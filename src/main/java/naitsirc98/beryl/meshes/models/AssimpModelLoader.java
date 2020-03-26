@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 
 import static java.util.Objects.requireNonNull;
 import static naitsirc98.beryl.meshes.vertices.VertexAttribute.*;
+import static naitsirc98.beryl.util.Asserts.assertTrue;
 import static naitsirc98.beryl.util.types.DataType.*;
 import static org.lwjgl.assimp.Assimp.*;
 
@@ -137,10 +138,10 @@ public class AssimpModelLoader implements ModelLoader {
                 setAttributeData(aiMesh, attributeInfo.set(iterator.next(), iterator.offset()), vertices);
             }
 
-            vertexDataBuilder.vertices(i, vertices.rewind());
+            vertexDataBuilder.vertices(i, vertices);
 
             if(indices != null) {
-                vertexDataBuilder.indices(indices.rewind(), INT32);
+                vertexDataBuilder.indices(indices, INT32);
             }
 
         }
@@ -166,12 +167,14 @@ public class AssimpModelLoader implements ModelLoader {
 
             IntBuffer faceIndices = aiFace.mIndices();
 
+            assertTrue(faceIndices.remaining() == 3);
+
             for(int j = faceIndices.position();j < faceIndices.remaining();j++) {
                 indices.putInt(faceIndices.get(j));
             }
         }
 
-        return indices.rewind();
+        return indices.flip();
     }
 
     private void setAttributeData(AIMesh aiMesh, AttributeInfo attributeInfo, ByteBuffer vertices) {

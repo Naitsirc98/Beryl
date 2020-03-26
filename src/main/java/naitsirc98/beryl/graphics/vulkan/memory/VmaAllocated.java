@@ -19,7 +19,7 @@ public interface VmaAllocated extends VulkanObject {
         return allocationInfo;
     }
 
-    default long offset() {
+    default long allocationOffset() {
         return allocationInfo().offset();
     }
 

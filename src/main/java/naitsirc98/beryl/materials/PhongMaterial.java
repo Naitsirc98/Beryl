@@ -8,6 +8,7 @@ import naitsirc98.beryl.util.types.IBuilder;
 import java.nio.ByteBuffer;
 import java.util.Objects;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 import static java.util.Objects.requireNonNull;
 import static naitsirc98.beryl.util.Asserts.assertTrue;
@@ -17,9 +18,12 @@ import static naitsirc98.beryl.util.types.DataType.FLOAT32_SIZEOF;
 public class PhongMaterial extends Material implements ByteSize {
 
     public static final int SIZEOF = 5 * 4 * FLOAT32_SIZEOF; // Does not count the textures
-    public static final int FLOAT_BUFFER_MIN_SIZE = SIZEOF / FLOAT32_SIZEOF;
 
     public static final float DEFAULT_SHININESS = 32.0f;
+
+    public static PhongMaterial getDefault() {
+        return get("DEFAULT_PHONG_MATERIAL", builder -> {});
+    }
 
     public static PhongMaterial get(String name, Consumer<Builder> builderIfNotExists) {
         if(Materials.exists(name)) {

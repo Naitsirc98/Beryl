@@ -39,9 +39,12 @@ public class VulkanBufferGroup implements VulkanObject {
         pBuffers = memAllocLong(buffers.length);
         pOffsets = memAllocLong(buffers.length);
 
+        long offset = 0;
+
         for(int i = 0;i < buffers.length;i++) {
             pBuffers.put(i, buffers[i].handle());
-            pOffsets.put(i, buffers[i].offset());
+            pOffsets.put(i, offset);
+            offset += buffers[i].size();
         }
     }
 

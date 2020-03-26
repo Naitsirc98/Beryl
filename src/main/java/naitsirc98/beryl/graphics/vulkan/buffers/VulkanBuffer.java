@@ -150,4 +150,16 @@ public abstract class VulkanBuffer extends ManagedResource implements VulkanObje
         this.bufferInfo = bufferAllocation.bufferCreateInfo();
         this.allocationCreateInfo = bufferAllocation.allocationCreateInfo();
     }
+
+    @Override
+    public String toString() {
+        return "VulkanBuffer{" +
+                "handle=" + handle +
+                ", allocation=" + allocation +
+                ", bufferInfo=" + bufferInfo +
+                ", allocationCreateInfo=" + allocationCreateInfo +
+                ", size = " + size() +
+                ", offset = " + allocationOffset() +
+                '}';
+    }
 }
