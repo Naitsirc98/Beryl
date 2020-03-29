@@ -338,7 +338,7 @@ public final class VulkanPhongRenderingPath extends RenderingPath
                     .framebuffer(currentFramebuffer());
 
             VkClearValue.Buffer clearValues = VkClearValue.callocStack(2, stack);
-            clearValues.get(0).color().float32(stack.floats(0.1f, 0.1f, 0.1f, 1.0f));
+            clearValues.get(0).color().float32(stack.floats(13/255.0f,	20/255.0f,	25/255.0f, 1.0f));
             clearValues.get(1).depthStencil().set(1.0f, 0);
 
             renderPassInfo.pClearValues(clearValues);
@@ -658,9 +658,9 @@ public final class VulkanPhongRenderingPath extends RenderingPath
         final VkExtent2D swapchainExtent = Graphics.vulkan().swapchain().extent();
         return VkViewport.callocStack(1)
                 .x(0.0f)
-                .y(0.0f)
+                .y(swapchainExtent.height())
                 .width(swapchainExtent.width())
-                .height(swapchainExtent.height())
+                .height(-swapchainExtent.height())
                 .minDepth(0.0f)
                 .maxDepth(1.0f);
     }
@@ -705,7 +705,7 @@ public final class VulkanPhongRenderingPath extends RenderingPath
                 .rasterizerDiscardEnable(false)
                 .polygonMode(VK_POLYGON_MODE_FILL)
                 .lineWidth(1.0f)
-                .cullMode(VK_CULL_MODE_BACK_BIT)
+                // .cullMode(VK_CULL_MODE_BACK_BIT)
                 .frontFace(VK_FRONT_FACE_COUNTER_CLOCKWISE)
                 .depthBiasEnable(false);
     }

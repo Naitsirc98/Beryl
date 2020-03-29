@@ -23,7 +23,8 @@ public interface GraphicsBuffer extends Resource {
     enum Type {
         VERTEX_BUFFER,
         INDEX_BUFFER,
-        UNIFORM_BUFFER
+        UNIFORM_BUFFER,
+        STORAGE_BUFFER
     }
 
 }

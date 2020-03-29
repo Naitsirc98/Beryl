@@ -53,7 +53,7 @@ vec4 computeLighting() {
 
     vec4 result = vec4(0.0f);
 
-    for(int i = 0;i < 1;++i) {
+    for(int i = 0;i < u_LightsCount;++i) {
 
         Light light = u_Lights[i];
 
@@ -98,7 +98,7 @@ float computeIntensity(vec3 normalizedDirection, vec3 lightDirection, float cutO
 }
 
 vec4 computeAmbientColor(vec4 lightColor) {
-	return vec4(vec3(lightColor * materialAmbientColor), materialAmbientColor.a);
+	return vec4(vec3(lightColor * materialAmbientColor * 0.2f), materialAmbientColor.a);
 }
 
 vec4 computeDiffuseColor(vec4 lightColor, vec3 lightDirection) {
@@ -133,8 +133,8 @@ vec4 computeDirectionalLighting(Light light) {
     vec3 direction = normalize(-light.direction.xyz);
 
     return computeAmbientColor(light.color)
-         + computeDiffuseColor(light.color, direction)
-         + computeSpecularColor(light.color, direction);
+         + computeDiffuseColor(light.color, direction);
+         // + computeSpecularColor(light.color, direction);
 }
 
 

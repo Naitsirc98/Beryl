@@ -10,6 +10,7 @@ import naitsirc98.beryl.input.Joystick.AxisDirection;
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.scenes.components.behaviours.LateBehaviour;
 import naitsirc98.beryl.scenes.components.camera.Camera;
+import org.joml.Vector3f;
 
 import static naitsirc98.beryl.graphics.window.CursorType.DISABLED;
 import static naitsirc98.beryl.graphics.window.CursorType.NORMAL;
@@ -68,6 +69,9 @@ public class CameraController extends LateBehaviour {
         checkMouseLookAt();
 
         checkGamepadLookAt();
+
+        // System.out.println("pos = " + camera.transform().position());
+        // System.out.println("forward = " + new Vector3f(camera.forward()).normalize());
      }
 
     private void checkGamepadLookAt() {

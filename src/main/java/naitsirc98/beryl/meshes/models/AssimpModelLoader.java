@@ -1,5 +1,6 @@
 package naitsirc98.beryl.meshes.models;
 
+import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.meshes.vertices.VertexAttribute;
 import naitsirc98.beryl.meshes.vertices.VertexAttributeList;
 import naitsirc98.beryl.meshes.vertices.VertexAttributeList.VertexAttributeIterator;
@@ -27,11 +28,12 @@ import static org.lwjgl.assimp.Assimp.*;
 
 public class AssimpModelLoader implements ModelLoader {
 
-    private static final int DEFAULT_FLAGS = aiProcess_OptimizeMeshes
-            | aiProcess_OptimizeGraph
+    private static final int DEFAULT_FLAGS = // aiProcess_OptimizeMeshes
+            aiProcess_OptimizeGraph
             | aiProcess_Triangulate
             | aiProcess_FlipUVs
-            | aiProcess_JoinIdenticalVertices;
+            | aiProcess_JoinIdenticalVertices
+            | aiProcess_FixInfacingNormals;
 
     private static final EnumMap<VertexAttribute, AttributeDataProcessor> ATTRIBUTE_DATA_PROCESSORS = createAttributeDataProcessors();
 
@@ -47,7 +49,15 @@ public class AssimpModelLoader implements ModelLoader {
             throw new IllegalArgumentException("File " + path + " does not exists");
         }
 
-        return loadAssimp(path, vertexLayout);
+        double start = System.nanoTime();
+
+        Model model = loadAssimp(path, vertexLayout);
+
+        double end = (System.nanoTime() - start) / 1e6;
+
+        Log.info("Model " + path.getName(path.getNameCount()-1) + " loaded in " + end + " ms");
+
+        return model;
     }
 
     private Model loadAssimp(Path path, VertexLayout vertexLayout) {
@@ -108,8 +118,8 @@ public class AssimpModelLoader implements ModelLoader {
         PointerBuffer meshes = requireNonNull(aiScene.mMeshes());
         IntBuffer meshIndices = requireNonNull(aiNode.mMeshes());
 
-        for (int i = 0; i < meshIndices.remaining(); i++) {
-            final AIMesh aiMesh = AIMesh.create(meshes.get(meshIndices.get(i)));
+        for(int i = 0;i < meshIndices.remaining();i++) {
+            AIMesh aiMesh = AIMesh.create(meshes.get(meshIndices.get(i)));
             Model.Mesh nodeMesh = modelNode.newMesh(i, aiMesh.mName().dataString());
             processMeshVertexData(aiMesh, nodeMesh);
         }
@@ -202,7 +212,7 @@ public class AssimpModelLoader implements ModelLoader {
             flags |= aiProcess_DropNormals;
         }
 
-        if (attributes.contains(TEXCOORDS2D)) {
+        if (attributes.contains(TEXCOORDS2D) || attributes.contains(TEXCOORDS3D)) {
             flags |= aiProcess_GenUVCoords;
         }
 
@@ -338,7 +348,8 @@ public class AssimpModelLoader implements ModelLoader {
         AIVector3D.Buffer textureCoordinates = aiMesh.mTextureCoords(0);
 
         if(textureCoordinates == null) {
-            throw new IllegalStateException("Number of texture coordinates is zero");
+            return;
+            // throw new IllegalStateException("Number of texture coordinates is zero");
         }
 
         final int stride = attributeInfo.stride;

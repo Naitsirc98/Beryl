@@ -6,9 +6,19 @@ import naitsirc98.beryl.scenes.Component;
 public final class LightSource extends Component<LightSource> {
 
     private Light<?> light;
+    private boolean castShadows;
 
     private LightSource() {
 
+    }
+
+    public boolean castShadows() {
+        return castShadows;
+    }
+
+    public LightSource castShadows(boolean castShadows) {
+        this.castShadows = castShadows;
+        return this;
     }
 
     @SuppressWarnings("unchecked")

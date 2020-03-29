@@ -1,12 +1,12 @@
 package naitsirc98.beryl.scenes.components.camera;
 
-import naitsirc98.beryl.graphics.GraphicsAPI;
 import naitsirc98.beryl.graphics.rendering.RenderingPath;
 import naitsirc98.beryl.graphics.rendering.RenderingPaths;
 import naitsirc98.beryl.graphics.window.Window;
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.scenes.Component;
 import naitsirc98.beryl.scenes.components.math.Transform;
+import naitsirc98.beryl.util.Color;
 import naitsirc98.beryl.util.geometry.Sizec;
 import naitsirc98.beryl.util.geometry.Viewport;
 import naitsirc98.beryl.util.geometry.Viewportc;
@@ -15,6 +15,7 @@ import org.joml.*;
 import static naitsirc98.beryl.scenes.components.camera.ProjectionType.PERSPECTIVE;
 import static naitsirc98.beryl.util.Asserts.assertNonNull;
 import static naitsirc98.beryl.util.Maths.*;
+import static naitsirc98.beryl.util.types.TypeUtils.getOrElse;
 import static org.joml.Math.max;
 
 public final class Camera extends Component<Camera> {
@@ -56,6 +57,8 @@ public final class Camera extends Component<Camera> {
 	private float exposure;
 	// Rendering path
 	private RenderingPath renderingPath;
+	// Clear color
+	private Color clearColor;
 	// Matrices
 	private Matrix4f projectionMatrix;
 	private Matrix4f viewMatrix;
@@ -387,6 +390,15 @@ public final class Camera extends Component<Camera> {
 		return this;
 	}
 
+	public Color clearColor() {
+		return clearColor;
+	}
+
+	public Camera clearColor(Color clearColor) {
+		this.clearColor = getOrElse(clearColor, Color.BLACK);
+		return this;
+	}
+
 	void update() {
 		recalculateView();
 		recalculateProjection();
@@ -419,9 +431,11 @@ public final class Camera extends Component<Camera> {
 			// projection.setOrtho(-1, 1, -1, 1, nearPlane, farPlane);
 		}
 
+		/*
 		if(GraphicsAPI.get() == GraphicsAPI.VULKAN) {
 			projectionMatrix.m11(-projectionMatrix.m11()); // Flip y
 		}
+		 */
 	}
 	
 	/**

@@ -6,9 +6,7 @@ import naitsirc98.beryl.util.types.ByteSize;
 import naitsirc98.beryl.util.types.IBuilder;
 
 import java.nio.ByteBuffer;
-import java.util.Objects;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 import static java.util.Objects.requireNonNull;
 import static naitsirc98.beryl.util.Asserts.assertTrue;
@@ -40,11 +38,11 @@ public class PhongMaterial extends Material implements ByteSize {
     private final ColorMapProperty emissive;
     private final float shininess;
 
-    private PhongMaterial(String name, ColorMapProperty ambient, ColorMapProperty diffuse,
+    private PhongMaterial(String name, boolean transparent, ColorMapProperty ambient, ColorMapProperty diffuse,
                          ColorMapProperty specular, ColorMapProperty emissive,
                          float shininess) {
 
-        super(name);
+        super(name, transparent);
         this.ambient = ambient;
         this.diffuse = diffuse;
         this.specular = specular;
@@ -122,6 +120,7 @@ public class PhongMaterial extends Material implements ByteSize {
         private final ColorMapProperty specular;
         private final ColorMapProperty emissive;
         private float shininess;
+        private boolean transparent;
 
         private Builder(String name) {
             this.name = requireNonNull(name);
@@ -131,6 +130,7 @@ public class PhongMaterial extends Material implements ByteSize {
             emissive = new ColorMapProperty();
             emissive.color(Color.BLACK);
             shininess = DEFAULT_SHININESS;
+            transparent = false;
         }
 
         public Builder color(Color color) {
@@ -186,9 +186,14 @@ public class PhongMaterial extends Material implements ByteSize {
             return this;
         }
 
+        public Builder transparent(boolean transparent) {
+            this.transparent = transparent;
+            return this;
+        }
+
         @Override
         public PhongMaterial build() {
-            return new PhongMaterial(name, ambient, diffuse, specular, emissive, shininess);
+            return new PhongMaterial(name, transparent, ambient, diffuse, specular, emissive, shininess);
         }
     }
 }

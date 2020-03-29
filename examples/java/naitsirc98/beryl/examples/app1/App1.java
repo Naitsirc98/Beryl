@@ -12,8 +12,9 @@ import naitsirc98.beryl.graphics.window.Window;
 import naitsirc98.beryl.images.Image;
 import naitsirc98.beryl.images.ImageFactory;
 import naitsirc98.beryl.images.PixelFormat;
+import naitsirc98.beryl.lights.DirectionalLight;
 import naitsirc98.beryl.lights.LightRange;
-import naitsirc98.beryl.lights.PointLight;
+import naitsirc98.beryl.lights.SpotLight;
 import naitsirc98.beryl.materials.Material;
 import naitsirc98.beryl.materials.PhongMaterial;
 import naitsirc98.beryl.meshes.Mesh;
@@ -54,7 +55,7 @@ public class App1 extends BerylApplication {
         // BerylConfiguration.INITIAL_TIME_VALUE.set(4000.0);
         // BerylConfiguration.WINDOW_RESIZABLE.set(false);
         BerylConfiguration.SHOW_DEBUG_INFO.set(true);
-        BerylConfiguration.GRAPHICS_API.set(GraphicsAPI.OPENGL);
+        BerylConfiguration.GRAPHICS_API.set(GraphicsAPI.VULKAN);
         BerylConfiguration.VULKAN_ENABLE_DEBUG_MESSAGES.set(true);
         BerylConfiguration.VULKAN_ENABLE_VALIDATION_LAYERS.set(false);
         // BerylConfiguration.WINDOW_DISPLAY_MODE.set(DisplayMode.FULLSCREEN);
@@ -101,8 +102,9 @@ public class App1 extends BerylApplication {
         Mesh sphereMesh = new Mesh(modelLoader.load(BerylFiles.getPath("models/sphere.obj")).mesh(0).vertexData(), PhongMaterial.getDefault());
 
         Model model = new AssimpModelLoader().load(
+                ("C:\\Users\\naits\\Downloads\\87xm06x9pyps-room\\OBJ\\Room.obj"));
                 // BerylFiles.getPath("models/chalet.obj"));
-                ("C:\\Users\\naits\\Downloads\\Cerberus_by_Andrew_Maximov\\Cerberus_by_Andrew_Maximov\\Cerberus_LP.FBX"));
+                // ("C:\\Users\\naits\\Downloads\\Cerberus_by_Andrew_Maximov\\Cerberus_by_Andrew_Maximov\\Cerberus_LP.FBX"));
 
         model.forEach(node -> {
 
@@ -130,43 +132,70 @@ public class App1 extends BerylApplication {
             modelTexture.pixels(1, image);
         }
 
-        Mesh modelMesh = new Mesh(model.mesh(0).vertexData(), PhongMaterial.get("MODEL",
-                builder -> builder.emissiveMap(modelTexture).emissiveColor(Color.WHITE)));
-
-        for(int i = 0;i < 10000;i++) {
+        for(int i = 0;i < model.meshCount();i++) {
 
             final float angle = RAND.nextFloat();
 
-            PhongMaterial mat = PhongMaterial.get(i +"",
-                    builder -> builder.color(new Color(RAND.nextFloat(), RAND.nextFloat(), RAND.nextFloat())));
-
             Entity entity = scene.newEntity();
-            entity.add(Transform.class).scale(0.25f).rotate(radians(-90), 1, 0, 0).position(RAND.nextInt(500), -RAND.nextInt(500), -RAND.nextInt(500));
-            entity.add(MeshView.class).mesh(sphereMesh).material(mat);
+            entity.add(Transform.class);//.scale(0.25f).rotate(radians(-90), 1, 0, 0).position(RAND.nextInt(500), -RAND.nextInt(500), -RAND.nextInt(500));
+
+            Mesh modelMesh = new Mesh(model.mesh(i).vertexData(), PhongMaterial.get("MODEL",
+                    builder -> builder.emissiveMap(modelTexture).emissiveColor(Color.WHITE)));
+
+            PhongMaterial mat;
+
+            if(model.mesh(i).name().equals("lamp_legup_glass1_Cap_16")) {
+                mat = PhongMaterial.get(i +"", builder -> builder.emissiveColor(Color.WHITE));
+                entity.add(LightSource.class).light(new SpotLight()
+                        .range(LightRange.SMALL)
+                        .position(new Vector3f(42.608f, 1.682f, -40.58f))
+                        .direction(new Vector3f(-0.072f, -0.995f, -0.071f)));
+            } else {
+                mat = PhongMaterial.get(i +"", builder -> builder.color(Color.WHITE));
+                // builder -> builder.color(new Color(RAND.nextFloat(), RAND.nextFloat(), RAND.nextFloat())));
+            }
+
+            entity.add(MeshView.class).mesh(modelMesh).material(mat);
             entity.add(UpdateMutableBehaviour.class).onUpdate(thisBehaviour -> {
                 Transform transform = thisBehaviour.get(Transform.class);
-                transform.rotateY(radians(angle));
+                // transform.rotateY(radians(angle));
                 // thisBehaviour.entity().destroy();
-                addOrRemoveRandomly(thisBehaviour.entity(), sphereMesh, mat);
+                // addOrRemoveRandomly(thisBehaviour.entity(), sphereMesh, mat);
             });
         }
-
 
         Entity camera = scene.newEntity("Camera");
         camera.add(Transform.class).position(100, 0, 300);
         camera.add(Camera.class).lookAt(0, 0).renderingPath(RenderingPaths.get(RPATH_PHONG));
         camera.add(CameraController.class);
 
+        Entity sun = scene.newEntity("Sun");
+        sun.add(Transform.class).position(-3042.442f, 925.903f, 187.437f);
+        sun.add(MeshView.class).mesh(sphereMesh).material(PhongMaterial.get("SUN",
+                builder -> builder.emissiveColor(new Color(1f, 0.976f, 0.501f))));
+        sun.add(LightSource.class).light(new DirectionalLight()
+                .color(new Color(0.3f, 0.3f, 0.3f))
+                .direction(new Vector3f(0.954f, -0.292f, -0.07f)));
 
 
+
+/*
         Entity light = scene.newEntity("Light");
-        light.add(LightSource.class).light(new PointLight()
+        light.add(LightSource.class).light(new SpotLight()
                 .color(new Color(1, 1, 1, 1))
-                .position(new Vector3f(0.0f))
+                // .position(new Vector3f(0.0f))
                 .range(LightRange.MEDIUM));
         light.add(Transform.class).position(0, 0, 0);
         light.add(MeshView.class).mesh(cubeMesh).material(
                 PhongMaterial.get("LightMaterial", builder -> builder.emissiveColor(Color.WHITE)));
+        light.add(LateMutableBehaviour.class).onLateUpdate(self -> {
+            LightSource ls = self.get(LightSource.class);
+            SpotLight l = ls.light();
+            l.position(camera.get(Transform.class).position());
+            l.direction().set(camera.get(Camera.class).forward());
+        });
+
+ */
     }
 
     @Override

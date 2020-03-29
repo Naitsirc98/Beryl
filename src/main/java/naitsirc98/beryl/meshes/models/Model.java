@@ -34,7 +34,7 @@ public final class Model implements Iterable<Model.Node> {
         return node;
     }
 
-    private Mesh newMesh(String name) {
+    private synchronized Mesh newMesh(String name) {
 
         Mesh mesh = new Mesh(name, meshes.size());
 
@@ -53,6 +53,10 @@ public final class Model implements Iterable<Model.Node> {
 
     public int size() {
         return nodes.size();
+    }
+
+    public int meshCount() {
+        return meshes.size();
     }
 
     public boolean containsNode(String name) {

@@ -1,5 +1,6 @@
 package naitsirc98.beryl.graphics.opengl.rendering;
 
+import naitsirc98.beryl.core.BerylFiles;
 import naitsirc98.beryl.graphics.opengl.buffers.GLUniformBuffer;
 import naitsirc98.beryl.graphics.opengl.shaders.GLShader;
 import naitsirc98.beryl.graphics.opengl.shaders.GLShaderProgram;
@@ -8,12 +9,12 @@ import naitsirc98.beryl.graphics.rendering.RenderingPath;
 import naitsirc98.beryl.lights.Light;
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.materials.PhongMaterial;
-import naitsirc98.beryl.core.BerylFiles;
 import naitsirc98.beryl.meshes.Mesh;
 import naitsirc98.beryl.scenes.Scene;
 import naitsirc98.beryl.scenes.components.camera.Camera;
 import naitsirc98.beryl.scenes.components.lights.LightSource;
 import naitsirc98.beryl.scenes.components.meshes.MeshView;
+import naitsirc98.beryl.util.Color;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
 import org.lwjgl.system.MemoryStack;
@@ -117,17 +118,35 @@ public class GLPhongRenderingPath extends RenderingPath {
         lightsUniformBuffer.release();
     }
 
+    /*
+
+    Render depth maps
+
+    Render opaque objects
+
+    Sort transparent objects
+
+    Render transparent objects
+
+    Apply post effects
+
+     */
+
     @Override
     public void render(Camera camera, Scene scene) {
 
+        Color clearColor = camera.clearColor();
+
         glEnable(GL_DEPTH_TEST);
-        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+        glClearColor(clearColor.red(), clearColor.green(), clearColor.blue(), clearColor.alpha());
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        // glEnable(GL_CULL_FACE);
 
         final GLShaderProgram shader = this.shader;
         final Matrix4fc projectionView = camera.projectionViewMatrix();
         final Matrix4f mvp = projectionViewMatrix;
         final GLUniformBuffer matricesUniformBuffer = this.matricesUniformBuffer;
+        final List<MeshView> meshViews = scene.meshViews();
 
         shader.use();
 
@@ -146,7 +165,7 @@ public class GLPhongRenderingPath extends RenderingPath {
             matricesUniformBuffer.update(MATRICES_UNIFORM_BUFFER_CAMERA_POSITION_OFFSET,
                     camera.transform().position().get(stack.malloc(4 * FLOAT32_SIZEOF)));
 
-            for(MeshView meshView : scene.meshViews()) {
+            for(MeshView meshView : meshViews) {
 
                 projectionView.mul(meshView.modelMatrix(), mvp).get(MATRICES_UNIFORM_BUFFER_MVP_OFFSET, matricesBuffer);
                 meshView.modelMatrix().get(MATRICES_UNIFORM_BUFFER_MODEL_MATRIX_OFFSET, matricesBuffer);
@@ -174,7 +193,9 @@ public class GLPhongRenderingPath extends RenderingPath {
                     } else {
                         glDrawArrays(GL_TRIANGLES, vertexData.firstVertex(), vertexData.vertexCount());
                     }
+
                 }
+
             }
 
         }
