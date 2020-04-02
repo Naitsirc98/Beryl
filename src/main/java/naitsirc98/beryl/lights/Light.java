@@ -26,11 +26,13 @@ public abstract class Light<SELF extends Light<SELF>> implements ByteSize {
         float constant;
         float linear;
         float quadratic;
-        float __pad1;
 
         float cutOff;
         float outerCutOff;
-        float __pad2;
+
+        float nearPlane;
+        float farPlane;
+
         uint type;
     };
     */
@@ -44,11 +46,15 @@ public abstract class Light<SELF extends Light<SELF>> implements ByteSize {
     public static final int CONSTANT_OFFSET = 12 * FLOAT32_SIZEOF;
     public static final int LINEAR_OFFSET = 13 * FLOAT32_SIZEOF;
     public static final int QUADRATIC_OFFSET = 14 * FLOAT32_SIZEOF;
-    public static final int CUTOFF_OFFSET = 16 * FLOAT32_SIZEOF;
-    public static final int OUTER_CUTOFF_OFFSET = 17 * FLOAT32_SIZEOF;
+    public static final int CUTOFF_OFFSET = 15 * FLOAT32_SIZEOF;
+    public static final int OUTER_CUTOFF_OFFSET = 16 * FLOAT32_SIZEOF;
+    public static final int NEAR_PLANE_OFFSET = 17 * FLOAT32_SIZEOF;
+    public static final int FAR_PLANE_OFFSET = 18 * FLOAT32_SIZEOF;
     public static final int TYPE_OFFSET = 19 * FLOAT32_SIZEOF;
 
     private Color color;
+    private float nearPlane;
+    private float farPlane;
 
     public Light() {
         color = Color.WHITE;
@@ -61,6 +67,24 @@ public abstract class Light<SELF extends Light<SELF>> implements ByteSize {
     public SELF color(Color color) {
         this.color = requireNonNull(color);
         return self();
+    }
+
+    public float nearPlane() {
+        return nearPlane;
+    }
+
+    public Light<SELF> nearPlane(float nearPlane) {
+        this.nearPlane = nearPlane;
+        return this;
+    }
+
+    public float farPlane() {
+        return farPlane;
+    }
+
+    public Light<SELF> farPlane(float farPlane) {
+        this.farPlane = farPlane;
+        return this;
     }
 
     /**

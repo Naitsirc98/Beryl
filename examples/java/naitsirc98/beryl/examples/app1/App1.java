@@ -33,7 +33,6 @@ import org.joml.Vector3f;
 
 import java.util.Random;
 
-import static naitsirc98.beryl.graphics.rendering.RenderingPaths.RPATH_PHONG;
 import static naitsirc98.beryl.scenes.SceneManager.newScene;
 import static naitsirc98.beryl.util.Maths.radians;
 
@@ -41,6 +40,10 @@ import static naitsirc98.beryl.util.Maths.radians;
 public class App1 extends BerylApplication {
 
     private static final Random RAND = new Random(System.nanoTime());
+
+    public static Mesh cubeMesh;
+    public static Mesh sphereMesh;
+    public static Mesh quadMesh;
 
     public static void main(String[] args) {
 
@@ -55,7 +58,7 @@ public class App1 extends BerylApplication {
         // BerylConfiguration.INITIAL_TIME_VALUE.set(4000.0);
         // BerylConfiguration.WINDOW_RESIZABLE.set(false);
         BerylConfiguration.SHOW_DEBUG_INFO.set(true);
-        BerylConfiguration.GRAPHICS_API.set(GraphicsAPI.VULKAN);
+        BerylConfiguration.GRAPHICS_API.set(GraphicsAPI.OPENGL);
         BerylConfiguration.VULKAN_ENABLE_DEBUG_MESSAGES.set(true);
         BerylConfiguration.VULKAN_ENABLE_VALIDATION_LAYERS.set(false);
         // BerylConfiguration.WINDOW_DISPLAY_MODE.set(DisplayMode.FULLSCREEN);
@@ -97,9 +100,9 @@ public class App1 extends BerylApplication {
 
         AssimpModelLoader modelLoader = new AssimpModelLoader();
 
-        Mesh cubeMesh = new Mesh(modelLoader.load(BerylFiles.getPath("models/cube.obj")).mesh(0).vertexData(), PhongMaterial.getDefault());
-        Mesh quadMesh = new Mesh(modelLoader.load(BerylFiles.getPath("models/quad.obj")).mesh(0).vertexData(), PhongMaterial.getDefault());
-        Mesh sphereMesh = new Mesh(modelLoader.load(BerylFiles.getPath("models/sphere.obj")).mesh(0).vertexData(), PhongMaterial.getDefault());
+        cubeMesh = new Mesh(modelLoader.load(BerylFiles.getPath("models/cube.obj")).mesh(0).vertexData(), PhongMaterial.getDefault());
+        quadMesh = new Mesh(modelLoader.load(BerylFiles.getPath("models/quad.obj")).mesh(0).vertexData(), PhongMaterial.getDefault());
+        sphereMesh = new Mesh(modelLoader.load(BerylFiles.getPath("models/sphere.obj")).mesh(0).vertexData(), PhongMaterial.getDefault());
 
         Model model = new AssimpModelLoader().load(
                 ("C:\\Users\\naits\\Downloads\\87xm06x9pyps-room\\OBJ\\Room.obj"));
@@ -154,7 +157,7 @@ public class App1 extends BerylApplication {
                 mat = PhongMaterial.get(i +"", builder -> builder.color(Color.WHITE));
                 // builder -> builder.color(new Color(RAND.nextFloat(), RAND.nextFloat(), RAND.nextFloat())));
             }
-
+            // TODO: uncomment
             entity.add(MeshView.class).mesh(modelMesh).material(mat);
             entity.add(UpdateMutableBehaviour.class).onUpdate(thisBehaviour -> {
                 Transform transform = thisBehaviour.get(Transform.class);
@@ -164,10 +167,30 @@ public class App1 extends BerylApplication {
             });
         }
 
+        Entity cube1 = scene.newEntity();
+        cube1.add(Transform.class).position(0, 0, 0);
+        cube1.add(MeshView.class).mesh(cubeMesh);
+
+        Entity cube2 = scene.newEntity();
+        cube2.add(Transform.class).position(0, 0, 3);
+        cube2.add(MeshView.class).mesh(cubeMesh);
+
+        Entity quad = scene.newEntity();
+        quad.add(Transform.class).position(0, -5, 0).scale(10, 0.1f, 10);
+        quad.add(MeshView.class).mesh(cubeMesh);//.castShadows(false);
+
+
         Entity camera = scene.newEntity("Camera");
-        camera.add(Transform.class).position(100, 0, 300);
-        camera.add(Camera.class).lookAt(0, 0).renderingPath(RenderingPaths.get(RPATH_PHONG));
+        // camera.add(Transform.class).position(100, 0, 300);
+        camera.add(Transform.class).position(0, 0, -3);
+        camera.add(Camera.class).lookAt(0, 0).renderingPath(RenderingPaths.get(100)).clearColor(new Color(0.1f, 0.1f, 0.1f));
         camera.add(CameraController.class);
+
+        // Entity sun = scene.newEntity();
+        // sun.add(Transform.class).position(0, 10, 0);
+        // sun.add(MeshView.class).mesh(cubeMesh).material(PhongMaterial.get("sun", builder -> builder.emissiveColor(Color.WHITE)));
+        // sun.add(LightSource.class).light(new DirectionalLight().direction(new Vector3f(0, -1, 0)));
+
 
         Entity sun = scene.newEntity("Sun");
         sun.add(Transform.class).position(-3042.442f, 925.903f, 187.437f);

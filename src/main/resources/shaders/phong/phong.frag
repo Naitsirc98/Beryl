@@ -133,8 +133,8 @@ vec4 computeDirectionalLighting(Light light) {
     vec3 direction = normalize(-light.direction.xyz);
 
     return computeAmbientColor(light.color)
-         + computeDiffuseColor(light.color, direction);
-         // + computeSpecularColor(light.color, direction);
+         + computeDiffuseColor(light.color, direction)
+         + computeSpecularColor(light.color, direction);
 }
 
 

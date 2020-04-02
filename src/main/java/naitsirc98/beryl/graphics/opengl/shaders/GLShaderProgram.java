@@ -81,12 +81,20 @@ public final class GLShaderProgram implements GLObject {
         glUniformMatrix4fv(location, transpose, value);
     }
 
+    public void uniformVector4f(String name, Vector3fc vector) {
+        uniformVector4f(uniformLocation(name), vector.x(), vector.y(), vector.z(), 1.0f);
+    }
+
     public void uniformVector4f(String name, Vector4fc vector) {
         uniformVector4f(uniformLocation(name), vector);
     }
 
     public void uniformVector4f(int location, Vector4fc data) {
         glUniform4f(location, data.x(), data.y(), data.z(), data.w());
+    }
+
+    public void uniformVector4f(int location, float x, float y, float z, float w) {
+        glUniform4f(location, x, y, z, w);
     }
 
     public void uniformVector3f(String name, Vector3fc vector) {

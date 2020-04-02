@@ -18,6 +18,10 @@ public class Maths {
         return (float) Math.toRadians(angle);
     }
 
+    public static float degrees(float radians) {
+        return (float) Math.toDegrees(radians);
+    }
+
     public static float sin(float radians) {
         return (float) Math.sin(radians);
     }
@@ -28,6 +32,14 @@ public class Maths {
 
     public static float tan(float radians) {
         return (float) Math.tan(radians);
+    }
+
+    public static float asin(float radians) {
+        return (float) Math.asin(radians);
+    }
+
+    public static float acos(float radians) {
+        return (float) Math.acos(radians);
     }
 
     public static int roundUp(int number, int multiple) {

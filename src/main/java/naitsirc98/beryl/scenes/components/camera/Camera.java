@@ -97,6 +97,8 @@ public final class Camera extends Component<Camera> {
 
 		renderingPath = RenderingPaths.defaultRenderingPath();
 
+		clearColor = Color.BLACK;
+
 		viewMatrix = new Matrix4f();
 		projectionMatrix = new Matrix4f();
 		projectionViewMatrix = new Matrix4f();

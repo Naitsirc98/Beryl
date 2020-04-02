@@ -4,6 +4,7 @@ import naitsirc98.beryl.core.Beryl;
 import naitsirc98.beryl.core.BerylConfiguration;
 import naitsirc98.beryl.graphics.GraphicsContext;
 import naitsirc98.beryl.graphics.GraphicsFactory;
+import naitsirc98.beryl.graphics.opengl.rendering.GLCascadedShadowMaps;
 import naitsirc98.beryl.graphics.opengl.rendering.GLPhongRenderingPath;
 import naitsirc98.beryl.graphics.opengl.rendering.GLSimpleRenderingPath;
 import naitsirc98.beryl.graphics.rendering.RenderingPath;
@@ -75,6 +76,7 @@ public class GLContext implements GraphicsContext, LongHandle {
 
         renderingPaths.put(RPATH_SIMPLE3D, newInstance(GLSimpleRenderingPath.class));
         renderingPaths.put(RPATH_PHONG, newInstance(GLPhongRenderingPath.class));
+        renderingPaths.put(100, newInstance(GLCascadedShadowMaps.class));
         // ...
 
         return renderingPaths;

@@ -17,6 +17,7 @@ public final class MeshView extends Component<MeshView> implements Iterable<Mesh
 
     private List<Mesh> meshes;
     private Map<Mesh, Material> materials;
+    private boolean castShadows;
 
     private MeshView() {
 
@@ -27,6 +28,16 @@ public final class MeshView extends Component<MeshView> implements Iterable<Mesh
         super.init();
         meshes = new ArrayList<>(1);
         materials = new HashMap<>();
+        castShadows = true;
+    }
+
+    public boolean castShadows() {
+        return castShadows;
+    }
+
+    public MeshView castShadows(boolean castShadows) {
+        this.castShadows = castShadows;
+        return this;
     }
 
     public Mesh mesh() {

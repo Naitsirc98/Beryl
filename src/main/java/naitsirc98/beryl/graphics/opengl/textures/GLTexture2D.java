@@ -48,6 +48,10 @@ public final class GLTexture2D extends GLTexture implements Texture2D {
         return imageFormat;
     }
 
+    public void allocate(int mipLevels, int width, int height, int internalFormat) {
+        glTextureStorage2D(handle, mipLevels, internalFormat, width, height);
+    }
+
     @Override
     public void allocate(int mipLevels, int width, int height, PixelFormat internalFormat) {
         glTextureStorage2D(handle, mipLevels, mapper().mapToSizedInternalFormat(internalFormat), width, height);

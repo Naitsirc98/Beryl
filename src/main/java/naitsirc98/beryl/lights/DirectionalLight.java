@@ -5,11 +5,9 @@ import org.joml.Vector3f;
 import org.joml.Vector3fc;
 
 import java.nio.ByteBuffer;
-import java.nio.FloatBuffer;
 
 import static java.util.Objects.requireNonNull;
 import static naitsirc98.beryl.util.Asserts.assertTrue;
-import static naitsirc98.beryl.util.types.DataType.FLOAT32_SIZEOF;
 
 @ByteSize.Static(Light.SIZEOF)
 public class DirectionalLight extends Light<DirectionalLight> implements IDirectionalLight<DirectionalLight> {
@@ -21,7 +19,7 @@ public class DirectionalLight extends Light<DirectionalLight> implements IDirect
     }
 
     @Override
-    public Vector3f direction() {
+    public Vector3fc direction() {
         return direction;
     }
 
