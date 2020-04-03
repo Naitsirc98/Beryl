@@ -50,8 +50,12 @@ public final class GLShaderProgram implements GLObject {
         return this;
     }
 
-    public void use() {
+    public void bind() {
         glUseProgram(handle);
+    }
+
+    public void unbind() {
+        glUseProgram(0);
     }
 
     public void deleteShaders() {
@@ -70,7 +74,16 @@ public final class GLShaderProgram implements GLObject {
     }
 
     public int uniformLocation(String name) {
-        return uniformLocations.computeIfAbsent(name, k -> glGetUniformLocation(handle, name));
+        /*
+        final int location = uniformLocations
+                .compute(name, (key, value) -> value == null || value == -1 ? glGetUniformLocation(handle, name) : value);
+
+         */
+        final int location = glGetUniformLocation(handle, name);
+        if(location < 0) {
+            Log.warning("Uniform " + name + " has an invalid location " + location);
+        }
+        return location;
     }
 
     public void uniformMatrix4f(String name, boolean transpose, FloatBuffer value) {

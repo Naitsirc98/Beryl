@@ -13,8 +13,6 @@ import naitsirc98.beryl.images.Image;
 import naitsirc98.beryl.images.ImageFactory;
 import naitsirc98.beryl.images.PixelFormat;
 import naitsirc98.beryl.lights.DirectionalLight;
-import naitsirc98.beryl.lights.LightRange;
-import naitsirc98.beryl.lights.SpotLight;
 import naitsirc98.beryl.materials.Material;
 import naitsirc98.beryl.materials.PhongMaterial;
 import naitsirc98.beryl.meshes.Mesh;
@@ -25,7 +23,6 @@ import naitsirc98.beryl.scenes.Entity;
 import naitsirc98.beryl.scenes.Scene;
 import naitsirc98.beryl.scenes.components.behaviours.UpdateMutableBehaviour;
 import naitsirc98.beryl.scenes.components.camera.Camera;
-import naitsirc98.beryl.scenes.components.lights.LightSource;
 import naitsirc98.beryl.scenes.components.math.Transform;
 import naitsirc98.beryl.scenes.components.meshes.MeshView;
 import naitsirc98.beryl.util.Color;
@@ -149,10 +146,13 @@ public class App1 extends BerylApplication {
 
             if(model.mesh(i).name().equals("lamp_legup_glass1_Cap_16")) {
                 mat = PhongMaterial.get(i +"", builder -> builder.emissiveColor(Color.WHITE));
+                /*
                 entity.add(LightSource.class).light(new SpotLight()
                         .range(LightRange.SMALL)
                         .position(new Vector3f(42.608f, 1.682f, -40.58f))
                         .direction(new Vector3f(-0.072f, -0.995f, -0.071f)));
+
+                 */
             } else {
                 mat = PhongMaterial.get(i +"", builder -> builder.color(Color.WHITE));
                 // builder -> builder.color(new Color(RAND.nextFloat(), RAND.nextFloat(), RAND.nextFloat())));
@@ -186,21 +186,14 @@ public class App1 extends BerylApplication {
         camera.add(Camera.class).lookAt(0, 0).renderingPath(RenderingPaths.get(100)).clearColor(new Color(0.1f, 0.1f, 0.1f));
         camera.add(CameraController.class);
 
-        // Entity sun = scene.newEntity();
-        // sun.add(Transform.class).position(0, 10, 0);
-        // sun.add(MeshView.class).mesh(cubeMesh).material(PhongMaterial.get("sun", builder -> builder.emissiveColor(Color.WHITE)));
-        // sun.add(LightSource.class).light(new DirectionalLight().direction(new Vector3f(0, -1, 0)));
-
-
         Entity sun = scene.newEntity("Sun");
         sun.add(Transform.class).position(-3042.442f, 925.903f, 187.437f);
         sun.add(MeshView.class).mesh(sphereMesh).material(PhongMaterial.get("SUN",
                 builder -> builder.emissiveColor(new Color(1f, 0.976f, 0.501f))));
-        sun.add(LightSource.class).light(new DirectionalLight()
+
+        scene.environment().directionalLight(new DirectionalLight()
                 .color(new Color(0.3f, 0.3f, 0.3f))
                 .direction(new Vector3f(0.954f, -0.292f, -0.07f)));
-
-
 
 /*
         Entity light = scene.newEntity("Light");

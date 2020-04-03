@@ -75,7 +75,7 @@ public final class GLSimpleRenderingPath extends RenderingPath {
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        shader.use();
+        shader.bind();
 
         final int mvpLocation = shader.uniformLocation(UNIFORM_MVP_NAME);
 

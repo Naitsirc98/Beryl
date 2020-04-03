@@ -30,6 +30,7 @@ public interface IPointLight<SELF extends IPointLight<SELF>> {
 
     Vector3f position();
     SELF position(Vector3fc position);
+    SELF position(float x, float y, float z);
 
     float constant();
     SELF constant(float constant);

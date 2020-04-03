@@ -1,5 +1,6 @@
 package naitsirc98.beryl.meshes.models;
 
+import naitsirc98.beryl.graphics.rendering.PrimitiveTopology;
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.meshes.vertices.VertexAttribute;
 import naitsirc98.beryl.meshes.vertices.VertexAttributeList;
@@ -21,6 +22,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static java.util.Objects.requireNonNull;
+import static naitsirc98.beryl.graphics.rendering.PrimitiveTopology.TRIANGLES;
 import static naitsirc98.beryl.meshes.vertices.VertexAttribute.*;
 import static naitsirc98.beryl.util.Asserts.assertTrue;
 import static naitsirc98.beryl.util.types.DataType.*;
@@ -129,7 +131,7 @@ public class AssimpModelLoader implements ModelLoader {
 
         final VertexLayout vertexLayout = nodeMesh.vertexLayout();
 
-        VertexData.Builder vertexDataBuilder = VertexData.builder(vertexLayout);
+        VertexData.Builder vertexDataBuilder = VertexData.builder(vertexLayout, TRIANGLES);
 
         for(int i = 0;i < vertexLayout.bindings();i++) {
 

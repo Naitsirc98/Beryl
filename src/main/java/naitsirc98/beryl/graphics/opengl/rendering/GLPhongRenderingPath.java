@@ -11,8 +11,8 @@ import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.materials.PhongMaterial;
 import naitsirc98.beryl.meshes.Mesh;
 import naitsirc98.beryl.scenes.Scene;
+import naitsirc98.beryl.scenes.SceneEnvironment;
 import naitsirc98.beryl.scenes.components.camera.Camera;
-import naitsirc98.beryl.scenes.components.lights.LightSource;
 import naitsirc98.beryl.scenes.components.meshes.MeshView;
 import naitsirc98.beryl.util.Color;
 import org.joml.Matrix4f;
@@ -23,7 +23,6 @@ import java.nio.ByteBuffer;
 import java.nio.file.Path;
 import java.util.List;
 
-import static java.lang.Math.min;
 import static naitsirc98.beryl.graphics.ShaderStage.FRAGMENT_STAGE;
 import static naitsirc98.beryl.graphics.ShaderStage.VERTEX_STAGE;
 import static naitsirc98.beryl.util.types.DataType.FLOAT32_SIZEOF;
@@ -148,7 +147,7 @@ public class GLPhongRenderingPath extends RenderingPath {
         final GLUniformBuffer matricesUniformBuffer = this.matricesUniformBuffer;
         final List<MeshView> meshViews = scene.meshViews();
 
-        shader.use();
+        shader.bind();
 
         matricesUniformBuffer.bind();
         lightsUniformBuffer.bind();
@@ -158,7 +157,7 @@ public class GLPhongRenderingPath extends RenderingPath {
 
             ByteBuffer materialBufferData = stack.malloc(PhongMaterial.SIZEOF);
 
-            setLightsUniformBuffer(scene.lightSources(), stack);
+            setLightsUniformBuffer(scene.environment(), stack);
 
             final ByteBuffer matricesBuffer = stack.malloc(MATRICES_UNIFORM_BUFFER_SIZE - 4  * FLOAT32_SIZEOF);
 
@@ -204,13 +203,11 @@ public class GLPhongRenderingPath extends RenderingPath {
         lastMaterial = null;
     }
 
-    private void setLightsUniformBuffer(List<LightSource> lightSources, MemoryStack stack) {
-
-        if(lightSources.isEmpty()) {
-            return;
-        }
+    private void setLightsUniformBuffer(SceneEnvironment environment, MemoryStack stack) {
 
         final GLUniformBuffer lightsUniformBuffer = this.lightsUniformBuffer;
+
+        /*
 
         final int lightsCount = min(lightSources.size(), LIGHTS_MAX_COUNT);
 
@@ -222,6 +219,8 @@ public class GLPhongRenderingPath extends RenderingPath {
             lightSources.get(i).light().get(0, buffer);
             lightsUniformBuffer.update(i * Light.SIZEOF, buffer);
         }
+
+         */
     }
 
     private void setMaterialUniforms(GLShaderProgram shader, PhongMaterial material, ByteBuffer buffer) {

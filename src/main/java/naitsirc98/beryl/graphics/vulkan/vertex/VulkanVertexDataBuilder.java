@@ -1,5 +1,6 @@
 package naitsirc98.beryl.graphics.vulkan.vertex;
 
+import naitsirc98.beryl.graphics.rendering.PrimitiveTopology;
 import naitsirc98.beryl.meshes.vertices.VertexData;
 import naitsirc98.beryl.meshes.vertices.VertexLayout;
 import naitsirc98.beryl.util.types.DataType;
@@ -11,8 +12,8 @@ public class VulkanVertexDataBuilder extends VertexData.Builder {
     private ByteBuffer[] vertices;
     private ByteBuffer indices;
 
-    public VulkanVertexDataBuilder(VertexLayout layout) {
-        super(layout);
+    public VulkanVertexDataBuilder(VertexLayout layout, PrimitiveTopology primitiveTopology) {
+        super(layout, primitiveTopology);
         vertices = new ByteBuffer[layout.bindings()];
     }
 
@@ -31,6 +32,6 @@ public class VulkanVertexDataBuilder extends VertexData.Builder {
 
     @Override
     public VulkanVertexData build() {
-        return new VulkanVertexData(layout, firstVertex, getVertexCount(vertices), vertices, indices, indexCount);
+        return new VulkanVertexData(layout, primitiveTopology, firstVertex, getVertexCount(vertices), vertices, indices, indexCount);
     }
 }

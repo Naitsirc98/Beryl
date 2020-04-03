@@ -30,6 +30,12 @@ public class DirectionalLight extends Light<DirectionalLight> implements IDirect
     }
 
     @Override
+    public DirectionalLight direction(float x, float y, float z) {
+        this.direction.set(x, y, z);
+        return this;
+    }
+
+    @Override
     protected DirectionalLight self() {
         return this;
     }

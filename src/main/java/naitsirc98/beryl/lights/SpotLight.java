@@ -44,6 +44,12 @@ public class SpotLight extends Light<SpotLight> implements IPointLight<SpotLight
     }
 
     @Override
+    public SpotLight direction(float x, float y, float z) {
+        this.direction.set(requireNonNull(direction));
+        return this;
+    }
+
+    @Override
     public Vector3f position() {
         return position;
     }
@@ -51,6 +57,12 @@ public class SpotLight extends Light<SpotLight> implements IPointLight<SpotLight
     @Override
     public SpotLight position(Vector3fc position) {
         this.position.set(requireNonNull(position));
+        return this;
+    }
+
+    @Override
+    public SpotLight position(float x, float y, float z) {
+        this.position.set(x, y, z);
         return this;
     }
 

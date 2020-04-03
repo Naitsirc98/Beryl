@@ -25,8 +25,8 @@ import naitsirc98.beryl.materials.PhongMaterial;
 import naitsirc98.beryl.meshes.Mesh;
 import naitsirc98.beryl.meshes.vertices.VertexLayout;
 import naitsirc98.beryl.scenes.Scene;
+import naitsirc98.beryl.scenes.SceneEnvironment;
 import naitsirc98.beryl.scenes.components.camera.Camera;
-import naitsirc98.beryl.scenes.components.lights.LightSource;
 import naitsirc98.beryl.scenes.components.meshes.MeshView;
 import org.joml.Matrix4f;
 import org.lwjgl.system.MemoryStack;
@@ -41,8 +41,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static java.lang.Math.min;
-import static java.util.stream.IntStream.range;
 import static naitsirc98.beryl.graphics.ShaderStage.FRAGMENT_STAGE;
 import static naitsirc98.beryl.graphics.ShaderStage.VERTEX_STAGE;
 import static naitsirc98.beryl.graphics.vulkan.util.VulkanUtils.vkCall;
@@ -54,7 +52,6 @@ import static naitsirc98.beryl.util.types.DataType.FLOAT32_SIZEOF;
 import static naitsirc98.beryl.util.types.DataType.INT32_SIZEOF;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.memAddress;
-import static org.lwjgl.system.MemoryUtil.memAlloc;
 import static org.lwjgl.system.libc.LibCString.nmemcpy;
 import static org.lwjgl.util.vma.Vma.vmaFlushAllocation;
 import static org.lwjgl.vulkan.VK10.*;
@@ -236,7 +233,7 @@ public final class VulkanPhongRenderingPath extends RenderingPath
 
         try(MemoryStack stack = stackPush()) {
 
-            updateLightsUniformBuffer(scene.lightSources());
+            updateLightsUniformBuffer(scene.environment());
 
             updateMatricesUniformBuffer(meshViews);
 
@@ -551,11 +548,9 @@ public final class VulkanPhongRenderingPath extends RenderingPath
         }
     }
 
-    private void updateLightsUniformBuffer(List<LightSource> lightSources) {
+    private void updateLightsUniformBuffer(SceneEnvironment environment) {
 
-        if(lightSources.isEmpty()) {
-            return;
-        }
+        /*
 
         final long lightsUniformBufferData = this.lightsUniformBufferData;
 
@@ -574,6 +569,8 @@ public final class VulkanPhongRenderingPath extends RenderingPath
                 nmemcpy(lightsUniformBufferData + index * Light.SIZEOF, memAddress(buffer), Light.SIZEOF);
             }
         });
+
+         */
     }
 
     private long currentFramebuffer() {

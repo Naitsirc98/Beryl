@@ -6,8 +6,6 @@ import naitsirc98.beryl.scenes.components.behaviours.AbstractBehaviour;
 import naitsirc98.beryl.scenes.components.behaviours.BehaviourManager;
 import naitsirc98.beryl.scenes.components.camera.Camera;
 import naitsirc98.beryl.scenes.components.camera.CameraManager;
-import naitsirc98.beryl.scenes.components.lights.LightSource;
-import naitsirc98.beryl.scenes.components.lights.LightSourceManager;
 import naitsirc98.beryl.scenes.components.math.Transform;
 import naitsirc98.beryl.scenes.components.math.TransformManager;
 import naitsirc98.beryl.scenes.components.meshes.MeshView;
@@ -25,12 +23,13 @@ public final class Scene {
     
     private final EntityManager entityManager;
 
+    private final SceneEnvironment environment;
+
     // === Component Managers
     private final CameraManager cameras;
     private final TransformManager transforms;
     private final BehaviourManager behaviours;
     private final MeshViewManager meshes;
-    private final LightSourceManager lights;
 
     private final Map<Class<? extends Component>, ComponentManager<?>> componentManagers;
     // ===
@@ -43,17 +42,22 @@ public final class Scene {
 
         entityManager = new EntityManager(this);
 
+        environment = new SceneEnvironment();
+
         // === Component Managers
         cameras = newInstance(CameraManager.class, this);
         transforms = newInstance(TransformManager.class, this);
         behaviours = newInstance(BehaviourManager.class, this);
         meshes = newInstance(MeshViewManager.class, this);
-        lights = newInstance(LightSourceManager.class, this);
 
         componentManagers = createComponentManagersMap();
         // ===
 
         taskQueue = new ArrayDeque<>();
+    }
+
+    public SceneEnvironment environment() {
+        return environment;
     }
 
     public List<MeshView> meshViews() {
@@ -62,10 +66,6 @@ public final class Scene {
 
     public Set<Material> materials() {
         return meshes.materials();
-    }
-
-    public List<LightSource> lightSources() {
-        return lights.lightSources();
     }
 
     void start() {
@@ -284,7 +284,6 @@ public final class Scene {
         components.put(Transform.class, transforms);
         components.put(Camera.class, cameras);
         components.put(MeshView.class, meshes);
-        components.put(LightSource.class, lights);
 
         return components;
     }

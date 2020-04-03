@@ -2,6 +2,7 @@ package naitsirc98.beryl.graphics.opengl.vertex;
 
 import naitsirc98.beryl.graphics.opengl.buffers.GLBuffer;
 import naitsirc98.beryl.graphics.opengl.buffers.GLVertexBuffer;
+import naitsirc98.beryl.graphics.rendering.PrimitiveTopology;
 import naitsirc98.beryl.meshes.vertices.VertexData;
 import naitsirc98.beryl.meshes.vertices.VertexLayout;
 
@@ -11,10 +12,11 @@ public final class GLVertexData extends VertexData {
     private GLVertexBuffer[] vertexBuffers;
     private GLBuffer indexBuffer;
 
-    protected GLVertexData(VertexLayout layout, int firstVertex, int vertexCount, int indexCount,
+    protected GLVertexData(VertexLayout layout, PrimitiveTopology primitiveTopology,
+                           int firstVertex, int vertexCount, int indexCount,
                            GLVertexBuffer[] vertexBuffers, GLBuffer indexBuffer) {
 
-        super(layout, firstVertex, vertexCount, indexCount);
+        super(layout, primitiveTopology, firstVertex, vertexCount, indexCount);
         this.vertexBuffers = vertexBuffers;
         this.indexBuffer = indexBuffer;
         vertexArray = new GLVertexArray();

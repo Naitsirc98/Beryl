@@ -3,6 +3,7 @@ package naitsirc98.beryl.graphics.opengl.vertex;
 import naitsirc98.beryl.graphics.opengl.buffers.GLBuffer;
 import naitsirc98.beryl.graphics.opengl.buffers.GLIndexBuffer;
 import naitsirc98.beryl.graphics.opengl.buffers.GLVertexBuffer;
+import naitsirc98.beryl.graphics.rendering.PrimitiveTopology;
 import naitsirc98.beryl.meshes.vertices.VertexData;
 import naitsirc98.beryl.meshes.vertices.VertexLayout;
 import naitsirc98.beryl.util.types.DataType;
@@ -14,8 +15,8 @@ public final class GLVertexDataBuilder extends VertexData.Builder {
     private ByteBuffer[] vertices;
     private ByteBuffer indices;
 
-    public GLVertexDataBuilder(VertexLayout layout) {
-        super(layout);
+    public GLVertexDataBuilder(VertexLayout layout, PrimitiveTopology primitiveTopology) {
+        super(layout, primitiveTopology);
         vertices = new ByteBuffer[layout.bindings()];
     }
 
@@ -42,7 +43,7 @@ public final class GLVertexDataBuilder extends VertexData.Builder {
             indexBuffer.data(indices);
         }
 
-        return new GLVertexData(layout, firstVertex, getVertexCount(vertices), indexCount, createVertexBuffers(), indexBuffer);
+        return new GLVertexData(layout, primitiveTopology, firstVertex, getVertexCount(vertices), indexCount, createVertexBuffers(), indexBuffer);
     }
 
 

@@ -1,5 +1,6 @@
 package naitsirc98.beryl.graphics.vulkan.vertex;
 
+import naitsirc98.beryl.graphics.rendering.PrimitiveTopology;
 import naitsirc98.beryl.graphics.vulkan.buffers.VulkanBufferGroup;
 import naitsirc98.beryl.graphics.vulkan.buffers.VulkanIndexBuffer;
 import naitsirc98.beryl.graphics.vulkan.buffers.VulkanVertexBuffer;
@@ -16,8 +17,9 @@ public final class VulkanVertexData extends VertexData {
     private VulkanBufferGroup vertexBuffers;
     private VulkanIndexBuffer indexBuffer;
 
-    protected VulkanVertexData(VertexLayout layout, int firstVertex, int vertexCount, ByteBuffer[] vertices, ByteBuffer indices, int indexCount) {
-        super(layout, firstVertex, vertexCount, indexCount);
+    protected VulkanVertexData(VertexLayout layout, PrimitiveTopology primitiveTopology,
+                               int firstVertex, int vertexCount, ByteBuffer[] vertices, ByteBuffer indices, int indexCount) {
+        super(layout, primitiveTopology, firstVertex, vertexCount, indexCount);
         vertexBuffers = createVertexBuffers(vertices);
         if(indexCount > 0) {
             indexBuffer = new VulkanIndexBuffer();

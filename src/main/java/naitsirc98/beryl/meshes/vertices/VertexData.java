@@ -1,27 +1,36 @@
 package naitsirc98.beryl.meshes.vertices;
 
 import naitsirc98.beryl.graphics.GraphicsFactory;
+import naitsirc98.beryl.graphics.rendering.PrimitiveTopology;
 import naitsirc98.beryl.resources.ManagedResource;
 import naitsirc98.beryl.util.types.DataType;
 
 import java.nio.ByteBuffer;
 
 import static java.util.Objects.requireNonNull;
+import static naitsirc98.beryl.graphics.rendering.PrimitiveTopology.TRIANGLES;
+import static naitsirc98.beryl.meshes.vertices.VertexLayout.VERTEX_LAYOUT_3D;
 import static naitsirc98.beryl.util.Asserts.assertTrue;
 
 public abstract class VertexData extends ManagedResource {
 
-    public static Builder builder(VertexLayout layout) {
-        return GraphicsFactory.get().newVertexDataBuilder(layout);
+    public static Builder builder() {
+        return GraphicsFactory.get().newVertexDataBuilder(VERTEX_LAYOUT_3D, TRIANGLES);
+    }
+
+    public static Builder builder(VertexLayout layout, PrimitiveTopology primitiveTopology) {
+        return GraphicsFactory.get().newVertexDataBuilder(layout, primitiveTopology);
     }
 
     protected final VertexLayout layout;
+    protected final PrimitiveTopology primitiveTopology;
     protected int firstVertex;
     protected int vertexCount;
     protected int indexCount;
 
-    protected VertexData(VertexLayout layout, int firstVertex, int vertexCount, int indexCount) {
+    protected VertexData(VertexLayout layout, PrimitiveTopology primitiveTopology, int firstVertex, int vertexCount, int indexCount) {
         this.layout = layout;
+        this.primitiveTopology = primitiveTopology;
         this.firstVertex = firstVertex;
         this.vertexCount = vertexCount;
         this.indexCount = indexCount;
@@ -29,6 +38,10 @@ public abstract class VertexData extends ManagedResource {
 
     public final VertexLayout layout() {
         return layout;
+    }
+
+    public final PrimitiveTopology topology() {
+        return primitiveTopology;
     }
 
     public final int firstVertex() {
@@ -47,16 +60,22 @@ public abstract class VertexData extends ManagedResource {
     public static abstract class Builder {
 
         protected final VertexLayout layout;
+        protected final PrimitiveTopology primitiveTopology;
         protected int firstVertex;
         protected int indexCount;
         private int bindingIndex;
 
-        protected Builder(VertexLayout layout) {
+        protected Builder(VertexLayout layout, PrimitiveTopology primitiveTopology) {
             this.layout = requireNonNull(layout);
+            this.primitiveTopology = primitiveTopology;
         }
 
         public final VertexLayout vertexLayout() {
             return vertexLayout();
+        }
+
+        public final PrimitiveTopology topology() {
+            return primitiveTopology;
         }
 
         public final Builder firstVertex(int firstVertex) {

@@ -1,6 +1,7 @@
 package naitsirc98.beryl.graphics.opengl;
 
 import naitsirc98.beryl.graphics.GraphicsMapper;
+import naitsirc98.beryl.graphics.rendering.PrimitiveTopology;
 import naitsirc98.beryl.graphics.textures.Sampler.CompareOperation;
 import naitsirc98.beryl.graphics.textures.Sampler.MagFilter;
 import naitsirc98.beryl.graphics.textures.Sampler.MinFilter;
@@ -17,17 +18,30 @@ public class GLMapper extends GraphicsMapper {
 
     @Override
     protected void init() {
-        
+
         initDataTypeMapper();
         initPixelFormatMapper();
         initWrapModeMapper();
         initMinFilterMapper();
         initMagFilterMapper();
         initCompareOpMapper();
+        initPrimitiveTopologyMapper();
     }
 
     public int mapToSizedInternalFormat(PixelFormat pixelFormat) {
         return toSizedInternalFormat(mapToAPI(pixelFormat));
+    }
+
+    private void initPrimitiveTopologyMapper() {
+
+        EnumMap<PrimitiveTopology, Integer> map = new EnumMap<>(PrimitiveTopology.class);
+
+        map.put(PrimitiveTopology.POINTS, GL_POINTS);
+        map.put(PrimitiveTopology.LINES, GL_LINES);
+        map.put(PrimitiveTopology.TRIANGLES, GL_TRIANGLES);
+        map.put(PrimitiveTopology.TRIANGLE_STRIP, GL_TRIANGLE_STRIP);
+
+        register(PrimitiveTopology.class, EnumMapper.of(map));
     }
 
     private int toSizedInternalFormat(int internalFormat) {

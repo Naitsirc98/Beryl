@@ -2,6 +2,7 @@ package naitsirc98.beryl.graphics.vulkan;
 
 import naitsirc98.beryl.graphics.GraphicsMapper;
 import naitsirc98.beryl.graphics.buffers.GraphicsBuffer;
+import naitsirc98.beryl.graphics.rendering.PrimitiveTopology;
 import naitsirc98.beryl.graphics.textures.Sampler;
 import naitsirc98.beryl.graphics.textures.Sampler.BorderColor;
 import naitsirc98.beryl.graphics.textures.Sampler.MinFilter;
@@ -22,6 +23,19 @@ public class VulkanMapper extends GraphicsMapper {
         initMagFilterMapper();
         initCompareOpMapper();
         initBorderColorMapper();
+        initPrimitiveTopologyMapper();
+    }
+
+    private void initPrimitiveTopologyMapper() {
+
+        EnumMap<PrimitiveTopology, Integer> map = new EnumMap<>(PrimitiveTopology.class);
+
+        map.put(PrimitiveTopology.POINTS, VK_PRIMITIVE_TOPOLOGY_POINT_LIST);
+        map.put(PrimitiveTopology.LINES, VK_PRIMITIVE_TOPOLOGY_LINE_LIST);
+        map.put(PrimitiveTopology.TRIANGLES, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+        map.put(PrimitiveTopology.TRIANGLE_STRIP, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP);
+
+        register(PrimitiveTopology.class, EnumMapper.of(map));
     }
 
     private void initBorderColorMapper() {

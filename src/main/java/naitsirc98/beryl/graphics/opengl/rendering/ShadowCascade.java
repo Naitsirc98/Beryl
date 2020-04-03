@@ -18,6 +18,7 @@ public class ShadowCascade {
 
     private final Matrix4f lightViewMatrix;
     private final Matrix4f lightProjectionMatrix;
+    private final Matrix4f lightProjectionViewMatrix;
     private final Vector3f[] frustumCorners;
     private final Vector3f frustumCenter;
 
@@ -25,6 +26,7 @@ public class ShadowCascade {
     public ShadowCascade() {
         lightViewMatrix = new Matrix4f();
         lightProjectionMatrix = new Matrix4f();
+        lightProjectionViewMatrix = new Matrix4f();
         frustumCorners = new Vector3f[FRUSTUM_CORNERS_COUNT];
         range(0, FRUSTUM_CORNERS_COUNT).forEach(i -> frustumCorners[i] = new Vector3f());
         frustumCenter = new Vector3f();
@@ -36,6 +38,10 @@ public class ShadowCascade {
 
     public Matrix4fc lightProjectionMatrix() {
         return lightProjectionMatrix;
+    }
+
+    public Matrix4fc lightProjectionViewMatrix() {
+        return lightProjectionViewMatrix;
     }
 
     public Vector3fc[] frustumCorners() {
@@ -74,14 +80,17 @@ public class ShadowCascade {
         updateLightViewMatrix(light.direction(), lightPosition);
 
         updateLightProjectionMatrix();
+
+        lightProjectionMatrix.mul(lightViewMatrix, lightProjectionViewMatrix);
     }
 
     private void updateLightViewMatrix(Vector3fc lightDirection, Vector3f lightPosition) {
 
-        float lightAngleX = degrees(acos(lightDirection.z()));
-        float lightAngleY = degrees(asin(lightDirection.x()));
+        // lightViewMatrix.setLookAt(lightDirection, lightPosition, new Vector3f(0, 1, 0));
 
-        lightViewMatrix.identity().rotationX(radians(lightAngleX)).rotateY(radians(lightAngleY)).translate(lightPosition.negate());
+        lightViewMatrix.setLookAt(lightPosition.negate(), lightDirection, new Vector3f(0, 1, 0));
+
+        // lightViewMatrix.rotationX(radians(lightAngleX)).rotateY(radians(lightAngleY)).translate(lightPosition.negate());
     }
 
     private void updateLightProjectionMatrix() {

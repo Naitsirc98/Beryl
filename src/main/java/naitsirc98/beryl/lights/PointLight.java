@@ -8,7 +8,6 @@ import java.nio.ByteBuffer;
 
 import static java.util.Objects.requireNonNull;
 import static naitsirc98.beryl.util.Asserts.assertTrue;
-import static naitsirc98.beryl.util.types.DataType.FLOAT32_SIZEOF;
 
 @ByteSize.Static(Light.SIZEOF)
 public class PointLight extends Light<PointLight> implements IPointLight<PointLight> {
@@ -33,6 +32,12 @@ public class PointLight extends Light<PointLight> implements IPointLight<PointLi
     @Override
     public PointLight position(Vector3fc position) {
         this.position.set(requireNonNull(position));
+        return this;
+    }
+
+    @Override
+    public PointLight position(float x, float y, float z) {
+        this.position.set(x, y, z);
         return this;
     }
 

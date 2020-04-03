@@ -28,7 +28,6 @@ in VertexData {
     vec3 normal;
     vec2 texCoords;
     vec4 positionLightSpace[NUM_CASCADES];
-    mat4 modelViewMatrix;
 } vertexData;
 
 out vec4 out_FinalColor;
@@ -121,6 +120,8 @@ vec4 computeDirectionalLighting(Light light) {
 
 void main() {
 
+    vec4 d = u_CameraPosition;
+
     vec4 color = computeDirectionalLighting(u_Light);
 
     int idx;
@@ -133,9 +134,9 @@ void main() {
 
     float shadow = calcShadow(vertexData.positionLightSpace[idx], idx);
 
-    // out_FinalColor = clamp(color * shadow, 0, 1);
+    out_FinalColor = clamp(color * shadow, 0, 1);
 
     float r = texture(u_ShadowMap[0], vertexData.texCoords).r;
 
-    out_FinalColor = vec4(r, r, r, 1);
+    // out_FinalColor = vec4(shadow, shadow, shadow, 1); // vec4(r, r, r, 1);
 }
