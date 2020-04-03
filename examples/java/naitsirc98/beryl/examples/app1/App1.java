@@ -137,15 +137,15 @@ public class App1 extends BerylApplication {
             final float angle = RAND.nextFloat();
 
             Entity entity = scene.newEntity();
-            entity.add(Transform.class);//.scale(0.25f).rotate(radians(-90), 1, 0, 0).position(RAND.nextInt(500), -RAND.nextInt(500), -RAND.nextInt(500));
+            entity.add(Transform.class).scale(0.5f);//.scale(0.25f).rotate(radians(-90), 1, 0, 0).position(RAND.nextInt(500), -RAND.nextInt(500), -RAND.nextInt(500));
 
             Mesh modelMesh = new Mesh(model.mesh(i).vertexData(), PhongMaterial.get("MODEL",
                     builder -> builder.emissiveMap(modelTexture).emissiveColor(Color.WHITE)));
 
             PhongMaterial mat;
 
-            if(model.mesh(i).name().equals("lamp_legup_glass1_Cap_16")) {
-                mat = PhongMaterial.get(i +"", builder -> builder.emissiveColor(Color.WHITE));
+            if (model.mesh(i).name().equals("lamp_legup_glass1_Cap_16")) {
+                mat = PhongMaterial.get(i + "", builder -> builder.emissiveColor(Color.WHITE));
                 /*
                 entity.add(LightSource.class).light(new SpotLight()
                         .range(LightRange.SMALL)
@@ -154,7 +154,7 @@ public class App1 extends BerylApplication {
 
                  */
             } else {
-                mat = PhongMaterial.get(i +"", builder -> builder.color(Color.WHITE));
+                mat = PhongMaterial.get(i + "", builder -> builder.color(Color.WHITE));
                 // builder -> builder.color(new Color(RAND.nextFloat(), RAND.nextFloat(), RAND.nextFloat())));
             }
             // TODO: uncomment
@@ -166,19 +166,6 @@ public class App1 extends BerylApplication {
                 // addOrRemoveRandomly(thisBehaviour.entity(), sphereMesh, mat);
             });
         }
-
-        Entity cube1 = scene.newEntity();
-        cube1.add(Transform.class).position(0, 0, 0);
-        cube1.add(MeshView.class).mesh(cubeMesh);
-
-        Entity cube2 = scene.newEntity();
-        cube2.add(Transform.class).position(0, 0, 3);
-        cube2.add(MeshView.class).mesh(cubeMesh);
-
-        Entity quad = scene.newEntity();
-        quad.add(Transform.class).position(0, -5, 0).scale(10, 0.1f, 10);
-        quad.add(MeshView.class).mesh(cubeMesh);//.castShadows(false);
-
 
         Entity camera = scene.newEntity("Camera");
         // camera.add(Transform.class).position(100, 0, 300);
@@ -194,24 +181,6 @@ public class App1 extends BerylApplication {
         scene.environment().directionalLight(new DirectionalLight()
                 .color(new Color(0.3f, 0.3f, 0.3f))
                 .direction(new Vector3f(0.954f, -0.292f, -0.07f)));
-
-/*
-        Entity light = scene.newEntity("Light");
-        light.add(LightSource.class).light(new SpotLight()
-                .color(new Color(1, 1, 1, 1))
-                // .position(new Vector3f(0.0f))
-                .range(LightRange.MEDIUM));
-        light.add(Transform.class).position(0, 0, 0);
-        light.add(MeshView.class).mesh(cubeMesh).material(
-                PhongMaterial.get("LightMaterial", builder -> builder.emissiveColor(Color.WHITE)));
-        light.add(LateMutableBehaviour.class).onLateUpdate(self -> {
-            LightSource ls = self.get(LightSource.class);
-            SpotLight l = ls.light();
-            l.position(camera.get(Transform.class).position());
-            l.direction().set(camera.get(Camera.class).forward());
-        });
-
- */
     }
 
     @Override

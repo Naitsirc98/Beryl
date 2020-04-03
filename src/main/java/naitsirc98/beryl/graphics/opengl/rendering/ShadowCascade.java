@@ -55,7 +55,7 @@ public class ShadowCascade {
     public void update(Camera camera, float zNear, float zFar, DirectionalLight light) {
 
         Matrix4f cameraProjectionViewMatrix = new Matrix4f();
-        cameraProjectionViewMatrix.setPerspective(camera.fov(), Window.get().aspect(), zNear, zFar);
+        cameraProjectionViewMatrix.setPerspective(radians(45), Window.get().aspect(), zNear, zFar);
         cameraProjectionViewMatrix.mul(camera.viewMatrix());
 
         float maxZ = -Float.MAX_VALUE;
@@ -87,10 +87,12 @@ public class ShadowCascade {
     private void updateLightViewMatrix(Vector3fc lightDirection, Vector3f lightPosition) {
 
         // lightViewMatrix.setLookAt(lightDirection, lightPosition, new Vector3f(0, 1, 0));
+        // float lightAngleX = (float) Math.toDegrees(Math.acos(lightDirection.z()));
+        // float lightAngleY = (float) Math.toDegrees(Math.asin(lightDirection.x()));
 
         lightViewMatrix.setLookAt(lightPosition.negate(), lightDirection, new Vector3f(0, 1, 0));
 
-        // lightViewMatrix.rotationX(radians(lightAngleX)).rotateY(radians(lightAngleY)).translate(lightPosition.negate());
+        // lightViewMatrix.rotationX(-radians(lightAngleX)).rotateY(-radians(lightAngleY)).translate(lightPosition);
     }
 
     private void updateLightProjectionMatrix() {

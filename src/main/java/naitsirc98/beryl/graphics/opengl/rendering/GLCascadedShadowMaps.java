@@ -20,6 +20,9 @@ import naitsirc98.beryl.scenes.Scene;
 import naitsirc98.beryl.scenes.components.camera.Camera;
 import naitsirc98.beryl.scenes.components.meshes.MeshView;
 import org.joml.Matrix4f;
+import org.joml.Vector3f;
+import org.joml.Vector3fc;
+import org.joml.Vector4f;
 import org.lwjgl.system.MemoryStack;
 
 import java.nio.ByteBuffer;
@@ -37,12 +40,13 @@ import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL11C.GL_UNSIGNED_INT;
 import static org.lwjgl.opengl.GL11C.glDrawElements;
 import static org.lwjgl.opengl.GL14C.GL_DEPTH_COMPONENT24;
+import static org.lwjgl.system.MemoryStack.stackPush;
 
 public class GLCascadedShadowMaps extends RenderingPath {
 
     private static final int SHADOW_CASCADES_COUNT = 3;
 
-    private static final int DEPTH_MAP_SIZE = 2048;
+    private static final int DEPTH_MAP_SIZE = 4096;
 
     private static final Path DEPTH_VERTEX_SHADER_PATH = BerylFiles.getPath("shaders/depth/directional_depth.vert");
     private static final Path DEPTH_FRAGMENT_SHADER_PATH = BerylFiles.getPath("shaders/depth/depth.frag");
@@ -120,8 +124,8 @@ public class GLCascadedShadowMaps extends RenderingPath {
 
         final float[] cascadeRanges = {
                 camera.nearPlane(),
-                camera.farPlane() / 20.0f,
-                camera.farPlane() / 10.0f,
+                camera.farPlane() / 6,
+                camera.farPlane() / 3,
                 camera.farPlane()
         };
 
@@ -141,15 +145,23 @@ public class GLCascadedShadowMaps extends RenderingPath {
         glViewport(0, 0, Window.get().width(), Window.get().height());
         glClearColor(camera.clearColor().red(), camera.clearColor().green(), camera.clearColor().blue(), camera.clearColor().alpha());
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        // glEnable(GL_CULL_FACE);
+        glDisable(GL_CULL_FACE);
 
         lightsUniformBuffer.bind();
 
-        try(MemoryStack stack = MemoryStack.stackPush()) {
+        try(MemoryStack stack = stackPush()) {
 
             ByteBuffer lightBuffer = stack.malloc(Light.SIZEOF);
 
+            Vector3fc originalDir = new Vector3f(light.direction());
+
+            Vector4f dir = new Vector4f(light.direction(), 0).mul(camera.viewMatrix());
+
+            light.direction(dir.x, dir.y, dir.z);
+
             lightsUniformBuffer.update(0, light.get(0, lightBuffer));
+
+            light.direction(originalDir);
 
             shader.uniformVector4f("u_CameraPosition", camera.transform().position());
 
@@ -186,24 +198,6 @@ public class GLCascadedShadowMaps extends RenderingPath {
                     } else {
                         glDrawArrays(mapper.mapToAPI(vertexData.topology()), 0, vertexData.vertexCount());
                     }
-
-                     /*
-
-                    shader.uniformMatrix4f("u_Model", false, new Matrix4f().get(buffer));
-
-                    GLVertexData vertexData = quadVertexData;// App1.quadMesh.vertexData();
-
-                    vertexData.bind();
-
-                    if(vertexData.indexCount() > 0) {
-                        glDrawElements(mapper.mapToAPI(vertexData.topology()), vertexData.indexCount(), GL_UNSIGNED_INT, NULL);
-                    } else {
-                        glDrawArrays(mapper.mapToAPI(vertexData.topology()), 0, vertexData.vertexCount());
-                    }
-
-                    break;
-
-                      */
                 }
             }
 
@@ -218,7 +212,7 @@ public class GLCascadedShadowMaps extends RenderingPath {
 
         Matrix4f depthMVP = new Matrix4f();
 
-        try(MemoryStack stack = MemoryStack.stackPush()) {
+        try(MemoryStack stack = stackPush()) {
 
             FloatBuffer buffer = stack.mallocFloat(16);
 
@@ -231,13 +225,19 @@ public class GLCascadedShadowMaps extends RenderingPath {
                 depthFramebuffer.bind();
 
                 glEnable(GL_DEPTH_TEST);
+                // glEnable(GL_CULL_FACE);
+                // glCullFace(GL_FRONT);
                 glViewport(0, 0, DEPTH_MAP_SIZE, DEPTH_MAP_SIZE);
                 glClearColor(0, 0, 0, 0);
                 glClear(GL_DEPTH_BUFFER_BIT);
 
+
                 ShadowCascade shadowCascade = shadowCascades[i];
 
-                shadowCascade.update(camera, cascadeRanges[i], cascadeRanges[i+1], light);
+                // TODO
+                // shadowCascade.update(camera, cascadeRanges[i], cascadeRanges[i+1], light);
+
+                shadowCascade.update(camera, camera.nearPlane(), camera.farPlane(), light);
 
                 for(MeshView meshView : meshes) {
 

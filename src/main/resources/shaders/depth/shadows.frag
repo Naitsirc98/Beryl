@@ -120,11 +120,10 @@ vec4 computeDirectionalLighting(Light light) {
 
 void main() {
 
-    vec4 d = u_CameraPosition;
-
     vec4 color = computeDirectionalLighting(u_Light);
 
     int idx;
+
     for (int i=0; i<NUM_CASCADES; i++) {
         if (abs(vertexData.position.z) < u_CascadeFarPlanes[i]) {
             idx = i;
@@ -132,11 +131,10 @@ void main() {
         }
     }
 
+
     float shadow = calcShadow(vertexData.positionLightSpace[idx], idx);
 
-    out_FinalColor = clamp(color * shadow, 0, 1);
-
-    float r = texture(u_ShadowMap[0], vertexData.texCoords).r;
+    out_FinalColor = clamp(0.2 * materialAmbientColor + color * shadow, 0, 1);
 
     // out_FinalColor = vec4(shadow, shadow, shadow, 1); // vec4(r, r, r, 1);
 }
