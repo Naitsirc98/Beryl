@@ -11,9 +11,9 @@ import static naitsirc98.beryl.util.types.DataType.FLOAT32_SIZEOF;
 @ByteSize.Static(Light.SIZEOF)
 public abstract class Light<SELF extends Light<SELF>> implements ByteSize {
 
-    public static final int LIGHT_TYPE_DIRECTIONAL = 0;
-    public static final int LIGHT_TYPE_POINT = 1;
-    public static final int LIGHT_TYPE_SPOT = 2;
+    public static final int LIGHT_TYPE_DIRECTIONAL = 1;
+    public static final int LIGHT_TYPE_POINT = 2;
+    public static final int LIGHT_TYPE_SPOT = 3;
 
     /*
     struct Light {

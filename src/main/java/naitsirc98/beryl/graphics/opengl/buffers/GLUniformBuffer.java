@@ -39,7 +39,7 @@ public class GLUniformBuffer extends GLBuffer implements GraphicsCPUBuffer {
     @Override
     public PointerBuffer mapMemory(long offset) {
         return PointerBuffer.allocateDirect(1)
-                .put(nglMapNamedBufferRange(handle(), offset, size(), GL_MAP_WRITE_BIT));
+                .put(nglMapNamedBufferRange(handle(), offset, size(), GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT));
     }
 
     @Override
@@ -49,6 +49,6 @@ public class GLUniformBuffer extends GLBuffer implements GraphicsCPUBuffer {
 
     @Override
     protected int storageFlags() {
-        return GL_DYNAMIC_STORAGE_BIT | GL_MAP_WRITE_BIT;
+        return GL_DYNAMIC_STORAGE_BIT | GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT;
     }
 }

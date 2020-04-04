@@ -3,7 +3,8 @@
 @include "structs/phong_material.glsl"
 @include "structs/lights.glsl"
 
-#define MAX_LIGHTS_COUNT 100
+#define MAX_POINT_LIGHTS 10
+#define MAX_SPOT_LIGHTS 10
 
 @include "phong.frag.uniforms"
 
@@ -51,29 +52,25 @@ void main() {
 
 vec4 computeLighting() {
 
-    vec4 result = vec4(0.0f);
+    vec4 ambientColor = u_AmbientColor * materialAmbientColor * 0.2;
 
-    for(int i = 0;i < u_LightsCount;++i) {
+    vec4 diffuseSpecularColor = vec4(0.0);
 
-        Light light = u_Lights[i];
-
-        switch(light.type) {
-
-            case LIGHT_TYPE_DIRECTIONAL:
-                result += computeDirectionalLighting(light);
-                break;
-
-            case LIGHT_TYPE_POINT:
-                result += computePointLighting(light);
-                break;
-
-            case LIGHT_TYPE_SPOT:
-                result += computeSpotLighting(light);
-                break;
-        }
+    if(u_DirectionalLight.type != NULL) {
+        diffuseSpecularColor += computeDirectionalLighting(u_DirectionalLight);
     }
 
-    return result;
+    for(int i = 0;i < u_PointLightsCount;++i) {
+        diffuseSpecularColor += computePointLighting(u_PointLights[i]);
+    }
+
+    for(int i = 0;i < u_SpotLightsCount;++i) {
+        diffuseSpecularColor += computeSpotLighting(u_SpotLights[i]);
+    }
+
+    vec4 color = ambientColor + diffuseSpecularColor;
+
+    return color;
 }
 
 float computeAngle(vec3 v1, vec3 v2) {
@@ -95,10 +92,6 @@ float computeIntensity(vec3 normalizedDirection, vec3 lightDirection, float cutO
     float epsilon = (cutOff - outerCutOff);
 
     return clamp((theta - outerCutOff) / epsilon, 0.0f, 1.0f);
-}
-
-vec4 computeAmbientColor(vec4 lightColor) {
-	return vec4(vec3(lightColor * materialAmbientColor * 0.2f), materialAmbientColor.a);
 }
 
 vec4 computeDiffuseColor(vec4 lightColor, vec3 lightDirection) {
@@ -132,8 +125,7 @@ vec4 computeDirectionalLighting(Light light) {
 
     vec3 direction = normalize(-light.direction.xyz);
 
-    return computeAmbientColor(light.color)
-         + computeDiffuseColor(light.color, direction)
+    return computeDiffuseColor(light.color, direction)
          + computeSpecularColor(light.color, direction);
 }
 
@@ -144,8 +136,7 @@ vec4 computePointLighting(Light light) {
 
     float attenuation = computeAttenuation(light.position.xyz, light.constant, light.linear, light.quadratic);
 
-    return (computeAmbientColor(light.color)
-         + computeDiffuseColor(light.color, direction)
+    return (computeDiffuseColor(light.color, direction)
          + computeSpecularColor(light.color, direction)) * attenuation;
 }
 
@@ -157,7 +148,6 @@ vec4 computeSpotLighting(Light light) {
 
     float intensity = computeIntensity(direction, light.direction.xyz, light.cutOff, light.outerCutOff);
 
-    return (computeAmbientColor(light.color)
-         + computeDiffuseColor(light.color * intensity, direction)
+    return (computeDiffuseColor(light.color * intensity, direction)
          + computeSpecularColor(light.color * intensity, direction)) * attenuation;
 }

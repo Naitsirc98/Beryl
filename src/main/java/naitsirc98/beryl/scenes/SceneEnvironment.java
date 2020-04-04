@@ -5,6 +5,10 @@ import naitsirc98.beryl.lights.PointLight;
 import naitsirc98.beryl.lights.SpotLight;
 import naitsirc98.beryl.util.Color;
 
+import java.util.Arrays;
+import java.util.Objects;
+import java.util.stream.Stream;
+
 import static naitsirc98.beryl.util.types.TypeUtils.getOrElse;
 
 public final class SceneEnvironment {
@@ -38,12 +42,28 @@ public final class SceneEnvironment {
         return pointLights[index];
     }
 
+    public Stream<PointLight> pointLights() {
+        return Arrays.stream(pointLights).filter(Objects::nonNull);
+    }
+
+    public int pointLightsCount() {
+        return (int) pointLights().count();
+    }
+
     public void pointLight(int index, PointLight pointLight) {
         pointLights[index] = pointLight;
     }
 
     public SpotLight spotLight(int index) {
         return spotLights[index];
+    }
+
+    public Stream<SpotLight> spotLights() {
+        return Arrays.stream(spotLights).filter(Objects::nonNull);
+    }
+
+    public int spotLightsCount() {
+        return (int) spotLights().count();
     }
 
     public void spotLight(int index, SpotLight spotLight) {

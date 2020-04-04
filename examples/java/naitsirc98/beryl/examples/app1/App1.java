@@ -30,6 +30,7 @@ import org.joml.Vector3f;
 
 import java.util.Random;
 
+import static naitsirc98.beryl.graphics.rendering.RenderingPaths.RPATH_PHONG;
 import static naitsirc98.beryl.scenes.SceneManager.newScene;
 import static naitsirc98.beryl.util.Maths.radians;
 
@@ -170,7 +171,7 @@ public class App1 extends BerylApplication {
         Entity camera = scene.newEntity("Camera");
         // camera.add(Transform.class).position(100, 0, 300);
         camera.add(Transform.class).position(0, 0, -3);
-        camera.add(Camera.class).lookAt(0, 0).renderingPath(RenderingPaths.get(100)).clearColor(new Color(0.1f, 0.1f, 0.1f));
+        camera.add(Camera.class).lookAt(0, 0).renderingPath(RenderingPaths.get(RPATH_PHONG)).clearColor(new Color(0.1f, 0.1f, 0.1f));
         camera.add(CameraController.class);
 
         Entity sun = scene.newEntity("Sun");
