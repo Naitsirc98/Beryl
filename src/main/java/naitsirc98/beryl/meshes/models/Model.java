@@ -2,45 +2,44 @@ package naitsirc98.beryl.meshes.models;
 
 import naitsirc98.beryl.meshes.vertices.VertexData;
 import naitsirc98.beryl.meshes.vertices.VertexLayout;
+import naitsirc98.beryl.resources.ManagedResource;
+import naitsirc98.beryl.util.collections.LookupTable;
 import org.joml.Matrix4fc;
+import org.lwjgl.system.NativeResource;
 
+import java.nio.ByteBuffer;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Stream;
 
-public final class Model implements Iterable<Model.Node> {
+import static java.util.Objects.requireNonNull;
+import static java.util.stream.Collectors.joining;
+import static naitsirc98.beryl.graphics.rendering.PrimitiveTopology.TRIANGLES;
+import static naitsirc98.beryl.util.types.DataType.INT32;
+import static org.lwjgl.system.MemoryUtil.memFree;
+
+public final class Model extends ManagedResource {
 
     private final Path path;
     private final VertexLayout vertexLayout;
     private final List<Node> nodes;
+    private final LookupTable<String, Node> nodeNames;
     private final List<Mesh> meshes;
+    private final LookupTable<String, Mesh> meshNames;
 
-    Model(Path path, VertexLayout vertexLayout) {
-        this.path = path;
-        this.vertexLayout = vertexLayout;
+    Model(Path path, VertexLayout vertexLayout, int meshCount) {
+        super(false);
+        this.path = requireNonNull(path);
+        this.vertexLayout = requireNonNull(vertexLayout);
         nodes = new ArrayList<>();
-        meshes = new ArrayList<>();
+        nodeNames = new LookupTable<>();
+        meshes = new ArrayList<>(meshCount);
+        meshNames = new LookupTable<>();
+        track();
     }
 
-    synchronized Node newNode(String name, int childCount, int meshCount) {
-
-        Node node = new Node(name, nodes.size(), childCount, meshCount);
-
-        nodes.add(node);
-
-        return node;
-    }
-
-    private synchronized Mesh newMesh(String name) {
-
-        Mesh mesh = new Mesh(name, meshes.size());
-
-        meshes.add(mesh);
-
-        return mesh;
+    public String name() {
+        return path.getName(path.getNameCount()-1).toString();
     }
 
     public Path path() {
@@ -51,7 +50,11 @@ public final class Model implements Iterable<Model.Node> {
         return vertexLayout;
     }
 
-    public int size() {
+    public Node root() {
+        return nodes.get(0);
+    }
+
+    public int nodeCount() {
         return nodes.size();
     }
 
@@ -59,132 +62,229 @@ public final class Model implements Iterable<Model.Node> {
         return meshes.size();
     }
 
-    public boolean containsNode(String name) {
-        return nodes.stream().anyMatch(node -> Objects.equals(name, node.name));
-    }
-
-    public Node node(String name) {
-        return nodes.stream().filter(node -> Objects.equals(name, node.name)).findAny().orElse(null);
-    }
-
     public Node node(int index) {
         return nodes.get(index);
     }
 
-    public boolean containsMesh(String name) {
-        return meshes.stream().anyMatch(m -> Objects.equals(m.name, name));
-    }
-
-    public Mesh mesh(String name) {
-        return meshes.stream().filter(m -> Objects.equals(m.name, name)).findAny().orElse(null);
+    public Node node(String name) {
+        return nodeNames.valueOf(name);
     }
 
     public Mesh mesh(int index) {
         return meshes.get(index);
     }
 
-    public Stream<Node> nodes() {
-        return nodes.stream();
+    public Mesh mesh(String name) {
+        return meshNames.valueOf(name);
+    }
+
+    public String nameOf(Node node) {
+        return nodeNames.keyOf(node);
+    }
+
+    public String nameOf(Mesh mesh) {
+        return meshNames.keyOf(mesh);
+    }
+
+    public Collection<Node> nodes() {
+        return Collections.unmodifiableCollection(nodes);
+    }
+
+    public Collection<Mesh> meshes() {
+        return Collections.unmodifiableCollection(meshes);
+    }
+
+    synchronized Node newNode(String name, int numChildren, int numMeshes) {
+
+        Node node = new Node(nodes.size(), numChildren, numMeshes);
+
+        nodes.add(node);
+        nodeNames.put(name, node);
+
+        return node;
+    }
+
+    synchronized Mesh newMesh(String name, ByteBuffer[] vertices, ByteBuffer indices) {
+
+        Mesh mesh = new Mesh(meshes.size(), vertices, indices);
+
+        meshes.add(mesh);
+        meshNames.put(name, mesh);
+
+        return mesh;
     }
 
     @Override
-    public Iterator<Node> iterator() {
-        return nodes.iterator();
+    protected void free() {
+        meshes().stream().filter(Objects::nonNull).forEach(Mesh::free);
+        meshes.clear();
     }
 
-    public final class Node {
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Model model = (Model) o;
+        return path.equals(model.path) &&
+                vertexLayout.equals(model.vertexLayout);
+    }
 
-        private final String name;
+    @Override
+    public int hashCode() {
+        return Objects.hash(path, vertexLayout);
+    }
+
+    @Override
+    public String toString() {
+
+        StringBuilder builder = new StringBuilder();
+
+        builder.append("Model '").append(name()).append("' {\n").append("  Path: ").append("\"").append(path).append("\"").append('\n');
+        builder.append("  VertexLayout: ").append(vertexLayout).append('\n');
+        builder.append("  Structure:\n").append(root().toString("    ")).append('\n');
+
+        return builder.append("  };").toString();
+    }
+
+    public final class Node implements NativeResource {
+
         private final int index;
+        private final int meshIndicesOffset;
+        private int[] indices;
         private Matrix4fc transformation;
-        private final int[] meshIndices;
-        private final int[] childIndices;
 
-        private Node(String name, int index, int childCount, int meshCount) {
-            this.name = name;
+        public Node(int index, int numChildren, int numMeshes) {
             this.index = index;
-            childIndices = new int[childCount];
-            meshIndices = new int[meshCount];
+            meshIndicesOffset = numChildren;
+            indices = new int[numChildren + numMeshes];
+        }
+
+        public int index() {
+            return index;
         }
 
         public String name() {
-            return name;
-        }
-
-        public VertexLayout vertexLayout() {
-            return vertexLayout;
+            return nameOf(this);
         }
 
         public Matrix4fc transformation() {
             return transformation;
         }
 
-        public int index() {
-            return index;
+        public int numChildren() {
+            return meshIndicesOffset;
         }
 
-        public int childCount() {
-            return childIndices.length;
+        public int numMeshes() {
+            return indices.length - meshIndicesOffset;
         }
 
         public Node child(int index) {
-            return nodes.get(childIndices[index]);
-        }
-
-        public int meshCount() {
-            return meshIndices.length;
+            return nodes.get(indices[index]);
         }
 
         public Mesh mesh(int index) {
-            return Model.this.meshes.get(meshIndices[index]);
+            return meshes.get(indices[meshIndicesOffset + index]);
         }
 
-        Node newChild(int index, String name, int childCount, int meshCount) {
-            Node child = newNode(name, childCount, meshCount);
-            childIndices[index] = child.index;
-            return child;
+        public Stream<Node> children() {
+            return Arrays.stream(indices, 0, meshIndicesOffset).mapToObj(nodes::get);
+        }
+
+        public Stream<Mesh> meshes() {
+            return Arrays.stream(indices, meshIndicesOffset, indices.length).mapToObj(meshes::get);
+        }
+
+        @Override
+        public void free() {
+            indices = null;
         }
 
         void transformation(Matrix4fc transformation) {
             this.transformation = transformation;
         }
 
-        Mesh newMesh(int index, String name) {
-            Mesh mesh = Model.this.newMesh(name);
-            meshIndices[index] = mesh.index;
-            return mesh;
+        synchronized void addChild(int index, Node child) {
+            indices[index] = child.index;
+        }
+
+        synchronized void addMesh(int index, Mesh mesh) {
+            indices[meshIndicesOffset + index] = mesh.index;
+        }
+
+        @Override
+        public String toString() {
+            return toString("");
+        }
+
+        public String toString(String indentation) {
+            String innerIndentation = indentation + "  ";
+            String childrenStr = children().map(node -> node.toString(innerIndentation + "  ")).collect(joining(",\n"));
+            return String.format("%sNode[%d] '%s' {\n%smeshes:[%s],\n%schildren: [%s]\n%s};",
+                    indentation, index, name(),
+                    innerIndentation, meshes().map(Mesh::name).collect(joining(", ")),
+                    innerIndentation, childrenStr.isEmpty() ? "" : "\n" + childrenStr + "\n" + innerIndentation, indentation);
         }
     }
 
-    public final class Mesh {
+    public final class Mesh implements NativeResource {
 
-        private final String name;
-        private VertexData vertexData;
         private final int index;
+        private ByteBuffer[] vertices;
+        private ByteBuffer indices;
 
-        private Mesh(String name, int index) {
-            this.name = name;
+        Mesh(int index, ByteBuffer[] vertices, ByteBuffer indices) {
             this.index = index;
-        }
-
-        public String name() {
-            return name;
+            this.vertices = vertices;
+            this.indices = indices;
         }
 
         public int index() {
             return index;
         }
 
-        public VertexData vertexData() {
-            return vertexData;
+        public String name() {
+            return nameOf(this);
         }
 
         public VertexLayout vertexLayout() {
-            return Model.this.vertexLayout;
+            return vertexLayout;
         }
 
-        void vertexData(VertexData vertexData) {
-            this.vertexData = vertexData;
+        public ByteBuffer[] vertices() {
+            return vertices;
+        }
+
+        public ByteBuffer indices() {
+            return indices;
+        }
+
+        public VertexData createVertexData() {
+
+            VertexData.Builder builder = VertexData.builder(vertexLayout, TRIANGLES);
+
+            for(int i = 0;i < vertices.length;i++) {
+                builder.vertices(i, vertices[i]);
+            }
+
+            if(indices != null) {
+                builder.indices(indices, INT32);
+            }
+
+            return builder.build();
+        }
+
+        @Override
+        public void free() {
+
+            for(ByteBuffer buffer : vertices) {
+                memFree(buffer);
+            }
+
+            memFree(indices);
+
+            vertices = null;
+            indices = null;
         }
     }
 }

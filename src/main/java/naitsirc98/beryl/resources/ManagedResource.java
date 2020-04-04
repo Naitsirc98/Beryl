@@ -5,8 +5,13 @@ public abstract class ManagedResource implements Resource {
     private boolean released;
 
     protected ManagedResource() {
-        ResourceManager.track(this);
-        released = false;
+        this(true);
+    }
+
+    protected ManagedResource(boolean track) {
+        if(track) {
+            ResourceManager.track(this);
+        }
     }
 
     @Override

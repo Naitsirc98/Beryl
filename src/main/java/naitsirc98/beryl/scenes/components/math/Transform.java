@@ -333,13 +333,13 @@ public final class Transform extends Component<Transform> {
      */
     public Transform transformation(Matrix4fc transformation) {
         Vector3f vector = new Vector3f();
-        AxisAngle4f axisAngle4f = new AxisAngle4f();
+        Quaternionf quaternion = new Quaternionf();
         transformation.getTranslation(vector);
         position(vector);
         transformation.getScale(vector);
         scale(vector);
-        transformation.getRotation(axisAngle4f);
-        rotate(axisAngle4f);
+        transformation.getUnnormalizedRotation(quaternion);
+        rotate(quaternion);
         return this;
     }
 
@@ -547,11 +547,9 @@ public final class Transform extends Component<Transform> {
             return;
         }
 
-        final float deltaRads = radians - angle();
-
         for(Transform child : children) {
             if(child.enabled()) {
-                child.rotate(child.angle() + deltaRads, newX, newY, newZ);
+                child.rotate(radians, newX, newY, newZ);
             }
         }
     }

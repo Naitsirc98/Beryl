@@ -1,9 +1,6 @@
 package naitsirc98.beryl.examples.app1;
 
-import naitsirc98.beryl.core.Beryl;
-import naitsirc98.beryl.core.BerylApplication;
-import naitsirc98.beryl.core.BerylConfiguration;
-import naitsirc98.beryl.core.BerylFiles;
+import naitsirc98.beryl.core.*;
 import naitsirc98.beryl.graphics.GraphicsAPI;
 import naitsirc98.beryl.graphics.GraphicsFactory;
 import naitsirc98.beryl.graphics.rendering.RenderingPaths;
@@ -13,11 +10,12 @@ import naitsirc98.beryl.images.Image;
 import naitsirc98.beryl.images.ImageFactory;
 import naitsirc98.beryl.images.PixelFormat;
 import naitsirc98.beryl.lights.DirectionalLight;
+import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.materials.Material;
 import naitsirc98.beryl.materials.PhongMaterial;
-import naitsirc98.beryl.meshes.Mesh;
 import naitsirc98.beryl.meshes.models.AssimpModelLoader;
 import naitsirc98.beryl.meshes.models.Model;
+import naitsirc98.beryl.meshes.models.ModelUtils;
 import naitsirc98.beryl.resources.ResourceManager;
 import naitsirc98.beryl.scenes.Entity;
 import naitsirc98.beryl.scenes.Scene;
@@ -39,9 +37,9 @@ public class App1 extends BerylApplication {
 
     private static final Random RAND = new Random(System.nanoTime());
 
-    public static Mesh cubeMesh;
-    public static Mesh sphereMesh;
-    public static Mesh quadMesh;
+    public static naitsirc98.beryl.meshes.Mesh cubeMesh;
+    public static naitsirc98.beryl.meshes.Mesh sphereMesh;
+    public static naitsirc98.beryl.meshes.Mesh quadMesh;
 
     public static void main(String[] args) {
 
@@ -98,34 +96,16 @@ public class App1 extends BerylApplication {
 
         AssimpModelLoader modelLoader = new AssimpModelLoader();
 
-        cubeMesh = new Mesh(modelLoader.load(BerylFiles.getPath("models/cube.obj")).mesh(0).vertexData(), PhongMaterial.getDefault());
-        quadMesh = new Mesh(modelLoader.load(BerylFiles.getPath("models/quad.obj")).mesh(0).vertexData(), PhongMaterial.getDefault());
-        sphereMesh = new Mesh(modelLoader.load(BerylFiles.getPath("models/sphere.obj")).mesh(0).vertexData(), PhongMaterial.getDefault());
+        cubeMesh = new naitsirc98.beryl.meshes.Mesh(modelLoader.load(BerylFiles.getPath("models/cube.obj")).mesh(0).createVertexData(), PhongMaterial.getDefault());
+        quadMesh = new naitsirc98.beryl.meshes.Mesh(modelLoader.load(BerylFiles.getPath("models/quad.obj")).mesh(0).createVertexData(), PhongMaterial.getDefault());
+        sphereMesh = new naitsirc98.beryl.meshes.Mesh(modelLoader.load(BerylFiles.getPath("models/sphere.obj")).mesh(0).createVertexData(), PhongMaterial.getDefault());
 
         Model model = new AssimpModelLoader().load(
                 ("C:\\Users\\naits\\Downloads\\87xm06x9pyps-room\\OBJ\\Room.obj"));
                 // BerylFiles.getPath("models/chalet.obj"));
                 // ("C:\\Users\\naits\\Downloads\\Cerberus_by_Andrew_Maximov\\Cerberus_by_Andrew_Maximov\\Cerberus_LP.FBX"));
 
-        model.forEach(node -> {
-
-            System.out.println(">>>" + node.name());
-
-            System.out.println("    >> Meshes: ");
-            for(int i = 0;i < node.meshCount();i++) {
-                System.out.println("    " + node.mesh(i).name());
-            }
-
-            if(node.childCount() > 0) {
-
-                System.out.println("    >> Children:");
-                for(int i = 0;i < node.childCount();i++) {
-                    System.out.println("    " + node.child(i));
-                }
-            }
-
-            System.out.println();
-        });
+        Log.trace(model);
 
         Texture2D modelTexture = GraphicsFactory.get().newTexture2D();
 
@@ -133,29 +113,37 @@ public class App1 extends BerylApplication {
             modelTexture.pixels(1, image);
         }
 
-        for(int i = 0;i < model.meshCount();i++) {
+        Entity modelEntity = ModelUtils.modelToEntity(model, scene, name -> PhongMaterial.getDefault());
+
+        modelEntity.add(UpdateMutableBehaviour.class).onUpdate(self -> {
+
+            modelEntity.get(Transform.class).rotateY(Time.time());
+
+        });
+
+        /*
+        for(Model.Mesh mesh : model.meshes()) {
 
             final float angle = RAND.nextFloat();
 
             Entity entity = scene.newEntity();
             entity.add(Transform.class).scale(0.5f);//.scale(0.25f).rotate(radians(-90), 1, 0, 0).position(RAND.nextInt(500), -RAND.nextInt(500), -RAND.nextInt(500));
 
-            Mesh modelMesh = new Mesh(model.mesh(i).vertexData(), PhongMaterial.get("MODEL",
+            naitsirc98.beryl.meshes.Mesh modelMesh = new naitsirc98.beryl.meshes.Mesh(mesh.createVertexData(), PhongMaterial.get("MODEL",
                     builder -> builder.emissiveMap(modelTexture).emissiveColor(Color.WHITE)));
 
             PhongMaterial mat;
 
-            if (model.mesh(i).name().equals("lamp_legup_glass1_Cap_16")) {
-                mat = PhongMaterial.get(i + "", builder -> builder.emissiveColor(Color.WHITE));
+            if (mesh.name().equals("lamp_legup_glass1_Cap_16")) {
+                mat = PhongMaterial.get(mesh.name(), builder -> builder.emissiveColor(Color.WHITE));
                 /*
                 entity.add(LightSource.class).light(new SpotLight()
                         .range(LightRange.SMALL)
                         .position(new Vector3f(42.608f, 1.682f, -40.58f))
                         .direction(new Vector3f(-0.072f, -0.995f, -0.071f)));
 
-                 */
             } else {
-                mat = PhongMaterial.get(i + "", builder -> builder.color(Color.WHITE));
+                mat = PhongMaterial.get(mesh.name(), builder -> builder.color(Color.WHITE));
                 // builder -> builder.color(new Color(RAND.nextFloat(), RAND.nextFloat(), RAND.nextFloat())));
             }
             // TODO: uncomment
@@ -167,6 +155,8 @@ public class App1 extends BerylApplication {
                 // addOrRemoveRandomly(thisBehaviour.entity(), sphereMesh, mat);
             });
         }
+        */
+
 
         Entity camera = scene.newEntity("Camera");
         // camera.add(Transform.class).position(100, 0, 300);
@@ -189,7 +179,7 @@ public class App1 extends BerylApplication {
 
     }
 
-    private void addOrRemoveRandomly(Entity entity, Mesh mesh, Material material) {
+    private void addOrRemoveRandomly(Entity entity, naitsirc98.beryl.meshes.Mesh mesh, Material material) {
 
         if(RAND.nextFloat() < 0.001f) {
 

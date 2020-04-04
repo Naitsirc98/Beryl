@@ -17,10 +17,12 @@ struct Light {
     float constant;
     float linear;
     float quadratic;
-    float _pad1;
 
     float cutOff;
     float outerCutOff;
-    float _pad2;
+
+    float nearPlane;
+    float farPlane;
+
     int type;
 };

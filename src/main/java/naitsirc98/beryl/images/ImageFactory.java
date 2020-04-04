@@ -35,11 +35,25 @@ public final class ImageFactory {
      * @return the new image
      */
     public static Image newBlankImage(int width, int height, PixelFormat format) {
+        return newImage(width, height, format, 0xFFFFFFFF);
+    }
+
+    /**
+     * Creates an image filled with the given value, backed by a new buffer in memory.
+     * The buffer must be manually freed by calling {@link Image#release()}
+     *
+     * @param width  the width
+     * @param height the height
+     * @param format the pixel format
+     * @param pixelValue the pixel value
+     * @return the new image
+     */
+    public static Image newImage(int width, int height, PixelFormat format, int pixelValue) {
         Image image = newImage(width, height, format);
         if(format.dataType().decimal()) {
-            memSet(image.pixelsf(), 0xFFFFFFFF);
+            memSet(image.pixelsf(), pixelValue);
         } else {
-            memSet(image.pixelsi(), 0xFFFFFFFF);
+            memSet(image.pixelsi(), pixelValue);
         }
         return image;
     }

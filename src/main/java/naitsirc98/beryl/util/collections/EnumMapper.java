@@ -33,6 +33,12 @@ public class EnumMapper<K extends Enum<K>, V> implements IDoubleMap<K, V> {
     }
 
     @Override
+    public void put(K key, V value) {
+        normalTable.put(key, value);
+        reversedTable.put(value, key);
+    }
+
+    @Override
     public boolean containsKey(K key) {
         return normalTable.containsKey(key);
     }

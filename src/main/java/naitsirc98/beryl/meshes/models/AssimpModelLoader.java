@@ -1,15 +1,12 @@
 package naitsirc98.beryl.meshes.models;
 
-import naitsirc98.beryl.graphics.rendering.PrimitiveTopology;
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.meshes.vertices.VertexAttribute;
 import naitsirc98.beryl.meshes.vertices.VertexAttributeList;
 import naitsirc98.beryl.meshes.vertices.VertexAttributeList.VertexAttributeIterator;
-import naitsirc98.beryl.meshes.vertices.VertexData;
 import naitsirc98.beryl.meshes.vertices.VertexLayout;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
-import org.lwjgl.BufferUtils;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.assimp.*;
 
@@ -22,23 +19,24 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static java.util.Objects.requireNonNull;
-import static naitsirc98.beryl.graphics.rendering.PrimitiveTopology.TRIANGLES;
+import static java.util.stream.IntStream.range;
 import static naitsirc98.beryl.meshes.vertices.VertexAttribute.*;
 import static naitsirc98.beryl.util.Asserts.assertTrue;
-import static naitsirc98.beryl.util.types.DataType.*;
+import static naitsirc98.beryl.util.types.DataType.FLOAT32_SIZEOF;
+import static naitsirc98.beryl.util.types.DataType.INT32_SIZEOF;
 import static org.lwjgl.assimp.Assimp.*;
+import static org.lwjgl.system.MemoryUtil.memAlloc;
 
 public class AssimpModelLoader implements ModelLoader {
 
     private static final int DEFAULT_FLAGS = // aiProcess_OptimizeMeshes
-            aiProcess_OptimizeGraph
-            | aiProcess_Triangulate
-            | aiProcess_FlipUVs
-            | aiProcess_JoinIdenticalVertices
-            | aiProcess_FixInfacingNormals;
+            // aiProcess_OptimizeGraph
+            aiProcess_Triangulate
+                    | aiProcess_FlipUVs
+                    | aiProcess_JoinIdenticalVertices
+                    | aiProcess_FixInfacingNormals;
 
     private static final EnumMap<VertexAttribute, AttributeDataProcessor> ATTRIBUTE_DATA_PROCESSORS = createAttributeDataProcessors();
-
 
     @Override
     public Model load(Path path, VertexLayout vertexLayout) {
@@ -57,7 +55,7 @@ public class AssimpModelLoader implements ModelLoader {
 
         double end = (System.nanoTime() - start) / 1e6;
 
-        Log.info("Model " + path.getName(path.getNameCount()-1) + " loaded in " + end + " ms");
+        Log.info("Model " + path.getName(path.getNameCount() - 1) + " loaded in " + end + " ms");
 
         return model;
     }
@@ -68,18 +66,17 @@ public class AssimpModelLoader implements ModelLoader {
 
         try {
 
-            Model model = new Model(path, vertexLayout);
-
-            if(aiScene == null || aiScene.mRootNode() == null) {
+            if (aiScene == null || aiScene.mRootNode() == null) {
                 throw new IllegalStateException("Could not load model: " + aiGetErrorString());
             }
 
             AINode aiRoot = aiScene.mRootNode();
 
-            Model.Node modelRoot = model.newNode(aiRoot.mName().dataString(), aiRoot.mNumChildren(), aiRoot.mNumMeshes());
-            modelRoot.transformation(matrix4fc(aiRoot.mTransformation()));
+            Model model = new Model(path, vertexLayout, aiScene.mNumMeshes());
 
-            processNode(aiScene, aiRoot, modelRoot);
+            Model.Node rootNode = model.newNode(aiRoot.mName().dataString(), aiRoot.mNumChildren(), aiRoot.mNumMeshes());
+
+            processNode(aiScene, aiRoot, rootNode, model);
 
             return model;
 
@@ -88,14 +85,16 @@ public class AssimpModelLoader implements ModelLoader {
         }
     }
 
-    private void processNode(AIScene aiScene, AINode aiNode, Model.Node modelNode) {
+    private void processNode(AIScene aiScene, AINode aiNode, Model.Node modelNode, Model model) {
 
-        processNodeMeshes(aiScene, aiNode, modelNode);
+        modelNode.transformation(matrix4fc(aiNode.mTransformation()));
 
-        processNodeChildren(aiNode, modelNode);
+        processNodeMeshes(aiScene, aiNode, modelNode, model);
+
+        processNodeChildren(aiScene, aiNode, modelNode, model);
     }
 
-    private void processNodeChildren(AINode aiNode, Model.Node modelNode) {
+    private void processNodeChildren(AIScene aiScene, AINode aiNode, Model.Node modelNode, Model model) {
 
         if (aiNode.mNumChildren() == 0) {
             return;
@@ -103,15 +102,15 @@ public class AssimpModelLoader implements ModelLoader {
 
         PointerBuffer children = requireNonNull(aiNode.mChildren());
 
-        for (int i = 0; i < children.remaining(); i++) {
-            AINode aiChildNode = AINode.create(children.get(i));
-            Model.Node childNode = modelNode.newChild(i,
-                    aiChildNode.mName().dataString(), aiChildNode.mNumChildren(), aiChildNode.mNumMeshes());
-            childNode.transformation(matrix4fc(aiChildNode.mTransformation()));
+        for(int i = 0;i < children.limit();i++) {
+            AINode aiChild = AINode.create(children.get(i));
+            Model.Node child = model.newNode(aiChild.mName().dataString(), aiChild.mNumChildren(), aiChild.mNumMeshes());
+            processNode(aiScene, aiChild, child, model);
+            modelNode.addChild(i, child);
         }
     }
 
-    private void processNodeMeshes(AIScene aiScene, AINode aiNode, Model.Node modelNode) {
+    private void processNodeMeshes(AIScene aiScene, AINode aiNode, Model.Node modelNode, Model model) {
 
         if (aiNode.mNumMeshes() == 0) {
             return;
@@ -120,20 +119,20 @@ public class AssimpModelLoader implements ModelLoader {
         PointerBuffer meshes = requireNonNull(aiScene.mMeshes());
         IntBuffer meshIndices = requireNonNull(aiNode.mMeshes());
 
-        for(int i = 0;i < meshIndices.remaining();i++) {
+        range(0, aiNode.mNumMeshes()).unordered().parallel().forEach(i -> {
             AIMesh aiMesh = AIMesh.create(meshes.get(meshIndices.get(i)));
-            Model.Mesh nodeMesh = modelNode.newMesh(i, aiMesh.mName().dataString());
-            processMeshVertexData(aiMesh, nodeMesh);
-        }
+            modelNode.addMesh(i, loadMesh(aiMesh, model));
+        });
     }
 
-    private void processMeshVertexData(AIMesh aiMesh, Model.Mesh nodeMesh) {
+    private Model.Mesh loadMesh(AIMesh aiMesh, Model model) {
 
-        final VertexLayout vertexLayout = nodeMesh.vertexLayout();
+        final VertexLayout vertexLayout = model.vertexLayout();
 
-        VertexData.Builder vertexDataBuilder = VertexData.builder(vertexLayout, TRIANGLES);
+        ByteBuffer[] vertices = new ByteBuffer[vertexLayout.bindings()];
+        ByteBuffer indices = getIndices(aiMesh);
 
-        for(int i = 0;i < vertexLayout.bindings();i++) {
+        for (int i = 0; i < vertexLayout.bindings(); i++) {
 
             VertexAttributeList attributeList = vertexLayout.attributeList(i);
 
@@ -141,39 +140,31 @@ public class AssimpModelLoader implements ModelLoader {
             attributeInfo.stride = attributeList.stride();
             attributeInfo.totalSizeof = attributeList.sizeof();
 
-            ByteBuffer vertices = BufferUtils.createByteBuffer(aiMesh.mNumVertices() * attributeList.sizeof());
-            ByteBuffer indices = getIndices(aiMesh);
+            ByteBuffer vertexBuffer = vertices[i] = memAlloc(aiMesh.mNumVertices() * attributeList.sizeof());
 
             VertexAttributeIterator iterator = attributeList.iterator();
 
-            while(iterator.hasNext()) {
-                setAttributeData(aiMesh, attributeInfo.set(iterator.next(), iterator.offset()), vertices);
+            while (iterator.hasNext()) {
+                setAttributeData(aiMesh, attributeInfo.set(iterator.next(), iterator.offset()), vertexBuffer);
             }
-
-            vertexDataBuilder.vertices(i, vertices);
-
-            if(indices != null) {
-                vertexDataBuilder.indices(indices, INT32);
-            }
-
         }
 
-        nodeMesh.vertexData(vertexDataBuilder.build());
+        return model.newMesh(aiMesh.mName().dataString(), vertices, indices);
     }
 
     private ByteBuffer getIndices(AIMesh aiMesh) {
 
         final int numFaces = aiMesh.mNumFaces();
 
-        if(numFaces == 0) {
+        if (numFaces == 0) {
             return null;
         }
 
-        ByteBuffer indices = BufferUtils.createByteBuffer(numFaces * 3 * INT32_SIZEOF);
+        ByteBuffer indices = memAlloc(numFaces * 3 * INT32_SIZEOF);
 
         AIFace.Buffer aiFaces = aiMesh.mFaces();
 
-        for(int i = 0;i < numFaces;i++) {
+        for (int i = 0; i < numFaces; i++) {
 
             AIFace aiFace = aiFaces.get(i);
 
@@ -181,7 +172,7 @@ public class AssimpModelLoader implements ModelLoader {
 
             assertTrue(faceIndices.remaining() == 3);
 
-            for(int j = faceIndices.position();j < faceIndices.remaining();j++) {
+            for (int j = faceIndices.position(); j < faceIndices.remaining(); j++) {
                 indices.putInt(faceIndices.get(j));
             }
         }
@@ -194,7 +185,7 @@ public class AssimpModelLoader implements ModelLoader {
     }
 
     private Matrix4fc matrix4fc(AIMatrix4x4 aiMatrix4) {
-        return new Matrix4f(
+         return new Matrix4f(
                 aiMatrix4.a1(), aiMatrix4.b1(), aiMatrix4.c1(), aiMatrix4.d1(),
                 aiMatrix4.a2(), aiMatrix4.b2(), aiMatrix4.c2(), aiMatrix4.d2(),
                 aiMatrix4.a3(), aiMatrix4.b3(), aiMatrix4.c3(), aiMatrix4.d3(),
@@ -280,7 +271,7 @@ public class AssimpModelLoader implements ModelLoader {
         final int stride = attributeInfo.stride;
         int offset = attributeInfo.offset;
 
-        for(int i = 0;i < colorsCount;i++) {
+        for (int i = 0; i < colorsCount; i++) {
 
             AIColor4D color = colors == null ? white : colors.get(i);
 
@@ -288,7 +279,7 @@ public class AssimpModelLoader implements ModelLoader {
                     .putFloat(offset + FLOAT32_SIZEOF, color.g())
                     .putFloat(offset + FLOAT32_SIZEOF * 2, color.b());
 
-            if(attributeInfo.attribute == COLOR4D) {
+            if (attributeInfo.attribute == COLOR4D) {
                 vertices.putFloat(offset + FLOAT32_SIZEOF * 3, color.a());
             }
 
@@ -301,14 +292,14 @@ public class AssimpModelLoader implements ModelLoader {
 
         AIVector3D.Buffer bitangents = aiMesh.mBitangents();
 
-        if(bitangents.remaining() == 0) {
+        if (bitangents.remaining() == 0) {
             throw new IllegalStateException("Number of bitangents is zero");
         }
 
         final int stride = attributeInfo.stride;
         int offset = attributeInfo.offset;
 
-        for(int i = 0;i < bitangents.remaining();i++) {
+        for (int i = 0; i < bitangents.remaining(); i++) {
 
             AIVector3D bitangent = bitangents.get(i);
 
@@ -325,14 +316,14 @@ public class AssimpModelLoader implements ModelLoader {
 
         AIVector3D.Buffer tangents = aiMesh.mTangents();
 
-        if(tangents.remaining() == 0) {
+        if (tangents.remaining() == 0) {
             throw new IllegalStateException("Number of tangents is zero");
         }
 
         final int stride = attributeInfo.stride;
         int offset = attributeInfo.offset;
 
-        for(int i = 0;i < tangents.remaining();i++) {
+        for (int i = 0; i < tangents.remaining(); i++) {
 
             AIVector3D tangent = tangents.get(i);
 
@@ -349,7 +340,7 @@ public class AssimpModelLoader implements ModelLoader {
 
         AIVector3D.Buffer textureCoordinates = aiMesh.mTextureCoords(0);
 
-        if(textureCoordinates == null) {
+        if (textureCoordinates == null) {
             return;
             // throw new IllegalStateException("Number of texture coordinates is zero");
         }
@@ -357,14 +348,14 @@ public class AssimpModelLoader implements ModelLoader {
         final int stride = attributeInfo.stride;
         int offset = attributeInfo.offset;
 
-        for(int i = 0;i < textureCoordinates.remaining();i++) {
+        for (int i = 0; i < textureCoordinates.remaining(); i++) {
 
             AIVector3D texCoords = textureCoordinates.get(i);
 
             vertices.putFloat(offset, texCoords.x())
                     .putFloat(offset + FLOAT32_SIZEOF, texCoords.y());
 
-            if(attributeInfo.attribute == TEXCOORDS3D) {
+            if (attributeInfo.attribute == TEXCOORDS3D) {
                 vertices.putFloat(offset + FLOAT32_SIZEOF * 2, texCoords.z());
             }
 
@@ -377,14 +368,14 @@ public class AssimpModelLoader implements ModelLoader {
 
         AIVector3D.Buffer normals = aiMesh.mNormals();
 
-        if(normals.remaining() == 0) {
+        if (normals.remaining() == 0) {
             throw new IllegalStateException("Number of normals is zero");
         }
 
         final int stride = attributeInfo.stride;
         int offset = attributeInfo.offset;
 
-        for(int i = 0;i < normals.remaining();i++) {
+        for (int i = 0; i < normals.remaining(); i++) {
 
             AIVector3D normal = normals.get(i);
 
@@ -399,7 +390,7 @@ public class AssimpModelLoader implements ModelLoader {
 
     private static void processPositionAttribute(AttributeInfo attributeInfo, AIMesh aiMesh, ByteBuffer vertices) {
 
-        if(aiMesh.mNumVertices() == 0) {
+        if (aiMesh.mNumVertices() == 0) {
             throw new IllegalStateException("Number of positions is zero");
         }
 
@@ -409,18 +400,18 @@ public class AssimpModelLoader implements ModelLoader {
         final int stride = attributeInfo.stride;
         int offset = attributeInfo.offset;
 
-        for(int i = 0;i < positions.remaining();i++) {
+        for (int i = 0; i < positions.remaining(); i++) {
 
             AIVector3D position = positions.get(i);
 
             vertices.putFloat(offset, position.x())
                     .putFloat(offset + FLOAT32_SIZEOF, position.y());
 
-            if(attribute == POSITION3D || attribute == POSITION4D) {
+            if (attribute == POSITION3D || attribute == POSITION4D) {
                 vertices.putFloat(offset + FLOAT32_SIZEOF * 2, position.z());
             }
 
-            if(attribute == POSITION4D) {
+            if (attribute == POSITION4D) {
                 vertices.putFloat(offset + FLOAT32_SIZEOF * 3, 1.0f);
             }
 

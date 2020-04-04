@@ -33,7 +33,7 @@ public abstract class Light<SELF extends Light<SELF>> implements ByteSize {
         float nearPlane;
         float farPlane;
 
-        uint type;
+        int type;
     };
     */
 
