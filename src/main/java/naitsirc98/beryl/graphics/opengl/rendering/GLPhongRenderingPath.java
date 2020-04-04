@@ -160,7 +160,7 @@ public class GLPhongRenderingPath extends RenderingPath {
         final Matrix4fc projectionView = camera.projectionViewMatrix();
         final Matrix4f mvp = projectionViewMatrix;
         final GLUniformBuffer matricesUniformBuffer = this.matricesUniformBuffer;
-        final List<MeshView> meshViews = scene.meshViews();
+        final List<MeshView> meshViews = scene.meshInfo().meshViews();
         final GLMapper mapper = opengl().mapper();
 
         shader.bind();

@@ -91,7 +91,7 @@ public final class VulkanSimpleRenderingPath extends RenderingPath
     @Override
     public void render(Camera camera, Scene scene) {
 
-        final List<MeshView> meshViews = scene.meshViews();
+        final List<MeshView> meshViews = scene.meshInfo().meshViews();
 
         if(meshViews.size() == 0) {
             return;
@@ -105,7 +105,9 @@ public final class VulkanSimpleRenderingPath extends RenderingPath
 
             setupCommandBufferInfos(stack);
 
-            VkCommandBuffer primaryCommandBuffer = VulkanRenderer.get().currentCommandBuffer();
+            // TODO
+
+            VkCommandBuffer primaryCommandBuffer = null;// VulkanRenderer.get().currentCommandBuffer();
 
             beginPrimaryCommandBuffer(primaryCommandBuffer);
 

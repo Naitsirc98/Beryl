@@ -118,7 +118,7 @@ public class GLCascadedShadowMaps extends RenderingPath {
 
     public void render(Camera camera, Scene scene) {
 
-        List<MeshView> meshes = scene.meshViews();
+        List<MeshView> meshes = scene.meshInfo().meshViews();
 
         DirectionalLight light = scene.environment().directionalLight();
 

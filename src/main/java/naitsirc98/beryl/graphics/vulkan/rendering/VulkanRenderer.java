@@ -2,12 +2,12 @@ package naitsirc98.beryl.graphics.vulkan.rendering;
 
 import naitsirc98.beryl.graphics.rendering.Renderer;
 import naitsirc98.beryl.graphics.vulkan.VulkanObject;
-import naitsirc98.beryl.graphics.vulkan.commands.VulkanCommandPool;
 import naitsirc98.beryl.graphics.vulkan.devices.VulkanLogicalDevice;
 import naitsirc98.beryl.graphics.vulkan.swapchain.FrameManager;
 import naitsirc98.beryl.graphics.vulkan.swapchain.VulkanSwapchain;
 import naitsirc98.beryl.graphics.vulkan.swapchain.VulkanSwapchainDependent;
 import naitsirc98.beryl.logging.Log;
+import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
 
@@ -18,6 +18,7 @@ import static naitsirc98.beryl.graphics.vulkan.util.VulkanUtils.vkCall;
 import static naitsirc98.beryl.logging.Log.Level.FATAL;
 import static naitsirc98.beryl.util.types.DataType.UINT64_MAX;
 import static org.lwjgl.system.MemoryStack.stackPush;
+import static org.lwjgl.system.MemoryUtil.*;
 import static org.lwjgl.vulkan.KHRSwapchain.*;
 import static org.lwjgl.vulkan.VK10.*;
 
@@ -32,8 +33,7 @@ public class VulkanRenderer implements VulkanObject, Renderer, VulkanSwapchainDe
     private FrameManager frameManager;
     private VkQueue graphicsQueue;
     private VkQueue presentationQueue;
-    private VulkanCommandPool commandPool;
-    private VkCommandBuffer[] commandBuffers;
+    private PointerBuffer submittedCommandBuffers;
     private int currentSwapchainImageIndex;
 
     private VulkanRenderer() {
@@ -90,7 +90,7 @@ public class VulkanRenderer implements VulkanObject, Renderer, VulkanSwapchainDe
 
             submitInfo.pSignalSemaphores(stack.longs(frame.renderFinishedSemaphore));
 
-            submitInfo.pCommandBuffers(stack.pointers(currentCommandBuffer()));
+            submitInfo.pCommandBuffers(submittedCommandBuffers.flip());
 
             vkResetFences(logicalDevice, frame.fence);
 
@@ -122,28 +122,32 @@ public class VulkanRenderer implements VulkanObject, Renderer, VulkanSwapchainDe
             }
 
             frameManager.endFrame();
+            submittedCommandBuffers.position(0).limit(submittedCommandBuffers.capacity());
         }
+    }
+
+    public void submit(VkCommandBuffer commandBuffer) {
+        if(!submittedCommandBuffers.hasRemaining()) {
+            submittedCommandBuffers = memRealloc(submittedCommandBuffers, submittedCommandBuffers.capacity() + 1);
+        }
+        submittedCommandBuffers.put(commandBuffer);
     }
 
     public int currentSwapchainImageIndex() {
         return currentSwapchainImageIndex;
     }
 
-    public VkCommandBuffer currentCommandBuffer() {
-        return commandBuffers[currentSwapchainImageIndex];
-    }
-
     @Override
     public void release() {
         logicalDevice().waitIdle();
-        commandPool.freeCommandBuffers(commandBuffers);
+        memFree(submittedCommandBuffers);
         frameManager.release();
     }
 
     @Override
     public void onSwapchainRecreate() {
         logicalDevice().waitIdle();
-        commandPool.freeCommandBuffers(commandBuffers);
+        memFree(submittedCommandBuffers);
         init0();
     }
 
@@ -160,7 +164,6 @@ public class VulkanRenderer implements VulkanObject, Renderer, VulkanSwapchainDe
         this.logicalDevice = logicalDevice.handle();
         graphicsQueue = logicalDevice.graphicsQueue();
         presentationQueue = logicalDevice.presentationQueue();
-        this.commandPool = graphicsCommandPool();
-        commandBuffers = commandPool.newPrimaryCommandBuffers(swapchain.imageCount());
+        submittedCommandBuffers = memAllocPointer(1);
     }
 }

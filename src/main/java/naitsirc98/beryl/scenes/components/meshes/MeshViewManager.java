@@ -9,19 +9,27 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public final class MeshViewManager extends AbstractComponentManager<MeshView> {
+public final class MeshViewManager extends AbstractComponentManager<MeshView> implements SceneMeshInfo {
 
     private final Map<Material, Integer> materials;
+    private volatile int modifications;
 
     private MeshViewManager(Scene scene) {
         super(scene);
         materials = new HashMap<>();
     }
 
+    @Override
+    public int modifications() {
+        return modifications;
+    }
+
+    @Override
     public List<MeshView> meshViews() {
         return components.enabled();
     }
 
+    @Override
     public Set<Material> materials() {
         return materials.keySet();
     }
@@ -73,5 +81,9 @@ public final class MeshViewManager extends AbstractComponentManager<MeshView> {
         } else {
             materials.put(material, materials.get(material) - 1);
         }
+    }
+
+    void markModified() {
+        ++modifications;
     }
 }

@@ -11,6 +11,7 @@ import org.lwjgl.vulkan.VkCommandBuffer;
 
 import java.util.Arrays;
 import java.util.concurrent.CountDownLatch;
+import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 
 import static java.util.Objects.requireNonNull;
@@ -36,6 +37,70 @@ public class VulkanCommandBufferThreadExecutor<T extends VulkanThreadData> imple
         this.threadCount = assertThat(threadCount, threadCount > 0);
         commandBufferThreads = createCommandBufferThreads(requireNonNull(threadDataSupplier));
         createCommandBufferPointers();
+    }
+
+    public void updateUniformsOnly(int count, BiConsumer<Integer, VulkanThreadData> uniformUpdater) {
+
+        final int commandBufferThreadCount = threadCount;
+        final int objectsPerCommandBufferThread = min(round((float)count / commandBufferThreadCount), count) + 1;
+
+        if(count <= objectsPerCommandBufferThread) {
+            updateUniformsInThisThread(count, uniformUpdater);
+        } else {
+            updateUniformsInParallel(commandBufferThreadCount, objectsPerCommandBufferThread, count, uniformUpdater);
+        }
+
+    }
+
+    private void updateUniformsInThisThread(int count, BiConsumer<Integer, VulkanThreadData> uniformUpdater) {
+
+        final VulkanCommandBufferThread<T> commandBufferThread = commandBufferThreads[0];
+
+        for(int j = 0; j < count; j++) {
+            uniformUpdater.accept(j, commandBufferThread.threadData());
+        }
+    }
+
+    private void updateUniformsInParallel(int commandBufferThreadCount, int objectsPerCommandBufferThread, int count,
+                                          BiConsumer<Integer, VulkanThreadData> uniformUpdater) {
+
+        final VulkanCommandBufferThread<T>[] commandBufferThreads = this.commandBufferThreads;
+        final CountDownLatch countDownLatch = new CountDownLatch(commandBufferThreadCount);
+
+        for(int i = 0;i < commandBufferThreadCount;i++) {
+
+            final int offset = i * objectsPerCommandBufferThread;
+            final int objectCount = min(objectsPerCommandBufferThread, count - offset);
+
+            final VulkanCommandBufferThread<T> commandBufferThread = commandBufferThreads[i];
+
+            commandBufferThread.submit(() -> {
+
+                try {
+
+                    for(int j = 0; j < objectCount; j++) {
+                        uniformUpdater.accept(j + offset, commandBufferThread.threadData());
+                    }
+
+                } catch(Throwable error) {
+                    errorOccurred = true;
+                    commandBufferThread.error(error);
+                } finally {
+                    countDownLatch.countDown();
+                }
+            });
+        }
+
+        try {
+            countDownLatch.await();
+        } catch (InterruptedException e) {
+            Log.fatal("Interrupted exception while waiting for command buffers to be recorded", e);
+        }
+
+        if(errorOccurred) {
+            logCommandBufferThreadErrors(commandBufferThreadCount);
+            errorOccurred = false;
+        }
     }
 
     public void recordCommandBuffers(int count, VkCommandBuffer primaryCommandBuffer, VulkanCommandBufferRecorder<T> recorder) {

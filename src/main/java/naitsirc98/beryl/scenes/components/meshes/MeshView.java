@@ -57,6 +57,7 @@ public final class MeshView extends Component<MeshView> implements Iterable<Mesh
             addMesh(mesh);
         } else {
             meshes.set(index, requireNonNull(mesh));
+            markModified();
         }
         return this;
     }
@@ -67,6 +68,7 @@ public final class MeshView extends Component<MeshView> implements Iterable<Mesh
         if(active() && oldSize == 0 && enabled()) {
             manager().enable(this);
         }
+        markModified();
         return this;
     }
 
@@ -79,6 +81,7 @@ public final class MeshView extends Component<MeshView> implements Iterable<Mesh
         if(active() && size() == 0 && enabled()) {
             manager().disable(this);
         }
+        markModified();
         return this;
     }
 
@@ -107,6 +110,7 @@ public final class MeshView extends Component<MeshView> implements Iterable<Mesh
         materials.put(mesh, requireNonNull(material));
         if(active() && enabled()) {
             manager().addMaterial(material);
+            markModified();
         }
         return this;
     }
@@ -119,6 +123,7 @@ public final class MeshView extends Component<MeshView> implements Iterable<Mesh
         Material material = materials.remove(mesh);
         if(active() && enabled() && material != null) {
             manager().removeMaterial(material);
+            markModified();
         }
         return this;
     }
@@ -194,5 +199,9 @@ public final class MeshView extends Component<MeshView> implements Iterable<Mesh
 
     Stream<Material> materials() {
         return IntStream.range(0, size()).mapToObj(this::material);
+    }
+
+    private void markModified() {
+        doLater(() -> manager().markModified());
     }
 }

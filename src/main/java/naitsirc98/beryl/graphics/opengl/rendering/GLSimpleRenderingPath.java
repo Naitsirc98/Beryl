@@ -86,7 +86,7 @@ public final class GLSimpleRenderingPath extends RenderingPath {
 
             FloatBuffer mvpData = stack.mallocFloat(16);
 
-            for(MeshView meshView : scene.meshViews()) {
+            for(MeshView meshView : scene.meshInfo().meshViews()) {
 
                 GLVertexData vertexData = meshView.mesh().vertexData();
 

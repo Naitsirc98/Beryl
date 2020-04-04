@@ -41,6 +41,7 @@ public final class VulkanCommandBufferThread<T extends VulkanThreadData> impleme
     }
 
     public VkCommandBuffer commandBuffer() {
+        // return commandBuffer(0);
         return commandBuffer(VulkanRenderer.get().currentSwapchainImageIndex());
     }
 

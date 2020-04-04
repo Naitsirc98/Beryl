@@ -1,7 +1,6 @@
 package naitsirc98.beryl.scenes;
 
 import naitsirc98.beryl.logging.Log;
-import naitsirc98.beryl.materials.Material;
 import naitsirc98.beryl.scenes.components.behaviours.AbstractBehaviour;
 import naitsirc98.beryl.scenes.components.behaviours.BehaviourManager;
 import naitsirc98.beryl.scenes.components.camera.Camera;
@@ -10,6 +9,7 @@ import naitsirc98.beryl.scenes.components.math.Transform;
 import naitsirc98.beryl.scenes.components.math.TransformManager;
 import naitsirc98.beryl.scenes.components.meshes.MeshView;
 import naitsirc98.beryl.scenes.components.meshes.MeshViewManager;
+import naitsirc98.beryl.scenes.components.meshes.SceneMeshInfo;
 
 import java.util.*;
 import java.util.stream.Stream;
@@ -60,12 +60,8 @@ public final class Scene {
         return environment;
     }
 
-    public List<MeshView> meshViews() {
-        return meshes.meshViews();
-    }
-
-    public Set<Material> materials() {
-        return meshes.materials();
+    public SceneMeshInfo meshInfo() {
+        return meshes;
     }
 
     void start() {

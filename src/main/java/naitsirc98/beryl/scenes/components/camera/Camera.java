@@ -17,6 +17,7 @@ import static naitsirc98.beryl.util.Asserts.assertNonNull;
 import static naitsirc98.beryl.util.Maths.*;
 import static naitsirc98.beryl.util.types.TypeUtils.getOrElse;
 import static org.joml.Math.max;
+import static org.joml.Math.min;
 
 public final class Camera extends Component<Camera> {
 
@@ -26,7 +27,7 @@ public final class Camera extends Component<Camera> {
 	public static final float DEFAULT_YAW = -90.0f;
 
 	public static final float DEFAULT_NEAR_PLANE = 0.1f;
-	public static final float DEFAULT_FAR_PLANE = 1000.0f;
+	public static final float DEFAULT_FAR_PLANE = 10000.0f;
 
 	public static final float DEFAULT_SENSITIVITY = 0.1f;
 
@@ -86,7 +87,7 @@ public final class Camera extends Component<Camera> {
 		right = new Vector3f(1, 0, 0);
 		maxFOV = radians(90.0f);
 		minFOV = radians(1.0f);
-		fov = maxFOV / 2.0f;
+		fov = clamp(minFOV, maxFOV, maxFOV / 2.0f);
 		yaw = DEFAULT_YAW;
 		pitch = 0.0f;
 		roll = 0.0f;
@@ -285,7 +286,7 @@ public final class Camera extends Component<Camera> {
 
 	public Camera fov(float fov) {
 		assertNotDeleted();
-		this.fov = fov;
+		this.fov = clamp(minFOV, maxFOV, fov);
 		modify();
 		return this;
 	}
@@ -432,12 +433,6 @@ public final class Camera extends Component<Camera> {
 			// projection.setOrtho(-ff, ff, -ff, ff, nearPlane, farPlane);
 			// projection.setOrtho(-1, 1, -1, 1, nearPlane, farPlane);
 		}
-
-		/*
-		if(GraphicsAPI.get() == GraphicsAPI.VULKAN) {
-			projectionMatrix.m11(-projectionMatrix.m11()); // Flip y
-		}
-		 */
 	}
 	
 	/**

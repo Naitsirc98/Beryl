@@ -10,14 +10,11 @@ layout(std140) uniform MatricesUniformBuffer {
 
 #else // VULKAN
 
-layout(push_constant) uniform PushConstant {
-    mat4 u_MVP;
-    vec4 u_CameraPosition;
-};
-
 layout(std140, set = 0, binding = 0) uniform MatricesUniformBuffer {
+    mat4 u_MVP;
     mat4 u_ModelMatrix;
     mat4 u_NormalMatrix;
+    vec4 u_CameraPosition;
 };
 
 #endif

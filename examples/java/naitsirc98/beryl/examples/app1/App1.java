@@ -115,48 +115,7 @@ public class App1 extends BerylApplication {
 
         Entity modelEntity = ModelUtils.modelToEntity(model, scene, name -> PhongMaterial.getDefault());
 
-        modelEntity.add(UpdateMutableBehaviour.class).onUpdate(self -> {
-
-            modelEntity.get(Transform.class).rotateY(Time.time());
-
-        });
-
-        /*
-        for(Model.Mesh mesh : model.meshes()) {
-
-            final float angle = RAND.nextFloat();
-
-            Entity entity = scene.newEntity();
-            entity.add(Transform.class).scale(0.5f);//.scale(0.25f).rotate(radians(-90), 1, 0, 0).position(RAND.nextInt(500), -RAND.nextInt(500), -RAND.nextInt(500));
-
-            naitsirc98.beryl.meshes.Mesh modelMesh = new naitsirc98.beryl.meshes.Mesh(mesh.createVertexData(), PhongMaterial.get("MODEL",
-                    builder -> builder.emissiveMap(modelTexture).emissiveColor(Color.WHITE)));
-
-            PhongMaterial mat;
-
-            if (mesh.name().equals("lamp_legup_glass1_Cap_16")) {
-                mat = PhongMaterial.get(mesh.name(), builder -> builder.emissiveColor(Color.WHITE));
-                /*
-                entity.add(LightSource.class).light(new SpotLight()
-                        .range(LightRange.SMALL)
-                        .position(new Vector3f(42.608f, 1.682f, -40.58f))
-                        .direction(new Vector3f(-0.072f, -0.995f, -0.071f)));
-
-            } else {
-                mat = PhongMaterial.get(mesh.name(), builder -> builder.color(Color.WHITE));
-                // builder -> builder.color(new Color(RAND.nextFloat(), RAND.nextFloat(), RAND.nextFloat())));
-            }
-            // TODO: uncomment
-            entity.add(MeshView.class).mesh(modelMesh).material(mat);
-            entity.add(UpdateMutableBehaviour.class).onUpdate(thisBehaviour -> {
-                Transform transform = thisBehaviour.get(Transform.class);
-                // transform.rotateY(radians(angle));
-                // thisBehaviour.entity().destroy();
-                // addOrRemoveRandomly(thisBehaviour.entity(), sphereMesh, mat);
-            });
-        }
-        */
-
+        // modelEntity.add(UpdateMutableBehaviour.class).onUpdate(self -> self.get(Transform.class).rotateY(Time.time()));
 
         Entity camera = scene.newEntity("Camera");
         // camera.add(Transform.class).position(100, 0, 300);
