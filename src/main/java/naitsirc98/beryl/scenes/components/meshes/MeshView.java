@@ -6,17 +6,16 @@ import naitsirc98.beryl.scenes.Component;
 import naitsirc98.beryl.scenes.components.math.Transform;
 import org.joml.Matrix4fc;
 
-import java.util.*;
-import java.util.stream.IntStream;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.stream.Stream;
 
 import static java.util.Objects.requireNonNull;
-import static naitsirc98.beryl.util.Asserts.assertTrue;
 
 public final class MeshView extends Component<MeshView> implements Iterable<Mesh> {
 
     private List<Mesh> meshes;
-    private Map<Mesh, Material> materials;
     private boolean castShadows;
 
     private MeshView() {
@@ -27,7 +26,6 @@ public final class MeshView extends Component<MeshView> implements Iterable<Mesh
     protected void init() {
         super.init();
         meshes = new ArrayList<>(1);
-        materials = new HashMap<>();
         castShadows = true;
     }
 
@@ -55,8 +53,13 @@ public final class MeshView extends Component<MeshView> implements Iterable<Mesh
     public MeshView mesh(int index, Mesh mesh) {
         if(index == 0 && size() == 0) {
             addMesh(mesh);
-        } else {
+        } else if(!meshes.get(index).equals(mesh)){
+            final Mesh old = meshes.get(index);
             meshes.set(index, requireNonNull(mesh));
+            if(active()) {
+                manager().removeMeshInstance(old, this);
+                manager().addMeshInstance(mesh, this);
+            }
             markModified();
         }
         return this;
@@ -68,6 +71,9 @@ public final class MeshView extends Component<MeshView> implements Iterable<Mesh
         if(active() && oldSize == 0 && enabled()) {
             manager().enable(this);
         }
+        if(active()) {
+            manager().addMeshInstance(mesh, this);
+        }
         markModified();
         return this;
     }
@@ -77,59 +83,15 @@ public final class MeshView extends Component<MeshView> implements Iterable<Mesh
     }
 
     public MeshView removeMesh(int index) {
-        meshes.remove(index);
+        final Mesh old = meshes.remove(index);
         if(active() && size() == 0 && enabled()) {
             manager().disable(this);
         }
+        if(active()) {
+            manager().removeMeshInstance(old, this);
+        }
         markModified();
         return this;
-    }
-
-    @SuppressWarnings("unchecked")
-    public <T extends Material> T material(Mesh mesh) {
-
-        final Material material = materials.get(mesh);
-
-        if(material == null) {
-            return mesh.material();
-        }
-
-        return (T) material;
-    }
-
-    public <T extends Material> T material(int index) {
-        return material(mesh(index));
-    }
-
-    public MeshView material(Material material) {
-        return material(mesh(), material);
-    }
-
-    public MeshView material(Mesh mesh, Material material) {
-        assertTrue(meshes.contains(mesh));
-        materials.put(mesh, requireNonNull(material));
-        if(active() && enabled()) {
-            manager().addMaterial(material);
-            markModified();
-        }
-        return this;
-    }
-
-    public MeshView material(int index, Material material) {
-        return material(mesh(index), material);
-    }
-
-    public MeshView removeMaterial(Mesh mesh) {
-        Material material = materials.remove(mesh);
-        if(active() && enabled() && material != null) {
-            manager().removeMaterial(material);
-            markModified();
-        }
-        return this;
-    }
-
-    public MeshView removeMaterial(int index) {
-        return removeMaterial(mesh(index));
     }
 
     public int size() {
@@ -138,7 +100,6 @@ public final class MeshView extends Component<MeshView> implements Iterable<Mesh
 
     public MeshView clear() {
         meshes.clear();
-        materials.clear();
         if(active() && enabled()) {
             manager().disable(this);
         }
@@ -180,12 +141,8 @@ public final class MeshView extends Component<MeshView> implements Iterable<Mesh
 
     @Override
     protected void onDestroy() {
-
         meshes.clear();
-        materials.clear();
-
         meshes = null;
-        materials = null;
     }
 
     @Override
@@ -198,7 +155,7 @@ public final class MeshView extends Component<MeshView> implements Iterable<Mesh
     }
 
     Stream<Material> materials() {
-        return IntStream.range(0, size()).mapToObj(this::material);
+        return meshes.stream().map(Mesh::material);
     }
 
     private void markModified() {

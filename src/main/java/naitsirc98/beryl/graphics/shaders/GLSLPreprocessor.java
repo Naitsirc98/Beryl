@@ -117,6 +117,7 @@ public final class GLSLPreprocessor {
         builder.append("#ifndef ").append(GraphicsAPI.get().name()).append('\n');
         builder.append(define(GraphicsAPI.get().name()));
         builder.append("#endif\n");
+        builder.append("#extension GL_KHR_vulkan_glsl: enable\n");
 
         return builder.toString();
     }

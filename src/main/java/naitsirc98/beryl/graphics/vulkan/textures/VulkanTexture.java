@@ -47,6 +47,7 @@ public abstract class VulkanTexture extends ManagedResource implements VulkanObj
             Log.error("Trying to generateMipmaps, but the texture image is null");
             return;
         }
+        sampler.validate();
         renderImage.image().generateMipmaps();
     }
 

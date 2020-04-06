@@ -34,6 +34,14 @@ public final class GLVertexData extends VertexData {
         vertexArray.bind();
     }
 
+    public GLVertexArray vertexArray() {
+        return vertexArray;
+    }
+
+    public GLVertexBuffer vertexBuffer(int binding) {
+        return vertexBuffers[binding];
+    }
+
     @Override
     protected void free() {
 

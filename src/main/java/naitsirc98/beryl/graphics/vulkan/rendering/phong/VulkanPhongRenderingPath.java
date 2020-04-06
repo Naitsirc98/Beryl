@@ -270,8 +270,6 @@ public final class VulkanPhongRenderingPath extends RenderingPath
 
             if(scene.meshInfo().modifications() != sceneModifications[imageIndex]) {
 
-                System.out.println("modified");
-
                 setupCommandBufferInfos(stack);
 
                 beginPrimaryCommandBuffer(primaryCommandBuffer);
@@ -318,7 +316,7 @@ public final class VulkanPhongRenderingPath extends RenderingPath
         for(Mesh mesh : meshView) {
 
             final VulkanVertexData vertexData = mesh.vertexData();
-            final PhongMaterial material = meshView.material(mesh);
+            final PhongMaterial material = mesh.material();
 
             if(threadData.lastVertexData != vertexData) {
                 vertexData.bind(commandBuffer);

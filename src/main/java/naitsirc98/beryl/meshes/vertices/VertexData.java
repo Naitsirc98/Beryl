@@ -18,15 +18,19 @@ public abstract class VertexData extends ManagedResource {
         return GraphicsFactory.get().newVertexDataBuilder(VERTEX_LAYOUT_3D, TRIANGLES);
     }
 
+    public static Builder builder(VertexLayout layout) {
+        return GraphicsFactory.get().newVertexDataBuilder(layout, TRIANGLES);
+    }
+
     public static Builder builder(VertexLayout layout, PrimitiveTopology primitiveTopology) {
         return GraphicsFactory.get().newVertexDataBuilder(layout, primitiveTopology);
     }
 
-    protected final VertexLayout layout;
-    protected final PrimitiveTopology primitiveTopology;
-    protected int firstVertex;
-    protected int vertexCount;
-    protected int indexCount;
+    private final VertexLayout layout;
+    private final PrimitiveTopology primitiveTopology;
+    private final int firstVertex;
+    private final int vertexCount;
+    private final int indexCount;
 
     protected VertexData(VertexLayout layout, PrimitiveTopology primitiveTopology, int firstVertex, int vertexCount, int indexCount) {
         this.layout = layout;
@@ -56,6 +60,9 @@ public abstract class VertexData extends ManagedResource {
         return indexCount;
     }
 
+    public boolean instanced() {
+        return layout.instanced();
+    }
 
     public static abstract class Builder {
 

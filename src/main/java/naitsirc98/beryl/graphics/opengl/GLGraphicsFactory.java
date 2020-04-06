@@ -33,6 +33,18 @@ public class GLGraphicsFactory implements GraphicsFactory {
         return blankTexture2D;
     }
 
+    @Override
+    public Texture2D newTexture2D(String imagePath, PixelFormat pixelFormat) {
+
+        Texture2D texture = newTexture2D();
+
+        try(Image image = ImageFactory.newImage(imagePath, pixelFormat)) {
+            texture.pixels(1, image);
+        }
+
+        return texture;
+    }
+
     private Texture2D newBlankTexture2D() {
 
         Texture2D texture = newTexture2D();

@@ -105,7 +105,8 @@ public class GLCascadedShadowMaps extends RenderingPath {
                 .attach(new GLShader(FRAGMENT_STAGE).source(FRAGMENT_SHADER_PATH).compile())
                 .link();
 
-        lightsUniformBuffer = new GLUniformBuffer("LightsUniformBuffer", shader, 0);
+        lightsUniformBuffer = new GLUniformBuffer();
+        lightsUniformBuffer.set("LightsUniformBuffer", shader, 0);
         lightsUniformBuffer.allocate(Light.SIZEOF);
 
         quadVertexData = PrimitiveMeshes.createQuadMesh(PhongMaterial.getDefault()).vertexData();
@@ -147,7 +148,7 @@ public class GLCascadedShadowMaps extends RenderingPath {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glDisable(GL_CULL_FACE);
 
-        lightsUniformBuffer.bind();
+        lightsUniformBuffer.bind(shader);
 
         try(MemoryStack stack = stackPush()) {
 

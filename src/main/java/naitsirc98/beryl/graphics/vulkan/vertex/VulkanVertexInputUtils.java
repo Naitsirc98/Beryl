@@ -55,7 +55,7 @@ public final class VulkanVertexInputUtils {
     }
 
     private static int getVkInputRate(VertexAttributeList attributes) {
-        return attributes.instancing() ? VK_VERTEX_INPUT_RATE_INSTANCE : VK_VERTEX_INPUT_RATE_VERTEX;
+        return attributes.instanced() ? VK_VERTEX_INPUT_RATE_INSTANCE : VK_VERTEX_INPUT_RATE_VERTEX;
     }
 
     private VulkanVertexInputUtils() {}

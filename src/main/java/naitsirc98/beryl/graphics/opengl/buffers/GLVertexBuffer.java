@@ -1,5 +1,7 @@
 package naitsirc98.beryl.graphics.opengl.buffers;
 
+import static org.lwjgl.opengl.GL11.GL_NONE;
+
 public class GLVertexBuffer extends GLBuffer {
 
     @Override
@@ -9,6 +11,6 @@ public class GLVertexBuffer extends GLBuffer {
 
     @Override
     protected int storageFlags() {
-        return 0;
+        return GL_NONE;
     }
 }

@@ -5,7 +5,7 @@ import naitsirc98.beryl.core.BerylConfiguration;
 import naitsirc98.beryl.graphics.GraphicsContext;
 import naitsirc98.beryl.graphics.GraphicsFactory;
 import naitsirc98.beryl.graphics.opengl.rendering.GLCascadedShadowMaps;
-import naitsirc98.beryl.graphics.opengl.rendering.GLPhongRenderingPath;
+import naitsirc98.beryl.graphics.opengl.rendering.phong.GLPhongRenderingPath;
 import naitsirc98.beryl.graphics.opengl.rendering.GLSimpleRenderingPath;
 import naitsirc98.beryl.graphics.rendering.RenderingPath;
 import naitsirc98.beryl.graphics.window.Window;

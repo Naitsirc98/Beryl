@@ -26,6 +26,7 @@ import static naitsirc98.beryl.util.types.DataType.FLOAT32_SIZEOF;
 import static naitsirc98.beryl.util.types.DataType.INT32_SIZEOF;
 import static org.lwjgl.assimp.Assimp.*;
 import static org.lwjgl.system.MemoryUtil.memAlloc;
+import static org.lwjgl.system.MemoryUtil.memCalloc;
 
 public class AssimpModelLoader implements ModelLoader {
 
@@ -121,11 +122,11 @@ public class AssimpModelLoader implements ModelLoader {
 
         range(0, aiNode.mNumMeshes()).unordered().parallel().forEach(i -> {
             AIMesh aiMesh = AIMesh.create(meshes.get(meshIndices.get(i)));
-            modelNode.addMesh(i, loadMesh(aiMesh, model));
+            modelNode.addMesh(i, loadMesh(aiScene, aiMesh, model));
         });
     }
 
-    private Model.Mesh loadMesh(AIMesh aiMesh, Model model) {
+    private Model.Mesh loadMesh(AIScene aiScene, AIMesh aiMesh, Model model) {
 
         final VertexLayout vertexLayout = model.vertexLayout();
 
@@ -136,16 +137,23 @@ public class AssimpModelLoader implements ModelLoader {
 
             VertexAttributeList attributeList = vertexLayout.attributeList(i);
 
-            AttributeInfo attributeInfo = new AttributeInfo();
-            attributeInfo.stride = attributeList.stride();
-            attributeInfo.totalSizeof = attributeList.sizeof();
+            if(attributeList.instanced()) {
 
-            ByteBuffer vertexBuffer = vertices[i] = memAlloc(aiMesh.mNumVertices() * attributeList.sizeof());
+                vertices[i] = memCalloc(attributeList.sizeof());
 
-            VertexAttributeIterator iterator = attributeList.iterator();
+            } else {
 
-            while (iterator.hasNext()) {
-                setAttributeData(aiMesh, attributeInfo.set(iterator.next(), iterator.offset()), vertexBuffer);
+                AttributeInfo attributeInfo = new AttributeInfo();
+                attributeInfo.stride = attributeList.stride();
+                attributeInfo.totalSizeof = attributeList.sizeof();
+
+                vertices[i] = memAlloc(aiMesh.mNumVertices() * attributeList.sizeof());
+
+                VertexAttributeIterator iterator = attributeList.iterator();
+
+                while (iterator.hasNext()) {
+                    setAttributeData(aiMesh, attributeInfo.set(iterator.next(), iterator.offset()), vertices[i]);
+                }
             }
         }
 

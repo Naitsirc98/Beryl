@@ -7,9 +7,7 @@
 #define MAX_SPOT_LIGHTS 10
 
 layout(std140, set = 0, binding = 0) uniform MatricesUniformBuffer {
-    mat4 u_MVP;
-    mat4 u_ModelMatrix;
-    mat4 u_NormalMatrix;
+    mat4 u_ProjectionViewMatrix;
     vec4 u_CameraPosition;
 };
 
@@ -31,15 +29,6 @@ layout(std140, set = 2, binding = 6) uniform LightsUniformBuffer {
     int u_SpotLightsCount;
 };
 
-#ifdef OPENGL
-
-in VertexData {
-    vec3 position;
-    vec3 normal;
-    vec2 textureCoords;
-} vertexData;
-
-#else // VULKAN
 
 layout(location = 0) in VertexData {
     vec3 position;
@@ -47,13 +36,8 @@ layout(location = 0) in VertexData {
     vec2 textureCoords;
 } vertexData;
 
-#endif
 
-#ifdef OPENGL
-out vec4 out_FinalColor;
-#else // VULKAN
 layout(location = 0) out vec4 out_FinalColor;
-#endif
 
 
 vec3 cameraDirection = normalize(u_CameraPosition.xyz - vertexData.position);

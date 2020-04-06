@@ -439,6 +439,16 @@ public final class Transform extends Component<Transform> {
     }
 
     /**
+     * Removes all children.
+     */
+    public void removeAllChildren() {
+        for(Transform child : children) {
+            child.parent = null;
+        }
+        children.clear();
+    }
+
+    /**
      * Returns a stream with all the children of this transform.
      *
      * @return this transform's children as stream
@@ -480,9 +490,7 @@ public final class Transform extends Component<Transform> {
         }
         parent = null;
 
-        for(Transform child : children) {
-            child.parent = null;
-        }
+        removeAllChildren();
         children = null;
 
         position = null;

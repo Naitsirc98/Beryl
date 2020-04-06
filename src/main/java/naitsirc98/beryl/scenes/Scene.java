@@ -14,12 +14,15 @@ import naitsirc98.beryl.scenes.components.meshes.SceneMeshInfo;
 import java.util.*;
 import java.util.stream.Stream;
 
+import static java.util.Objects.requireNonNull;
 import static naitsirc98.beryl.scenes.Entity.UNTAGGED;
 import static naitsirc98.beryl.util.Asserts.assertNonNull;
 import static naitsirc98.beryl.util.Asserts.assertTrue;
 import static naitsirc98.beryl.util.types.TypeUtils.newInstance;
 
 public final class Scene {
+
+    private final String name;
     
     private final EntityManager entityManager;
 
@@ -38,7 +41,9 @@ public final class Scene {
 
     private boolean started;
 
-    public Scene() {
+    public Scene(String name) {
+
+        this.name = requireNonNull(name);
 
         entityManager = new EntityManager(this);
 
@@ -54,6 +59,10 @@ public final class Scene {
         // ===
 
         taskQueue = new ArrayDeque<>();
+    }
+
+    public String name() {
+        return name;
     }
 
     public SceneEnvironment environment() {

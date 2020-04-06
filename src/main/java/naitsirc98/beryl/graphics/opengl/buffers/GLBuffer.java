@@ -27,6 +27,10 @@ public abstract class GLBuffer implements GLObject, GraphicsBuffer {
         return glGetNamedBufferParameteri64(handle(), GL_BUFFER_SIZE);
     }
 
+    public void allocateMutable(long size) {
+        glNamedBufferData(handle, size, GL_DYNAMIC_DRAW);
+    }
+
     @Override
     public void allocate(long size) {
         glNamedBufferStorage(handle, size, storageFlags());

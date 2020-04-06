@@ -1,9 +1,12 @@
 package naitsirc98.beryl.examples.app1;
 
-import naitsirc98.beryl.core.*;
+import naitsirc98.beryl.core.Beryl;
+import naitsirc98.beryl.core.BerylApplication;
+import naitsirc98.beryl.core.BerylConfiguration;
 import naitsirc98.beryl.graphics.GraphicsAPI;
 import naitsirc98.beryl.graphics.GraphicsFactory;
 import naitsirc98.beryl.graphics.rendering.RenderingPaths;
+import naitsirc98.beryl.graphics.textures.Sampler;
 import naitsirc98.beryl.graphics.textures.Texture2D;
 import naitsirc98.beryl.graphics.window.Window;
 import naitsirc98.beryl.images.Image;
@@ -13,10 +16,11 @@ import naitsirc98.beryl.lights.DirectionalLight;
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.materials.Material;
 import naitsirc98.beryl.materials.PhongMaterial;
+import naitsirc98.beryl.meshes.Mesh;
+import naitsirc98.beryl.meshes.PrimitiveMeshes;
 import naitsirc98.beryl.meshes.models.AssimpModelLoader;
 import naitsirc98.beryl.meshes.models.Model;
-import naitsirc98.beryl.meshes.models.ModelUtils;
-import naitsirc98.beryl.resources.ResourceManager;
+import naitsirc98.beryl.meshes.models.ModelEntityFactory;
 import naitsirc98.beryl.scenes.Entity;
 import naitsirc98.beryl.scenes.Scene;
 import naitsirc98.beryl.scenes.components.behaviours.UpdateMutableBehaviour;
@@ -29,6 +33,8 @@ import org.joml.Vector3f;
 import java.util.Random;
 
 import static naitsirc98.beryl.graphics.rendering.RenderingPaths.RPATH_PHONG;
+import static naitsirc98.beryl.meshes.vertices.VertexLayout.VERTEX_LAYOUT_3D;
+import static naitsirc98.beryl.meshes.vertices.VertexLayout.VERTEX_LAYOUT_3D_INSTANCED;
 import static naitsirc98.beryl.scenes.SceneManager.newScene;
 import static naitsirc98.beryl.util.Maths.radians;
 
@@ -36,10 +42,6 @@ import static naitsirc98.beryl.util.Maths.radians;
 public class App1 extends BerylApplication {
 
     private static final Random RAND = new Random(System.nanoTime());
-
-    public static naitsirc98.beryl.meshes.Mesh cubeMesh;
-    public static naitsirc98.beryl.meshes.Mesh sphereMesh;
-    public static naitsirc98.beryl.meshes.Mesh quadMesh;
 
     public static void main(String[] args) {
 
@@ -80,57 +82,110 @@ public class App1 extends BerylApplication {
 
     private void addScene() {
 
-        Scene scene = newScene();
-
-        Texture2D diffuseTexture = GraphicsFactory.get().newTexture2D();
-
-        ResourceManager.track(diffuseTexture);
-
-        try(Image image = ImageFactory.newImage("C:\\Users\\naits\\Desktop\\milo_raro.jpeg", PixelFormat.RGBA)) {
-            diffuseTexture.pixels(1, image);
-        }
-
-        PhongMaterial material = PhongMaterial.get("MyMaterial", builder ->
-                builder.ambientMap(diffuseTexture)
-                .diffuseMap(diffuseTexture));
+        Scene scene = newScene("Scene");
 
         AssimpModelLoader modelLoader = new AssimpModelLoader();
 
-        cubeMesh = new naitsirc98.beryl.meshes.Mesh(modelLoader.load(BerylFiles.getPath("models/cube.obj")).mesh(0).createVertexData(), PhongMaterial.getDefault());
-        quadMesh = new naitsirc98.beryl.meshes.Mesh(modelLoader.load(BerylFiles.getPath("models/quad.obj")).mesh(0).createVertexData(), PhongMaterial.getDefault());
-        sphereMesh = new naitsirc98.beryl.meshes.Mesh(modelLoader.load(BerylFiles.getPath("models/sphere.obj")).mesh(0).createVertexData(), PhongMaterial.getDefault());
+        Mesh quadMesh = PrimitiveMeshes.createQuadMesh(getFloorMaterial(), 100.0f);
 
-        Model model = new AssimpModelLoader().load(
-                ("C:\\Users\\naits\\Downloads\\87xm06x9pyps-room\\OBJ\\Room.obj"));
-                // BerylFiles.getPath("models/chalet.obj"));
-                // ("C:\\Users\\naits\\Downloads\\Cerberus_by_Andrew_Maximov\\Cerberus_by_Andrew_Maximov\\Cerberus_LP.FBX"));
+        Model treeModel = new AssimpModelLoader()
+                        .load("C:\\Users\\naits\\Downloads\\uploads_files_1970932_conifer_macedonian_pine(1)\\OBJ format\\conifer_macedonian_pine.obj",
+                        VERTEX_LAYOUT_3D_INSTANCED);
 
-        Log.trace(model);
+        Log.trace(treeModel);
 
-        Texture2D modelTexture = GraphicsFactory.get().newTexture2D();
+        Entity floor = scene.newEntity("floor");
+        floor.add(Transform.class).position(0, 0, 0).scale(100).rotateX(radians(90));
+        floor.add(MeshView.class).mesh(quadMesh);
 
-        try(Image image = ImageFactory.newImage(BerylFiles.getString("textures/chalet.jpg"), PixelFormat.RGBA)) {
-            modelTexture.pixels(1, image);
+        ModelEntityFactory treeFactory = new ModelEntityFactory(treeModel).materialsFunction(this::treeMaterialFunction);
+
+        for(int i = 0;i < 5000;i++) {
+            Entity tree = treeFactory.newEntity(scene);
+            tree.get(Transform.class).position(RAND.nextInt(100), 0, RAND.nextInt(100)).scale(0.0025f);
         }
 
-        Entity modelEntity = ModelUtils.modelToEntity(model, scene, name -> PhongMaterial.getDefault());
-
-        // modelEntity.add(UpdateMutableBehaviour.class).onUpdate(self -> self.get(Transform.class).rotateY(Time.time()));
-
         Entity camera = scene.newEntity("Camera");
-        // camera.add(Transform.class).position(100, 0, 300);
-        camera.add(Transform.class).position(0, 0, -3);
+        camera.add(Transform.class).position(0, 2, -3);
         camera.add(Camera.class).lookAt(0, 0).renderingPath(RenderingPaths.get(RPATH_PHONG)).clearColor(new Color(0.1f, 0.1f, 0.1f));
         camera.add(CameraController.class);
 
-        Entity sun = scene.newEntity("Sun");
-        sun.add(Transform.class).position(-3042.442f, 925.903f, 187.437f);
-        sun.add(MeshView.class).mesh(sphereMesh).material(PhongMaterial.get("SUN",
-                builder -> builder.emissiveColor(new Color(1f, 0.976f, 0.501f))));
-
         scene.environment().directionalLight(new DirectionalLight()
-                .color(new Color(0.3f, 0.3f, 0.3f))
+                .color(new Color(1f, 1f, 1f))
                 .direction(new Vector3f(0.954f, -0.292f, -0.07f)));
+    }
+
+    private Material treeMaterialFunction(String meshName) {
+
+        switch(meshName) {
+
+            case "conifer_macedonian_pine_5":
+                return PhongMaterial.get("trunk", builder -> {
+
+                    try(Image image = ImageFactory
+                            .newImage("C:\\Users\\naits\\Downloads\\uploads_files_1970932_conifer_macedonian_pine(1)\\OBJ format\\Bark_Color.png",
+                                    PixelFormat.RGBA)) {
+
+                        Texture2D colorTexture = GraphicsFactory.get().newTexture2D();
+
+                        colorTexture.pixels(1, image);
+
+                        builder.map(colorTexture);
+                    }
+
+                });
+            case "/Game/Cap_Branch_Mat_Cap_Branch_Mat":
+
+                return PhongMaterial.get("cap", builder -> {
+
+                    try(Image image = ImageFactory
+                            .newImage("C:\\Users\\naits\\Downloads\\uploads_files_1970932_conifer_macedonian_pine(1)\\OBJ format\\Cap_Color.png",
+                                    PixelFormat.RGBA)) {
+
+                        Texture2D colorTexture = GraphicsFactory.get().newTexture2D();
+
+                        colorTexture.pixels(1, image);
+
+                        colorTexture.generateMipmaps();
+
+                        builder.map(colorTexture);
+                    }
+
+                });
+
+            case "/Game/conifer_macedonian_pine_Leaf_Mat_conifer_macedonian_pine_Leaf_Mat":
+
+                return PhongMaterial.get("leaf", builder -> {
+
+                    try(Image image = ImageFactory
+                            .newImage("C:\\Users\\naits\\Downloads\\uploads_files_1970932_conifer_macedonian_pine(1)\\OBJ format\\conifer_macedonian_pine_Color.png",
+                                    PixelFormat.RGBA)) {
+
+                        Texture2D colorTexture = GraphicsFactory.get().newTexture2D();
+
+                        colorTexture.pixels(1, image);
+
+                        colorTexture.generateMipmaps();
+
+                        builder.map(colorTexture);
+                    }
+
+                });
+        }
+
+        return PhongMaterial.getDefault();
+    }
+
+    private Material getFloorMaterial() {
+        return PhongMaterial.get("floor", builder -> {
+            Texture2D colorMap = GraphicsFactory.get()
+                    .newTexture2D("C:\\Users\\naits\\Downloads\\TexturesCom_Grass0157_1_seamless_S.jpg", PixelFormat.RGBA);
+            colorMap.sampler().wrapMode(Sampler.WrapMode.REPEAT);
+            colorMap.sampler().maxAnisotropy(16);
+            colorMap.generateMipmaps();
+            builder.map(colorMap);
+            builder.shininess(1);
+        });
     }
 
     @Override
@@ -148,7 +203,7 @@ public class App1 extends BerylApplication {
 
             Entity model = entity.scene().newEntity();
             model.add(Transform.class).scale(0.25f).position(RAND.nextInt(500), -RAND.nextInt(500), -RAND.nextInt(500));
-            model.add(MeshView.class).mesh(mesh).material(material);
+            model.add(MeshView.class).mesh(new Mesh(mesh.vertexData(), material));
             model.add(UpdateMutableBehaviour.class).onUpdate(thisBehaviour -> {
                 Transform transform = thisBehaviour.get(Transform.class);
                 transform.rotateY(radians(angle));

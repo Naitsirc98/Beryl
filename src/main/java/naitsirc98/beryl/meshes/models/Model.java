@@ -259,21 +259,6 @@ public final class Model extends ManagedResource {
             return indices;
         }
 
-        public VertexData createVertexData() {
-
-            VertexData.Builder builder = VertexData.builder(vertexLayout, TRIANGLES);
-
-            for(int i = 0;i < vertices.length;i++) {
-                builder.vertices(i, vertices[i]);
-            }
-
-            if(indices != null) {
-                builder.indices(indices, INT32);
-            }
-
-            return builder.build();
-        }
-
         @Override
         public void free() {
 

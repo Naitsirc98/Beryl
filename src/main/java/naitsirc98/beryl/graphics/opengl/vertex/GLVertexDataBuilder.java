@@ -7,6 +7,7 @@ import naitsirc98.beryl.graphics.rendering.PrimitiveTopology;
 import naitsirc98.beryl.meshes.vertices.VertexData;
 import naitsirc98.beryl.meshes.vertices.VertexLayout;
 import naitsirc98.beryl.util.types.DataType;
+import org.joml.Matrix4f;
 
 import java.nio.ByteBuffer;
 
@@ -48,11 +49,23 @@ public final class GLVertexDataBuilder extends VertexData.Builder {
 
 
     private GLVertexBuffer[] createVertexBuffers() {
+
         GLVertexBuffer[] vertexBuffers = new GLVertexBuffer[layout.bindings()];
+
         for(int i = 0;i < vertexBuffers.length;i++) {
+
             vertexBuffers[i] = new GLVertexBuffer();
-            vertexBuffers[i].data(vertices[i]);
+
+            if(layout.attributeList(i).instanced()) {
+
+                vertexBuffers[i].allocateMutable(vertices[i].remaining());
+                vertexBuffers[i].update(0, vertices[i]);
+
+            } else {
+                vertexBuffers[i].data(vertices[i]);
+            }
         }
+
         return vertexBuffers;
     }
 }

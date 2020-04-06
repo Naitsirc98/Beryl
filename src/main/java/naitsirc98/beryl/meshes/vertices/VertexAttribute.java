@@ -17,7 +17,8 @@ public enum VertexAttribute implements ByteSize {
     TANGENTS(FLOAT32, 3),
     BITANGENTS(FLOAT32, 3),
     COLOR3D(FLOAT32, 3),
-    COLOR4D(FLOAT32, 4);
+    COLOR4D(FLOAT32, 4),
+    MATRIX4F(FLOAT32, 16);
 
     private final DataType dataType;
     private final int size;

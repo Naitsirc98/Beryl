@@ -18,11 +18,7 @@ import static org.lwjgl.vulkan.VK10.vkCmdBindDescriptorSets;
 
 final class VulkanPhongThreadData implements VulkanThreadData, VulkanObject {
 
-    static final int CAMERA_POSITION_PUSH_CONSTANT_SIZE = 4 * FLOAT32_SIZEOF;
-    static final int MVP_PUSH_CONSTANT_SIZE =  4 * 4 * FLOAT32_SIZEOF;
-    static final int PUSH_CONSTANT_SIZE = CAMERA_POSITION_PUSH_CONSTANT_SIZE + MVP_PUSH_CONSTANT_SIZE;
-
-    private static final int THREAD_DATA_BUFFER_SIZE = 3 * INT64_SIZEOF + 2 * INT32_SIZEOF + PUSH_CONSTANT_SIZE + MATRICES_UNIFORM_BUFFER_SIZE;
+    private static final int THREAD_DATA_BUFFER_SIZE = 3 * INT64_SIZEOF + 2 * INT32_SIZEOF + MATRICES_UNIFORM_BUFFER_SIZE;
 
     private final ByteBuffer buffer;
 
@@ -30,8 +26,6 @@ final class VulkanPhongThreadData implements VulkanThreadData, VulkanObject {
     private final IntBuffer pDynamicOffsets;
 
     final Matrix4f matrix;
-    final ByteBuffer pushConstantData;
-    final long pushConstantDataAddress;
     final ByteBuffer matricesData;
     final long matricesDataAddress;
 
@@ -48,10 +42,7 @@ final class VulkanPhongThreadData implements VulkanThreadData, VulkanObject {
 
         matrix = new Matrix4f();
 
-        pushConstantData = memByteBuffer(memAddress(pDynamicOffsets) + 2 * INT32_SIZEOF, PUSH_CONSTANT_SIZE);
-        pushConstantDataAddress = memAddress(pushConstantData);
-
-        matricesData = memByteBuffer(memAddress(pushConstantData) + PUSH_CONSTANT_SIZE, MATRICES_UNIFORM_BUFFER_SIZE);
+        matricesData = memByteBuffer(memAddress(pDynamicOffsets) + 2 * INT32_SIZEOF, MATRICES_UNIFORM_BUFFER_SIZE);
         matricesDataAddress = memAddress(matricesData);
     }
 

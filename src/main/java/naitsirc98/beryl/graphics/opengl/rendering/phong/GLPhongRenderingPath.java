@@ -1,8 +1,9 @@
-package naitsirc98.beryl.graphics.opengl.rendering;
+package naitsirc98.beryl.graphics.opengl.rendering.phong;
 
 import naitsirc98.beryl.core.BerylFiles;
 import naitsirc98.beryl.graphics.opengl.GLMapper;
 import naitsirc98.beryl.graphics.opengl.buffers.GLUniformBuffer;
+import naitsirc98.beryl.graphics.opengl.buffers.GLVertexBuffer;
 import naitsirc98.beryl.graphics.opengl.shaders.GLShader;
 import naitsirc98.beryl.graphics.opengl.shaders.GLShaderProgram;
 import naitsirc98.beryl.graphics.opengl.vertex.GLVertexData;
@@ -16,6 +17,7 @@ import naitsirc98.beryl.scenes.Scene;
 import naitsirc98.beryl.scenes.SceneEnvironment;
 import naitsirc98.beryl.scenes.components.camera.Camera;
 import naitsirc98.beryl.scenes.components.meshes.MeshView;
+import naitsirc98.beryl.scenes.components.meshes.SceneMeshInfo;
 import naitsirc98.beryl.util.Color;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
@@ -25,12 +27,16 @@ import java.nio.ByteBuffer;
 import java.nio.file.Path;
 import java.util.List;
 
+import static java.util.stream.IntStream.range;
 import static naitsirc98.beryl.graphics.Graphics.opengl;
 import static naitsirc98.beryl.graphics.ShaderStage.FRAGMENT_STAGE;
 import static naitsirc98.beryl.graphics.ShaderStage.VERTEX_STAGE;
+import static naitsirc98.beryl.meshes.vertices.VertexAttribute.MATRIX4F;
 import static naitsirc98.beryl.util.types.DataType.FLOAT32_SIZEOF;
 import static naitsirc98.beryl.util.types.DataType.INT32_SIZEOF;
 import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL31.glDrawArraysInstanced;
+import static org.lwjgl.opengl.GL31.glDrawElementsInstanced;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.*;
 import static org.lwjgl.system.libc.LibCString.nmemcpy;
@@ -48,6 +54,10 @@ public class GLPhongRenderingPath extends RenderingPath {
     private static final int MATRICES_UNIFORM_BUFFER_NORMAL_MATRIX_OFFSET = 32 * FLOAT32_SIZEOF;
     private static final int MATRICES_UNIFORM_BUFFER_CAMERA_POSITION_OFFSET = 48 * FLOAT32_SIZEOF;
 
+    private static final int INSTANCED_MATRICES_UNIFORM_BUFFER_SIZE = (16 + 4) * FLOAT32_SIZEOF;
+    private static final int INSTANCED_MATRICES_UNIFORM_BUFFER_PROJECTION_VIEW_MATRIX_OFFSET = 0;
+    private static final int INSTANCED_MATRICES_UNIFORM_BUFFER_CAMERA_POSITION_OFFSET = 16 * FLOAT32_SIZEOF;
+
     private static final int MATERIAL_UNIFORM_BUFFER_SIZE = PhongMaterial.SIZEOF;
     private static final String MATERIAL_UNIFORM_BUFFER_NAME = "MaterialUniformBuffer";
 
@@ -61,6 +71,8 @@ public class GLPhongRenderingPath extends RenderingPath {
     private static final int AMBIENT_COLOR_OFFSET = SPOT_LIGHTS_OFFSET + Light.SIZEOF * MAX_SPOT_LIGHTS;
     private static final int POINT_LIGHTS_COUNT_OFFSET = AMBIENT_COLOR_OFFSET + FLOAT32_SIZEOF * 4;
     private static final int SPOT_LIGHTS_COUNT_OFFSET = POINT_LIGHTS_COUNT_OFFSET + INT32_SIZEOF;
+
+    private static final int INSTANCED_VERTEX_BUFFER_SIZE = MATRIX4F.sizeof();
 
     private static final String UNIFORM_AMBIENT_MAP_NAME = "u_AmbientMap";
     private static final String UNIFORM_DIFFUSE_MAP_NAME = "u_DiffuseMap";
@@ -84,14 +96,21 @@ public class GLPhongRenderingPath extends RenderingPath {
     }
 
     private GLShaderProgram shader;
+    private GLShaderProgram instancedShader;
 
     private GLUniformBuffer matricesUniformBuffer;
+    private GLUniformBuffer instancedMatricesUniformBuffer;
+
     private GLUniformBuffer materialUniformBuffer;
     private GLUniformBuffer lightsUniformBuffer;
 
     private long lightsUniformBufferData;
 
     private Matrix4f projectionViewMatrix;
+
+    private ByteBuffer instancedVertexBufferData;
+
+    private int lastSceneModifications;
 
     private GLPhongRenderingPath() {
 
@@ -105,22 +124,38 @@ public class GLPhongRenderingPath extends RenderingPath {
                 .attach(new GLShader(FRAGMENT_STAGE).source(FRAGMENT_SHADER_PATH).compile())
                 .link();
 
-        matricesUniformBuffer = new GLUniformBuffer(MATRICES_UNIFORM_BUFFER_NAME, shader, 0);
+        instancedShader = new GLShaderProgram()
+                .attach(new GLShader(VERTEX_STAGE).source(BerylFiles.getPath("shaders/phong/phong_instanced.vert")))
+                .attach(new GLShader(FRAGMENT_STAGE).source(BerylFiles.getPath("shaders/phong/phong_instanced.frag")))
+                .link();
+
+        matricesUniformBuffer = new GLUniformBuffer();
+        matricesUniformBuffer.set(MATRICES_UNIFORM_BUFFER_NAME, shader, 0);
         matricesUniformBuffer.allocate(MATRICES_UNIFORM_BUFFER_SIZE);
 
-        materialUniformBuffer = new GLUniformBuffer(MATERIAL_UNIFORM_BUFFER_NAME, shader, 1);
+        instancedMatricesUniformBuffer = new GLUniformBuffer();
+        instancedMatricesUniformBuffer.set(MATRICES_UNIFORM_BUFFER_NAME, instancedShader, 0);
+        instancedMatricesUniformBuffer.allocate(INSTANCED_MATRICES_UNIFORM_BUFFER_SIZE);
+
+        materialUniformBuffer = new GLUniformBuffer();
+        materialUniformBuffer.set(MATERIAL_UNIFORM_BUFFER_NAME, shader, 1).set(MATERIAL_UNIFORM_BUFFER_NAME, instancedShader, 1);
         materialUniformBuffer.allocate(MATERIAL_UNIFORM_BUFFER_SIZE);
 
-        lightsUniformBuffer = new GLUniformBuffer(LIGHTS_UNIFORM_BUFFER_NAME, shader, 2);
+        lightsUniformBuffer = new GLUniformBuffer();
+        lightsUniformBuffer.set(LIGHTS_UNIFORM_BUFFER_NAME, shader, 2).set(LIGHTS_UNIFORM_BUFFER_NAME, instancedShader, 2);
         lightsUniformBuffer.allocate(LIGHTS_UNIFORM_BUFFER_SIZE);
 
         lightsUniformBufferData = lightsUniformBuffer.mapMemory(0).get(0);
 
         projectionViewMatrix = new Matrix4f();
+
+        instancedVertexBufferData = memAlloc(INSTANCED_VERTEX_BUFFER_SIZE);
     }
 
     @Override
     protected void terminate() {
+
+        memFree(instancedVertexBufferData);
 
         shader.release();
 
@@ -128,6 +163,7 @@ public class GLPhongRenderingPath extends RenderingPath {
         lightsUniformBufferData = NULL;
 
         matricesUniformBuffer.release();
+        instancedMatricesUniformBuffer.release();
         materialUniformBuffer.release();
         lightsUniformBuffer.release();
     }
@@ -155,23 +191,120 @@ public class GLPhongRenderingPath extends RenderingPath {
         glClearColor(clearColor.red(), clearColor.green(), clearColor.blue(), clearColor.alpha());
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         // glEnable(GL_CULL_FACE);
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+        renderInstancedMeshes(camera, scene);
+
+        renderNonInstancedMeshes(camera, scene);
+    }
+
+    private void renderInstancedMeshes(Camera camera, Scene scene) {
+
+        final SceneMeshInfo meshInfo = scene.meshInfo();
+        final GLMapper mapper = opengl().mapper();
+
+        instancedShader.bind();
+
+        instancedMatricesUniformBuffer.bind(instancedShader);
+
+        materialUniformBuffer.bind(instancedShader);
+
+        try(MemoryStack stack = stackPush()) {
+
+            lightsUniformBuffer.bind(instancedShader);
+            setLightsUniformBuffer(scene.environment(), stack);
+
+            ByteBuffer materialBufferData = stack.malloc(PhongMaterial.SIZEOF);
+
+            final ByteBuffer matricesBuffer = stack.malloc(INSTANCED_MATRICES_UNIFORM_BUFFER_SIZE);
+
+            camera.projectionViewMatrix().get(matricesBuffer);
+            camera.transform().position().get(INSTANCED_MATRICES_UNIFORM_BUFFER_CAMERA_POSITION_OFFSET, matricesBuffer);
+
+            instancedMatricesUniformBuffer.update(0, matricesBuffer);
+
+            for(Mesh mesh : meshInfo.meshes()) {
+
+                List<MeshView> meshViews = meshInfo.instancesOf(mesh);
+
+                if(meshViews.size() == 1 || !mesh.vertexData().layout().instanced()) {
+                    continue;
+                }
+
+                GLVertexData vertexData = mesh.vertexData();
+
+                updateInstancedData(vertexData, meshViews);
+
+                vertexData.bind();
+
+                final PhongMaterial material = mesh.material();
+
+                setMaterialUniforms(instancedShader, material, materialBufferData);
+
+                if (vertexData.indexCount() > 0) {
+                    glDrawElementsInstanced(mapper.mapToAPI(vertexData.topology()), vertexData.indexCount(), GL_UNSIGNED_INT, NULL, meshViews.size());
+                } else {
+                    glDrawArraysInstanced(mapper.mapToAPI(vertexData.topology()), vertexData.firstVertex(), vertexData.vertexCount(), meshViews.size());
+                }
+            }
+        }
+    }
+
+    private void updateInstancedData(GLVertexData vertexData, List<MeshView> meshViews) {
+
+        GLVertexBuffer instancedVertexBuffer = vertexData.vertexBuffer(1);
+
+        final int minSize = INSTANCED_VERTEX_BUFFER_SIZE * meshViews.size();
+
+        long size = instancedVertexBuffer.size();
+
+        if(size < minSize) {
+            instancedVertexBuffer.allocateMutable(minSize);
+        }
+
+        if(instancedVertexBufferData.capacity() < minSize) {
+            instancedVertexBufferData = memRealloc(instancedVertexBufferData, minSize);
+        }
+
+        instancedVertexBufferData.limit(minSize);
+
+        range(0, meshViews.size()).parallel().forEach(instanceID -> {
+
+            MeshView meshView = meshViews.get(instanceID);
+
+            final int offset = instanceID * INSTANCED_VERTEX_BUFFER_SIZE;
+
+            meshView.modelMatrix().get(offset, instancedVertexBufferData);
+            // meshView.normalMatrix().get(offset + MATRIX4F.sizeof(), buffer);
+        });
+
+        instancedVertexBuffer.update(0, instancedVertexBufferData);
+
+        glFlush();
+        glFinish();
+
+        instancedVertexBufferData.limit(instancedVertexBufferData.capacity());
+    }
+
+    private void renderNonInstancedMeshes(Camera camera, Scene scene) {
 
         final GLShaderProgram shader = this.shader;
         final Matrix4fc projectionView = camera.projectionViewMatrix();
         final Matrix4f mvp = projectionViewMatrix;
         final GLUniformBuffer matricesUniformBuffer = this.matricesUniformBuffer;
-        final List<MeshView> meshViews = scene.meshInfo().meshViews();
+        final SceneMeshInfo meshInfo = scene.meshInfo();
         final GLMapper mapper = opengl().mapper();
 
         shader.bind();
 
-        matricesUniformBuffer.bind();
+        matricesUniformBuffer.bind(shader);
 
-        materialUniformBuffer.bind();
+        materialUniformBuffer.bind(shader);
 
         try(MemoryStack stack = stackPush()) {
 
-            lightsUniformBuffer.bind();
+            lightsUniformBuffer.bind(shader);
             setLightsUniformBuffer(scene.environment(), stack);
 
             ByteBuffer materialBufferData = stack.malloc(PhongMaterial.SIZEOF);
@@ -181,33 +314,37 @@ public class GLPhongRenderingPath extends RenderingPath {
             matricesUniformBuffer.update(MATRICES_UNIFORM_BUFFER_CAMERA_POSITION_OFFSET,
                     camera.transform().position().get(stack.malloc(4 * FLOAT32_SIZEOF)));
 
-            for(MeshView meshView : meshViews) {
+            for(Mesh mesh : meshInfo.meshes()) {
 
-                projectionView.mul(meshView.modelMatrix(), mvp).get(MATRICES_UNIFORM_BUFFER_MVP_OFFSET, matricesBuffer);
-                meshView.modelMatrix().get(MATRICES_UNIFORM_BUFFER_MODEL_MATRIX_OFFSET, matricesBuffer);
-                meshView.normalMatrix().get(MATRICES_UNIFORM_BUFFER_NORMAL_MATRIX_OFFSET, matricesBuffer);
+                List<MeshView> meshViews = meshInfo.instancesOf(mesh);
 
-                matricesUniformBuffer.update(0, matricesBuffer);
+                if(mesh.vertexData().instanced()) {
+                    continue;
+                }
 
-                for(Mesh mesh : meshView) {
+                for(MeshView meshView : meshViews) {
+
+                    projectionView.mul(meshView.modelMatrix(), mvp).get(MATRICES_UNIFORM_BUFFER_MVP_OFFSET, matricesBuffer);
+                    meshView.modelMatrix().get(MATRICES_UNIFORM_BUFFER_MODEL_MATRIX_OFFSET, matricesBuffer);
+                    meshView.normalMatrix().get(MATRICES_UNIFORM_BUFFER_NORMAL_MATRIX_OFFSET, matricesBuffer);
+
+                    matricesUniformBuffer.update(0, matricesBuffer);
 
                     final GLVertexData vertexData = mesh.vertexData();
-                    final PhongMaterial material = meshView.material(mesh);
+                    final PhongMaterial material = mesh.material();
 
                     vertexData.bind();
 
                     setMaterialUniforms(shader, material, materialBufferData);
 
-                    if(vertexData.indexCount() > 0) {
+                    if (vertexData.indexCount() > 0) {
                         glDrawElements(mapper.mapToAPI(vertexData.topology()), vertexData.indexCount(), GL_UNSIGNED_INT, NULL);
                     } else {
                         glDrawArrays(mapper.mapToAPI(vertexData.topology()), vertexData.firstVertex(), vertexData.vertexCount());
                     }
 
                 }
-
             }
-
         }
     }
 

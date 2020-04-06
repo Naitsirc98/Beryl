@@ -37,6 +37,18 @@ public class VulkanGraphicsFactory implements GraphicsFactory {
     }
 
     @Override
+    public Texture2D newTexture2D(String imagePath, PixelFormat pixelFormat) {
+
+        Texture2D texture = newTexture2D();
+
+        try(Image image = ImageFactory.newBlankImage(PixelFormat.RGBA)) {
+            texture.pixels(1, image);
+        }
+
+        return texture;
+    }
+
+    @Override
     public void release() {
         if(blankTexture2D != null) {
             blankTexture2D.release();

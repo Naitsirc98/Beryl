@@ -158,6 +158,8 @@ public final class Beryl {
 
         int updates = 0;
 
+        boolean wasUpdated = false;
+
         while(updates < UPDATES_PER_SECOND && updateDelay >= IDEAL_FRAME_DELAY) {
 
             eventManager.processEvents();
@@ -168,9 +170,15 @@ public final class Beryl {
 
             application.onUpdate();
 
+            wasUpdated = true;
+
             updateDelay -= IDEAL_FRAME_DELAY;
             ++updatesPerSecond;
             ++updates;
+        }
+
+        if(wasUpdated) {
+            sceneManager.endUpdate();
         }
     }
 

@@ -2,21 +2,21 @@ package naitsirc98.beryl.meshes.vertices;
 
 import naitsirc98.beryl.util.types.ByteSize;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.stream.Stream;
 
 public final class VertexAttributeList implements ByteSize, Iterable<VertexAttribute> {
 
-    // TODO: This should be Map<Integer, VertexAttribute> (Location, Attribute) instead
-    private final List<VertexAttribute> attributes;
+    private final Map<Integer, VertexAttribute> attributes;
     private int offset;
     private int stride;
-    private boolean instancing;
+    private boolean instanced;
 
     public VertexAttributeList() {
-        attributes = new ArrayList<>(3);
+        attributes = new LinkedHashMap<>();
     }
 
     public int stride() {
@@ -37,23 +37,23 @@ public final class VertexAttributeList implements ByteSize, Iterable<VertexAttri
 
     @Override
     public int sizeof() {
-        return attributes.stream().mapToInt(VertexAttribute::sizeof).sum();
+        return stride;
     }
 
-    public boolean instancing() {
-        return instancing;
+    public boolean instanced() {
+        return instanced;
     }
 
-    void instancing(boolean instancing) {
-        this.instancing = instancing;
+    void instanced(boolean instanced) {
+        this.instanced = instanced;
     }
 
     public VertexAttribute get(int location) {
         return attributes.get(location);
     }
 
-    void add(VertexAttribute attribute) {
-        attributes.add(attribute);
+    void put(int location, VertexAttribute attribute) {
+        attributes.put(location, attribute);
         stride += attribute.sizeof();
     }
 
@@ -63,29 +63,29 @@ public final class VertexAttributeList implements ByteSize, Iterable<VertexAttri
     }
 
     public Stream<VertexAttribute> attributes() {
-        return attributes.stream();
+        return attributes.values().stream();
     }
 
     public VertexAttributeList copy() {
 
         VertexAttributeList copy = new VertexAttributeList();
 
-        copy.attributes.addAll(attributes);
+        copy.attributes.putAll(attributes);
         copy.stride = stride;
-        copy.instancing = instancing;
+        copy.instanced = instanced;
 
         return copy;
     }
 
     public final class VertexAttributeIterator implements Iterator<VertexAttribute> {
 
-        private final Iterator<VertexAttribute> iterator;
+        private final Iterator<Map.Entry<Integer, VertexAttribute>> iterator;
         private VertexAttribute previous;
         private int location;
         private int offset;
 
         private VertexAttributeIterator() {
-            iterator = attributes.iterator();
+            iterator = attributes.entrySet().iterator();
             offset = VertexAttributeList.this.offset;
         }
 
@@ -97,11 +97,13 @@ public final class VertexAttributeList implements ByteSize, Iterable<VertexAttri
         @Override
         public VertexAttribute next() {
 
-            VertexAttribute attribute = iterator.next();
+            Map.Entry<Integer, VertexAttribute> entry = iterator.next();
+
+            location = entry.getKey();
+            VertexAttribute attribute = entry.getValue();
 
             if(previous != null) {
                 offset += previous.sizeof();
-                ++location;
             }
 
             previous = attribute;
