@@ -18,7 +18,6 @@ import naitsirc98.beryl.meshes.Mesh;
 import naitsirc98.beryl.meshes.PrimitiveMeshes;
 import naitsirc98.beryl.scenes.Scene;
 import naitsirc98.beryl.scenes.components.camera.Camera;
-import naitsirc98.beryl.scenes.components.meshes.MeshView;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
@@ -119,7 +118,7 @@ public class GLCascadedShadowMaps extends RenderingPath {
 
     public void render(Camera camera, Scene scene) {
 
-        List<MeshView> meshes = scene.meshInfo().meshViews();
+        List<MeshInstance> meshes = scene.meshInfo().meshViews();
 
         DirectionalLight light = scene.environment().directionalLight();
 
@@ -135,7 +134,7 @@ public class GLCascadedShadowMaps extends RenderingPath {
         renderScene(light, camera, meshes, cascadeRanges);
     }
 
-    private void renderScene(DirectionalLight light, Camera camera, List<MeshView> meshes, float[] cascadeRanges) {
+    private void renderScene(DirectionalLight light, Camera camera, List<MeshInstance> meshes, float[] cascadeRanges) {
 
         // Render scene
         shader.bind();
@@ -182,13 +181,13 @@ public class GLCascadedShadowMaps extends RenderingPath {
 
             Matrix4f mvp = new Matrix4f();
 
-            for(MeshView meshView : meshes) {
+            for(MeshInstance meshInstance : meshes) {
 
-                for(Mesh mesh : meshView) {
+                for(Mesh mesh : meshInstance) {
 
-                    shader.uniformMatrix4f("u_Model", false, meshView.modelMatrix().get(buffer));
-                    shader.uniformMatrix4f("u_NormalMatrix", false, meshView.normalMatrix().get(buffer));
-                    shader.uniformMatrix4f("u_MVP", false, camera.projectionViewMatrix().mul(meshView.modelMatrix(), mvp).get(buffer));
+                    shader.uniformMatrix4f("u_Model", false, meshInstance.modelMatrix().get(buffer));
+                    shader.uniformMatrix4f("u_NormalMatrix", false, meshInstance.normalMatrix().get(buffer));
+                    shader.uniformMatrix4f("u_MVP", false, camera.projectionViewMatrix().mul(meshInstance.modelMatrix(), mvp).get(buffer));
 
                     GLVertexData vertexData = mesh.vertexData();
 
@@ -207,7 +206,7 @@ public class GLCascadedShadowMaps extends RenderingPath {
         shader.unbind();
     }
 
-    private void renderDepth(DirectionalLight light, Camera camera, List<MeshView> meshes, float[] cascadeRanges) {
+    private void renderDepth(DirectionalLight light, Camera camera, List<MeshInstance> meshes, float[] cascadeRanges) {
 
         depthShader.bind();
 
@@ -240,16 +239,16 @@ public class GLCascadedShadowMaps extends RenderingPath {
 
                 shadowCascade.update(camera, camera.nearPlane(), camera.farPlane(), light);
 
-                for(MeshView meshView : meshes) {
+                for(MeshInstance meshInstance : meshes) {
 
-                    if(!meshView.castShadows()) {
+                    if(!meshInstance.castShadows()) {
                         continue;
                     }
 
                     shadowCascade.lightProjectionMatrix().mul(shadowCascade.lightViewMatrix(), depthMVP);
-                    depthMVP.mul(meshView.modelMatrix());
+                    depthMVP.mul(meshInstance.modelMatrix());
 
-                    for(Mesh mesh : meshView) {
+                    for(Mesh mesh : meshInstance) {
 
                         depthShader.uniformMatrix4f("u_DepthMVP", false, depthMVP.get(buffer));
 

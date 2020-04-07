@@ -17,7 +17,6 @@ import naitsirc98.beryl.meshes.Mesh;
 import naitsirc98.beryl.scenes.Scene;
 import naitsirc98.beryl.scenes.SceneEnvironment;
 import naitsirc98.beryl.scenes.components.camera.Camera;
-import naitsirc98.beryl.scenes.components.meshes.MeshView;
 import naitsirc98.beryl.scenes.components.meshes.SceneMeshInfo;
 import naitsirc98.beryl.util.Color;
 import org.joml.Matrix4f;
@@ -218,7 +217,7 @@ public class GLPhongRenderingPath extends RenderingPath {
                     continue;
                 }
 
-                final List<MeshView> meshViews = meshInfo.instancesOf(mesh);
+                final List<MeshInstance> meshInstances = meshInfo.instancesOf(mesh);
 
                 GLVertexData vertexData = mesh.vertexData();
 
@@ -229,9 +228,9 @@ public class GLPhongRenderingPath extends RenderingPath {
                 vertexData.bind();
 
                 if (vertexData.indexCount() > 0) {
-                    glDrawElementsInstanced(mapper.mapToAPI(vertexData.topology()), vertexData.indexCount(), GL_UNSIGNED_INT, NULL, meshViews.size());
+                    glDrawElementsInstanced(mapper.mapToAPI(vertexData.topology()), vertexData.indexCount(), GL_UNSIGNED_INT, NULL, meshInstances.size());
                 } else {
-                    glDrawArraysInstanced(mapper.mapToAPI(vertexData.topology()), vertexData.firstVertex(), vertexData.vertexCount(), meshViews.size());
+                    glDrawArraysInstanced(mapper.mapToAPI(vertexData.topology()), vertexData.firstVertex(), vertexData.vertexCount(), meshInstances.size());
                 }
             }
         }
@@ -263,17 +262,17 @@ public class GLPhongRenderingPath extends RenderingPath {
 
             for(Mesh mesh : meshInfo.meshes()) {
 
-                List<MeshView> meshViews = meshInfo.instancesOf(mesh);
+                List<MeshInstance> meshInstances = meshInfo.instancesOf(mesh);
 
                 if(mesh.vertexData().instanced()) {
                     continue;
                 }
 
-                for(MeshView meshView : meshViews) {
+                for(MeshInstance meshInstance : meshInstances) {
 
-                    projectionView.mul(meshView.modelMatrix(), mvp).get(MATRICES_UNIFORM_BUFFER_MVP_OFFSET, matricesBuffer);
-                    meshView.modelMatrix().get(MATRICES_UNIFORM_BUFFER_MODEL_MATRIX_OFFSET, matricesBuffer);
-                    meshView.normalMatrix().get(MATRICES_UNIFORM_BUFFER_NORMAL_MATRIX_OFFSET, matricesBuffer);
+                    projectionView.mul(meshInstance.modelMatrix(), mvp).get(MATRICES_UNIFORM_BUFFER_MVP_OFFSET, matricesBuffer);
+                    meshInstance.modelMatrix().get(MATRICES_UNIFORM_BUFFER_MODEL_MATRIX_OFFSET, matricesBuffer);
+                    meshInstance.normalMatrix().get(MATRICES_UNIFORM_BUFFER_NORMAL_MATRIX_OFFSET, matricesBuffer);
 
                     matricesUniformBuffer.update(0, matricesBuffer);
 

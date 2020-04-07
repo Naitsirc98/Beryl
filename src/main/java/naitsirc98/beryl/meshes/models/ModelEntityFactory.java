@@ -1,6 +1,5 @@
 package naitsirc98.beryl.meshes.models;
 
-import naitsirc98.beryl.graphics.rendering.PrimitiveTopology;
 import naitsirc98.beryl.materials.Material;
 import naitsirc98.beryl.materials.PhongMaterial;
 import naitsirc98.beryl.meshes.Mesh;
@@ -9,7 +8,6 @@ import naitsirc98.beryl.meshes.vertices.VertexData;
 import naitsirc98.beryl.scenes.Entity;
 import naitsirc98.beryl.scenes.Scene;
 import naitsirc98.beryl.scenes.components.math.Transform;
-import naitsirc98.beryl.scenes.components.meshes.MeshView;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -65,10 +63,10 @@ public class ModelEntityFactory {
             return;
         }
 
-        MeshView meshView = entity.add(MeshView.class);
+        MeshInstance meshInstance = entity.add(MeshInstance.class);
 
         for(int i = 0;i < node.numMeshes();i++) {
-            meshView.addMesh(getMesh(node.mesh(i)));
+            meshInstance.addMesh(getMesh(node.mesh(i)));
         }
     }
 

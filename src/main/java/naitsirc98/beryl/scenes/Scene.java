@@ -7,8 +7,6 @@ import naitsirc98.beryl.scenes.components.camera.Camera;
 import naitsirc98.beryl.scenes.components.camera.CameraManager;
 import naitsirc98.beryl.scenes.components.math.Transform;
 import naitsirc98.beryl.scenes.components.math.TransformManager;
-import naitsirc98.beryl.scenes.components.meshes.MeshView;
-import naitsirc98.beryl.scenes.components.meshes.MeshViewManager;
 import naitsirc98.beryl.scenes.components.meshes.SceneMeshInfo;
 
 import java.util.ArrayDeque;
@@ -35,7 +33,7 @@ public final class Scene {
     private final CameraManager cameras;
     private final TransformManager transforms;
     private final BehaviourManager behaviours;
-    private final MeshViewManager meshes;
+    private final MeshInstanceManager meshes;
 
     private final Map<Class<? extends Component>, ComponentManager<?>> componentManagers;
     // ===
@@ -56,7 +54,7 @@ public final class Scene {
         cameras = newInstance(CameraManager.class, this);
         transforms = newInstance(TransformManager.class, this);
         behaviours = newInstance(BehaviourManager.class, this);
-        meshes = newInstance(MeshViewManager.class, this);
+        meshes = newInstance(MeshInstanceManager.class, this);
 
         componentManagers = createComponentManagersMap();
         // ===
@@ -291,7 +289,7 @@ public final class Scene {
         components.put(AbstractBehaviour.class, behaviours);
         components.put(Transform.class, transforms);
         components.put(Camera.class, cameras);
-        components.put(MeshView.class, meshes);
+        components.put(MeshInstance.class, meshes);
 
         return components;
     }

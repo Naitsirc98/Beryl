@@ -16,7 +16,6 @@ import naitsirc98.beryl.meshes.vertices.VertexLayout;
 import naitsirc98.beryl.core.BerylFiles;
 import naitsirc98.beryl.scenes.Scene;
 import naitsirc98.beryl.scenes.components.camera.Camera;
-import naitsirc98.beryl.scenes.components.meshes.MeshView;
 import org.joml.Matrix4f;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
@@ -63,7 +62,7 @@ public final class VulkanSimpleRenderingPath extends RenderingPath
     private VulkanSwapchain swapchain;
     private VulkanCommandBufferThreadExecutor<VulkanSimpleThreadData> commandBufferThreadExecutor;
     private Matrix4f projectionViewMatrix;
-    private List<MeshView> meshViews;
+    private List<MeshInstance> meshInstances;
     private VkCommandBufferInheritanceInfo inheritanceInfo;
     private VkCommandBufferBeginInfo beginInfo;
 
@@ -91,13 +90,13 @@ public final class VulkanSimpleRenderingPath extends RenderingPath
     @Override
     public void render(Camera camera, Scene scene) {
 
-        final List<MeshView> meshViews = scene.meshInfo().meshViews();
+        final List<MeshInstance> meshInstances = scene.meshInfo().meshViews();
 
-        if(meshViews.size() == 0) {
+        if(meshInstances.size() == 0) {
             return;
         }
 
-        this.meshViews = meshViews;
+        this.meshInstances = meshInstances;
 
         projectionViewMatrix.set(camera.projectionViewMatrix());
 
@@ -111,12 +110,12 @@ public final class VulkanSimpleRenderingPath extends RenderingPath
 
             beginPrimaryCommandBuffer(primaryCommandBuffer);
 
-            commandBufferThreadExecutor.recordCommandBuffers(meshViews.size(), primaryCommandBuffer, this);
+            commandBufferThreadExecutor.recordCommandBuffers(meshInstances.size(), primaryCommandBuffer, this);
 
             endPrimaryCommandBuffer(primaryCommandBuffer);
         }
 
-        this.meshViews = null;
+        this.meshInstances = null;
         inheritanceInfo = null;
         beginInfo = null;
     }
@@ -130,9 +129,9 @@ public final class VulkanSimpleRenderingPath extends RenderingPath
     @Override
     public void recordCommandBuffer(int index, VkCommandBuffer commandBuffer, VulkanSimpleThreadData threadData) {
 
-        final MeshView meshView = meshViews.get(index);
+        final MeshInstance meshInstance = meshInstances.get(index);
 
-        projectionViewMatrix.mul(meshView.modelMatrix(), threadData.matrix).get(threadData.pushConstantData);
+        projectionViewMatrix.mul(meshInstance.modelMatrix(), threadData.matrix).get(threadData.pushConstantData);
 
         nvkCmdPushConstants(
                 commandBuffer,
@@ -142,7 +141,7 @@ public final class VulkanSimpleRenderingPath extends RenderingPath
                 VulkanSimpleThreadData.PUSH_CONSTANT_DATA_SIZE,
                 threadData.pushConstantDataAddress);
 
-        final VulkanVertexData vertexData = meshView.mesh().vertexData();
+        final VulkanVertexData vertexData = meshInstance.mesh().vertexData();
 
         if(threadData.lastVertexData != vertexData) {
             vertexData.bind(commandBuffer);

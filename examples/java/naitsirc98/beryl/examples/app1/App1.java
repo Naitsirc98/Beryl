@@ -26,7 +26,6 @@ import naitsirc98.beryl.scenes.Scene;
 import naitsirc98.beryl.scenes.components.behaviours.UpdateMutableBehaviour;
 import naitsirc98.beryl.scenes.components.camera.Camera;
 import naitsirc98.beryl.scenes.components.math.Transform;
-import naitsirc98.beryl.scenes.components.meshes.MeshView;
 import naitsirc98.beryl.util.Color;
 import org.joml.Vector3f;
 
@@ -95,7 +94,7 @@ public class App1 extends BerylApplication {
 
         Entity floor = scene.newEntity("floor");
         floor.add(Transform.class).position(0, 0, 0).scale(100).rotateX(radians(90));
-        floor.add(MeshView.class).mesh(quadMesh);
+        floor.add(MeshInstance.class).mesh(quadMesh);
 
         ModelEntityFactory treeFactory = new ModelEntityFactory(treeModel).materialsFunction(this::treeMaterialFunction);
 
@@ -202,7 +201,7 @@ public class App1 extends BerylApplication {
 
             Entity model = entity.scene().newEntity();
             model.add(Transform.class).scale(0.25f).position(RAND.nextInt(500), -RAND.nextInt(500), -RAND.nextInt(500));
-            model.add(MeshView.class).mesh(new Mesh(mesh.vertexData(), material));
+            model.add(MeshInstance.class).mesh(new Mesh(mesh.vertexData(), material));
             model.add(UpdateMutableBehaviour.class).onUpdate(thisBehaviour -> {
                 Transform transform = thisBehaviour.get(Transform.class);
                 transform.rotateY(radians(angle));

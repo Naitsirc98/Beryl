@@ -8,7 +8,6 @@ import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.core.BerylFiles;
 import naitsirc98.beryl.scenes.Scene;
 import naitsirc98.beryl.scenes.components.camera.Camera;
-import naitsirc98.beryl.scenes.components.meshes.MeshView;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
 import org.lwjgl.system.MemoryStack;
@@ -86,16 +85,16 @@ public final class GLSimpleRenderingPath extends RenderingPath {
 
             FloatBuffer mvpData = stack.mallocFloat(16);
 
-            for(MeshView meshView : scene.meshInfo().meshViews()) {
+            for(MeshInstance meshInstance : scene.meshInfo().meshViews()) {
 
-                GLVertexData vertexData = meshView.mesh().vertexData();
+                GLVertexData vertexData = meshInstance.mesh().vertexData();
 
                 if(lastVertexData != vertexData) {
                     vertexData.bind();
                     lastVertexData = vertexData;
                 }
 
-                glUniformMatrix4fv(mvpLocation, false, projectionView.mul(meshView.modelMatrix(), mvp).get(mvpData));
+                glUniformMatrix4fv(mvpLocation, false, projectionView.mul(meshInstance.modelMatrix(), mvp).get(mvpData));
 
                 glDrawArrays(GL_TRIANGLES, vertexData.firstVertex(), vertexData.vertexCount());
             }

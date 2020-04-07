@@ -29,7 +29,6 @@ import naitsirc98.beryl.meshes.vertices.VertexLayout;
 import naitsirc98.beryl.scenes.Scene;
 import naitsirc98.beryl.scenes.SceneEnvironment;
 import naitsirc98.beryl.scenes.components.camera.Camera;
-import naitsirc98.beryl.scenes.components.meshes.MeshView;
 import naitsirc98.beryl.util.Color;
 import org.joml.Matrix4f;
 import org.lwjgl.system.MemoryStack;
@@ -129,7 +128,7 @@ public final class VulkanPhongRenderingPath extends RenderingPath
     private Map<Material, MaterialDescriptorInfo> materialDescriptorInfos;
 
     private Matrix4f projectionViewMatrix;
-    private List<MeshView> meshViews;
+    private List<MeshInstance> meshInstances;
     private Camera camera;
     private int[] sceneModifications;
 
@@ -245,14 +244,14 @@ public final class VulkanPhongRenderingPath extends RenderingPath
     @Override
     public void render(Camera camera, Scene scene) {
 
-        final List<MeshView> meshViews = scene.meshInfo().meshViews();
+        final List<MeshInstance> meshInstances = scene.meshInfo().meshViews();
 
-        if(meshViews.size() == 0) {
+        if(meshInstances.size() == 0) {
             return;
         }
 
         this.camera = camera;
-        this.meshViews = meshViews;
+        this.meshInstances = meshInstances;
 
         projectionViewMatrix.set(camera.projectionViewMatrix());
 
@@ -260,7 +259,7 @@ public final class VulkanPhongRenderingPath extends RenderingPath
 
             updateLightsUniformBuffer(scene.environment(), stack);
 
-            updateMatricesUniformBuffer(meshViews);
+            updateMatricesUniformBuffer(meshInstances);
 
             updateMaterialInformation(scene.meshInfo().materials(), stack);
 
@@ -274,7 +273,7 @@ public final class VulkanPhongRenderingPath extends RenderingPath
 
                 beginPrimaryCommandBuffer(primaryCommandBuffer);
 
-                commandBuffersExecutor.recordCommandBuffers(meshViews.size(), primaryCommandBuffer, this);
+                commandBuffersExecutor.recordCommandBuffers(meshInstances.size(), primaryCommandBuffer, this);
 
                 endPrimaryCommandBuffer(primaryCommandBuffer);
 
@@ -282,20 +281,20 @@ public final class VulkanPhongRenderingPath extends RenderingPath
 
             } else {
 
-                commandBuffersExecutor.updateUniformsOnly(meshViews.size(), this::updateMatricesData);
+                commandBuffersExecutor.updateUniformsOnly(meshInstances.size(), this::updateMatricesData);
             }
 
             VulkanRenderer.get().submit(primaryCommandBuffer);
 
             this.camera = null;
-            this.meshViews = null;
+            this.meshInstances = null;
             inheritanceInfo = null;
             beginInfo = null;
         }
     }
 
     private void updateMatricesData(int index, VulkanThreadData threadData) {
-        updateMatricesData(index, meshViews.get(index), camera, (VulkanPhongThreadData) threadData);
+        updateMatricesData(index, meshInstances.get(index), camera, (VulkanPhongThreadData) threadData);
     }
 
     @Override
@@ -309,11 +308,11 @@ public final class VulkanPhongRenderingPath extends RenderingPath
     @Override
     public void recordCommandBuffer(int index, VkCommandBuffer commandBuffer, VulkanPhongThreadData threadData) {
 
-        final MeshView meshView = meshViews.get(index);
+        final MeshInstance meshInstance = meshInstances.get(index);
 
-        updateMatricesData(index, meshView, camera, threadData);
+        updateMatricesData(index, meshInstance, camera, threadData);
 
-        for(Mesh mesh : meshView) {
+        for(Mesh mesh : meshInstance) {
 
             final VulkanVertexData vertexData = mesh.vertexData();
             final PhongMaterial material = mesh.material();
@@ -376,9 +375,9 @@ public final class VulkanPhongRenderingPath extends RenderingPath
         vkCall(vkEndCommandBuffer(commandBuffer));
     }
 
-    private void updateMatricesUniformBuffer(List<MeshView> meshViews) {
+    private void updateMatricesUniformBuffer(List<MeshInstance> meshInstances) {
 
-        if(matricesUniformBuffer.size() < meshViews.size() * MATRICES_UNIFORM_BUFFER_SIZE) {
+        if(matricesUniformBuffer.size() < meshInstances.size() * MATRICES_UNIFORM_BUFFER_SIZE) {
 
             if(matricesUniformBufferData != MemoryUtil.NULL) {
                 vmaFlushAllocation(allocator().handle(), matricesUniformBuffer.allocation(), 0, MATRICES_UNIFORM_BUFFER_SIZE);
@@ -386,21 +385,21 @@ public final class VulkanPhongRenderingPath extends RenderingPath
                 matricesUniformBufferData = MemoryUtil.NULL;
             }
 
-            reallocateMatricesUniformBuffer(meshViews.size());
+            reallocateMatricesUniformBuffer(meshInstances.size());
 
             matricesUniformBufferData = matricesUniformBuffer.mapMemory(0).get(0);
         }
     }
 
-    private void updateMatricesData(int index, MeshView meshView, Camera camera, VulkanPhongThreadData threadData) {
+    private void updateMatricesData(int index, MeshInstance meshInstance, Camera camera, VulkanPhongThreadData threadData) {
 
         final long offset = index * MATRICES_UNIFORM_BUFFER_SIZE;
 
         ByteBuffer buffer = threadData.matricesData;
 
-        projectionViewMatrix.mul(meshView.modelMatrix(), threadData.matrix).get(MATRICES_UNIFORM_BUFFER_MVP_OFFSET, buffer);
-        meshView.modelMatrix().get(MATRICES_UNIFORM_BUFFER_MODEL_MATRIX_OFFSET, buffer);
-        meshView.normalMatrix().get(MATRICES_UNIFORM_BUFFER_NORMAL_MATRIX_OFFSET, buffer);
+        projectionViewMatrix.mul(meshInstance.modelMatrix(), threadData.matrix).get(MATRICES_UNIFORM_BUFFER_MVP_OFFSET, buffer);
+        meshInstance.modelMatrix().get(MATRICES_UNIFORM_BUFFER_MODEL_MATRIX_OFFSET, buffer);
+        meshInstance.normalMatrix().get(MATRICES_UNIFORM_BUFFER_NORMAL_MATRIX_OFFSET, buffer);
         camera.transform().position().get(MATRICES_UNIFORM_BUFFER_CAMERA_POSITION_OFFSET, buffer);
 
         nmemcpy(matricesUniformBufferData + offset, memAddress(buffer), MATRICES_UNIFORM_BUFFER_SIZE);
