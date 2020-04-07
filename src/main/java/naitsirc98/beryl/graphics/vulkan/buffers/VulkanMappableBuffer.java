@@ -1,6 +1,6 @@
 package naitsirc98.beryl.graphics.vulkan.buffers;
 
-import naitsirc98.beryl.graphics.buffers.GraphicsCPUBuffer;
+import naitsirc98.beryl.graphics.buffers.GraphicsMappableBuffer;
 import naitsirc98.beryl.graphics.vulkan.memory.VmaBufferAllocation;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.util.vma.VmaAllocationCreateInfo;
@@ -17,9 +17,9 @@ import static org.lwjgl.system.libc.LibCString.nmemcpy;
 import static org.lwjgl.util.vma.Vma.vmaMapMemory;
 import static org.lwjgl.util.vma.Vma.vmaUnmapMemory;
 
-public abstract class VulkanCPUBuffer extends VulkanBuffer implements GraphicsCPUBuffer {
+public abstract class VulkanMappableBuffer extends VulkanBuffer implements GraphicsMappableBuffer {
 
-    public static void copy(VulkanCPUBuffer src, VulkanCPUBuffer dst, long size) {
+    public static void copy(VulkanMappableBuffer src, VulkanMappableBuffer dst, long size) {
         assertTrue(src.size() >= size);
 
         if(dst.size() < size) {
@@ -37,11 +37,11 @@ public abstract class VulkanCPUBuffer extends VulkanBuffer implements GraphicsCP
         src.unmapMemory();
     }
 
-    public VulkanCPUBuffer(VkBufferCreateInfo bufferCreateInfo, VmaAllocationCreateInfo allocationCreateInfo) {
+    public VulkanMappableBuffer(VkBufferCreateInfo bufferCreateInfo, VmaAllocationCreateInfo allocationCreateInfo) {
         super(bufferCreateInfo, allocationCreateInfo);
     }
 
-    public VulkanCPUBuffer(VmaBufferAllocation bufferAllocation) {
+    public VulkanMappableBuffer(VmaBufferAllocation bufferAllocation) {
         super(bufferAllocation);
     }
 

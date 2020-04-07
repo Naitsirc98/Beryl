@@ -7,7 +7,7 @@ import static org.lwjgl.util.vma.Vma.VMA_ALLOCATION_CREATE_MAPPED_BIT;
 import static org.lwjgl.util.vma.Vma.VMA_MEMORY_USAGE_CPU_TO_GPU;
 import static org.lwjgl.vulkan.VK10.*;
 
-public class VulkanUniformBuffer extends VulkanCPUBuffer {
+public class VulkanUniformBuffer extends VulkanMappableBuffer {
 
     public static VulkanUniformBuffer[] create(int count, long size) {
 

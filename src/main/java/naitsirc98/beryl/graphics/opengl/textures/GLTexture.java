@@ -4,6 +4,7 @@ import naitsirc98.beryl.graphics.opengl.GLObject;
 import naitsirc98.beryl.graphics.textures.Texture;
 import naitsirc98.beryl.resources.ManagedResource;
 
+import static org.lwjgl.opengl.ARBBindlessTexture.*;
 import static org.lwjgl.opengl.GL11.glDeleteTextures;
 import static org.lwjgl.opengl.GL45.glCreateTextures;
 import static org.lwjgl.opengl.GL45C.glBindTextureUnit;
@@ -21,6 +22,20 @@ public abstract class GLTexture extends ManagedResource implements GLObject, Tex
     @Override
     public int handle() {
         return handle;
+    }
+
+    public long handleARB() {
+        return glGetTextureSamplerHandleARB(handle, sampler.handle());
+    }
+
+    public long makeResident() {
+        final long handleARB = handleARB();
+        glMakeTextureHandleResidentARB(handleARB);
+        return handleARB;
+    }
+
+    public void makeNonResident() {
+        glMakeTextureHandleNonResidentARB(handleARB());
     }
 
     @Override

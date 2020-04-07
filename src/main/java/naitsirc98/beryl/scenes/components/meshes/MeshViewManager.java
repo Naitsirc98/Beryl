@@ -1,25 +1,89 @@
 package naitsirc98.beryl.scenes.components.meshes;
 
+import naitsirc98.beryl.graphics.opengl.buffers.GLVertexBuffer;
+import naitsirc98.beryl.graphics.opengl.vertex.GLVertexData;
 import naitsirc98.beryl.materials.Material;
+import naitsirc98.beryl.materials.PhongMaterial;
 import naitsirc98.beryl.meshes.Mesh;
 import naitsirc98.beryl.scenes.Scene;
 import naitsirc98.beryl.scenes.components.AbstractComponentManager;
 
+import java.nio.ByteBuffer;
 import java.util.*;
+
+import static java.util.stream.IntStream.range;
+import static naitsirc98.beryl.meshes.vertices.VertexAttribute.MATRIX4F;
+import static org.lwjgl.opengl.GL11.GL_UNSIGNED_INT;
+import static org.lwjgl.opengl.GL31.glDrawArraysInstanced;
+import static org.lwjgl.opengl.GL31.glDrawElementsInstanced;
+import static org.lwjgl.system.MemoryUtil.*;
 
 public final class MeshViewManager extends AbstractComponentManager<MeshView> implements SceneMeshInfo {
 
+    private static final int INSTANCED_VERTEX_BUFFER_SIZE = MATRIX4F.sizeof();
 
     private final List<Mesh> meshes;
     private final Map<Mesh, List<MeshView>> meshInstances;
     private final Map<Material, Integer> materials;
     private volatile int modifications;
+    private ByteBuffer instancedBuffer;
 
     private MeshViewManager(Scene scene) {
         super(scene);
         meshes = new ArrayList<>();
         meshInstances = new HashMap<>();
         materials = new HashMap<>();
+        instancedBuffer = memAlloc(0);
+    }
+
+    public void updateInstancedData() {
+
+        for(Mesh mesh : meshes) {
+
+            if(!mesh.vertexData().layout().instanced()) {
+                continue;
+            }
+
+            final List<MeshView> meshViews = instancesOf(mesh);
+
+            GLVertexData vertexData = mesh.vertexData();
+
+            updateInstancedData(vertexData, meshViews);
+        }
+
+    }
+
+    private void updateInstancedData(GLVertexData vertexData, List<MeshView> meshViews) {
+
+        GLVertexBuffer instancedVertexBuffer = vertexData.vertexBuffer(1);
+
+        final int minSize = INSTANCED_VERTEX_BUFFER_SIZE * meshViews.size();
+
+        long size = instancedVertexBuffer.size();
+
+        if(size < minSize) {
+            instancedVertexBuffer.allocateMutable(minSize);
+        }
+
+        if(instancedBuffer.capacity() < minSize) {
+            instancedBuffer = memRealloc(instancedBuffer, minSize);
+        }
+
+        instancedBuffer.limit(minSize);
+
+        range(0, meshViews.size()).parallel().forEach(instanceID -> {
+
+            MeshView meshView = meshViews.get(instanceID);
+
+            final int offset = instanceID * INSTANCED_VERTEX_BUFFER_SIZE;
+
+            meshView.modelMatrix().get(offset, instancedBuffer);
+            // meshView.normalMatrix().get(offset + MATRIX4F.sizeof(), buffer);
+        });
+
+        instancedVertexBuffer.update(0, instancedBuffer);
+
+        instancedBuffer.limit(instancedBuffer.capacity());
     }
 
     @Override

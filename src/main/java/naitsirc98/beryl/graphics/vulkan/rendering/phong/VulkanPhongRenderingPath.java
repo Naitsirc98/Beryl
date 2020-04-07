@@ -4,7 +4,7 @@ import naitsirc98.beryl.core.BerylFiles;
 import naitsirc98.beryl.graphics.Graphics;
 import naitsirc98.beryl.graphics.rendering.RenderingPath;
 import naitsirc98.beryl.graphics.vulkan.VulkanObject;
-import naitsirc98.beryl.graphics.vulkan.buffers.VulkanCPUBuffer;
+import naitsirc98.beryl.graphics.vulkan.buffers.VulkanMappableBuffer;
 import naitsirc98.beryl.graphics.vulkan.buffers.VulkanUniformBuffer;
 import naitsirc98.beryl.graphics.vulkan.commands.VulkanCommandBufferRecorder;
 import naitsirc98.beryl.graphics.vulkan.commands.VulkanCommandBufferThreadExecutor;
@@ -466,10 +466,10 @@ public final class VulkanPhongRenderingPath extends RenderingPath
 
         final long newSize = MATERIAL_UNIFORM_BUFFER_SIZE * newMaterials.size();
 
-        VulkanCPUBuffer oldMaterialUniformBuffer = materialUniformBuffer;
+        VulkanMappableBuffer oldMaterialUniformBuffer = materialUniformBuffer;
         materialUniformBuffer = new VulkanUniformBuffer(newSize);
 
-        VulkanCPUBuffer.copy(oldMaterialUniformBuffer, materialUniformBuffer, oldMaterialUniformBuffer.size());
+        VulkanMappableBuffer.copy(oldMaterialUniformBuffer, materialUniformBuffer, oldMaterialUniformBuffer.size());
 
         int descriptorSetIndex = materialDescriptorInfos.size();
 

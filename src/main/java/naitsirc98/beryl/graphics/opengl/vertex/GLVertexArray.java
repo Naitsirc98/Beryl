@@ -2,6 +2,7 @@ package naitsirc98.beryl.graphics.opengl.vertex;
 
 import naitsirc98.beryl.graphics.opengl.GLObject;
 import naitsirc98.beryl.graphics.opengl.buffers.GLBuffer;
+import naitsirc98.beryl.graphics.opengl.buffers.GLVertexBuffer;
 import naitsirc98.beryl.meshes.vertices.VertexAttribute;
 import naitsirc98.beryl.meshes.vertices.VertexAttributeList;
 import naitsirc98.beryl.meshes.vertices.VertexAttributeList.VertexAttributeIterator;
@@ -25,11 +26,19 @@ public final class GLVertexArray implements GLObject {
     }
 
     public void setIndexBuffer(GLBuffer indexBuffer) {
-        glVertexArrayElementBuffer(handle, indexBuffer.handle());
+        glVertexArrayElementBuffer(handle, indexBuffer == null ? NULL : indexBuffer.handle());
     }
 
-    public void removeIndexBuffer() {
-        glVertexArrayElementBuffer(handle, NULL);
+    public void setVertexBuffer(int binding, GLVertexBuffer vertexBuffer, int stride) {
+        glVertexArrayVertexBuffer(handle, binding, vertexBuffer.handle(), 0, stride);
+    }
+
+    public void setVertexAttributes(int binding, VertexAttributeList attributes) {
+        VertexAttributeIterator it = attributes.iterator();
+        while(it.hasNext()) {
+            setVertexAttribute(binding, it.next(), it.location(), it.offset(), attributes.stride());
+        }
+        glVertexArrayBindingDivisor(handle, binding, attributes.instanced() ? 1 : 0);
     }
 
     public void addVertexBuffer(int binding, VertexAttributeList attributes, GLBuffer vertexBuffer) {

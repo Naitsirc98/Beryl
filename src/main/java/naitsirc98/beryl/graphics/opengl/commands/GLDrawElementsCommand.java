@@ -30,7 +30,7 @@ public final class GLDrawElementsCommand implements GLDrawCommand {
 
     private long address;
 
-    private GLDrawElementsCommand(long address) {
+    public GLDrawElementsCommand(long address) {
         this.address = address;
     }
 
@@ -86,38 +86,5 @@ public final class GLDrawElementsCommand implements GLDrawCommand {
     @Override
     public int sizeof() {
         return SIZEOF;
-    }
-
-    public static final class Iterator implements Iterable<GLDrawElementsCommand>, java.util.Iterator<GLDrawElementsCommand>, AutoCloseable {
-
-        private final GLCommandBuffer commandBuffer;
-        private final GLDrawElementsCommand command;
-        private int index;
-
-        public Iterator(GLCommandBuffer commandBuffer) {
-            this.commandBuffer = commandBuffer;
-            command = new GLDrawElementsCommand(commandBuffer.mapMemory(0).get(0));
-        }
-
-        @Override
-        public boolean hasNext() {
-            return index < commandBuffer.count();
-        }
-
-        @Override
-        public GLDrawElementsCommand next() {
-            command.address += index++ * SIZEOF;
-            return command;
-        }
-
-        @Override
-        public java.util.Iterator<GLDrawElementsCommand> iterator() {
-            return this;
-        }
-
-        @Override
-        public void close() {
-            commandBuffer.unmapMemory();
-        }
     }
 }

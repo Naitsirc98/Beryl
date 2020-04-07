@@ -1,28 +1,37 @@
-@beryl
+#version 450 core
 
-@include "structs/phong_material.glsl"
+#extension GL_KHR_vulkan_glsl: require
+#extension GL_ARB_bindless_texture: require
+
 @include "structs/lights.glsl"
 
 #define MAX_POINT_LIGHTS 10
 #define MAX_SPOT_LIGHTS 10
 
-layout(std140, set = 0, binding = 0) uniform MatricesUniformBuffer {
-    mat4 u_MVP;
-    mat4 u_ModelMatrix;
-    mat4 u_NormalMatrix;
+struct Material {
+
+    vec4 ambientColor;
+    vec4 diffuseColor;
+    vec4 specularColor;
+    vec4 emissiveColor;
+    sampler2D ambientMap;
+    sampler2D diffuseMap;
+    sampler2D specularMap;
+    sampler2D emissiveMap;
+    float shininess;
+};
+
+
+layout(std140, set = 0, binding = 0) uniform Camera {
+    mat4 u_ProjectionViewMatrix;
     vec4 u_CameraPosition;
 };
 
-layout(std140, set = 1, binding = 1) uniform MaterialUniformBuffer {
-    PhongMaterial u_Material;
+layout(std430, bindless_sampler, binding = 3) buffer Materials {
+    Material u_Material[];
 };
 
-layout(set = 1, binding = 2) uniform sampler2D u_AmbientMap;
-layout(set = 1, binding = 3) uniform sampler2D u_DiffuseMap;
-layout(set = 1, binding = 4) uniform sampler2D u_SpecularMap;
-layout(set = 1, binding = 5) uniform sampler2D u_EmissiveMap;
-
-layout(std140, set = 2, binding = 6) uniform LightsUniformBuffer {
+layout(std140, set = 2, binding = 1) uniform Lights {
     Light u_DirectionalLight;
     Light u_PointLights[MAX_POINT_LIGHTS];
     Light u_SpotLights[MAX_SPOT_LIGHTS];
@@ -31,21 +40,24 @@ layout(std140, set = 2, binding = 6) uniform LightsUniformBuffer {
     int u_SpotLightsCount;
 };
 
+
 layout(location = 0) in VertexData {
     vec3 position;
     vec3 normal;
-    vec2 textureCoords;
+    vec2 texCoords;
+    flat uint materialIndex;
 } vertexData;
 
 
 layout(location = 0) out vec4 out_FinalColor;
 
-vec3 cameraDirection = normalize(u_CameraPosition.xyz - vertexData.position);
 
-vec4 materialAmbientColor = u_Material.ambientColor * texture(u_AmbientMap, vertexData.textureCoords);
-vec4 materialDiffuseColor = u_Material.diffuseColor * texture(u_DiffuseMap, vertexData.textureCoords);
-vec4 materialSpecularColor = u_Material.specularColor * texture(u_SpecularMap, vertexData.textureCoords);
-vec4 materialEmissiveColor = u_Material.emissiveColor * texture(u_EmissiveMap, vertexData.textureCoords);
+vec3 cameraDirection;
+
+vec4 materialAmbientColor;
+vec4 materialDiffuseColor;
+vec4 materialSpecularColor;
+vec4 materialEmissiveColor;
 
 vec4 computeLighting();
 vec4 computeDirectionalLighting(Light light);
@@ -55,10 +67,20 @@ vec4 computeSpotLighting(Light light);
 
 void main() {
 
-    if(materialDiffuseColor.a == 0) {
+    cameraDirection = normalize(u_CameraPosition.xyz - vertexData.position);
+
+    Material material = u_Material[vertexData.materialIndex];
+
+    materialAmbientColor = material.ambientColor * texture(material.ambientMap, vertexData.texCoords);
+    materialDiffuseColor = material.diffuseColor * texture(material.diffuseMap, vertexData.texCoords);
+    materialSpecularColor = material.specularColor * texture(material.specularMap, vertexData.texCoords);
+    materialEmissiveColor = material.emissiveColor * texture(material.emissiveMap, vertexData.texCoords);
+
+    if(materialAmbientColor.a + materialDiffuseColor.a < 0.001) {
         discard;
     }
 
+    // TODO: check if material is affected by light
     out_FinalColor = computeLighting() + materialEmissiveColor;
 }
 

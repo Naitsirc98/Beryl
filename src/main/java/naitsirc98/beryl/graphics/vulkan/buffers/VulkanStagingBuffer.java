@@ -14,7 +14,7 @@ import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.util.vma.Vma.VMA_MEMORY_USAGE_CPU_ONLY;
 import static org.lwjgl.vulkan.VK11.*;
 
-public class VulkanStagingBuffer extends VulkanCPUBuffer {
+public class VulkanStagingBuffer extends VulkanMappableBuffer {
 
     VulkanStagingBuffer() {
         super(getStagingBufferCreateInfo(), getStagingBufferAllocationCreateInfo());

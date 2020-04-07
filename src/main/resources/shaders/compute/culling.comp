@@ -1,0 +1,41 @@
+#version 450 core
+
+struct DrawCommand {
+    uint count;
+    uint instanceCount;
+    uint firstIndex;
+    uint baseVertex;
+    uint baseInstance;
+};
+
+struct BoundingBox {
+    vec3 min;
+    vec3 max;
+};
+
+layout(std430 = 0) buffer CommandBuffer {
+    DrawCommand[] commands;
+};
+
+layout(std430 = 1) readonly buffer Bounds {
+    BoundingBox boundingBoxes[];
+};
+
+layout(std430 = 2) readonly buffer Matrices {
+    mat4 modelMatrices[];
+};
+
+layout(std430 = 3) readonly buffer MeshIDs {
+    uint meshIDs[];
+};
+
+void main() {
+
+    const uint index = gl_LocalInvocationID.x;
+
+    BoundingBox aabb = boundingBoxes[meshIDs[index]];
+
+    uint visible = 1; // Frustum culling, 1 = visible, 0 otherwise
+
+    commands[index].instanceCount += visible;
+}

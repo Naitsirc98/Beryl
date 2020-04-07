@@ -27,7 +27,7 @@ public final class Camera extends Component<Camera> {
 	public static final float DEFAULT_YAW = -90.0f;
 
 	public static final float DEFAULT_NEAR_PLANE = 0.1f;
-	public static final float DEFAULT_FAR_PLANE = 10000.0f;
+	public static final float DEFAULT_FAR_PLANE = 4096.0f;
 
 	public static final float DEFAULT_SENSITIVITY = 0.1f;
 

@@ -112,6 +112,13 @@ public class VulkanTexture2D extends VulkanTexture implements Texture2D {
     }
 
     @Override
+    public void pixels(int mipLevels, int width, int height, PixelFormat format, FloatBuffer pixels) {
+        allocate(mipLevels, width, height, format);
+        renderImage.image().pixels(0, 0, 0, 0, pixels);
+        renderImage.image().transitionLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    }
+
+    @Override
     public void update(int mipLevel, int xOffset, int yOffset, int width, int height, PixelFormat format, ByteBuffer pixels) {
         // TODO
         renderImage.image().pixels(mipLevel, xOffset, yOffset, 0, pixels);

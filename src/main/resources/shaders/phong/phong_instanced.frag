@@ -64,7 +64,7 @@ void main() {
 
 vec4 computeLighting() {
 
-    vec4 ambientColor = u_AmbientColor * materialAmbientColor * 0.2;
+    vec4 ambientColor = u_AmbientColor * materialAmbientColor;
 
     vec4 diffuseSpecularColor = vec4(0.0);
 

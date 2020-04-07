@@ -79,6 +79,8 @@ public final class WindowFactory {
         if(Platform.get() == Platform.MACOSX) {
             glfwWindowHint(GLFW_OPENGL_COMPAT_PROFILE, GLFW_TRUE);
         }
+
+        // glfwWindowHint(GLFW_SAMPLES, 4);
     }
 
     private int asGLFWBoolean(boolean value) {

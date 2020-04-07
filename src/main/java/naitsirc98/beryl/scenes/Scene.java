@@ -11,7 +11,10 @@ import naitsirc98.beryl.scenes.components.meshes.MeshView;
 import naitsirc98.beryl.scenes.components.meshes.MeshViewManager;
 import naitsirc98.beryl.scenes.components.meshes.SceneMeshInfo;
 
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.Deque;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.stream.Stream;
 
 import static java.util.Objects.requireNonNull;
@@ -95,12 +98,12 @@ public final class Scene {
     void endUpdate() {
         cameras.update();
         transforms.update();
+        meshes.updateInstancedData();
     }
 
     void render() {
         // TODO
         Camera camera = camera();
-        List<MeshView> meshViews = meshes.meshViews();
         if(camera != null) {
             camera().renderingPath().render(camera, this);
         }

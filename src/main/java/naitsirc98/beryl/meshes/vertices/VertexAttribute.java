@@ -5,6 +5,7 @@ import naitsirc98.beryl.util.types.DataType;
 
 import static java.util.Objects.requireNonNull;
 import static naitsirc98.beryl.util.types.DataType.FLOAT32;
+import static naitsirc98.beryl.util.types.DataType.UINT32;
 
 public enum VertexAttribute implements ByteSize {
 
@@ -18,7 +19,8 @@ public enum VertexAttribute implements ByteSize {
     BITANGENTS(FLOAT32, 3),
     COLOR3D(FLOAT32, 3),
     COLOR4D(FLOAT32, 4),
-    MATRIX4F(FLOAT32, 16);
+    MATRIX4F(FLOAT32, 16),
+    INDEX(UINT32, 1);
 
     private final DataType dataType;
     private final int size;

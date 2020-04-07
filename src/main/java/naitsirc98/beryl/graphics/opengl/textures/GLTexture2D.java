@@ -58,12 +58,13 @@ public final class GLTexture2D extends GLTexture implements Texture2D {
     }
 
     @Override
-    public void pixels(int mipLevels, Image image) {
-        pixels(mipLevels, image.width(), image.height(), image.pixelFormat(), image.pixelsi());
+    public void pixels(int mipLevels, int width, int height, PixelFormat format, ByteBuffer pixels) {
+        allocate(mipLevels, width, height, format);
+        update(0, 0, 0, width, height, format, pixels);
     }
 
     @Override
-    public void pixels(int mipLevels, int width, int height, PixelFormat format, ByteBuffer pixels) {
+    public void pixels(int mipLevels, int width, int height, PixelFormat format, FloatBuffer pixels) {
         allocate(mipLevels, width, height, format);
         update(0, 0, 0, width, height, format, pixels);
     }

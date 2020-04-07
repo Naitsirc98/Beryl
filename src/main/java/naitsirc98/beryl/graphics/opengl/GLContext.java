@@ -22,6 +22,8 @@ import static naitsirc98.beryl.graphics.rendering.RenderingPaths.RPATH_SIMPLE3D;
 import static naitsirc98.beryl.util.types.TypeUtils.newInstance;
 import static org.lwjgl.glfw.GLFW.glfwMakeContextCurrent;
 import static org.lwjgl.glfw.GLFW.glfwSwapInterval;
+import static org.lwjgl.opengl.GL11C.glEnable;
+import static org.lwjgl.opengl.GL13.GL_MULTISAMPLE;
 
 public class GLContext implements GraphicsContext, LongHandle {
 
@@ -49,6 +51,7 @@ public class GLContext implements GraphicsContext, LongHandle {
         graphicsFactory = new GLGraphicsFactory();
         mapper = new GLMapper();
         glfwSwapInterval(INITIAL_VSYNC ? 1 : 0);
+        // glEnable(GL_MULTISAMPLE);
     }
 
     @Override

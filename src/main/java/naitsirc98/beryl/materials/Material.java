@@ -1,8 +1,12 @@
 package naitsirc98.beryl.materials;
 
+import naitsirc98.beryl.util.types.ByteSize;
+
+import java.nio.ByteBuffer;
+
 import static java.util.Objects.requireNonNull;
 
-public abstract class Material {
+public abstract class Material implements ByteSize {
 
     private final String name;
     private final boolean transparent;
@@ -22,6 +26,8 @@ public abstract class Material {
     public final boolean transparent() {
         return transparent;
     }
+
+    public abstract ByteBuffer get(int offset, ByteBuffer buffer);
 
     @Override
     public int hashCode() {

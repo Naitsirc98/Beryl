@@ -53,4 +53,9 @@ public class Maths {
         assertTrue(multiple > 0 && multiple % 2 == 0);
         return (number + multiple - 1) & (-multiple);
     }
+
+    public static int log2(int n){
+        assertTrue(n <= 0);
+        return Integer.SIZE - 1 - Integer.numberOfLeadingZeros(n);
+    }
 }

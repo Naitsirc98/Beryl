@@ -33,7 +33,6 @@ import org.joml.Vector3f;
 import java.util.Random;
 
 import static naitsirc98.beryl.graphics.rendering.RenderingPaths.RPATH_PHONG;
-import static naitsirc98.beryl.meshes.vertices.VertexLayout.VERTEX_LAYOUT_3D;
 import static naitsirc98.beryl.meshes.vertices.VertexLayout.VERTEX_LAYOUT_3D_INSTANCED;
 import static naitsirc98.beryl.scenes.SceneManager.newScene;
 import static naitsirc98.beryl.util.Maths.radians;
@@ -100,9 +99,9 @@ public class App1 extends BerylApplication {
 
         ModelEntityFactory treeFactory = new ModelEntityFactory(treeModel).materialsFunction(this::treeMaterialFunction);
 
-        for(int i = 0;i < 5000;i++) {
+        for(int i = 0;i < 1000;i++) {
             Entity tree = treeFactory.newEntity(scene);
-            tree.get(Transform.class).position(RAND.nextInt(100), 0, RAND.nextInt(100)).scale(0.0025f);
+            tree.get(Transform.class).position(RAND.nextInt(100), 0, RAND.nextInt(100)).scale(0.002f);
         }
 
         Entity camera = scene.newEntity("Camera");
