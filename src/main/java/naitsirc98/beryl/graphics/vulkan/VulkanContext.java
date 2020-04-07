@@ -10,7 +10,6 @@ import naitsirc98.beryl.graphics.vulkan.devices.VulkanLogicalDevice;
 import naitsirc98.beryl.graphics.vulkan.devices.VulkanPhysicalDevice;
 import naitsirc98.beryl.graphics.vulkan.memory.VulkanAllocator;
 import naitsirc98.beryl.graphics.vulkan.rendering.phong.VulkanPhongRenderingPath;
-import naitsirc98.beryl.graphics.vulkan.rendering.simple.VulkanSimpleRenderingPath;
 import naitsirc98.beryl.graphics.vulkan.swapchain.VulkanSwapchain;
 import org.lwjgl.vulkan.VkInstance;
 
@@ -21,7 +20,6 @@ import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toSet;
 import static naitsirc98.beryl.graphics.rendering.RenderingPaths.RPATH_PHONG;
-import static naitsirc98.beryl.graphics.rendering.RenderingPaths.RPATH_SIMPLE3D;
 import static naitsirc98.beryl.graphics.vulkan.VulkanDebugMessenger.newVulkanDebugMessenger;
 import static naitsirc98.beryl.graphics.vulkan.VulkanInstanceFactory.newVkInstance;
 import static naitsirc98.beryl.graphics.vulkan.VulkanValidationLayers.defaultValidationLayers;

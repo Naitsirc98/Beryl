@@ -1,6 +1,6 @@
 package naitsirc98.beryl.meshes.models;
 
-import naitsirc98.beryl.meshes.vertices.VertexData;
+import naitsirc98.beryl.meshes.Mesh;
 import naitsirc98.beryl.meshes.vertices.VertexLayout;
 import naitsirc98.beryl.resources.ManagedResource;
 import naitsirc98.beryl.util.collections.LookupTable;
@@ -14,26 +14,23 @@ import java.util.stream.Stream;
 
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.joining;
-import static naitsirc98.beryl.graphics.rendering.PrimitiveTopology.TRIANGLES;
-import static naitsirc98.beryl.util.types.DataType.INT32;
+import static org.lwjgl.system.MemoryUtil.memCalloc;
 import static org.lwjgl.system.MemoryUtil.memFree;
 
 public final class Model extends ManagedResource {
 
     private final Path path;
-    private final VertexLayout vertexLayout;
     private final List<Node> nodes;
     private final LookupTable<String, Node> nodeNames;
-    private final List<Mesh> meshes;
-    private final LookupTable<String, Mesh> meshNames;
+    private final List<LoadedMesh> loadedMeshes;
+    private final LookupTable<String, LoadedMesh> meshNames;
 
-    Model(Path path, VertexLayout vertexLayout, int meshCount) {
+    Model(Path path, int meshCount) {
         super(false);
         this.path = requireNonNull(path);
-        this.vertexLayout = requireNonNull(vertexLayout);
         nodes = new ArrayList<>();
         nodeNames = new LookupTable<>();
-        meshes = new ArrayList<>(meshCount);
+        loadedMeshes = new ArrayList<>(meshCount);
         meshNames = new LookupTable<>();
         track();
     }
@@ -46,10 +43,6 @@ public final class Model extends ManagedResource {
         return path;
     }
 
-    public VertexLayout vertexLayout() {
-        return vertexLayout;
-    }
-
     public Node root() {
         return nodes.get(0);
     }
@@ -59,7 +52,7 @@ public final class Model extends ManagedResource {
     }
 
     public int meshCount() {
-        return meshes.size();
+        return loadedMeshes.size();
     }
 
     public Node node(int index) {
@@ -70,11 +63,11 @@ public final class Model extends ManagedResource {
         return nodeNames.valueOf(name);
     }
 
-    public Mesh mesh(int index) {
-        return meshes.get(index);
+    public LoadedMesh loadedMesh(int index) {
+        return loadedMeshes.get(index);
     }
 
-    public Mesh mesh(String name) {
+    public LoadedMesh loadedMesh(String name) {
         return meshNames.valueOf(name);
     }
 
@@ -82,16 +75,16 @@ public final class Model extends ManagedResource {
         return nodeNames.keyOf(node);
     }
 
-    public String nameOf(Mesh mesh) {
-        return meshNames.keyOf(mesh);
+    public String nameOf(LoadedMesh loadedMesh) {
+        return meshNames.keyOf(loadedMesh);
     }
 
     public Collection<Node> nodes() {
         return Collections.unmodifiableCollection(nodes);
     }
 
-    public Collection<Mesh> meshes() {
-        return Collections.unmodifiableCollection(meshes);
+    public Collection<LoadedMesh> meshes() {
+        return Collections.unmodifiableCollection(loadedMeshes);
     }
 
     synchronized Node newNode(String name, int numChildren, int numMeshes) {
@@ -104,20 +97,19 @@ public final class Model extends ManagedResource {
         return node;
     }
 
-    synchronized Mesh newMesh(String name, ByteBuffer[] vertices, ByteBuffer indices) {
+    synchronized LoadedMesh newMesh(String name, Mesh mesh) {
 
-        Mesh mesh = new Mesh(meshes.size(), vertices, indices);
+        LoadedMesh loadedMesh = new LoadedMesh(loadedMeshes.size(), mesh);
 
-        meshes.add(mesh);
-        meshNames.put(name, mesh);
+        loadedMeshes.add(loadedMesh);
+        meshNames.put(name, loadedMesh);
 
-        return mesh;
+        return loadedMesh;
     }
 
     @Override
     protected void free() {
-        meshes().stream().filter(Objects::nonNull).forEach(Mesh::free);
-        meshes.clear();
+        loadedMeshes.clear();
     }
 
     @Override
@@ -125,13 +117,12 @@ public final class Model extends ManagedResource {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Model model = (Model) o;
-        return path.equals(model.path) &&
-                vertexLayout.equals(model.vertexLayout);
+        return Objects.equals(path, model.path);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(path, vertexLayout);
+        return Objects.hash(path);
     }
 
     @Override
@@ -140,7 +131,6 @@ public final class Model extends ManagedResource {
         StringBuilder builder = new StringBuilder();
 
         builder.append("Model '").append(name()).append("' {\n").append("  Path: ").append("\"").append(path).append("\"").append('\n');
-        builder.append("  VertexLayout: ").append(vertexLayout).append('\n');
         builder.append("  Structure:\n").append(root().toString("    ")).append('\n');
 
         return builder.append("  };").toString();
@@ -183,16 +173,16 @@ public final class Model extends ManagedResource {
             return nodes.get(indices[index]);
         }
 
-        public Mesh mesh(int index) {
-            return meshes.get(indices[meshIndicesOffset + index]);
+        public LoadedMesh mesh(int index) {
+            return loadedMeshes.get(indices[meshIndicesOffset + index]);
         }
 
         public Stream<Node> children() {
             return Arrays.stream(indices, 0, meshIndicesOffset).mapToObj(nodes::get);
         }
 
-        public Stream<Mesh> meshes() {
-            return Arrays.stream(indices, meshIndicesOffset, indices.length).mapToObj(meshes::get);
+        public Stream<LoadedMesh> meshes() {
+            return Arrays.stream(indices, meshIndicesOffset, indices.length).mapToObj(loadedMeshes::get);
         }
 
         @Override
@@ -208,8 +198,8 @@ public final class Model extends ManagedResource {
             indices[index] = child.index;
         }
 
-        synchronized void addMesh(int index, Mesh mesh) {
-            indices[meshIndicesOffset + index] = mesh.index;
+        synchronized void addMesh(int index, LoadedMesh loadedMesh) {
+            indices[meshIndicesOffset + index] = loadedMesh.index;
         }
 
         @Override
@@ -222,21 +212,19 @@ public final class Model extends ManagedResource {
             String childrenStr = children().map(node -> node.toString(innerIndentation + "  ")).collect(joining(",\n"));
             return String.format("%sNode[%d] '%s' {\n%smeshes:[%s],\n%schildren: [%s]\n%s};",
                     indentation, index, name(),
-                    innerIndentation, meshes().map(Mesh::name).collect(joining(", ")),
+                    innerIndentation, meshes().map(LoadedMesh::name).collect(joining(", ")),
                     innerIndentation, childrenStr.isEmpty() ? "" : "\n" + childrenStr + "\n" + innerIndentation, indentation);
         }
     }
 
-    public final class Mesh implements NativeResource {
+    public final class LoadedMesh {
 
         private final int index;
-        private ByteBuffer[] vertices;
-        private ByteBuffer indices;
+        private final Mesh mesh;
 
-        Mesh(int index, ByteBuffer[] vertices, ByteBuffer indices) {
+        public LoadedMesh(int index, Mesh mesh) {
             this.index = index;
-            this.vertices = vertices;
-            this.indices = indices;
+            this.mesh = mesh;
         }
 
         public int index() {
@@ -247,29 +235,8 @@ public final class Model extends ManagedResource {
             return nameOf(this);
         }
 
-        public VertexLayout vertexLayout() {
-            return vertexLayout;
-        }
-
-        public ByteBuffer[] vertices() {
-            return vertices;
-        }
-
-        public ByteBuffer indices() {
-            return indices;
-        }
-
-        @Override
-        public void free() {
-
-            for(ByteBuffer buffer : vertices) {
-                memFree(buffer);
-            }
-
-            memFree(indices);
-
-            vertices = null;
-            indices = null;
+        public Mesh mesh() {
+            return mesh;
         }
     }
 }

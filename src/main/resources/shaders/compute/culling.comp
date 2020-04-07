@@ -13,6 +13,8 @@ struct BoundingBox {
     vec3 max;
 };
 
+// TODO: need camera matrices
+
 layout(std430 = 0) buffer CommandBuffer {
     DrawCommand[] commands;
 };

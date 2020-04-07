@@ -1,13 +1,13 @@
 package naitsirc98.beryl.scenes.components.meshes;
 
 import naitsirc98.beryl.logging.Log;
-import naitsirc98.beryl.meshes.v2.MeshView;
+import naitsirc98.beryl.meshes.MeshView;
 import naitsirc98.beryl.scenes.Component;
+import naitsirc98.beryl.scenes.components.math.Transform;
+import org.joml.Matrix4fc;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static naitsirc98.beryl.util.Asserts.assertNonNull;
@@ -37,6 +37,10 @@ public class MeshInstance extends Component<MeshInstance> implements Iterable<Me
         return meshViews.size();
     }
 
+    public MeshInstance meshView(MeshView meshView) {
+        return meshViews(meshView);
+    }
+
     public MeshInstance meshViews(MeshView meshView) {
         if(meshViews != EMPTY) {
             Log.error("Cannot modify Mesh Instance component once you have set its Mesh Views");
@@ -54,14 +58,13 @@ public class MeshInstance extends Component<MeshInstance> implements Iterable<Me
         } else {
             assertNonNull(meshViews);
             assertTrue(meshViews.length > 0);
-            this.meshViews = new ArrayList<>(meshViews.length);
-            for(MeshView meshView : meshViews) {
-                assertNonNull(meshView);
-                this.meshViews.add(meshView);
-            }
-            onEnable();
+            this.meshViews = Arrays.stream(meshViews).filter(Objects::nonNull).distinct().collect(Collectors.toUnmodifiableList());
         }
         return this;
+    }
+
+    public Matrix4fc modelMatrix() {
+        return requires(Transform.class).modelMatrix();
     }
 
     @Override

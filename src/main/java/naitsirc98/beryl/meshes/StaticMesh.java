@@ -1,4 +1,4 @@
-package naitsirc98.beryl.meshes.v2;
+package naitsirc98.beryl.meshes;
 
 import java.nio.ByteBuffer;
 
@@ -10,5 +10,9 @@ public final class StaticMesh extends Mesh {
 
     public StaticMesh(ByteBuffer vertexData) {
         super(vertexData, VERTEX_DATA_SIZE);
+    }
+
+    public StaticMesh(ByteBuffer vertexData, ByteBuffer indexData) {
+        super(vertexData, indexData, VERTEX_DATA_SIZE);
     }
 }

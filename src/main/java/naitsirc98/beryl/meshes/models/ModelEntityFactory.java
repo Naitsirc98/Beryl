@@ -2,33 +2,30 @@ package naitsirc98.beryl.meshes.models;
 
 import naitsirc98.beryl.materials.Material;
 import naitsirc98.beryl.materials.PhongMaterial;
-import naitsirc98.beryl.meshes.Mesh;
-import naitsirc98.beryl.meshes.MeshFactory;
-import naitsirc98.beryl.meshes.vertices.VertexData;
+import naitsirc98.beryl.meshes.MeshView;
 import naitsirc98.beryl.scenes.Entity;
 import naitsirc98.beryl.scenes.Scene;
 import naitsirc98.beryl.scenes.components.math.Transform;
+import naitsirc98.beryl.scenes.components.meshes.MeshInstance;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
 import static java.util.Objects.requireNonNull;
-import static naitsirc98.beryl.graphics.rendering.PrimitiveTopology.TRIANGLES;
-import static naitsirc98.beryl.util.types.DataType.INT32;
 
 public class ModelEntityFactory {
 
     private final Model model;
-    private final Map<String, Mesh> meshes;
+    private final Map<String, MeshView> meshViews;
     private Function<String, Material> materialsFunction;
-    private MeshFactory<Model.Mesh> meshMeshFactory;
+    private MeshViewFactory<Model.LoadedMesh> meshMeshFactory;
 
     public ModelEntityFactory(Model model) {
         this.model = requireNonNull(model);
-        meshes = new HashMap<>();
+        meshViews = new HashMap<>();
         materialsFunction = meshName -> PhongMaterial.getDefault();
-        meshMeshFactory = this::createMeshFromModelMesh;
+        meshMeshFactory = this::createMeshViewFromModelMesh;
     }
 
     public Model model() {
@@ -66,12 +63,12 @@ public class ModelEntityFactory {
         MeshInstance meshInstance = entity.add(MeshInstance.class);
 
         for(int i = 0;i < node.numMeshes();i++) {
-            meshInstance.addMesh(getMesh(node.mesh(i)));
+            meshInstance.meshView(getMeshView(node.mesh(i)));
         }
     }
 
-    private Mesh getMesh(Model.Mesh mesh) {
-        return meshes.computeIfAbsent(mesh.name(), name -> meshMeshFactory.create(mesh, materialsFunction.apply(name)));
+    private MeshView getMeshView(Model.LoadedMesh loadedMesh) {
+        return meshViews.computeIfAbsent(loadedMesh.name(), name -> meshMeshFactory.create(loadedMesh, materialsFunction.apply(name)));
     }
 
     private void processNodeChildren(String prefix, Model.Node node, Entity entity) {
@@ -106,24 +103,13 @@ public class ModelEntityFactory {
         return this;
     }
 
-    public ModelEntityFactory meshFactory(MeshFactory<Model.Mesh> meshMeshFactory) {
+    public ModelEntityFactory meshFactory(MeshViewFactory<Model.LoadedMesh> meshMeshFactory) {
         this.meshMeshFactory = requireNonNull(meshMeshFactory);
         return this;
     }
 
-    private Mesh createMeshFromModelMesh(Model.Mesh modelMesh, Material material) {
-
-        VertexData.Builder builder = VertexData.builder(modelMesh.vertexLayout(), TRIANGLES);
-
-        for(int i = 0;i < modelMesh.vertices().length;i++) {
-            builder.vertices(i, modelMesh.vertices()[i]);
-        }
-
-        if(modelMesh.indices() != null) {
-            builder.indices(modelMesh.indices(), INT32);
-        }
-
-        return new Mesh(builder.build(), material);
+    private MeshView createMeshViewFromModelMesh(Model.LoadedMesh modelLoadedMesh, Material material) {
+        return new MeshView(modelLoadedMesh.mesh(), material);
     }
 
 }

@@ -3,6 +3,7 @@ package naitsirc98.beryl.examples.app1;
 import naitsirc98.beryl.core.Beryl;
 import naitsirc98.beryl.core.BerylApplication;
 import naitsirc98.beryl.core.BerylConfiguration;
+import naitsirc98.beryl.core.BerylFiles;
 import naitsirc98.beryl.graphics.GraphicsAPI;
 import naitsirc98.beryl.graphics.GraphicsFactory;
 import naitsirc98.beryl.graphics.rendering.RenderingPaths;
@@ -17,22 +18,22 @@ import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.materials.Material;
 import naitsirc98.beryl.materials.PhongMaterial;
 import naitsirc98.beryl.meshes.Mesh;
-import naitsirc98.beryl.meshes.PrimitiveMeshes;
-import naitsirc98.beryl.meshes.models.AssimpModelLoader;
+import naitsirc98.beryl.meshes.MeshView;
 import naitsirc98.beryl.meshes.models.Model;
 import naitsirc98.beryl.meshes.models.ModelEntityFactory;
+import naitsirc98.beryl.meshes.models.StaticMeshLoader;
 import naitsirc98.beryl.scenes.Entity;
 import naitsirc98.beryl.scenes.Scene;
 import naitsirc98.beryl.scenes.components.behaviours.UpdateMutableBehaviour;
 import naitsirc98.beryl.scenes.components.camera.Camera;
 import naitsirc98.beryl.scenes.components.math.Transform;
+import naitsirc98.beryl.scenes.components.meshes.MeshInstance;
 import naitsirc98.beryl.util.Color;
 import org.joml.Vector3f;
 
 import java.util.Random;
 
 import static naitsirc98.beryl.graphics.rendering.RenderingPaths.RPATH_PHONG;
-import static naitsirc98.beryl.meshes.vertices.VertexLayout.VERTEX_LAYOUT_3D_INSTANCED;
 import static naitsirc98.beryl.scenes.SceneManager.newScene;
 import static naitsirc98.beryl.util.Maths.radians;
 
@@ -82,19 +83,18 @@ public class App1 extends BerylApplication {
 
         Scene scene = newScene("Scene");
 
-        AssimpModelLoader modelLoader = new AssimpModelLoader();
+        StaticMeshLoader modelLoader = new StaticMeshLoader();
 
-        Mesh quadMesh = PrimitiveMeshes.createQuadMesh(getFloorMaterial(), 100.0f);
+        Mesh quadMesh = modelLoader.load(BerylFiles.getPath("models/quad.obj")).loadedMesh(0).mesh();
 
-        Model treeModel = new AssimpModelLoader()
-                        .load("C:\\Users\\naits\\Downloads\\uploads_files_1970932_conifer_macedonian_pine(1)\\OBJ format\\conifer_macedonian_pine.obj",
-                        VERTEX_LAYOUT_3D_INSTANCED);
+        Model treeModel = modelLoader
+                        .load("C:\\Users\\naits\\Downloads\\uploads_files_1970932_conifer_macedonian_pine(1)\\OBJ format\\conifer_macedonian_pine.obj");
 
         Log.trace(treeModel);
 
         Entity floor = scene.newEntity("floor");
         floor.add(Transform.class).position(0, 0, 0).scale(100).rotateX(radians(90));
-        floor.add(MeshInstance.class).mesh(quadMesh);
+        floor.add(MeshInstance.class).meshView(new MeshView(quadMesh, getFloorMaterial()));
 
         ModelEntityFactory treeFactory = new ModelEntityFactory(treeModel).materialsFunction(this::treeMaterialFunction);
 
@@ -191,7 +191,7 @@ public class App1 extends BerylApplication {
 
     }
 
-    private void addOrRemoveRandomly(Entity entity, naitsirc98.beryl.meshes.Mesh mesh, Material material) {
+    private void addOrRemoveRandomly(Entity entity, Mesh mesh, Material material) {
 
         if(RAND.nextFloat() < 0.001f) {
 
@@ -201,7 +201,7 @@ public class App1 extends BerylApplication {
 
             Entity model = entity.scene().newEntity();
             model.add(Transform.class).scale(0.25f).position(RAND.nextInt(500), -RAND.nextInt(500), -RAND.nextInt(500));
-            model.add(MeshInstance.class).mesh(new Mesh(mesh.vertexData(), material));
+            model.add(MeshInstance.class).meshView(new MeshView(mesh, material));
             model.add(UpdateMutableBehaviour.class).onUpdate(thisBehaviour -> {
                 Transform transform = thisBehaviour.get(Transform.class);
                 transform.rotateY(radians(angle));

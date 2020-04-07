@@ -2,7 +2,6 @@ package naitsirc98.beryl.graphics.vulkan.rendering.phong;
 
 import naitsirc98.beryl.graphics.vulkan.VulkanObject;
 import naitsirc98.beryl.graphics.vulkan.commands.VulkanThreadData;
-import naitsirc98.beryl.graphics.vulkan.vertex.VulkanVertexData;
 import org.joml.Matrix4f;
 import org.lwjgl.vulkan.VkCommandBuffer;
 
@@ -29,8 +28,6 @@ final class VulkanPhongThreadData implements VulkanThreadData, VulkanObject {
     final ByteBuffer matricesData;
     final long matricesDataAddress;
 
-    VulkanVertexData lastVertexData;
-
     public VulkanPhongThreadData() {
 
         buffer = memAlloc(THREAD_DATA_BUFFER_SIZE);
@@ -48,7 +45,7 @@ final class VulkanPhongThreadData implements VulkanThreadData, VulkanObject {
 
     @Override
     public void end() {
-        lastVertexData = null;
+
     }
 
     @Override

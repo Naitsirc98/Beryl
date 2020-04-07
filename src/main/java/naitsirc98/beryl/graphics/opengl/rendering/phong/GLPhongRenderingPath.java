@@ -1,41 +1,26 @@
 package naitsirc98.beryl.graphics.opengl.rendering.phong;
 
 import naitsirc98.beryl.core.BerylFiles;
-import naitsirc98.beryl.graphics.opengl.GLMapper;
 import naitsirc98.beryl.graphics.opengl.buffers.GLUniformBuffer;
 import naitsirc98.beryl.graphics.opengl.rendering.ShadowCascade;
 import naitsirc98.beryl.graphics.opengl.shaders.GLShader;
 import naitsirc98.beryl.graphics.opengl.shaders.GLShaderProgram;
 import naitsirc98.beryl.graphics.opengl.swapchain.GLFramebuffer;
 import naitsirc98.beryl.graphics.opengl.textures.GLTexture2D;
-import naitsirc98.beryl.graphics.opengl.vertex.GLVertexData;
 import naitsirc98.beryl.graphics.rendering.RenderingPath;
-import naitsirc98.beryl.lights.DirectionalLight;
 import naitsirc98.beryl.lights.Light;
 import naitsirc98.beryl.materials.PhongMaterial;
-import naitsirc98.beryl.meshes.Mesh;
 import naitsirc98.beryl.scenes.Scene;
-import naitsirc98.beryl.scenes.SceneEnvironment;
 import naitsirc98.beryl.scenes.components.camera.Camera;
-import naitsirc98.beryl.scenes.components.meshes.SceneMeshInfo;
-import naitsirc98.beryl.util.Color;
 import org.joml.Matrix4f;
-import org.joml.Matrix4fc;
-import org.lwjgl.system.MemoryStack;
 
-import java.nio.ByteBuffer;
-import java.util.List;
-
-import static naitsirc98.beryl.graphics.Graphics.opengl;
 import static naitsirc98.beryl.graphics.ShaderStage.FRAGMENT_STAGE;
 import static naitsirc98.beryl.graphics.ShaderStage.VERTEX_STAGE;
 import static naitsirc98.beryl.util.types.DataType.FLOAT32_SIZEOF;
 import static naitsirc98.beryl.util.types.DataType.INT32_SIZEOF;
 import static org.lwjgl.opengl.GL14C.GL_DEPTH_COMPONENT24;
-import static org.lwjgl.opengl.GL31.glDrawArraysInstanced;
 import static org.lwjgl.opengl.GL31.glDrawElementsInstanced;
 import static org.lwjgl.opengl.GL45.*;
-import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.*;
 import static org.lwjgl.system.libc.LibCString.nmemcpy;
 
@@ -172,6 +157,8 @@ public class GLPhongRenderingPath extends RenderingPath {
     @Override
     public void render(Camera camera, Scene scene) {
 
+        /*
+
         Color clearColor = camera.clearColor();
 
         glEnable(GL_DEPTH_TEST);
@@ -187,7 +174,11 @@ public class GLPhongRenderingPath extends RenderingPath {
         renderInstancedMeshes(camera, scene);
 
         renderNonInstancedMeshes(camera, scene);
+
+         */
     }
+
+    /*
 
     private void renderInstancedMeshes(Camera camera, Scene scene) {
 
@@ -351,5 +342,7 @@ public class GLPhongRenderingPath extends RenderingPath {
         shader.uniformSampler(UNIFORM_SPECULAR_MAP_NAME, material.specularMap(), 2);
         shader.uniformSampler(UNIFORM_EMISSIVE_MAP_NAME, material.emissiveMap(), 3);
     }
+
+     */
 
 }

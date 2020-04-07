@@ -4,9 +4,7 @@ import naitsirc98.beryl.core.Beryl;
 import naitsirc98.beryl.core.BerylConfiguration;
 import naitsirc98.beryl.graphics.GraphicsContext;
 import naitsirc98.beryl.graphics.GraphicsFactory;
-import naitsirc98.beryl.graphics.opengl.rendering.GLCascadedShadowMaps;
-import naitsirc98.beryl.graphics.opengl.rendering.phong.GLPhongRenderingPath;
-import naitsirc98.beryl.graphics.opengl.rendering.GLSimpleRenderingPath;
+import naitsirc98.beryl.graphics.opengl.rendering.Rendering;
 import naitsirc98.beryl.graphics.rendering.RenderingPath;
 import naitsirc98.beryl.graphics.window.Window;
 import naitsirc98.beryl.util.handles.LongHandle;
@@ -18,12 +16,9 @@ import java.util.Map;
 
 import static naitsirc98.beryl.graphics.opengl.GLDebugMessenger.newGLDebugMessenger;
 import static naitsirc98.beryl.graphics.rendering.RenderingPaths.RPATH_PHONG;
-import static naitsirc98.beryl.graphics.rendering.RenderingPaths.RPATH_SIMPLE3D;
 import static naitsirc98.beryl.util.types.TypeUtils.newInstance;
 import static org.lwjgl.glfw.GLFW.glfwMakeContextCurrent;
 import static org.lwjgl.glfw.GLFW.glfwSwapInterval;
-import static org.lwjgl.opengl.GL11C.glEnable;
-import static org.lwjgl.opengl.GL13.GL_MULTISAMPLE;
 
 public class GLContext implements GraphicsContext, LongHandle {
 
@@ -77,9 +72,10 @@ public class GLContext implements GraphicsContext, LongHandle {
 
         Map<Integer, RenderingPath> renderingPaths = new HashMap<>();
 
-        renderingPaths.put(RPATH_SIMPLE3D, newInstance(GLSimpleRenderingPath.class));
-        renderingPaths.put(RPATH_PHONG, newInstance(GLPhongRenderingPath.class));
-        renderingPaths.put(100, newInstance(GLCascadedShadowMaps.class));
+        // renderingPaths.put(RPATH_SIMPLE3D, newInstance(GLSimpleRenderingPath.class));
+        // renderingPaths.put(RPATH_PHONG, newInstance(GLPhongRenderingPath.class));
+        // renderingPaths.put(100, newInstance(GLCascadedShadowMaps.class));
+        renderingPaths.put(RPATH_PHONG, newInstance(Rendering.class));
         // ...
 
         return renderingPaths;

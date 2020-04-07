@@ -1,4 +1,4 @@
-package naitsirc98.beryl.meshes.v2;
+package naitsirc98.beryl.meshes;
 
 import naitsirc98.beryl.materials.Material;
 

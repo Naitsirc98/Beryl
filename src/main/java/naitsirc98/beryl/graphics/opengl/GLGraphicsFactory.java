@@ -2,23 +2,14 @@ package naitsirc98.beryl.graphics.opengl;
 
 import naitsirc98.beryl.graphics.GraphicsFactory;
 import naitsirc98.beryl.graphics.opengl.textures.GLTexture2D;
-import naitsirc98.beryl.graphics.opengl.vertex.GLVertexDataBuilder;
-import naitsirc98.beryl.graphics.rendering.PrimitiveTopology;
 import naitsirc98.beryl.graphics.textures.Texture2D;
 import naitsirc98.beryl.images.Image;
 import naitsirc98.beryl.images.ImageFactory;
 import naitsirc98.beryl.images.PixelFormat;
-import naitsirc98.beryl.meshes.vertices.VertexData;
-import naitsirc98.beryl.meshes.vertices.VertexLayout;
 
 public class GLGraphicsFactory implements GraphicsFactory {
 
     private Texture2D blankTexture2D;
-
-    @Override
-    public VertexData.Builder newVertexDataBuilder(VertexLayout layout, PrimitiveTopology primitiveTopology) {
-        return new GLVertexDataBuilder(layout, primitiveTopology);
-    }
 
     @Override
     public Texture2D newTexture2D() {

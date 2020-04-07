@@ -7,6 +7,8 @@ import naitsirc98.beryl.scenes.components.camera.Camera;
 import naitsirc98.beryl.scenes.components.camera.CameraManager;
 import naitsirc98.beryl.scenes.components.math.Transform;
 import naitsirc98.beryl.scenes.components.math.TransformManager;
+import naitsirc98.beryl.scenes.components.meshes.MeshInstance;
+import naitsirc98.beryl.scenes.components.meshes.MeshInstanceManager;
 import naitsirc98.beryl.scenes.components.meshes.SceneMeshInfo;
 
 import java.util.ArrayDeque;
@@ -96,7 +98,7 @@ public final class Scene {
     void endUpdate() {
         cameras.update();
         transforms.update();
-        meshes.updateInstancedData();
+        meshes.update();
     }
 
     void render() {
