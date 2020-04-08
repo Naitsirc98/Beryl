@@ -75,7 +75,7 @@ public class GLContext implements GraphicsContext, LongHandle {
         // renderingPaths.put(RPATH_SIMPLE3D, newInstance(GLSimpleRenderingPath.class));
         // renderingPaths.put(RPATH_PHONG, newInstance(GLPhongRenderingPath.class));
         // renderingPaths.put(100, newInstance(GLCascadedShadowMaps.class));
-        renderingPaths.put(RPATH_PHONG, newInstance(Rendering.class));
+        renderingPaths.put(RPATH_PHONG, new Rendering());
         // ...
 
         return renderingPaths;

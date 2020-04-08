@@ -1,6 +1,7 @@
 package naitsirc98.beryl.graphics.opengl.rendering.phong;
 
 import naitsirc98.beryl.core.BerylFiles;
+import naitsirc98.beryl.graphics.opengl.GLMapper;
 import naitsirc98.beryl.graphics.opengl.buffers.GLUniformBuffer;
 import naitsirc98.beryl.graphics.opengl.rendering.ShadowCascade;
 import naitsirc98.beryl.graphics.opengl.shaders.GLShader;
@@ -8,12 +9,25 @@ import naitsirc98.beryl.graphics.opengl.shaders.GLShaderProgram;
 import naitsirc98.beryl.graphics.opengl.swapchain.GLFramebuffer;
 import naitsirc98.beryl.graphics.opengl.textures.GLTexture2D;
 import naitsirc98.beryl.graphics.rendering.RenderingPath;
+import naitsirc98.beryl.lights.DirectionalLight;
 import naitsirc98.beryl.lights.Light;
 import naitsirc98.beryl.materials.PhongMaterial;
+import naitsirc98.beryl.meshes.Mesh;
+import naitsirc98.beryl.meshes.MeshView;
 import naitsirc98.beryl.scenes.Scene;
+import naitsirc98.beryl.scenes.SceneEnvironment;
 import naitsirc98.beryl.scenes.components.camera.Camera;
+import naitsirc98.beryl.scenes.components.meshes.MeshInstance;
+import naitsirc98.beryl.scenes.components.meshes.SceneMeshInfo;
+import naitsirc98.beryl.util.Color;
 import org.joml.Matrix4f;
+import org.joml.Matrix4fc;
+import org.lwjgl.system.MemoryStack;
 
+import java.nio.ByteBuffer;
+import java.util.List;
+
+import static naitsirc98.beryl.graphics.Graphics.opengl;
 import static naitsirc98.beryl.graphics.ShaderStage.FRAGMENT_STAGE;
 import static naitsirc98.beryl.graphics.ShaderStage.VERTEX_STAGE;
 import static naitsirc98.beryl.util.types.DataType.FLOAT32_SIZEOF;
@@ -21,6 +35,7 @@ import static naitsirc98.beryl.util.types.DataType.INT32_SIZEOF;
 import static org.lwjgl.opengl.GL14C.GL_DEPTH_COMPONENT24;
 import static org.lwjgl.opengl.GL31.glDrawElementsInstanced;
 import static org.lwjgl.opengl.GL45.*;
+import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.*;
 import static org.lwjgl.system.libc.LibCString.nmemcpy;
 
@@ -157,8 +172,6 @@ public class GLPhongRenderingPath extends RenderingPath {
     @Override
     public void render(Camera camera, Scene scene) {
 
-        /*
-
         Color clearColor = camera.clearColor();
 
         glEnable(GL_DEPTH_TEST);
@@ -169,13 +182,12 @@ public class GLPhongRenderingPath extends RenderingPath {
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
         lightsUniformBuffer.bind(instancedShader);
-        setLightsUniformBuffer(scene.environment());
 
-        renderInstancedMeshes(camera, scene);
+        // setLightsUniformBuffer(scene.environment());
 
-        renderNonInstancedMeshes(camera, scene);
+        // renderInstancedMeshes(camera, scene);
 
-         */
+        // renderNonInstancedMeshes(camera, scene);
     }
 
     /*
@@ -202,7 +214,7 @@ public class GLPhongRenderingPath extends RenderingPath {
 
             instancedMatricesUniformBuffer.update(0, matricesBuffer);
 
-            for(Mesh mesh : meshInfo.meshes()) {
+            for(MeshView meshView : meshInfo.meshViews()) {
 
                 if(!mesh.vertexData().layout().instanced()) {
                     continue;
@@ -226,6 +238,10 @@ public class GLPhongRenderingPath extends RenderingPath {
             }
         }
     }
+
+     */
+
+    /*
 
     private void renderNonInstancedMeshes(Camera camera, Scene scene) {
 
@@ -251,13 +267,18 @@ public class GLPhongRenderingPath extends RenderingPath {
             matricesUniformBuffer.update(MATRICES_UNIFORM_BUFFER_CAMERA_POSITION_OFFSET,
                     camera.transform().position().get(stack.malloc(4 * FLOAT32_SIZEOF)));
 
-            for(Mesh mesh : meshInfo.meshes()) {
+            for(MeshView meshView : meshInfo.meshViews()) {
 
-                List<MeshInstance> meshInstances = meshInfo.instancesOf(mesh);
+                List<MeshInstance> meshInstances = meshInfo.instancesTable().get(meshView);
 
+                /*
                 if(mesh.vertexData().instanced()) {
                     continue;
                 }
+
+                 */
+
+    /*
 
                 for(MeshInstance meshInstance : meshInstances) {
 
@@ -267,10 +288,10 @@ public class GLPhongRenderingPath extends RenderingPath {
 
                     matricesUniformBuffer.update(0, matricesBuffer);
 
-                    final GLVertexData vertexData = mesh.vertexData();
+                    // final GLVertexData vertexData = mesh.vertexData();
                     final PhongMaterial material = mesh.material();
 
-                    vertexData.bind();
+                    // vertexData.bind();
 
                     setMaterialUniforms(shader, material, materialBufferData);
 
@@ -342,7 +363,6 @@ public class GLPhongRenderingPath extends RenderingPath {
         shader.uniformSampler(UNIFORM_SPECULAR_MAP_NAME, material.specularMap(), 2);
         shader.uniformSampler(UNIFORM_EMISSIVE_MAP_NAME, material.emissiveMap(), 3);
     }
-
-     */
+    */
 
 }

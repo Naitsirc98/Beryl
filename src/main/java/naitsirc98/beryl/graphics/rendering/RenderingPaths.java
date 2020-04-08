@@ -17,7 +17,7 @@ public final class RenderingPaths extends BerylSystem {
     // Built-in RenderingPath IDs
     public static final int RPATH_SIMPLE3D = 0;
     public static final int RPATH_PHONG = 1;
-    public static final int RPATH_DEFAULT = RPATH_SIMPLE3D;
+    public static final int RPATH_DEFAULT = RPATH_PHONG;
     // ---
 
     @Singleton

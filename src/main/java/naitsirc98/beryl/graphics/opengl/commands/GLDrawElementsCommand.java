@@ -2,10 +2,13 @@ package naitsirc98.beryl.graphics.opengl.commands;
 
 import naitsirc98.beryl.util.types.ByteSize;
 
+import java.nio.ByteBuffer;
+
+import static java.util.Objects.requireNonNull;
+import static naitsirc98.beryl.util.Asserts.assertTrue;
 import static naitsirc98.beryl.util.types.DataType.INT32_SIZEOF;
 import static naitsirc98.beryl.util.types.DataType.UINT32_SIZEOF;
-import static org.lwjgl.system.MemoryUtil.memGetInt;
-import static org.lwjgl.system.MemoryUtil.memPutInt;
+import static org.lwjgl.system.MemoryUtil.memAddress0;
 
 @ByteSize.Static(GLDrawElementsCommand.SIZEOF)
 public final class GLDrawElementsCommand implements GLDrawCommand {
@@ -28,54 +31,57 @@ public final class GLDrawElementsCommand implements GLDrawCommand {
     private static final int BASE_VERTEX_OFFSET = FIRST_INDEX_OFFSET + UINT32_SIZEOF;
     private static final int BASE_INSTANCE_OFFSET = BASE_VERTEX_OFFSET + INT32_SIZEOF;
 
-    private long address;
+    private final long address;
+    private final ByteBuffer buffer;
 
-    public GLDrawElementsCommand(long address) {
-        this.address = address;
+    public GLDrawElementsCommand(ByteBuffer buffer) {
+        assertTrue(buffer.capacity() >= GLDrawElementsCommand.SIZEOF);
+        this.buffer = requireNonNull(buffer);
+        this.address = memAddress0(buffer);
     }
 
     public int count() {
-        return memGetInt(address + COUNT_OFFSET);
+        return buffer.getInt(COUNT_OFFSET);
     }
 
     public GLDrawElementsCommand count(int count) {
-        memPutInt(address + COUNT_OFFSET, count);
+        buffer.putInt(COUNT_OFFSET, count);
         return this;
     }
 
     public int primCount() {
-        return memGetInt(address + PRIM_COUNT_OFFSET);
+        return buffer.getInt(PRIM_COUNT_OFFSET);
     }
 
     public GLDrawElementsCommand primCount(int primCount) {
-        memPutInt(address + PRIM_COUNT_OFFSET, primCount);
+        buffer.putInt(PRIM_COUNT_OFFSET, primCount);
         return this;
     }
 
     public int firstIndex() {
-        return memGetInt(address + FIRST_INDEX_OFFSET);
+        return buffer.getInt(FIRST_INDEX_OFFSET);
     }
 
     public GLDrawElementsCommand firstIndex(int firstIndex) {
-        memPutInt(address + FIRST_INDEX_OFFSET, firstIndex);
+        buffer.putInt(FIRST_INDEX_OFFSET, firstIndex);
         return this;
     }
 
     public int baseVertex() {
-        return memGetInt(address + BASE_VERTEX_OFFSET);
+        return buffer.getInt(BASE_VERTEX_OFFSET);
     }
 
     public GLDrawElementsCommand baseVertex(int baseVertex) {
-        memPutInt(address + BASE_VERTEX_OFFSET, baseVertex);
+        buffer.putInt(BASE_VERTEX_OFFSET, baseVertex);
         return this;
     }
 
     public int baseInstance() {
-        return memGetInt(address + BASE_INSTANCE_OFFSET);
+        return buffer.getInt(BASE_INSTANCE_OFFSET);
     }
 
     public GLDrawElementsCommand baseInstance(int baseInstance) {
-        memPutInt(address + BASE_INSTANCE_OFFSET, baseInstance);
+        buffer.putInt(BASE_INSTANCE_OFFSET, baseInstance);
         return this;
     }
 
@@ -86,5 +92,20 @@ public final class GLDrawElementsCommand implements GLDrawCommand {
     @Override
     public int sizeof() {
         return SIZEOF;
+    }
+
+    @Override
+    public String toString() {
+        return "GLDrawElementsCommand {\n" +
+                "count = " + count() + "\n" +
+                "primCount = " + primCount() + "\n" +
+                "firstIndex = " + firstIndex() + "\n" +
+                "baseVertex = " + baseVertex() + "\n" +
+                "baseInstance = " + baseInstance() + "\n" +
+                "\n}";
+    }
+
+    public ByteBuffer buffer() {
+        return buffer;
     }
 }

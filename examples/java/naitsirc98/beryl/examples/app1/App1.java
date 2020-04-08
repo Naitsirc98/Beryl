@@ -6,6 +6,7 @@ import naitsirc98.beryl.core.BerylConfiguration;
 import naitsirc98.beryl.core.BerylFiles;
 import naitsirc98.beryl.graphics.GraphicsAPI;
 import naitsirc98.beryl.graphics.GraphicsFactory;
+import naitsirc98.beryl.graphics.opengl.rendering.Init;
 import naitsirc98.beryl.graphics.rendering.RenderingPaths;
 import naitsirc98.beryl.graphics.textures.Sampler;
 import naitsirc98.beryl.graphics.textures.Texture2D;
@@ -49,6 +50,8 @@ public class App1 extends BerylApplication {
         Beryl.launch(new App1());
     }
 
+    public static MeshView cubeMesh;
+
     private static void setConfiguration() {
         BerylConfiguration.DEBUG.set(true);
         BerylConfiguration.INTERNAL_DEBUG.set(true);
@@ -83,29 +86,52 @@ public class App1 extends BerylApplication {
 
         Scene scene = newScene("Scene");
 
-        StaticMeshLoader modelLoader = new StaticMeshLoader();
+        // StaticMeshLoader modelLoader = new StaticMeshLoader();
 
-        Mesh quadMesh = modelLoader.load(BerylFiles.getPath("models/quad.obj")).loadedMesh(0).mesh();
+        // Mesh quadMesh = modelLoader.load(BerylFiles.getPath("models/quad.obj")).loadedMesh(0).mesh();
+
+        /*
 
         Model treeModel = modelLoader
                         .load("C:\\Users\\naits\\Downloads\\uploads_files_1970932_conifer_macedonian_pine(1)\\OBJ format\\conifer_macedonian_pine.obj");
 
         Log.trace(treeModel);
 
-        Entity floor = scene.newEntity("floor");
-        floor.add(Transform.class).position(0, 0, 0).scale(100).rotateX(radians(90));
-        floor.add(MeshInstance.class).meshView(new MeshView(quadMesh, getFloorMaterial()));
+         */
+        /*
+        MeshView meshView = new MeshView(
+                modelLoader.load(BerylFiles.getPath("models/cube.obj")).loadedMesh(0).mesh(), PhongMaterial.getDefault());
+
+
+        */
+
+
+        for(int i = 0;i < 0;i++) {
+            Entity cube = scene.newEntity();
+            cube.add(Transform.class).position(0, -2, -120).scale(100);
+            cube.add(MeshInstance.class).meshView(cubeMesh);
+        }
+
+        // Entity floor = scene.newEntity("floor");
+        // floor.add(Transform.class).position(0, 0, 0).scale(100).rotateX(radians(90));
+        // floor.add(MeshInstance.class).meshView(new MeshView(quadMesh, getFloorMaterial()));
+
+        /*
 
         ModelEntityFactory treeFactory = new ModelEntityFactory(treeModel).materialsFunction(this::treeMaterialFunction);
 
-        for(int i = 0;i < 1000;i++) {
+        for(int i = 0;i < 1;i++) {
             Entity tree = treeFactory.newEntity(scene);
             tree.get(Transform.class).position(RAND.nextInt(100), 0, RAND.nextInt(100)).scale(0.002f);
         }
 
+         */
+
+        Init.init();
+
         Entity camera = scene.newEntity("Camera");
         camera.add(Transform.class).position(0, 2, -3);
-        camera.add(Camera.class).lookAt(0, 0).renderingPath(RenderingPaths.get(RPATH_PHONG)).clearColor(new Color(0.1f, 0.1f, 0.1f));
+        camera.add(Camera.class).lookAt(0, 0).clearColor(new Color(0.1f, 0.1f, 0.1f));
         camera.add(CameraController.class);
 
         scene.environment().directionalLight(new DirectionalLight()

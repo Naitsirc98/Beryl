@@ -3,6 +3,7 @@ package naitsirc98.beryl.graphics.opengl.buffers;
 import naitsirc98.beryl.graphics.buffers.GraphicsBuffer;
 import naitsirc98.beryl.graphics.buffers.GraphicsMappableBuffer;
 import naitsirc98.beryl.graphics.opengl.GLObject;
+import naitsirc98.beryl.logging.Log;
 import org.lwjgl.PointerBuffer;
 
 import java.nio.ByteBuffer;
@@ -16,6 +17,7 @@ public abstract class GLBuffer implements GLObject, GraphicsBuffer, GraphicsMapp
 
     private int handle;
     private boolean allocated;
+    private long mappedPtr = NULL;
 
     public GLBuffer() {
         handle = glCreateBuffers();
@@ -38,6 +40,7 @@ public abstract class GLBuffer implements GLObject, GraphicsBuffer, GraphicsMapp
             allocated = false;
         }
         glNamedBufferStorage(handle, size, storageFlags());
+        allocated = true;
     }
 
     @Override
@@ -47,6 +50,7 @@ public abstract class GLBuffer implements GLObject, GraphicsBuffer, GraphicsMapp
             allocated = false;
         }
         glNamedBufferStorage(handle, data, storageFlags());
+        allocated = true;
     }
 
     @Override
@@ -56,6 +60,7 @@ public abstract class GLBuffer implements GLObject, GraphicsBuffer, GraphicsMapp
             allocated = false;
         }
         glNamedBufferStorage(handle, data, storageFlags());
+        allocated = true;
     }
 
     @Override
@@ -65,6 +70,7 @@ public abstract class GLBuffer implements GLObject, GraphicsBuffer, GraphicsMapp
             allocated = false;
         }
         glNamedBufferStorage(handle, data, storageFlags());
+        allocated = true;
     }
 
     @Override
@@ -84,21 +90,37 @@ public abstract class GLBuffer implements GLObject, GraphicsBuffer, GraphicsMapp
 
     @Override
     public PointerBuffer mapMemory(long offset) {
-        return PointerBuffer.allocateDirect(1)
-                .put(nglMapNamedBufferRange(handle(), offset, size() - offset, mapFlags()));
+
+        if(mappedPtr != NULL) {
+            Log.fatal("Buffer " + toString() + " has been already mapped!");
+        }
+
+        mappedPtr = nglMapNamedBufferRange(handle(), offset, size() - offset, mapFlags());
+
+        return PointerBuffer.allocateDirect(1).put(mappedPtr);
     }
 
     @Override
     public void unmapMemory() {
-        glUnmapNamedBuffer(handle());
+        if(mappedPtr != NULL) {
+            glUnmapNamedBuffer(handle());
+            mappedPtr = NULL;
+        } else {
+            Log.warning("Trying to unmap buffer " + toString() + ", but it has not been mapped yet");
+        }
     }
 
     protected int mapFlags() {
         return GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
     }
 
+    protected int storageFlags() {
+        return GL_DYNAMIC_STORAGE_BIT | mapFlags();
+    }
+
     @Override
     public void release() {
+        unmapMemory();
         glDeleteBuffers(handle);
         handle = NULL;
     }
@@ -107,6 +129,4 @@ public abstract class GLBuffer implements GLObject, GraphicsBuffer, GraphicsMapp
         release();
         handle = glCreateBuffers();
     }
-
-    protected abstract int storageFlags();
 }

@@ -29,22 +29,22 @@ public abstract class Mesh extends ManagedResource {
     private final ByteBuffer vertexData;
     private final ByteBuffer indexData;
     private final Bounds bounds;
-    private final int vertexDataStride;
+    private final int stride;
 
-    public Mesh(ByteBuffer vertexData, int vertexDataStride) {
-        this(vertexData, null, vertexDataStride);
+    public Mesh(ByteBuffer vertexData, int stride) {
+        this(vertexData, null, stride);
     }
 
-    public Mesh(ByteBuffer vertexData, ByteBuffer indexData, int vertexDataStride) {
+    public Mesh(ByteBuffer vertexData, ByteBuffer indexData, int stride) {
         this.vertexData = requireNonNull(vertexData);
         this.indexData = requireNonNull(indexData);
-        this.vertexDataStride = vertexDataStride;
+        this.stride = stride;
         bounds = calculateBounds();
     }
 
 
     public int vertexCount() {
-        return vertexData.remaining() / vertexDataStride;
+        return vertexData.capacity() / stride;
     }
 
     public boolean indexed() {
@@ -52,23 +52,27 @@ public abstract class Mesh extends ManagedResource {
     }
 
     public int indexCount() {
-        return indexed() ? indexData.remaining() / UINT32_SIZEOF : 0;
+        return indexed() ? indexData.capacity() / UINT32_SIZEOF : 0;
     }
 
     public IBounds bounds() {
         return bounds;
     }
 
+    public int stride() {
+        return stride;
+    }
+
     public Vector3f position(int index, Vector3f dest) {
-        return dest.set((index * vertexDataStride) + VERTEX_POSITION_OFFSET, vertexData);
+        return dest.set((index * stride) + VERTEX_POSITION_OFFSET, vertexData);
     }
 
     public Vector3f normal(int index, Vector3f dest) {
-        return dest.set((index * vertexDataStride) + VERTEX_NORMAL_OFFSET, vertexData);
+        return dest.set((index * stride) + VERTEX_NORMAL_OFFSET, vertexData);
     }
 
     public Vector2f texCoords(int index, Vector2f dest) {
-        return dest.set((index * vertexDataStride) + VERTEX_TEXCOORDS_OFFSET, vertexData);
+        return dest.set((index * stride) + VERTEX_TEXCOORDS_OFFSET, vertexData);
     }
 
     public ByteBuffer vertexData() {

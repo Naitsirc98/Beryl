@@ -13,6 +13,7 @@ public abstract class GLTexture extends ManagedResource implements GLObject, Tex
 
     protected int handle;
     private GLSampler sampler;
+    private long residentHandle;
 
     public GLTexture(int target) {
         this.handle = glCreateTextures(target);
@@ -29,13 +30,17 @@ public abstract class GLTexture extends ManagedResource implements GLObject, Tex
     }
 
     public long makeResident() {
-        final long handleARB = handleARB();
-        glMakeTextureHandleResidentARB(handleARB);
-        return handleARB;
+        if(residentHandle == NULL) {
+            residentHandle = handleARB();
+            glMakeTextureHandleResidentARB(residentHandle);
+        }
+        return residentHandle;
     }
 
     public void makeNonResident() {
-        glMakeTextureHandleNonResidentARB(handleARB());
+        if(residentHandle != NULL) {
+            glMakeTextureHandleNonResidentARB(handleARB());
+        }
     }
 
     @Override
@@ -50,6 +55,7 @@ public abstract class GLTexture extends ManagedResource implements GLObject, Tex
 
     @Override
     protected void free() {
+        makeNonResident();
         glDeleteTextures(handle);
         sampler.release();
 

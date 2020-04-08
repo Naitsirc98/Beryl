@@ -7,6 +7,8 @@ import naitsirc98.beryl.images.Image;
 import naitsirc98.beryl.images.ImageFactory;
 import naitsirc98.beryl.images.PixelFormat;
 
+import static java.util.Objects.requireNonNull;
+
 public class GLGraphicsFactory implements GraphicsFactory {
 
     private Texture2D blankTexture2D;
@@ -30,7 +32,7 @@ public class GLGraphicsFactory implements GraphicsFactory {
         Texture2D texture = newTexture2D();
 
         try(Image image = ImageFactory.newImage(imagePath, pixelFormat)) {
-            texture.pixels(1, image);
+            texture.pixels(1, requireNonNull(image));
         }
 
         return texture;

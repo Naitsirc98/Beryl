@@ -3,6 +3,7 @@ package naitsirc98.beryl.graphics.opengl;
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.logging.Log.Level;
 import naitsirc98.beryl.resources.Resource;
+import org.lwjgl.opengl.GL43;
 import org.lwjgl.opengl.GLDebugMessageCallback;
 
 import static naitsirc98.beryl.graphics.opengl.GLContext.OPENGL_DEBUG_MESSAGES_ENABLED;
@@ -23,6 +24,7 @@ public class GLDebugMessenger implements Resource {
         glEnable(GL_DEBUG_OUTPUT);
         debugCallback = GLDebugMessageCallback.create(this::callback);
         glDebugMessageCallback(debugCallback, NULL);
+        glEnable(GL43.GL_DEBUG_OUTPUT_SYNCHRONOUS);
     }
 
     @Override

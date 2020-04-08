@@ -67,6 +67,10 @@ public class MeshInstance extends Component<MeshInstance> implements Iterable<Me
         return requires(Transform.class).modelMatrix();
     }
 
+    public Matrix4fc normalMatrix() {
+        return requires(Transform.class).normalMatrix();
+    }
+
     @Override
     public Class<? extends Component> type() {
         return MeshInstance.class;

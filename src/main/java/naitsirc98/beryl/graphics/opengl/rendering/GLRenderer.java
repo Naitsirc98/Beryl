@@ -31,7 +31,6 @@ public final class GLRenderer implements Renderer {
 
     @Override
     public void end() {
-        glBindFramebuffer(GL_FRAMEBUFFER, DEFAULT_FRAMEBUFFER);
         glfwSwapBuffers(glContext);
     }
 

@@ -8,6 +8,7 @@ import java.util.Map;
 import static naitsirc98.beryl.util.Asserts.assertThat;
 import static org.lwjgl.opengl.GL30.glBindBufferBase;
 import static org.lwjgl.opengl.GL31.*;
+import static org.lwjgl.opengl.GL44.GL_MAP_COHERENT_BIT;
 import static org.lwjgl.opengl.GL45.GL_DYNAMIC_STORAGE_BIT;
 import static org.lwjgl.opengl.GL45.GL_MAP_PERSISTENT_BIT;
 
@@ -41,10 +42,5 @@ public class GLUniformBuffer extends GLBuffer {
     @Override
     public Type type() {
         return Type.UNIFORM_BUFFER;
-    }
-
-    @Override
-    protected int storageFlags() {
-        return GL_DYNAMIC_STORAGE_BIT | GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT;
     }
 }

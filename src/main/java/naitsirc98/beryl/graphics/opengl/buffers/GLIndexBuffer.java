@@ -6,9 +6,4 @@ public class GLIndexBuffer extends GLBuffer {
     public Type type() {
         return Type.INDEX_BUFFER;
     }
-
-    @Override
-    protected int storageFlags() {
-        return 0;
-    }
 }

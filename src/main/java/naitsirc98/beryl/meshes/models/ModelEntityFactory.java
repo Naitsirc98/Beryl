@@ -62,9 +62,13 @@ public class ModelEntityFactory {
 
         MeshInstance meshInstance = entity.add(MeshInstance.class);
 
+        MeshView[] meshViews = new MeshView[node.numMeshes()];
+
         for(int i = 0;i < node.numMeshes();i++) {
-            meshInstance.meshView(getMeshView(node.mesh(i)));
+            meshViews[i] = getMeshView(node.mesh(i));
         }
+
+        meshInstance.meshViews(meshViews);
     }
 
     private MeshView getMeshView(Model.LoadedMesh loadedMesh) {

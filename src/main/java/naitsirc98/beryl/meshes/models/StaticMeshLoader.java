@@ -3,7 +3,6 @@ package naitsirc98.beryl.meshes.models;
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.meshes.Mesh;
 import naitsirc98.beryl.meshes.StaticMesh;
-import naitsirc98.beryl.meshes.vertices.VertexLayout;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
 import org.lwjgl.PointerBuffer;
@@ -17,8 +16,7 @@ import java.nio.file.Path;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.IntStream.range;
 import static naitsirc98.beryl.util.Asserts.assertTrue;
-import static naitsirc98.beryl.util.types.DataType.FLOAT32_SIZEOF;
-import static naitsirc98.beryl.util.types.DataType.INT32_SIZEOF;
+import static naitsirc98.beryl.util.types.DataType.*;
 import static org.lwjgl.assimp.Assimp.*;
 import static org.lwjgl.system.MemoryUtil.memAlloc;
 
@@ -26,7 +24,7 @@ public class StaticMeshLoader implements ModelLoader {
 
     private static final int DEFAULT_FLAGS = // aiProcess_OptimizeMeshes
             // aiProcess_OptimizeGraph
-            aiProcess_Triangulate
+                      aiProcess_Triangulate
                     | aiProcess_GenNormals
                     | aiProcess_GenSmoothNormals
                     | aiProcess_GenUVCoords
@@ -139,7 +137,7 @@ public class StaticMeshLoader implements ModelLoader {
             return null;
         }
 
-        ByteBuffer indices = memAlloc(numFaces * 3 * INT32_SIZEOF);
+        ByteBuffer indices = memAlloc(numFaces * 3 * UINT32_SIZEOF);
 
         AIFace.Buffer aiFaces = aiMesh.mFaces();
 
@@ -156,7 +154,7 @@ public class StaticMeshLoader implements ModelLoader {
             }
         }
 
-        return indices.flip();
+        return indices.rewind();
     }
 
     private Matrix4fc matrix4fc(AIMatrix4x4 aiMatrix4) {
@@ -233,7 +231,7 @@ public class StaticMeshLoader implements ModelLoader {
 
             vertices.putFloat(offset, position.x())
                     .putFloat(offset + FLOAT32_SIZEOF, position.y())
-                    .putFloat(offset + FLOAT32_SIZEOF, position.z());
+                    .putFloat(offset + FLOAT32_SIZEOF * 2, position.z());
 
             offset += stride;
         }

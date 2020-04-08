@@ -8,6 +8,8 @@
 #define MAX_POINT_LIGHTS 10
 #define MAX_SPOT_LIGHTS 10
 
+layout(bindless_sampler) uniform;
+
 struct Material {
 
     vec4 ambientColor;
@@ -21,13 +23,12 @@ struct Material {
     float shininess;
 };
 
-
 layout(std140, set = 0, binding = 0) uniform Camera {
     mat4 u_ProjectionViewMatrix;
     vec4 u_CameraPosition;
 };
 
-layout(std430, bindless_sampler, binding = 3) buffer Materials {
+layout(std430, binding = 3) buffer Materials {
     Material u_Material[];
 };
 
@@ -45,7 +46,7 @@ layout(location = 0) in VertexData {
     vec3 position;
     vec3 normal;
     vec2 texCoords;
-    flat uint materialIndex;
+    flat int materialIndex;
 } vertexData;
 
 
@@ -53,6 +54,8 @@ layout(location = 0) out vec4 out_FinalColor;
 
 
 vec3 cameraDirection;
+
+ Material material;
 
 vec4 materialAmbientColor;
 vec4 materialDiffuseColor;
@@ -69,7 +72,7 @@ void main() {
 
     cameraDirection = normalize(u_CameraPosition.xyz - vertexData.position);
 
-    Material material = u_Material[vertexData.materialIndex];
+    material = u_Material[vertexData.materialIndex];
 
     materialAmbientColor = material.ambientColor * texture(material.ambientMap, vertexData.texCoords);
     materialDiffuseColor = material.diffuseColor * texture(material.diffuseMap, vertexData.texCoords);
@@ -82,6 +85,8 @@ void main() {
 
     // TODO: check if material is affected by light
     out_FinalColor = computeLighting() + materialEmissiveColor;
+
+    out_FinalColor = vec4(1.0);
 }
 
 vec4 computeLighting() {
@@ -149,7 +154,7 @@ vec4 computeSpecularColor(vec4 lightColor, vec3 lightDirection) {
 
     vec3 halfwayDirection = normalize(lightDirection + viewDirection);
 
-    float specular = pow(computeAngle(vertexData.normal, halfwayDirection), u_Material.shininess);
+    float specular = pow(computeAngle(vertexData.normal, halfwayDirection), material.shininess);
 
 	return vec4(vec3(lightColor * (specular * materialSpecularColor)), materialSpecularColor.a);
 }

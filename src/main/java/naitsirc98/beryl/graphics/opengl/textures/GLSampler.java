@@ -16,7 +16,7 @@ public class GLSampler implements GLObject, Sampler {
     private BorderColor borderColor;
 
     public GLSampler() {
-        handle = glGenSamplers();
+        handle = glCreateSamplers();
     }
 
     @Override

@@ -17,11 +17,6 @@ public class GLStorageBuffer extends GLBuffer {
     }
 
     @Override
-    protected int storageFlags() {
-        return GL_DYNAMIC_STORAGE_BIT | mapFlags();
-    }
-
-    @Override
     public Type type() {
         return Type.STORAGE_BUFFER;
     }
