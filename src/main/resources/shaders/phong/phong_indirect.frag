@@ -11,24 +11,23 @@
 layout(bindless_sampler) uniform;
 
 struct Material {
-
     vec4 ambientColor;
     vec4 diffuseColor;
     vec4 specularColor;
     vec4 emissiveColor;
+    float shininess;
     sampler2D ambientMap;
     sampler2D diffuseMap;
     sampler2D specularMap;
     sampler2D emissiveMap;
-    float shininess;
 };
 
 layout(std140, set = 0, binding = 0) uniform Camera {
-    mat4 u_ProjectionViewMatrix;
-    vec4 u_CameraPosition;
-};
+    mat4 projectionViewMatrix;
+    vec4 position;
+} u_Camera;
 
-layout(std430, binding = 3) buffer Materials {
+layout(std430, binding = 3) readonly buffer Materials {
     Material u_Material[];
 };
 
@@ -55,7 +54,7 @@ layout(location = 0) out vec4 out_FinalColor;
 
 vec3 cameraDirection;
 
- Material material;
+Material material;
 
 vec4 materialAmbientColor;
 vec4 materialDiffuseColor;
@@ -70,7 +69,7 @@ vec4 computeSpotLighting(Light light);
 
 void main() {
 
-    cameraDirection = normalize(u_CameraPosition.xyz - vertexData.position);
+    cameraDirection = normalize(u_Camera.position.xyz - vertexData.position);
 
     material = u_Material[vertexData.materialIndex];
 
@@ -79,14 +78,13 @@ void main() {
     materialSpecularColor = material.specularColor * texture(material.specularMap, vertexData.texCoords);
     materialEmissiveColor = material.emissiveColor * texture(material.emissiveMap, vertexData.texCoords);
 
+    // IMPORTANT!!! IF NO MATERIAL IS USED, THIS WILL DISCARD ANY OUTPUT!! COULD CAUSE PROBLEMS WHEN DEBUGGING!!!!!
     if(materialAmbientColor.a + materialDiffuseColor.a < 0.001) {
         discard;
     }
 
     // TODO: check if material is affected by light
     out_FinalColor = computeLighting() + materialEmissiveColor;
-
-    out_FinalColor = vec4(1.0);
 }
 
 vec4 computeLighting() {
@@ -113,14 +111,14 @@ vec4 computeLighting() {
 }
 
 float computeAngle(vec3 v1, vec3 v2) {
-    return max(dot(v1, v2), 0.0f);
+    return max(dot(v1, v2), 0.0);
 }
 
 float computeAttenuation(vec3 lightPosition, float constant, float linear, float quadratic) {
 
     float distance = length(lightPosition - vertexData.position);
 
-    return 1.0f /
+    return 1.0 /
         (constant + linear * distance + quadratic * (distance * distance));
 }
 
@@ -130,7 +128,7 @@ float computeIntensity(vec3 normalizedDirection, vec3 lightDirection, float cutO
 
     float epsilon = (cutOff - outerCutOff);
 
-    return clamp((theta - outerCutOff) / epsilon, 0.0f, 1.0f);
+    return clamp((theta - outerCutOff) / epsilon, 0.0, 1.0);
 }
 
 vec4 computeDiffuseColor(vec4 lightColor, vec3 lightDirection) {
@@ -148,7 +146,7 @@ vec4 computeSpecularColor(vec4 lightColor, vec3 lightDirection) {
     // float specular = pow(computeAngle(cameraDirection, reflectDirection), u_Material.shininess);
 
     // Blinn-Phong
-    vec3 viewDirection = normalize(u_CameraPosition.xyz - vertexData.position);
+    vec3 viewDirection = normalize(u_Camera.position.xyz - vertexData.position);
 
     vec3 reflectDirection = reflect(-lightDirection, vertexData.normal);
 

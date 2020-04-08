@@ -6,8 +6,6 @@ import naitsirc98.beryl.core.BerylConfiguration;
 import naitsirc98.beryl.core.BerylFiles;
 import naitsirc98.beryl.graphics.GraphicsAPI;
 import naitsirc98.beryl.graphics.GraphicsFactory;
-import naitsirc98.beryl.graphics.opengl.rendering.Init;
-import naitsirc98.beryl.graphics.rendering.RenderingPaths;
 import naitsirc98.beryl.graphics.textures.Sampler;
 import naitsirc98.beryl.graphics.textures.Texture2D;
 import naitsirc98.beryl.graphics.window.Window;
@@ -15,13 +13,10 @@ import naitsirc98.beryl.images.Image;
 import naitsirc98.beryl.images.ImageFactory;
 import naitsirc98.beryl.images.PixelFormat;
 import naitsirc98.beryl.lights.DirectionalLight;
-import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.materials.Material;
 import naitsirc98.beryl.materials.PhongMaterial;
 import naitsirc98.beryl.meshes.Mesh;
 import naitsirc98.beryl.meshes.MeshView;
-import naitsirc98.beryl.meshes.models.Model;
-import naitsirc98.beryl.meshes.models.ModelEntityFactory;
 import naitsirc98.beryl.meshes.models.StaticMeshLoader;
 import naitsirc98.beryl.scenes.Entity;
 import naitsirc98.beryl.scenes.Scene;
@@ -34,7 +29,6 @@ import org.joml.Vector3f;
 
 import java.util.Random;
 
-import static naitsirc98.beryl.graphics.rendering.RenderingPaths.RPATH_PHONG;
 import static naitsirc98.beryl.scenes.SceneManager.newScene;
 import static naitsirc98.beryl.util.Maths.radians;
 
@@ -49,8 +43,6 @@ public class App1 extends BerylApplication {
 
         Beryl.launch(new App1());
     }
-
-    public static MeshView cubeMesh;
 
     private static void setConfiguration() {
         BerylConfiguration.DEBUG.set(true);
@@ -86,7 +78,7 @@ public class App1 extends BerylApplication {
 
         Scene scene = newScene("Scene");
 
-        // StaticMeshLoader modelLoader = new StaticMeshLoader();
+        StaticMeshLoader modelLoader = new StaticMeshLoader();
 
         // Mesh quadMesh = modelLoader.load(BerylFiles.getPath("models/quad.obj")).loadedMesh(0).mesh();
 
@@ -105,10 +97,12 @@ public class App1 extends BerylApplication {
 
         */
 
+        MeshView cubeMesh = new MeshView(modelLoader.load(BerylFiles.getPath("models/cube.obj")).loadedMesh(0).mesh(),
+                treeMaterialFunction("conifer_macedonian_pine_5"));
 
-        for(int i = 0;i < 0;i++) {
+        for(int i = 0;i < 1;i++) {
             Entity cube = scene.newEntity();
-            cube.add(Transform.class).position(0, -2, -120).scale(100);
+            cube.add(Transform.class).position(0, 0, 0).scale(1.0f);
             cube.add(MeshInstance.class).meshView(cubeMesh);
         }
 
@@ -127,10 +121,8 @@ public class App1 extends BerylApplication {
 
          */
 
-        Init.init();
-
         Entity camera = scene.newEntity("Camera");
-        camera.add(Transform.class).position(0, 2, -3);
+        camera.add(Transform.class).position(0, 0, 3);
         camera.add(Camera.class).lookAt(0, 0).clearColor(new Color(0.1f, 0.1f, 0.1f));
         camera.add(CameraController.class);
 
@@ -152,7 +144,12 @@ public class App1 extends BerylApplication {
 
                         Texture2D colorTexture = GraphicsFactory.get().newTexture2D();
 
-                        colorTexture.pixels(1, image);
+                        colorTexture.pixels(image);
+
+                        colorTexture.sampler().minFilter(Sampler.MinFilter.LINEAR_MIPMAP_LINEAR);
+                        colorTexture.sampler().magFilter(Sampler.MagFilter.LINEAR);
+
+                        colorTexture.generateMipmaps();
 
                         builder.map(colorTexture);
                     }
@@ -168,7 +165,10 @@ public class App1 extends BerylApplication {
 
                         Texture2D colorTexture = GraphicsFactory.get().newTexture2D();
 
-                        colorTexture.pixels(1, image);
+                        colorTexture.pixels(image);
+
+                        colorTexture.sampler().minFilter(Sampler.MinFilter.LINEAR_MIPMAP_LINEAR);
+                        colorTexture.sampler().magFilter(Sampler.MagFilter.LINEAR);
 
                         colorTexture.generateMipmaps();
 
@@ -187,7 +187,10 @@ public class App1 extends BerylApplication {
 
                         Texture2D colorTexture = GraphicsFactory.get().newTexture2D();
 
-                        colorTexture.pixels(1, image);
+                        colorTexture.pixels(image);
+
+                        colorTexture.sampler().minFilter(Sampler.MinFilter.LINEAR_MIPMAP_LINEAR);
+                        colorTexture.sampler().magFilter(Sampler.MagFilter.LINEAR);
 
                         colorTexture.generateMipmaps();
 

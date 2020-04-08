@@ -46,6 +46,7 @@ import java.util.logging.Logger;
 import static java.util.stream.IntStream.range;
 import static naitsirc98.beryl.graphics.ShaderStage.*;
 import static naitsirc98.beryl.meshes.vertices.VertexAttribute.POSITION3D;
+import static naitsirc98.beryl.meshes.vertices.VertexLayout.VERTEX_LAYOUT_3D;
 import static naitsirc98.beryl.util.Asserts.assertEquals;
 import static naitsirc98.beryl.util.types.DataType.*;
 import static org.lwjgl.opengl.GL11.GL_TRIANGLES;
@@ -54,6 +55,7 @@ import static org.lwjgl.opengl.GL42.glMemoryBarrier;
 import static org.lwjgl.opengl.GL45.*;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.*;
+import static org.lwjgl.system.MemoryUtil.NULL;
 import static org.lwjgl.system.libc.LibCString.memset;
 import static org.lwjgl.system.libc.LibCString.nmemcpy;
 
@@ -124,65 +126,41 @@ public class Rendering extends RenderingPath {
     private long matricesBufferMemory;
     private long materialsBufferMemory;
 
-    private GLStorageBuffer debug;
-
-
     public void init() {
 
-
-
-        /*
+        initVertexArray();
 
         cullingShader = new GLShaderProgram()
                 .attach(new GLShader(COMPUTE_STAGE).source(BerylFiles.getPath("shaders/compute/culling.comp")))
                 .link();
 
-         */
-
-        /*
         renderShader = new GLShaderProgram()
                 .attach(new GLShader(VERTEX_STAGE).source(BerylFiles.getPath("shaders/phong/phong_indirect.vert")))
-                .attach(new GLShader(FRAGMENT_STAGE).source(BerylFiles.getPath("shaders/phong/none.frag")))
+                .attach(new GLShader(FRAGMENT_STAGE).source(BerylFiles.getPath("shaders/phong/phong_indirect.frag")))
                 .link();
 
-         */
 
-        // cameraUniformBuffer = new GLUniformBuffer();
-        /*
+
+        cameraUniformBuffer = new GLUniformBuffer();
         cameraUniformBuffer.allocate(CAMERA_UNIFORM_BUFFER_SIZE);
         cameraUniformBuffer.set(CAMERA_UNIFORM_BUFFER_NAME, renderShader, 0);
 
-         */
-
-        // lightsUniformBuffer = new GLUniformBuffer();
-        /*
+        lightsUniformBuffer = new GLUniformBuffer();
         lightsUniformBuffer.allocate(LIGHTS_UNIFORM_BUFFER_SIZE);
         lightsUniformBuffer.set(LIGHTS_UNIFORM_BUFFER_NAME, renderShader, 1);
 
-         */
+        boundsBuffer = new GLStorageBuffer();
+        meshIDsBuffer = new GLStorageBuffer();
+        commandBuffer = new GLStorageBuffer();
+        matricesBuffer = new GLStorageBuffer();
+        materialsBuffer = new GLStorageBuffer();
 
-        // boundsBuffer = new GLStorageBuffer();
-        // meshIDsBuffer = new GLStorageBuffer();
-        // commandBuffer = new GLStorageBuffer();
-        // matricesBuffer = new GLStorageBuffer();
-        // materialsBuffer = new GLStorageBuffer();
-
-        // cameraUniformBufferMemory = cameraUniformBuffer.mapMemoryPtr(0);
-        // lightsUniformBufferMemory = lightsUniformBuffer.mapMemoryPtr(0);
-        // vertexBufferMemory = vertexBuffer.mapMemoryPtr(0);
-        // indexBufferMemory = indexBuffer.mapMemoryPtr(0);
-        // boundsBufferMemory = boundsBuffer.mapMemoryPtr(0);
-        // meshIDsBufferMemory = meshIDsBuffer.mapMemoryPtr(0);
-        // commandBufferMemory = commandBuffer.mapMemoryPtr(0);
-        // matricesBufferMemory = matricesBuffer.mapMemoryPtr(0);
-        // materialsBufferMemory = materialsBuffer.mapMemoryPtr(0);
-        // instanceBufferMemory = instanceBuffer.mapMemoryPtr(0);
+        cameraUniformBufferMemory = cameraUniformBuffer.mapMemoryPtr(0);
+        lightsUniformBufferMemory = lightsUniformBuffer.mapMemoryPtr(0);
     }
 
     @Override
     protected void terminate() {
-
-        /*
 
         cullingShader.release();
         renderShader.release();
@@ -199,16 +177,14 @@ public class Rendering extends RenderingPath {
         commandBuffer.release();
         matricesBuffer.release();
         materialsBuffer.release();
-
-         */
     }
 
     @Override
     public void render(Camera camera, Scene scene) {
         SceneMeshInfo meshInfo = scene.meshInfo();
-        // prepareBuffers(meshInfo.meshViews(), meshInfo.instancesTable(), meshInfo.instances(), meshInfo.materials());
-        // setLightsUniformBuffer(scene.environment());
-        // setCameraUniformBuffer(camera);
+        prepareBuffers(meshInfo.meshViews(), meshInfo.instancesTable(), meshInfo.instances(), meshInfo.materials());
+        setLightsUniformBuffer(scene.environment());
+        setCameraUniformBuffer(camera);
         render(camera, meshInfo.meshViews());
     }
 
@@ -230,59 +206,23 @@ public class Rendering extends RenderingPath {
         glClearColor(color.red(), color.green(), color.blue(), color.alpha());
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        // renderShader.bind();
+        // glMemoryBarrier(GL_ALL_BARRIER_BITS);
 
-        //cameraUniformBuffer.bind(renderShader);
-//
-        //lightsUniformBuffer.bind(renderShader);
-//
-        //matricesBuffer.bind(2);
-//
-        //materialsBuffer.bind(3);
-//
+        renderShader.bind();
+
+        cameraUniformBuffer.bind(renderShader);
+
+        lightsUniformBuffer.bind(renderShader);
+
+        matricesBuffer.bind(2);
+
+        materialsBuffer.bind(3);
+
         //commandBuffer.bindIndirect();
 
-        // debug.bind(10);
+        vertexArray.bind();
 
-        // renderShader.uniformMatrix4f("mvp", false, camera.projectionViewMatrix().get(BufferUtils.createFloatBuffer(16)));
-
-        // vertexArray.bind();
-
-        glUseProgram(Init.shader);
-
-        glBindVertexArray(Init.vao);
-
-        glDrawArrays(GL_TRIANGLES, 0, 3);
-
-        glBindVertexArray(0);
-
-        glUseProgram(0);
-
-        // renderShader.unbind();
-
-        /*
-
-        glFlush();
-        glFinish();
-
-        glMemoryBarrier(GL_SHADER_STORAGE_BUFFER);
-
-        FloatBuffer buffer = BufferUtils.createFloatBuffer((int) (debug.size() / 4));
-
-        int buf = debug.handle();
-
-        glGetNamedBufferSubData(buf, 0, buffer);
-
-        Vector4f v = new Vector4f();
-
-        for(int i = 0;i < 36;i++) {
-            buffer.position(i * 12);
-            System.out.println(i + " = " + v.set(buffer));
-        }
-
-        int y = 0;
-
-         */
+        glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, NULL);
 
         // glMultiDrawElementsIndirect(GL_TRIANGLES, GL_UNSIGNED_INT, NULL, numInstances, 0);
     }
@@ -449,14 +389,14 @@ public class Rendering extends RenderingPath {
             boundsBufferMemory = reallocateBuffer(boundsBuffer, boundsMinSize);
         }
 
-        final long verticesMinSize = meshViews.parallelStream().mapToLong(meshView-> meshView.mesh().vertexData().remaining()).sum();
+        final long verticesMinSize = meshViews.stream().mapToLong(meshView -> meshView.mesh().vertexData().remaining()).sum();
 
         if(vertexBuffer.size() < verticesMinSize) {
             vertexBufferMemory = reallocateBuffer(vertexBuffer, verticesMinSize);
             vertexArray.setVertexBuffer(VERTEX_BUFFER_BINDING, vertexBuffer, StaticMesh.VERTEX_DATA_SIZE);
         }
 
-        final long indicesMinSize = meshViews.parallelStream().mapToLong(meshView -> meshView.mesh().indexData().remaining()).sum();
+        final long indicesMinSize = meshViews.stream().mapToLong(meshView -> meshView.mesh().indexData().remaining()).sum();
 
         if(indexBuffer.size() < indicesMinSize) {
             indexBufferMemory = reallocateBuffer(indexBuffer, indicesMinSize);
@@ -597,115 +537,15 @@ public class Rendering extends RenderingPath {
 
     private void initVertexArray() {
 
-        float[] vertices = {
-                -0.5f, -0.5f, -0.5f,
-                0.5f, -0.5f, -0.5f,
-                0.5f,  0.5f, -0.5f,
-                0.5f,  0.5f, -0.5f,
-                -0.5f,  0.5f, -0.5f,
-                -0.5f, -0.5f, -0.5f,
-
-                -0.5f, -0.5f,  0.5f,
-                0.5f, -0.5f,  0.5f,
-                0.5f,  0.5f,  0.5f,
-                0.5f,  0.5f,  0.5f,
-                -0.5f,  0.5f,  0.5f,
-                -0.5f, -0.5f,  0.5f,
-
-                -0.5f,  0.5f,  0.5f,
-                -0.5f,  0.5f, -0.5f,
-                -0.5f, -0.5f, -0.5f,
-                -0.5f, -0.5f, -0.5f,
-                -0.5f, -0.5f,  0.5f,
-                -0.5f,  0.5f,  0.5f,
-
-                0.5f,  0.5f,  0.5f,
-                0.5f,  0.5f, -0.5f,
-                0.5f, -0.5f, -0.5f,
-                0.5f, -0.5f, -0.5f,
-                0.5f, -0.5f,  0.5f,
-                0.5f,  0.5f,  0.5f,
-
-                -0.5f, -0.5f, -0.5f,
-                0.5f, -0.5f, -0.5f,
-                0.5f, -0.5f,  0.5f,
-                0.5f, -0.5f,  0.5f,
-                -0.5f, -0.5f,  0.5f,
-                -0.5f, -0.5f, -0.5f,
-
-                -0.5f,  0.5f, -0.5f,
-                0.5f,  0.5f, -0.5f,
-                0.5f,  0.5f,  0.5f,
-                0.5f,  0.5f,  0.5f,
-                -0.5f,  0.5f,  0.5f,
-                -0.5f, 0.5f, -0.5f,
-        };
-/*
-        App1.cubeMesh = new MeshView(
-                new StaticMeshLoader().load(BerylFiles.getPath("models/cube.obj")).loadedMesh(0).mesh(), PhongMaterial.getDefault());
-
- */
-
-        FloatBuffer data = BufferUtils.createFloatBuffer(vertices.length);
-
-        for(int i = 0;i < vertices.length;i++) {
-            data.put(i, vertices[i]);
-        }
-
         vertexArray = new GLVertexArray();
 
         vertexBuffer = new GLVertexBuffer();
-        vertexBuffer.data(data);
 
-        VertexLayout vertexLayout = new VertexLayout.Builder(1)
-                .put(0, 0, POSITION3D)
-                .build();
+        vertexArray.setVertexAttributes(0, VERTEX_LAYOUT_3D.attributeList(0));
 
-        // vertexArray.setVertexBuffer(0, vertexBuffer, 12);
-        for(int i = 0;i < 1;i++) {
-            vertexArray.addVertexBuffer(i, vertexLayout.attributeList(i), vertexBuffer);
-        }
+        indexBuffer = new GLIndexBuffer();
 
-        // indexBuffer = new GLIndexBuffer();
-        // indexBuffer.data(App1.cubeMesh.mesh().indexData());
-
-        // instanceBuffer = new GLVertexBuffer();
-
-        /*
-
-        VertexLayout vertexLayout = new VertexLayout.Builder(2)
-                .put(0, 0, POSITION3D, NORMAL, TEXCOORDS2D)
-                .put(1, 3, INDEX, INDEX).instanced(1, true)
-                .build();
-
-        vertexArray.setVertexBuffer(0, vertexBuffer, StaticMesh.VERTEX_DATA_SIZE);
-        for(int i = 0;i < 1;i++) {
-            vertexArray.setVertexAttributes(i, vertexLayout.attributeList(i));
-        }
-
-         */
-/*
-        glVertexArrayVertexBuffer(vao, 0, vertexBuffer.handle(), 0, 12);
-        // Position
-        glEnableVertexArrayAttrib(vao, 0);
-        glVertexArrayAttribBinding(vao, 0, 0);
-        glVertexArrayAttribFormat(vao, 0, 3, GL_FLOAT, false, 0);
-        glVertexArrayBindingDivisor(vao, 0, 0);
-
- */
-        /*
-        // Normals
-        glEnableVertexArrayAttrib(vao, 1);
-        glVertexArrayAttribBinding(vao, 1, 0);
-        glVertexArrayAttribFormat(vao, 0, 3, GL_FLOAT, false, 12);
-        // TexCoords
-        glEnableVertexArrayAttrib(vao, 2);
-        glVertexArrayAttribBinding(vao, 2, 0);
-        glVertexArrayAttribFormat(vao, 0, 2, GL_FLOAT, false, 24);
-
-         */
-
-        // vertexArray.setIndexBuffer(indexBuffer);
+        instanceBuffer = new GLVertexBuffer();
     }
 
     private long reallocateBuffer(GraphicsMappableBuffer buffer, long size) {

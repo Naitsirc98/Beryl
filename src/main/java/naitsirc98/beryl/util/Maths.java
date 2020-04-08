@@ -55,7 +55,7 @@ public class Maths {
     }
 
     public static int log2(int n){
-        assertTrue(n <= 0);
+        assertTrue(n > 0);
         return Integer.SIZE - 1 - Integer.numberOfLeadingZeros(n);
     }
 }
