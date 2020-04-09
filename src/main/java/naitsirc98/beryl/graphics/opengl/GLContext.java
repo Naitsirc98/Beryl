@@ -6,6 +6,7 @@ import naitsirc98.beryl.graphics.GraphicsContext;
 import naitsirc98.beryl.graphics.GraphicsFactory;
 import naitsirc98.beryl.graphics.opengl.rendering.Rendering;
 import naitsirc98.beryl.graphics.rendering.RenderingPath;
+import naitsirc98.beryl.graphics.window.DisplayMode;
 import naitsirc98.beryl.graphics.window.Window;
 import naitsirc98.beryl.util.handles.LongHandle;
 import org.lwjgl.opengl.GL;
@@ -16,7 +17,7 @@ import java.util.Map;
 
 import static naitsirc98.beryl.graphics.opengl.GLDebugMessenger.newGLDebugMessenger;
 import static naitsirc98.beryl.graphics.rendering.RenderingPaths.RPATH_PHONG;
-import static naitsirc98.beryl.util.types.TypeUtils.newInstance;
+import static naitsirc98.beryl.graphics.window.DisplayMode.FULLSCREEN;
 import static org.lwjgl.glfw.GLFW.glfwMakeContextCurrent;
 import static org.lwjgl.glfw.GLFW.glfwSwapInterval;
 
@@ -45,7 +46,7 @@ public class GLContext implements GraphicsContext, LongHandle {
         debugMessenger = newGLDebugMessenger();
         graphicsFactory = new GLGraphicsFactory();
         mapper = new GLMapper();
-        glfwSwapInterval(INITIAL_VSYNC ? 1 : 0);
+        vsync(INITIAL_VSYNC);
         // glEnable(GL_MULTISAMPLE);
     }
 
@@ -56,10 +57,8 @@ public class GLContext implements GraphicsContext, LongHandle {
 
     @Override
     public void vsync(boolean vsync) {
-        if(this.vsync != vsync) {
-            this.vsync = vsync;
-            glfwSwapInterval(vsync ? 1 : 0);
-        }
+        glfwSwapInterval(vsync ? 1 : 0);
+        this.vsync = vsync;
     }
 
     @Override

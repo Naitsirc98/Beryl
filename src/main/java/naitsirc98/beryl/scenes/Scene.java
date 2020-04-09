@@ -1,5 +1,6 @@
 package naitsirc98.beryl.scenes;
 
+import naitsirc98.beryl.graphics.opengl.rendering.Rendering;
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.scenes.components.behaviours.AbstractBehaviour;
 import naitsirc98.beryl.scenes.components.behaviours.BehaviourManager;
@@ -99,6 +100,7 @@ public final class Scene {
         cameras.update();
         transforms.update();
         meshes.update();
+        ((Rendering)camera().renderingPath()).prepare(camera(), this);
     }
 
     void render() {

@@ -12,16 +12,19 @@ import java.nio.IntBuffer;
 
 import static org.lwjgl.opengl.GL15.glDeleteBuffers;
 import static org.lwjgl.opengl.GL45.*;
+import static org.lwjgl.system.MemoryUtil.memCallocPointer;
+import static org.lwjgl.system.MemoryUtil.memFree;
 
 public abstract class GLBuffer implements GLObject, GraphicsBuffer, GraphicsMappableBuffer {
 
     private int handle;
     private boolean allocated;
-    private long mappedPtr = NULL;
+    private final PointerBuffer mappedPtr;
 
     public GLBuffer() {
         handle = glCreateBuffers();
         allocated = false;
+        mappedPtr = memCallocPointer(1);
     }
 
     @Override
@@ -90,21 +93,24 @@ public abstract class GLBuffer implements GLObject, GraphicsBuffer, GraphicsMapp
 
     @Override
     public PointerBuffer mapMemory(long offset) {
-
-        if(mappedPtr != NULL) {
-            Log.fatal("Buffer " + toString() + " has been already mapped!");
+        if(!allocated) {
+            Log.warning("Trying to map buffer " + toString() + ", but it has not been allocated yet");
+        } else if(mappedPtr.get(0) == NULL) {
+            mappedPtr.put(0, nglMapNamedBufferRange(handle(), offset, size() - offset, mapFlags()));
         }
+        return mappedPtr;
+    }
 
-        mappedPtr = nglMapNamedBufferRange(handle(), offset, size() - offset, mapFlags());
-
-        return PointerBuffer.allocateDirect(1).put(mappedPtr);
+    @Override
+    public void flush() {
+        glFlushMappedNamedBufferRange(handle, 0, size());
     }
 
     @Override
     public void unmapMemory() {
-        if(mappedPtr != NULL) {
+        if(mappedPtr.get(0) != NULL) {
             glUnmapNamedBuffer(handle());
-            mappedPtr = NULL;
+            mappedPtr.put(0, NULL);
         }
     }
 
@@ -120,6 +126,7 @@ public abstract class GLBuffer implements GLObject, GraphicsBuffer, GraphicsMapp
     public void release() {
         unmapMemory();
         glDeleteBuffers(handle);
+        memFree(mappedPtr);
         handle = NULL;
     }
 

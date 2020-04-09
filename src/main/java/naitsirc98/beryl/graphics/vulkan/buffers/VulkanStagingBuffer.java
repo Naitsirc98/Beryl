@@ -91,4 +91,9 @@ public class VulkanStagingBuffer extends VulkanMappableBuffer {
                 .usage(VK_BUFFER_USAGE_TRANSFER_SRC_BIT)
                 .sharingMode(VK_SHARING_MODE_EXCLUSIVE);
     }
+
+    @Override
+    public void flush() {
+        // TODO
+    }
 }

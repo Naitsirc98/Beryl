@@ -397,6 +397,8 @@ public final class Window implements LongHandle {
         glfwWindowHint(GLFW_RED_BITS, vmode.redBits());
         glfwWindowHint(GLFW_GREEN_BITS, vmode.greenBits());
         glfwWindowHint(GLFW_BLUE_BITS, vmode.blueBits());
+        glfwWindowHint(GLFW_ALPHA_BITS, vmode.redBits());
+        glfwWindowHint(GLFW_REFRESH_RATE, vmode.refreshRate());
         return changeDisplayMode(monitor, vmode.refreshRate(), 0, 0, vmode.width(), vmode.height());
     }
 

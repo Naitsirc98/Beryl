@@ -77,12 +77,15 @@ public final class WindowFactory {
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
         if(Platform.get() == Platform.MACOSX) {
-            glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_COMPAT_PROFILE);
+            glfwWindowHint(GLFW_OPENGL_COMPAT_PROFILE, GLFW_TRUE);
         }
 
         if(Beryl.DEBUG) {
             glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
         }
+
+        glfwWindowHint(GLFW_SRGB_CAPABLE, GLFW_TRUE);
+        glfwWindowHint(GLFW_DOUBLEBUFFER, GLFW_TRUE);
 
         // glfwWindowHint(GLFW_SAMPLES, 4);
     }

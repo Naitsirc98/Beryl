@@ -44,4 +44,9 @@ public class VulkanUniformBuffer extends VulkanMappableBuffer {
                 .sharingMode(VK_SHARING_MODE_EXCLUSIVE)
                 .size(size);
     }
+
+    @Override
+    public void flush() {
+        // TODO
+    }
 }
