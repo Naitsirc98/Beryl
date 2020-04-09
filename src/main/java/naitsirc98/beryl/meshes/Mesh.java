@@ -1,8 +1,11 @@
 package naitsirc98.beryl.meshes;
 
 import naitsirc98.beryl.resources.ManagedResource;
-import naitsirc98.beryl.util.geometry.Bounds;
-import naitsirc98.beryl.util.geometry.IBounds;
+import naitsirc98.beryl.util.geometry.AABB;
+import naitsirc98.beryl.util.geometry.IAABB;
+import naitsirc98.beryl.util.geometry.ISphere;
+import naitsirc98.beryl.util.geometry.Sphere;
+import org.joml.Spheref;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 
@@ -28,7 +31,8 @@ public abstract class Mesh extends ManagedResource {
 
     private final ByteBuffer vertexData;
     private final ByteBuffer indexData;
-    private final Bounds bounds;
+    private final AABB boundingBox;
+    private final ISphere boundingSphere;
     private final int stride;
 
     public Mesh(ByteBuffer vertexData, int stride) {
@@ -39,9 +43,9 @@ public abstract class Mesh extends ManagedResource {
         this.vertexData = requireNonNull(vertexData);
         this.indexData = requireNonNull(indexData);
         this.stride = stride;
-        bounds = calculateBounds();
+        boundingBox = calculateBounds();
+        boundingSphere = calculateBoundingSphere(boundingBox);
     }
-
 
     public int vertexCount() {
         return vertexData.capacity() / stride;
@@ -55,8 +59,12 @@ public abstract class Mesh extends ManagedResource {
         return indexed() ? indexData.capacity() / UINT32_SIZEOF : 0;
     }
 
-    public IBounds bounds() {
-        return bounds;
+    public IAABB bounds() {
+        return boundingBox;
+    }
+
+    public ISphere boundingSphere() {
+        return boundingSphere;
     }
 
     public int stride() {
@@ -83,13 +91,12 @@ public abstract class Mesh extends ManagedResource {
         return indexData;
     }
 
+    private AABB calculateBounds() {
 
-    private Bounds calculateBounds() {
+        AABB aabb = new AABB();
 
-        Bounds bounds = new Bounds();
-
-        Vector3f min = bounds.min;
-        Vector3f max = bounds.max;
+        Vector3f min = aabb.min;
+        Vector3f max = aabb.max;
 
         Vector3f vertexPosition = new Vector3f();
 
@@ -100,15 +107,37 @@ public abstract class Mesh extends ManagedResource {
             position(i, vertexPosition);
 
             min.x = min(min.x, vertexPosition.x);
-            min.x = min(min.y, vertexPosition.y);
-            min.x = min(min.z, vertexPosition.z);
+            min.y = min(min.y, vertexPosition.y);
+            min.z = min(min.z, vertexPosition.z);
 
             max.x = max(max.x, vertexPosition.x);
-            max.x = max(max.x, vertexPosition.x);
-            max.x = max(max.x, vertexPosition.x);
+            max.y = max(max.x, vertexPosition.x);
+            max.z = max(max.x, vertexPosition.x);
         }
 
-        return bounds;
+        return aabb;
+    }
+
+    private ISphere calculateBoundingSphere(IAABB bounds) {
+
+        Vector3f centroid = new Vector3f(bounds.centerX(), bounds.centerY(), bounds.centerZ());
+        Vector3f vertexPosition = new Vector3f();
+
+        float radius = Float.NEGATIVE_INFINITY;
+        Sphere boundingSphere = new Sphere(centroid, radius);
+
+        final int vertexCount = vertexCount();
+
+        for(int i = 0;i < vertexCount;i++) {
+
+            position(i, vertexPosition);
+
+            radius = max(radius, centroid.distance(vertexPosition));
+        }
+
+        boundingSphere.radius = radius;
+
+        return boundingSphere;
     }
 
     @Override

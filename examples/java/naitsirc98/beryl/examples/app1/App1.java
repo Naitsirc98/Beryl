@@ -106,7 +106,7 @@ public class App1 extends BerylApplication {
                     PhongMaterial.get(i+"", builder -> builder.color(new Color(RAND.nextFloat(), RAND.nextFloat(), RAND.nextFloat(), 1))));
         }
 
-        for(int i = 0;i < 100;i++) {
+        for(int i = 0;i < 300;i++) {
             Entity cube = scene.newEntity();
             cube.add(Transform.class).position(i * 2.25f, 0, 0).scale(1.0f);
             cube.add(MeshInstance.class).meshView(meshViews[RAND.nextInt(meshViews.length)]);

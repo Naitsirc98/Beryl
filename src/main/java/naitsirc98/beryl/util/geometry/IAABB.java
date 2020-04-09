@@ -5,7 +5,7 @@ import org.joml.Vector3fc;
 
 import java.nio.ByteBuffer;
 
-public interface IBounds extends ByteSize {
+public interface IAABB extends ByteSize {
 
     Vector3fc min();
 

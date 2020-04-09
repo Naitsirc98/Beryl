@@ -4,21 +4,22 @@ import naitsirc98.beryl.util.types.ByteSize;
 import org.joml.Vector3f;
 
 import java.nio.ByteBuffer;
+import java.util.Objects;
 
 import static naitsirc98.beryl.util.Asserts.assertTrue;
 import static naitsirc98.beryl.util.types.DataType.FLOAT32_SIZEOF;
 
-@ByteSize.Static(Bounds.SIZEOF)
-public final class Bounds implements IBounds {
+@ByteSize.Static(AABB.SIZEOF)
+public final class AABB implements IAABB {
 
     public static final int SIZEOF = (3 + 3) * FLOAT32_SIZEOF;
 
     public final Vector3f min;
     public final Vector3f max;
 
-    public Bounds() {
+    public AABB() {
         this.min = new Vector3f(Float.POSITIVE_INFINITY);
-        this.max = new Vector3f(-Float.NEGATIVE_INFINITY);
+        this.max = new Vector3f(Float.NEGATIVE_INFINITY);
     }
 
     @Override
@@ -59,5 +60,27 @@ public final class Bounds implements IBounds {
     @Override
     public int sizeof() {
         return SIZEOF;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        AABB aabb = (AABB) o;
+        return Objects.equals(min, aabb.min) &&
+                Objects.equals(max, aabb.max);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(min, max);
+    }
+
+    @Override
+    public String toString() {
+        return "Bounds{" +
+                "min=" + min +
+                ", max=" + max +
+                '}';
     }
 }

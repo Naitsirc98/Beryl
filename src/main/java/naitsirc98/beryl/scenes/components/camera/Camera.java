@@ -17,7 +17,6 @@ import static naitsirc98.beryl.util.Asserts.assertNonNull;
 import static naitsirc98.beryl.util.Maths.*;
 import static naitsirc98.beryl.util.types.TypeUtils.getOrElse;
 import static org.joml.Math.max;
-import static org.joml.Math.min;
 
 public final class Camera extends Component<Camera> {
 
@@ -64,7 +63,7 @@ public final class Camera extends Component<Camera> {
 	private Matrix4f projectionMatrix;
 	private Matrix4f viewMatrix;
 	private Matrix4f projectionViewMatrix;
-	private FrustumIntersection frustum;
+	private Vector4f[] frustumPlanes;
 	// Movement
 	private float lastX;
 	private float lastY;
@@ -103,7 +102,11 @@ public final class Camera extends Component<Camera> {
 		viewMatrix = new Matrix4f();
 		projectionMatrix = new Matrix4f();
 		projectionViewMatrix = new Matrix4f();
-		frustum = new FrustumIntersection();
+
+		frustumPlanes = new Vector4f[6];
+		for(int i = 0;i < frustumPlanes.length;i++) {
+			frustumPlanes[i] = new Vector4f();
+		}
 
 		modified = true;
 
@@ -202,9 +205,9 @@ public final class Camera extends Component<Camera> {
 		return projectionViewMatrix;
 	}
 	
-	public FrustumIntersection frustum() {
+	public Vector4fc[] frustumPlanes() {
 		assertNotDeleted();
-		return frustum;
+		return frustumPlanes;
 	}
 
 	public Transform transform() {
@@ -406,8 +409,14 @@ public final class Camera extends Component<Camera> {
 		recalculateView();
 		recalculateProjection();
 		projectionMatrix.mul(viewMatrix, projectionViewMatrix);
-		frustum.set(projectionViewMatrix);
+		getFrustumPlanes();
 		modified = false;
+	}
+
+	private void getFrustumPlanes() {
+		for(int i = 0;i < frustumPlanes.length;i++) {
+			projectionViewMatrix.frustumPlane(i, frustumPlanes[i]);
+		}
 	}
 
 	private void recalculateView() {
@@ -486,7 +495,7 @@ public final class Camera extends Component<Camera> {
 		projectionMatrix = null;
 		viewMatrix = null;
 		projectionViewMatrix = null;
-		frustum = null;
+		frustumPlanes = null;
 		viewport = null;
 		projectionType = null;
 		renderingPath = null;
