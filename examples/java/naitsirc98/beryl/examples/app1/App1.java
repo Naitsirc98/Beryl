@@ -99,7 +99,7 @@ public class App1 extends BerylApplication {
 
         Mesh cubeMesh = modelLoader.load(BerylFiles.getPath("models/cube.obj")).loadedMesh(0).mesh();
 
-        MeshView[] meshViews = new MeshView[2];
+        MeshView[] meshViews = new MeshView[100];
 
         for(int i = 0;i < meshViews.length;i++) {
             meshViews[i] = new MeshView(cubeMesh,

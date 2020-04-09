@@ -1,6 +1,7 @@
 package naitsirc98.beryl.graphics.opengl.commands;
 
 import naitsirc98.beryl.util.types.ByteSize;
+import org.lwjgl.system.MemoryStack;
 
 import java.nio.ByteBuffer;
 
@@ -30,6 +31,10 @@ public final class GLDrawElementsCommand implements GLDrawCommand {
     private static final int FIRST_INDEX_OFFSET = PRIM_COUNT_OFFSET + UINT32_SIZEOF;
     private static final int BASE_VERTEX_OFFSET = FIRST_INDEX_OFFSET + UINT32_SIZEOF;
     private static final int BASE_INSTANCE_OFFSET = BASE_VERTEX_OFFSET + INT32_SIZEOF;
+
+    public static GLDrawElementsCommand callocStack(MemoryStack stack) {
+        return new GLDrawElementsCommand(stack.calloc(SIZEOF));
+    }
 
     private final long address;
     private final ByteBuffer buffer;

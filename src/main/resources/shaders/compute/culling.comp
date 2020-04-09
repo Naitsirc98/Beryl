@@ -17,20 +17,19 @@ struct BoundingBox {
 
 layout(local_size_x = 1) in;
 
-
-layout(std430 = 0) buffer CommandBuffer {
+layout(std430) buffer CommandBuffer {
     DrawCommand[] commands;
 };
 
-layout(std430 = 1) readonly buffer Bounds {
+layout(std430) readonly buffer Bounds {
     BoundingBox boundingBoxes[];
 };
 
-layout(std430 = 2) readonly buffer Matrices {
+layout(std430) readonly buffer Matrices {
     mat4 modelMatrices[];
 };
 
-layout(std430 = 3) readonly buffer MeshIDs {
+layout(std430) readonly buffer MeshIDs {
     uint meshIDs[];
 };
 
@@ -42,5 +41,10 @@ void main() {
 
     uint visible = 1; // Frustum culling, 1 = visible, 0 otherwise
 
-    commands[index].instanceCount = 1;
+    DrawCommand meshCommandData = commands[meshIDs[index]];
+
+    DrawCommand command = meshCommandData;
+    command.instanceCount = 1;
+
+    commands[index] = command;
 }

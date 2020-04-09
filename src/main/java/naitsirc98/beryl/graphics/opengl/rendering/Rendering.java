@@ -188,11 +188,14 @@ public class Rendering extends RenderingPath {
         unmapBuffer(materialsBuffer);
     }
 
+    int n;
+
     public void prepare(Camera camera, Scene scene) {
         SceneMeshInfo meshInfo = scene.meshInfo();
         prepareBuffers(meshInfo.meshViews(), meshInfo.instancesTable(), meshInfo.instances(), meshInfo.materials());
         setLightsUniformBuffer(scene.environment());
         setCameraUniformBuffer(camera);
+        n = meshInfo.meshViews().size();
     }
 
     @Override
@@ -228,13 +231,13 @@ public class Rendering extends RenderingPath {
 
         materialsBuffer.bind(3);
 
-        //commandBuffer.bindIndirect();
+        commandBuffer.bindIndirect();
 
         vertexArray.bind();
 
-        glDrawElementsInstanced(GL_TRIANGLES, 36, GL_UNSIGNED_INT, NULL, numInstances);
+        // glDrawElementsInstanced(GL_TRIANGLES, 36, GL_UNSIGNED_INT, NULL, numInstances);
 
-        // glMultiDrawElementsIndirect(GL_TRIANGLES, GL_UNSIGNED_INT, NULL, numInstances, 0);
+        glMultiDrawElementsIndirect(GL_TRIANGLES, GL_UNSIGNED_INT, NULL, n, 0);
     }
 
     private void performCullingPass(int numInstances) {
