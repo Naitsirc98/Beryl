@@ -17,34 +17,45 @@ struct BoundingBox {
 
 layout(local_size_x = 1) in;
 
-layout(std430) buffer CommandBuffer {
-    DrawCommand[] commands;
+layout(std430, binding = 0) readonly buffer MeshCommandBuffer {
+    DrawCommand[] meshCommands;
 };
 
-layout(std430) readonly buffer Bounds {
+layout(std430, binding = 1) writeonly buffer CommandBuffer {
+    DrawCommand[] instanceCommands;
+};
+
+layout(std430, binding = 2) readonly buffer Bounds {
     BoundingBox boundingBoxes[];
 };
 
-layout(std430) readonly buffer Matrices {
+layout(std430, binding = 3) readonly buffer Matrices {
     mat4 modelMatrices[];
 };
 
-layout(std430) readonly buffer MeshIDs {
-    uint meshIDs[];
+layout(std430, binding = 4) readonly buffer MeshIDs {
+    int meshIDs[];
 };
 
 void main() {
 
-    const uint index = gl_LocalInvocationID.x;
+    const uint index = gl_GlobalInvocationID.x;
 
-    BoundingBox aabb = boundingBoxes[meshIDs[index]];
+    const int meshID = meshIDs[index];
+
+    BoundingBox aabb = boundingBoxes[meshID];
 
     uint visible = 1; // Frustum culling, 1 = visible, 0 otherwise
 
-    DrawCommand meshCommandData = commands[meshIDs[index]];
+    if(visible == 1) {
 
-    DrawCommand command = meshCommandData;
-    command.instanceCount = 1;
+        DrawCommand meshCommand = meshCommands[meshID];
 
-    commands[index] = command;
+        DrawCommand command = meshCommand;
+
+        command.instanceCount = 1;
+        command.baseInstance = index;
+
+        instanceCommands[index] = command;
+    }
 }

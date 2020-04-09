@@ -40,53 +40,53 @@ public final class GLDrawElementsCommand implements GLDrawCommand {
     private final ByteBuffer buffer;
 
     public GLDrawElementsCommand(ByteBuffer buffer) {
-        assertTrue(buffer.capacity() >= GLDrawElementsCommand.SIZEOF);
+        assertTrue(buffer.remaining() >= GLDrawElementsCommand.SIZEOF);
         this.buffer = requireNonNull(buffer);
         this.address = memAddress0(buffer);
     }
 
     public int count() {
-        return buffer.getInt(COUNT_OFFSET);
+        return buffer.getInt(position() + COUNT_OFFSET);
     }
 
     public GLDrawElementsCommand count(int count) {
-        buffer.putInt(COUNT_OFFSET, count);
+        buffer.putInt(position() + COUNT_OFFSET, count);
         return this;
     }
 
     public int primCount() {
-        return buffer.getInt(PRIM_COUNT_OFFSET);
+        return buffer.getInt(position() + PRIM_COUNT_OFFSET);
     }
 
     public GLDrawElementsCommand primCount(int primCount) {
-        buffer.putInt(PRIM_COUNT_OFFSET, primCount);
+        buffer.putInt(position() + PRIM_COUNT_OFFSET, primCount);
         return this;
     }
 
     public int firstIndex() {
-        return buffer.getInt(FIRST_INDEX_OFFSET);
+        return buffer.getInt(position() + FIRST_INDEX_OFFSET);
     }
 
     public GLDrawElementsCommand firstIndex(int firstIndex) {
-        buffer.putInt(FIRST_INDEX_OFFSET, firstIndex);
+        buffer.putInt(position() + FIRST_INDEX_OFFSET, firstIndex);
         return this;
     }
 
     public int baseVertex() {
-        return buffer.getInt(BASE_VERTEX_OFFSET);
+        return buffer.getInt(position() + BASE_VERTEX_OFFSET);
     }
 
     public GLDrawElementsCommand baseVertex(int baseVertex) {
-        buffer.putInt(BASE_VERTEX_OFFSET, baseVertex);
+        buffer.putInt(position() + BASE_VERTEX_OFFSET, baseVertex);
         return this;
     }
 
     public int baseInstance() {
-        return buffer.getInt(BASE_INSTANCE_OFFSET);
+        return buffer.getInt(position() + BASE_INSTANCE_OFFSET);
     }
 
     public GLDrawElementsCommand baseInstance(int baseInstance) {
-        buffer.putInt(BASE_INSTANCE_OFFSET, baseInstance);
+        buffer.putInt(position() + BASE_INSTANCE_OFFSET, baseInstance);
         return this;
     }
 
@@ -112,5 +112,9 @@ public final class GLDrawElementsCommand implements GLDrawCommand {
 
     public ByteBuffer buffer() {
         return buffer;
+    }
+
+    public int position() {
+        return buffer.position();
     }
 }
