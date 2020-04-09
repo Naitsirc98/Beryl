@@ -15,8 +15,6 @@ import static naitsirc98.beryl.util.Asserts.assertTrue;
 
 public class MeshInstance extends Component<MeshInstance> implements Iterable<MeshView> {
 
-    private static final List<MeshView> EMPTY = Collections.emptyList();
-
     private List<MeshView> meshViews;
 
     private MeshInstance() {
@@ -26,7 +24,7 @@ public class MeshInstance extends Component<MeshInstance> implements Iterable<Me
     @Override
     protected void init() {
         super.init();
-        meshViews = EMPTY;
+        meshViews = null;
     }
 
     public MeshView meshView(int index) {
@@ -42,23 +40,24 @@ public class MeshInstance extends Component<MeshInstance> implements Iterable<Me
     }
 
     public MeshInstance meshViews(MeshView meshView) {
-        if(meshViews != EMPTY) {
+        if(meshViews != null) {
             Log.error("Cannot modify Mesh Instance component once you have set its Mesh Views");
         } else {
             assertNonNull(meshView);
-            meshViews = Collections.singletonList(meshView);
-            onEnable();
+            this.meshViews = Collections.singletonList(meshView);
+            doLater(() -> manager().enable(this));
         }
         return this;
     }
 
     public MeshInstance meshViews(MeshView... meshViews) {
-        if(this.meshViews != EMPTY) {
+        if(this.meshViews != null) {
             Log.error("Cannot modify Mesh Instance component once you have set its Mesh Views");
         } else {
             assertNonNull(meshViews);
             assertTrue(meshViews.length > 0);
             this.meshViews = Arrays.stream(meshViews).filter(Objects::nonNull).distinct().collect(Collectors.toUnmodifiableList());
+            doLater(() -> manager().enable(this));
         }
         return this;
     }
@@ -78,7 +77,7 @@ public class MeshInstance extends Component<MeshInstance> implements Iterable<Me
 
     @Override
     public boolean enabled() {
-        return super.enabled() && meshViews != EMPTY;
+        return super.enabled() && meshViews != null;
     }
 
     @Override
@@ -108,5 +107,10 @@ public class MeshInstance extends Component<MeshInstance> implements Iterable<Me
     @Override
     public Iterator<MeshView> iterator() {
         return meshViews.iterator();
+    }
+
+    @Override
+    protected MeshInstanceManager manager() {
+        return (MeshInstanceManager) super.manager();
     }
 }

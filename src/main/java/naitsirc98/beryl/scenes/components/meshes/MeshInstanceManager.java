@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletionService;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -51,13 +52,13 @@ public final class MeshInstanceManager extends AbstractComponentManager<MeshInst
     @Override
     protected void enable(MeshInstance instance) {
         super.enable(instance);
-        addInstance(instance);
+        // addInstance(instance);
     }
 
     @Override
     protected void disable(MeshInstance instance) {
         super.disable(instance);
-        removeInstance(instance);
+        // removeInstance(instance);
     }
 
     @Override
@@ -101,7 +102,7 @@ public final class MeshInstanceManager extends AbstractComponentManager<MeshInst
 
     private void addInstance(MeshInstance instance) {
 
-        instance.meshViews().forEach(meshView -> {
+        for(MeshView meshView : instance) {
 
             List<MeshInstance> instances;
 
@@ -116,12 +117,12 @@ public final class MeshInstanceManager extends AbstractComponentManager<MeshInst
             instances.add(instance);
 
             modifications.incrementAndGet();
-        });
+        }
     }
 
     private void removeInstance(MeshInstance instance) {
 
-        instance.meshViews().forEach(meshView -> {
+        for(MeshView meshView : instance) {
 
             List<MeshInstance> instances = instancesTable.get(meshView);
 
@@ -133,6 +134,7 @@ public final class MeshInstanceManager extends AbstractComponentManager<MeshInst
             }
 
             modifications.incrementAndGet();
-        });
+
+        }
     }
 }

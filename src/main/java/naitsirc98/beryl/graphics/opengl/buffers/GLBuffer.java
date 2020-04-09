@@ -105,8 +105,6 @@ public abstract class GLBuffer implements GLObject, GraphicsBuffer, GraphicsMapp
         if(mappedPtr != NULL) {
             glUnmapNamedBuffer(handle());
             mappedPtr = NULL;
-        } else {
-            Log.warning("Trying to unmap buffer " + toString() + ", but it has not been mapped yet");
         }
     }
 

@@ -80,7 +80,7 @@ void main() {
 
     // IMPORTANT!!! IF NO MATERIAL IS USED, THIS WILL DISCARD ANY OUTPUT!! COULD CAUSE PROBLEMS WHEN DEBUGGING!!!!!
     if(materialAmbientColor.a + materialDiffuseColor.a < 0.001) {
-        discard;
+        // discard;
     }
 
     // TODO: check if material is affected by light

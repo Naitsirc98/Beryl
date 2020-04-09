@@ -2,6 +2,8 @@ package naitsirc98.beryl.meshes;
 
 import naitsirc98.beryl.materials.Material;
 
+import java.util.Objects;
+
 public final class MeshView {
 
     private final Mesh mesh;
@@ -18,5 +20,19 @@ public final class MeshView {
 
     public Material material() {
         return material;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        MeshView meshView = (MeshView) o;
+        return Objects.equals(mesh, meshView.mesh) &&
+                Objects.equals(material, meshView.material);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(mesh, material);
     }
 }

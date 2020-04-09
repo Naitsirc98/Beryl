@@ -97,13 +97,19 @@ public class App1 extends BerylApplication {
 
         */
 
-        MeshView cubeMesh = new MeshView(modelLoader.load(BerylFiles.getPath("models/cube.obj")).loadedMesh(0).mesh(),
-                treeMaterialFunction("conifer_macedonian_pine_5"));
+        Mesh cubeMesh = modelLoader.load(BerylFiles.getPath("models/cube.obj")).loadedMesh(0).mesh();
 
-        for(int i = 0;i < 1;i++) {
+        MeshView[] meshViews = new MeshView[100];
+
+        for(int i = 0;i < meshViews.length;i++) {
+            meshViews[i] = new MeshView(cubeMesh,
+                    PhongMaterial.get(i+"", builder -> builder.color(new Color(RAND.nextFloat(), RAND.nextFloat(), RAND.nextFloat(), 1))));
+        }
+
+        for(int i = 0;i < 100;i++) {
             Entity cube = scene.newEntity();
-            cube.add(Transform.class).position(0, 0, 0).scale(1.0f);
-            cube.add(MeshInstance.class).meshView(cubeMesh);
+            cube.add(Transform.class).position(i * 2.25f, 0, 0).scale(1.0f);
+            cube.add(MeshInstance.class).meshView(meshViews[RAND.nextInt(meshViews.length)]);
         }
 
         // Entity floor = scene.newEntity("floor");
