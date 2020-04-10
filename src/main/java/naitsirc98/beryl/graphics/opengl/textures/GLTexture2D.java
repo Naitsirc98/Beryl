@@ -1,7 +1,6 @@
 package naitsirc98.beryl.graphics.opengl.textures;
 
 import naitsirc98.beryl.graphics.textures.Texture2D;
-import naitsirc98.beryl.images.Image;
 import naitsirc98.beryl.images.PixelFormat;
 
 import java.nio.ByteBuffer;

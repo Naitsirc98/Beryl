@@ -29,19 +29,14 @@ import naitsirc98.beryl.util.Color;
 import naitsirc98.beryl.util.geometry.AABB;
 import naitsirc98.beryl.util.geometry.ISphere;
 import org.joml.Matrix4fc;
-import org.lwjgl.BufferUtils;
 import org.lwjgl.system.MemoryStack;
 
 import java.nio.ByteBuffer;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static java.util.stream.IntStream.range;
 import static naitsirc98.beryl.graphics.ShaderStage.*;
 import static naitsirc98.beryl.meshes.vertices.VertexAttribute.*;
-import static naitsirc98.beryl.util.Asserts.assertEquals;
-import static naitsirc98.beryl.util.Asserts.assertTrue;
 import static naitsirc98.beryl.util.types.DataType.*;
 import static org.lwjgl.opengl.GL11.GL_TRIANGLES;
 import static org.lwjgl.opengl.GL42.GL_COMMAND_BARRIER_BIT;
@@ -174,11 +169,11 @@ public class Rendering extends RenderingPath {
 
     public void prepare(Camera camera, Scene scene) {
         SceneMeshInfo meshInfo = scene.meshInfo();
-        prepareBuffers(meshInfo.meshViews(), meshInfo.instancesTable(), meshInfo.instances(), meshInfo.materials());
+        prepareBuffers(meshInfo);
         setLightsUniformBuffer(scene.environment());
         setCameraUniformBuffer(camera);
         setFrustumUniformBuffer(camera);
-        performCullingPass(meshInfo.instances().size());
+        performCullingPass(meshInfo.numMeshViewsInstances());
     }
 
     @Override
@@ -209,10 +204,10 @@ public class Rendering extends RenderingPath {
 
         vertexArray.bind();
 
-        glMultiDrawElementsIndirect(GL_TRIANGLES, GL_UNSIGNED_INT, NULL, meshInfo.instances().size(), 0);
+        glMultiDrawElementsIndirect(GL_TRIANGLES, GL_UNSIGNED_INT, NULL, meshInfo.numMeshViewsInstances(), 0);
     }
 
-    private void performCullingPass(int numInstances) {
+    private void performCullingPass(int numObjects) {
 
         cullingShader.bind();
 
@@ -223,21 +218,21 @@ public class Rendering extends RenderingPath {
         meshIDsBuffer.bind(4);
         frustumUniformBuffer.bind(cullingShader);
 
-        glDispatchCompute(numInstances, 1, 1);
+        glDispatchCompute(numObjects, 1, 1);
 
         glMemoryBarrier(GL_COMMAND_BARRIER_BIT | GL_SHADER_STORAGE_BUFFER);
     }
 
-    private void prepareBuffers(List<MeshView> meshViews, Map<MeshView, List<MeshInstance>> instancesTable,
-                                List<MeshInstance> instances, List<Material> materials) {
-        prepareMeshBuffers(meshViews, instancesTable);
-        prepareMatricesBuffer(instances);
-        prepareMaterialsBuffer(materials);
-        prepareInstanceBuffer(meshViews, instancesTable, instances.size(), materials);
+    private void prepareBuffers(SceneMeshInfo meshInfo) {
+        prepareMeshBuffers(meshInfo.meshes());
+        prepareMatricesBuffer(meshInfo);
+        prepareMaterialsBuffer(meshInfo.materials());
+        prepareInstanceBuffer(meshInfo);
     }
 
-    private void prepareInstanceBuffer(List<MeshView> meshViews, Map<MeshView, List<MeshInstance>> instancesTable,
-                                       int numInstances, List<Material> materials) {
+    private void prepareInstanceBuffer(SceneMeshInfo meshInfo) {
+
+        final int numInstances = meshInfo.numMeshViewsInstances();
 
         final int instanceCommandsMinSize = numInstances * GLDrawElementsCommand.SIZEOF;
 
@@ -247,12 +242,6 @@ public class Rendering extends RenderingPath {
 
         nmemset(instanceCommandBuffer.mappedMemory(), 0, instanceCommandsMinSize); // Clear with zeros
 
-        final int matricesMinSize = numInstances * MATRICES_BUFFER_MIN_SIZE;
-
-        if (matricesBuffer.size() < matricesMinSize) {
-            reallocateBuffer(matricesBuffer, matricesMinSize);
-        }
-
         final int instancesMinSize = numInstances * INSTANCE_BUFFER_MIN_SIZE;
 
         if (instanceBuffer.size() < instancesMinSize) {
@@ -260,35 +249,33 @@ public class Rendering extends RenderingPath {
             vertexArray.setVertexBuffer(INSTANCE_BUFFER_BINDING, instanceBuffer, INSTANCE_BUFFER_MIN_SIZE);
         }
 
-        final long meshIDsMinSize = meshViews.parallelStream().map(MeshView::mesh).distinct().count() * UINT32_SIZEOF;
+        final long meshIDsMinSize = numInstances * UINT32_SIZEOF;
 
         if (meshIDsBuffer.size() < meshIDsMinSize) {
             reallocateBuffer(meshIDsBuffer, meshIDsMinSize);
         }
 
-        final AtomicInteger nextInstanceID = new AtomicInteger();
+        final List<MeshInstance> instances = meshInfo.instances();
+        int objectIndex = 0;
 
-        range(0, meshViews.size()).forEach(meshIndex -> {
+        for(int instanceID = 0;instanceID < instances.size();instanceID++) {
 
-            final int meshID = meshIndex;
+            MeshInstance instance = instances.get(instanceID);
 
-            final MeshView meshView = meshViews.get(meshIndex);
+            for(MeshView meshView : instance) {
 
-            final List<MeshInstance> instances = instancesTable.get(meshView);
+                final int meshID = meshInfo.meshes().indexOf(meshView.mesh());
 
-            for (MeshInstance instance : instances) {
+                setInstanceMeshID(objectIndex, meshID);
 
-                final int instanceID = nextInstanceID.getAndIncrement();
+                final int materialIndex = meshInfo.materials().indexOf(meshView.material());
 
-                setInstanceMeshID(instanceID, meshID);
+                setInstanceData(objectIndex, instanceID, materialIndex);
 
-                setInstanceMatrix(instanceID, instance.modelMatrix());
-
-                final int materialIndex = materials.indexOf(meshView.material());
-
-                setInstanceData(instanceID, instanceID, materialIndex);
+                ++objectIndex;
             }
-        });
+
+        }
     }
 
     private void setInstanceMeshID(int instanceID, int meshID) {
@@ -319,9 +306,9 @@ public class Rendering extends RenderingPath {
         }
     }
 
-    private void prepareMeshBuffers(List<MeshView> meshViews, Map<MeshView, List<MeshInstance>> instancesTable) {
+    private void prepareMeshBuffers(List<Mesh> meshes) {
 
-        checkMeshesBuffersSize(meshViews);
+        checkMeshesBuffersSize(meshes);
 
         final long vertexBufferMemory = vertexBuffer.mappedMemory();
         final long indexBufferMemory = indexBuffer.mappedMemory();
@@ -333,6 +320,9 @@ public class Rendering extends RenderingPath {
         long boundingSpheresOffset = 0;
         long meshCommandBufferOffset = 0;
 
+        int firstIndex = 0;
+        int baseVertex = 0;
+
         try (MemoryStack stack = stackPush()) {
 
             final ByteBuffer boundingSphereBuffer = stack.calloc(ISphere.SIZEOF);
@@ -340,11 +330,7 @@ public class Rendering extends RenderingPath {
 
             GLDrawElementsCommand command = GLDrawElementsCommand.callocStack(stack);
 
-            ByteBuffer pMeshIDsOffset = stack.calloc(UINT32_SIZEOF);
-
-            for (MeshView meshView : meshViews) {
-
-                final Mesh mesh = meshView.mesh();
+            for (Mesh mesh : meshes) {
 
                 final ByteBuffer vertexData = mesh.vertexData();
                 final ByteBuffer indexData = mesh.indexData();
@@ -352,8 +338,8 @@ public class Rendering extends RenderingPath {
                 final int indicesSize = indexData.remaining();
 
                 command.count(mesh.indexCount())
-                        .firstIndex((int) (indexBufferOffset / UINT32_SIZEOF))
-                        .baseVertex((int) (vertexBufferOffset / StaticMesh.VERTEX_DATA_SIZE));
+                        .firstIndex(firstIndex)
+                        .baseVertex(baseVertex);
 
                 mesh.boundingSphere().get(0, boundingSphereBuffer);
 
@@ -366,42 +352,44 @@ public class Rendering extends RenderingPath {
                 indexBufferOffset += indicesSize;
                 boundingSpheresOffset += ISphere.SIZEOF;
                 meshCommandBufferOffset += GLDrawElementsCommand.SIZEOF;
+                firstIndex += mesh.indexCount();
+                baseVertex += mesh.vertexCount();
             }
         }
     }
 
-    private void checkMeshesBuffersSize(List<MeshView> meshViews) {
+    private void checkMeshesBuffersSize(List<Mesh> meshes) {
 
-        final long boundsMinSize = meshViews.size() * BOUNDS_BUFFER_MIN_SIZE;
+        final long boundsMinSize = meshes.size() * BOUNDS_BUFFER_MIN_SIZE;
 
         if (boundingSpheresBuffer.size() < boundsMinSize) {
             reallocateBuffer(boundingSpheresBuffer, boundsMinSize);
         }
 
-        final long verticesMinSize = meshViews.stream().mapToLong(meshView -> meshView.mesh().vertexData().remaining()).sum();
+        final long verticesMinSize = meshes.stream().mapToLong(mesh -> mesh.vertexData().remaining()).sum();
 
         if (vertexBuffer.size() < verticesMinSize) {
             reallocateBuffer(vertexBuffer, verticesMinSize);
             vertexArray.setVertexBuffer(VERTEX_BUFFER_BINDING, vertexBuffer, StaticMesh.VERTEX_DATA_SIZE);
         }
 
-        final long indicesMinSize = meshViews.stream().mapToLong(meshView -> meshView.mesh().indexData().remaining()).sum();
+        final long indicesMinSize = meshes.stream().mapToLong(mesh -> mesh.indexData().remaining()).sum();
 
         if (indexBuffer.size() < indicesMinSize) {
             reallocateBuffer(indexBuffer, indicesMinSize);
             vertexArray.setIndexBuffer(indexBuffer);
         }
 
-        final long commandsMinSize = meshViews.size() * GLDrawElementsCommand.SIZEOF;
+        final long commandsMinSize = meshes.size() * GLDrawElementsCommand.SIZEOF;
 
         if (meshCommandBuffer.size() < commandsMinSize) {
             reallocateBuffer(meshCommandBuffer, commandsMinSize);
         }
     }
 
-    private void prepareMatricesBuffer(List<MeshInstance> meshInstances) {
+    private void prepareMatricesBuffer(SceneMeshInfo meshInfo) {
 
-        final int minSize = meshInstances.size() * MATRICES_BUFFER_MIN_SIZE;
+        final int minSize = meshInfo.instances().size() * MATRICES_BUFFER_MIN_SIZE;
 
         if (matricesBuffer.size() < minSize) {
             reallocateBuffer(matricesBuffer, minSize);
@@ -409,11 +397,11 @@ public class Rendering extends RenderingPath {
 
         final long matricesBufferMemory = matricesBuffer.mappedMemory();
 
-        range(0, meshInstances.size()).parallel().forEach(index -> {
+        range(0, meshInfo.instances().size()).parallel().forEach(index -> {
 
-            try (MemoryStack stack = stackPush()) {
+            try(MemoryStack stack = stackPush()) {
 
-                final ByteBuffer buffer = meshInstances.get(index).modelMatrix().get(stack.malloc(MATRICES_BUFFER_MIN_SIZE));
+                final ByteBuffer buffer = meshInfo.instances().get(index).modelMatrix().get(stack.malloc(MATRICES_BUFFER_MIN_SIZE));
 
                 nmemcpy(matricesBufferMemory + index * MATRICES_BUFFER_MIN_SIZE, memAddress0(buffer), MATRICES_BUFFER_MIN_SIZE);
             }

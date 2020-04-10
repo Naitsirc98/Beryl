@@ -13,10 +13,13 @@ import naitsirc98.beryl.images.Image;
 import naitsirc98.beryl.images.ImageFactory;
 import naitsirc98.beryl.images.PixelFormat;
 import naitsirc98.beryl.lights.DirectionalLight;
+import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.materials.Material;
 import naitsirc98.beryl.materials.PhongMaterial;
 import naitsirc98.beryl.meshes.Mesh;
 import naitsirc98.beryl.meshes.MeshView;
+import naitsirc98.beryl.meshes.models.Model;
+import naitsirc98.beryl.meshes.models.ModelEntityFactory;
 import naitsirc98.beryl.meshes.models.StaticMeshLoader;
 import naitsirc98.beryl.scenes.Entity;
 import naitsirc98.beryl.scenes.Scene;
@@ -25,6 +28,7 @@ import naitsirc98.beryl.scenes.components.camera.Camera;
 import naitsirc98.beryl.scenes.components.math.Transform;
 import naitsirc98.beryl.scenes.components.meshes.MeshInstance;
 import naitsirc98.beryl.util.Color;
+import naitsirc98.beryl.util.geometry.ISphere;
 import org.joml.Vector3f;
 
 import java.util.Random;
@@ -80,56 +84,58 @@ public class App1 extends BerylApplication {
 
         StaticMeshLoader modelLoader = new StaticMeshLoader();
 
-        // Mesh quadMesh = modelLoader.load(BerylFiles.getPath("models/quad.obj")).loadedMesh(0).mesh();
-
-        /*
+        Mesh quadMesh = modelLoader.load(BerylFiles.getPath("models/quad.obj")).loadedMesh(0).mesh();
 
         Model treeModel = modelLoader
                         .load("C:\\Users\\naits\\Downloads\\uploads_files_1970932_conifer_macedonian_pine(1)\\OBJ format\\conifer_macedonian_pine.obj");
 
         Log.trace(treeModel);
 
-         */
+
         /*
-        MeshView meshView = new MeshView(
-                modelLoader.load(BerylFiles.getPath("models/cube.obj")).loadedMesh(0).mesh(), PhongMaterial.getDefault());
-
-
-        */
 
         Mesh cubeMesh = modelLoader.load(BerylFiles.getPath("models/cube.obj")).loadedMesh(0).mesh();
+
+
 
         MeshView[] meshViews = new MeshView[100];
 
         for(int i = 0;i < meshViews.length;i++) {
             meshViews[i] = new MeshView(cubeMesh,
-                    PhongMaterial.get(i+"", builder -> builder.color(new Color(RAND.nextFloat(), RAND.nextFloat(), RAND.nextFloat(), 1))));
+                    PhongMaterial.get("", builder -> builder.color(new Color(RAND.nextFloat(), RAND.nextFloat(), RAND.nextFloat(), 1))));
         }
 
-        for(int i = 0;i < 300;i++) {
+
+        for(int i = 0;i < 50000;i++) {
             Entity cube = scene.newEntity();
-            cube.add(Transform.class).position(i * 2.25f, 0, 0).scale(1.0f);
+            cube.add(Transform.class).position(RAND.nextInt(500), RAND.nextInt(500), RAND.nextInt(500)).scale(1.0f);
             cube.add(MeshInstance.class).meshView(meshViews[RAND.nextInt(meshViews.length)]);
-        }
-
-        // Entity floor = scene.newEntity("floor");
-        // floor.add(Transform.class).position(0, 0, 0).scale(100).rotateX(radians(90));
-        // floor.add(MeshInstance.class).meshView(new MeshView(quadMesh, getFloorMaterial()));
-
-        /*
-
-        ModelEntityFactory treeFactory = new ModelEntityFactory(treeModel).materialsFunction(this::treeMaterialFunction);
-
-        for(int i = 0;i < 1;i++) {
-            Entity tree = treeFactory.newEntity(scene);
-            tree.get(Transform.class).position(RAND.nextInt(100), 0, RAND.nextInt(100)).scale(0.002f);
         }
 
          */
 
+
+/*
+        Entity floor = scene.newEntity("floor");
+        floor.add(Transform.class).position(0, -0.1f, 0).scale(100).rotateX(radians(90));
+        floor.add(MeshInstance.class).meshView(new MeshView(quadMesh, getFloorMaterial()));
+
+
+ */
+
+        ModelEntityFactory treeFactory = new ModelEntityFactory(treeModel).materialsFunction(this::treeMaterialFunction);
+
+        for(int i = 0;i < 100;i++) {
+            Entity tree = treeFactory.newEntity(scene);
+            tree.get(Transform.class).position(RAND.nextInt(500), 0, RAND.nextInt(500)).scale(0.01f);
+            if(i == 0) {
+                tree.get(Transform.class).position(0, 0, 0);
+            }
+        }
+
         Entity camera = scene.newEntity("Camera");
         camera.add(Transform.class).position(0, 0, 3);
-        camera.add(Camera.class).lookAt(0, 0).clearColor(new Color(0.1f, 0.1f, 0.1f));
+        camera.add(Camera.class).lookAt(0, 0).clearColor(new Color(0.3f, 0.3f, 0.3f));
         camera.add(CameraController.class);
 
         scene.environment().directionalLight(new DirectionalLight()

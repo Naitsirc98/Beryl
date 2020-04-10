@@ -1,6 +1,7 @@
 package naitsirc98.beryl.scenes.components.meshes;
 
 import naitsirc98.beryl.materials.Material;
+import naitsirc98.beryl.meshes.Mesh;
 import naitsirc98.beryl.meshes.MeshView;
 import naitsirc98.beryl.scenes.Scene;
 import naitsirc98.beryl.scenes.components.AbstractComponentManager;
@@ -9,7 +10,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletionService;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -17,14 +17,17 @@ public final class MeshInstanceManager extends AbstractComponentManager<MeshInst
 
     private final List<MeshView> meshViews;
     private final Map<MeshView, List<MeshInstance>> instancesTable;
+    private List<Mesh> meshes;
     private List<Material> materials;
     private final AtomicInteger modifications;
+    private int numMeshViewsInstances;
     private int lastModifications;
 
     protected MeshInstanceManager(Scene scene) {
         super(scene);
         meshViews = new ArrayList<>();
         instancesTable = new HashMap<>();
+        meshes = new ArrayList<>();
         materials = new ArrayList<>();
         modifications = new AtomicInteger();
         lastModifications = Integer.MIN_VALUE;
@@ -35,6 +38,8 @@ public final class MeshInstanceManager extends AbstractComponentManager<MeshInst
         final int modifications = modifications();
 
         if(lastModifications != modifications) {
+            numMeshViewsInstances = instances().parallelStream().mapToInt(MeshInstance::numMeshViews).sum();
+            meshes = meshViews.parallelStream().map(MeshView::mesh).collect(Collectors.toList());
             materials = meshViews.parallelStream().map(MeshView::material).distinct().collect(Collectors.toList());
             lastModifications = modifications();
         }
@@ -51,14 +56,16 @@ public final class MeshInstanceManager extends AbstractComponentManager<MeshInst
 
     @Override
     protected void enable(MeshInstance instance) {
-        super.enable(instance);
-        // addInstance(instance);
+        if(!components.enabled().contains(instance)) {
+            super.enable(instance);
+            addInstance(instance);
+        }
     }
 
     @Override
     protected void disable(MeshInstance instance) {
         super.disable(instance);
-        // removeInstance(instance);
+        removeInstance(instance);
     }
 
     @Override
@@ -72,12 +79,23 @@ public final class MeshInstanceManager extends AbstractComponentManager<MeshInst
         super.removeAll();
         meshViews.clear();
         instancesTable.clear();
+        meshes.clear();
         materials.clear();
     }
 
     @Override
     public int modifications() {
         return modifications.get();
+    }
+
+    @Override
+    public int numMeshViewsInstances() {
+        return numMeshViewsInstances;
+    }
+
+    @Override
+    public List<Mesh> meshes() {
+        return meshes;
     }
 
     @Override

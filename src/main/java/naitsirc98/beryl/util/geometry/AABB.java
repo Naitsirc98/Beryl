@@ -18,8 +18,8 @@ public final class AABB implements IAABB {
     public final Vector3f max;
 
     public AABB() {
-        this.min = new Vector3f(Float.POSITIVE_INFINITY);
-        this.max = new Vector3f(Float.NEGATIVE_INFINITY);
+        this.min = new Vector3f(Float.MAX_VALUE);
+        this.max = new Vector3f(-Float.MAX_VALUE);
     }
 
     @Override
@@ -34,17 +34,17 @@ public final class AABB implements IAABB {
 
     @Override
     public float centerX() {
-        return (min.x + Math.max(max.x, 1.0f)) / 2.0f;
+        return (min.x + max.x) / 2.0f;
     }
 
     @Override
     public float centerY() {
-        return (min.y + Math.max(max.y, 1.0f)) / 2.0f;
+        return (min.y + max.y) / 2.0f;
     }
 
     @Override
     public float centerZ() {
-        return (min.z + Math.max(max.z, 1.0f)) / 2.0f;
+        return (min.z + max.z) / 2.0f;
     }
 
     @Override

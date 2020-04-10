@@ -73,14 +73,16 @@ void main() {
 
     material = u_Material[vertexData.materialIndex];
 
-    materialAmbientColor = material.ambientColor * texture(material.ambientMap, vertexData.texCoords);
-    materialDiffuseColor = material.diffuseColor * texture(material.diffuseMap, vertexData.texCoords);
-    materialSpecularColor = material.specularColor * texture(material.specularMap, vertexData.texCoords);
-    materialEmissiveColor = material.emissiveColor * texture(material.emissiveMap, vertexData.texCoords);
+    float lod = distance(u_Camera.position.xyz, vertexData.position) / 100.0;
+
+    materialAmbientColor = material.ambientColor * textureLod(material.ambientMap, vertexData.texCoords, lod);
+    materialDiffuseColor = material.diffuseColor * textureLod(material.diffuseMap, vertexData.texCoords, lod);
+    materialSpecularColor = material.specularColor * textureLod(material.specularMap, vertexData.texCoords, lod);
+    materialEmissiveColor = material.emissiveColor * textureLod(material.emissiveMap, vertexData.texCoords, lod);
 
     // IMPORTANT!!! IF NO MATERIAL IS USED, THIS WILL DISCARD ANY OUTPUT!! COULD CAUSE PROBLEMS WHEN DEBUGGING!!!!!
     if(materialAmbientColor.a + materialDiffuseColor.a < 0.001) {
-        // discard;
+        discard;
     }
 
     // TODO: check if material is affected by light

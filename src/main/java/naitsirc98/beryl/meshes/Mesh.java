@@ -5,6 +5,7 @@ import naitsirc98.beryl.util.geometry.AABB;
 import naitsirc98.beryl.util.geometry.IAABB;
 import naitsirc98.beryl.util.geometry.ISphere;
 import naitsirc98.beryl.util.geometry.Sphere;
+import org.joml.Matrix4f;
 import org.joml.Spheref;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
@@ -111,8 +112,8 @@ public abstract class Mesh extends ManagedResource {
             min.z = min(min.z, vertexPosition.z);
 
             max.x = max(max.x, vertexPosition.x);
-            max.y = max(max.x, vertexPosition.x);
-            max.z = max(max.x, vertexPosition.x);
+            max.y = max(max.y, vertexPosition.y);
+            max.z = max(max.z, vertexPosition.z);
         }
 
         return aabb;
@@ -120,10 +121,22 @@ public abstract class Mesh extends ManagedResource {
 
     private ISphere calculateBoundingSphere(IAABB bounds) {
 
-        Vector3f centroid = new Vector3f(bounds.centerX(), bounds.centerY(), bounds.centerZ());
+        Vector3f centroid = new Vector3f();//bounds.centerX(), bounds.centerY(), bounds.centerZ());
         Vector3f vertexPosition = new Vector3f();
 
-        float radius = Float.NEGATIVE_INFINITY;
+        centroid.x = bounds.min().x() + (bounds.max().x() - bounds.min().x()) / 2.0f;
+        centroid.y = bounds.min().y() + (bounds.max().y() - bounds.min().y()) / 2.0f;
+        centroid.z = bounds.min().z() + (bounds.max().z() - bounds.min().z()) / 2.0f;
+
+        Sphere boundingSphere = new Sphere();
+        boundingSphere.center.set(centroid);
+        boundingSphere.radius = max(
+                max((bounds.max().x()-bounds.min().x())/2, (bounds.max().y() - bounds.min().y())/2),
+                (bounds.max().z() - bounds.min().z())/2);
+
+        /*
+
+        float radius = -Float.MAX_VALUE;
         Sphere boundingSphere = new Sphere(centroid, radius);
 
         final int vertexCount = vertexCount();
@@ -136,6 +149,8 @@ public abstract class Mesh extends ManagedResource {
         }
 
         boundingSphere.radius = radius;
+
+         */
 
         return boundingSphere;
     }

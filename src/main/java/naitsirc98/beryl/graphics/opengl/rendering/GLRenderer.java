@@ -32,9 +32,7 @@ public final class GLRenderer implements Renderer {
 
     @Override
     public void end() {
-        if(Window.get().displayMode() == DisplayMode.FULLSCREEN) {
-            glFinish();
-        }
+        glFinish();
         glfwSwapBuffers(glContext);
     }
 

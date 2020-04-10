@@ -65,6 +65,24 @@ void main() {
     }
 }
 
+// Computes signed distance between a point and a plane
+// vPlane: Contains plane coefficients (a,b,c,d) where: ax + by + cz = d
+// vPoint: Point to be tested against the plane.
+float distanceToPlane(vec4 vPlane, vec3 vPoint)
+{
+    return dot(vec4(vPoint, 1.0), vPlane);
+}
+ 
+// Frustum cullling on a sphere. Returns > 0 if visible, <= 0 otherwise
+float cullSphere(vec4 vPlanes[6], vec3 vCenter, float fRadius)
+{
+   float dist01 = min(distanceToPlane(vPlanes[0], vCenter), distanceToPlane(vPlanes[1], vCenter));
+   float dist23 = min(distanceToPlane(vPlanes[2], vCenter), distanceToPlane(vPlanes[3], vCenter));
+   float dist45 = min(distanceToPlane(vPlanes[4], vCenter), distanceToPlane(vPlanes[5], vCenter));
+ 
+   return min(min(dist01, dist23), dist45) + fRadius;
+}
+
 float getScale(mat4 m) {
 
     vec3 scale;
@@ -84,14 +102,6 @@ bool isVisible(mat4 modelMatrix, BoundingSphere boundingSphere) {
 
     float radius = boundingSphere.radius * getScale(modelMatrix);
 
-    for(int i = 0;i < 6;++i) {
-
-        vec4 plane = u_Frustum.planes[i];
-
-        if(plane.x * sphereCenter.x + plane.y * sphereCenter.y + plane.z * sphereCenter.z + plane.w <= -radius) {
-            return true;
-        }
-    }
-
-    return true;
+    // This does not work. I don't know if it has to do with the bounding sphere, or with the frustum calculation
+    return true;// cullSphere(u_Frustum.planes, sphereCenter.xyz, radius) > 0;
 }

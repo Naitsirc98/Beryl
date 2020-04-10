@@ -373,6 +373,17 @@ public final class Transform extends Component<Transform> {
         return parent;
     }
 
+
+    /**
+     * Gets a Transform child at the specified index.
+     *
+     * @param index the index
+     * @return the child Transform
+     */
+    public Transform child(int index) {
+        return children.get(index);
+    }
+
     /**
      * Adds a child transform to this transform.
      *
