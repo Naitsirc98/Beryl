@@ -1,12 +1,9 @@
 package naitsirc98.beryl.graphics.rendering;
 
 import naitsirc98.beryl.core.BerylSystem;
-import naitsirc98.beryl.graphics.GraphicsAPI;
 import naitsirc98.beryl.graphics.opengl.rendering.GLRenderer;
-import naitsirc98.beryl.graphics.vulkan.rendering.VulkanRenderer;
 import naitsirc98.beryl.util.types.Singleton;
 
-import static naitsirc98.beryl.graphics.GraphicsAPI.VULKAN;
 import static naitsirc98.beryl.util.types.TypeUtils.newInstance;
 
 public final class RenderSystem extends BerylSystem {
@@ -26,7 +23,8 @@ public final class RenderSystem extends BerylSystem {
 
     @Override
     protected void init() {
-        Class<? extends Renderer> rendererClass = GraphicsAPI.get() == VULKAN ? VulkanRenderer.class : GLRenderer.class;
+        // Only supporting OPENGL for now
+        Class<? extends Renderer> rendererClass = GLRenderer.class;
         renderer = newInstance(rendererClass);
     }
 

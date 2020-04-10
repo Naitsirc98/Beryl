@@ -3,14 +3,13 @@ package naitsirc98.beryl.graphics;
 import naitsirc98.beryl.core.BerylConfiguration;
 import naitsirc98.beryl.core.BerylSystem;
 import naitsirc98.beryl.graphics.opengl.GLContext;
-import naitsirc98.beryl.graphics.rendering.Renderer;
-import naitsirc98.beryl.graphics.vulkan.VulkanContext;
 import naitsirc98.beryl.graphics.window.Window;
 import naitsirc98.beryl.graphics.window.WindowFactory;
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.util.types.Singleton;
 
-import static naitsirc98.beryl.graphics.GraphicsAPI.VULKAN;
+import static java.util.Objects.requireNonNull;
+import static naitsirc98.beryl.graphics.GraphicsAPI.OPENGL;
 import static naitsirc98.beryl.util.types.TypeUtils.initSingleton;
 import static naitsirc98.beryl.util.types.TypeUtils.newInstance;
 
@@ -21,10 +20,6 @@ public final class Graphics extends BerylSystem {
 
     public static GraphicsContext get() {
         return instance.graphicsContext;
-    }
-
-    public static VulkanContext vulkan() {
-        return (VulkanContext) instance.graphicsContext;
     }
 
     public static GLContext opengl() {
@@ -41,13 +36,20 @@ public final class Graphics extends BerylSystem {
     @Override
     protected void init() {
 
-        initSingleton(GraphicsAPI.class, BerylConfiguration.GRAPHICS_API.get(VULKAN));
+        GraphicsAPI chosenGraphicsAPI = BerylConfiguration.GRAPHICS_API.get(OPENGL);
 
-        Log.info("Using " + GraphicsAPI.get() + " as the Graphics API");
+        if(chosenGraphicsAPI != OPENGL) {
+            Log.fatal("Beryl does not support " + chosenGraphicsAPI + " at the moment. Use OPENGL instead");
+            return;
+        }
+
+        initSingleton(GraphicsAPI.class, chosenGraphicsAPI);
+
+        Log.info("Using " + chosenGraphicsAPI + " as the Graphics API");
 
         Log.info("Creating window...");
 
-        window = newInstance(WindowFactory.class).newWindow();
+        window = requireNonNull(newInstance(WindowFactory.class)).newWindow();
 
         Log.info("Window created");
 
@@ -60,7 +62,7 @@ public final class Graphics extends BerylSystem {
     }
 
     private GraphicsContext createGraphicsContext() {
-        return GraphicsAPI.get() == VULKAN ? newInstance(VulkanContext.class) : newInstance(GLContext.class);
+        return newInstance(GLContext.class);
     }
 
     @Override

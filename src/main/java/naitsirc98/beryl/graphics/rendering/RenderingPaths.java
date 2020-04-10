@@ -1,7 +1,6 @@
 package naitsirc98.beryl.graphics.rendering;
 
 import naitsirc98.beryl.core.BerylSystem;
-import naitsirc98.beryl.graphics.GraphicsAPI;
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.util.types.Singleton;
 
@@ -9,8 +8,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static naitsirc98.beryl.graphics.Graphics.opengl;
-import static naitsirc98.beryl.graphics.Graphics.vulkan;
-import static naitsirc98.beryl.graphics.GraphicsAPI.VULKAN;
 
 public final class RenderingPaths extends BerylSystem {
 
@@ -65,7 +62,8 @@ public final class RenderingPaths extends BerylSystem {
     }
 
     private Map<? extends Integer,? extends RenderingPath> getStandardRenderingPaths() {
-        return GraphicsAPI.get() == VULKAN ? vulkan().renderingPaths() : opengl().renderingPaths();
+        // Only supporting OPENGL for now
+        return opengl().renderingPaths();
     }
 
     @Override
