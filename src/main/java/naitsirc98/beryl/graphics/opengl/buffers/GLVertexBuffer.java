@@ -1,6 +1,8 @@
 package naitsirc98.beryl.graphics.opengl.buffers;
 
-public class GLVertexBuffer extends GLBuffer {
+import naitsirc98.beryl.graphics.buffers.VertexBuffer;
+
+public class GLVertexBuffer extends GLBuffer implements VertexBuffer {
 
     @Override
     public Type type() {

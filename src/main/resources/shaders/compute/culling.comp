@@ -15,7 +15,6 @@ struct BoundingSphere {
     float radius;
 };
 
-// TODO: need camera matrices
 
 layout(local_size_x = 1) in;
 
@@ -98,7 +97,7 @@ bool isVisible(mat4 modelMatrix, BoundingSphere boundingSphere) {
 
     vec4 sphereCenter = vec4(boundingSphere.centerX, boundingSphere.centerY, boundingSphere.centerZ, 1.0);
 
-    sphereCenter = modelMatrix * sphereCenter;
+    sphereCenter = u_Frustum.projectionViewMatrix * modelMatrix * sphereCenter;
 
     float radius = boundingSphere.radius * getScale(modelMatrix);
 

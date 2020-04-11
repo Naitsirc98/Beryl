@@ -1,7 +1,6 @@
 package naitsirc98.beryl.meshes;
 
 import naitsirc98.beryl.materials.IMaterial;
-import naitsirc98.beryl.materials.Material;
 
 import java.util.Objects;
 

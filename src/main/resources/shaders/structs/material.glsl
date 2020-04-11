@@ -1,4 +1,4 @@
-#define MATERIAL_SIZEOF 128
+#define MATERIAL_SIZEOF 136
 
 struct PhongMaterial {
 
@@ -13,6 +13,8 @@ struct PhongMaterial {
     sampler2D emissiveMap;
     sampler2D occlusionMap;
     sampler2D normalMap;
+
+    vec2 texCoordsFactor;
 
     float alpha;
     float shininess;
@@ -35,6 +37,8 @@ struct MetallicMaterial {
     sampler2D normalMap;
     sampler2D _padding2;
 
+    vec2 texCoordsFactor;
+
     float alpha;
     float metallic;
     float roughness;
@@ -54,6 +58,8 @@ struct SpecularMap {
     sampler2D occlusionMap;
     sampler2D normalMap;
     sampler2D _padding1;
+
+    vec2 texCoordsFactor;
 
     float alpha;
     float glossiness;

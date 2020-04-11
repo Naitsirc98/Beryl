@@ -7,17 +7,17 @@ import naitsirc98.beryl.util.BitFlags;
 import naitsirc98.beryl.util.Color;
 import naitsirc98.beryl.util.types.ByteSize;
 import naitsirc98.beryl.util.types.IBuilder;
+import org.joml.Vector2f;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 
+import static naitsirc98.beryl.materials.IMaterial.Type.PHONG_MATERIAL;
 import static naitsirc98.beryl.util.types.DataType.FLOAT32_SIZEOF;
 
-@ByteSize.Static(PhongMaterial.SIZEOF)
+@ByteSize.Static(IMaterial.SIZEOF)
 public interface PhongMaterial extends IMaterial {
-
-    int SIZEOF = Color.SIZEOF * 4 + 4 * FLOAT32_SIZEOF + 6 * Texture.SIZEOF;
 
     String PHONG_MATERIAL_DEFAULT_NAME = "DEFAULT_PHONG_MATERIAL";
 
@@ -59,12 +59,10 @@ public interface PhongMaterial extends IMaterial {
     final class Builder {
 
         private final Map<Byte, Object> properties;
-        private final BitFlags flags;
         private String name;
 
         public Builder() {
             properties = new HashMap<>();
-            flags = new BitFlags();
             setDefaults();
         }
 
@@ -123,6 +121,11 @@ public interface PhongMaterial extends IMaterial {
             return this;
         }
 
+        public Builder textureCoordsFactor(float x, float y) {
+            properties.put(TEXTURE_COORDS_FACTOR, new Vector2f(x, y));
+            return this;
+        }
+
         public Builder alpha(float value) {
             properties.put(ALPHA, value);
             return this;
@@ -144,12 +147,10 @@ public interface PhongMaterial extends IMaterial {
         }
 
         private PhongMaterial build() {
-            return MaterialManager.get().create(name, flags, properties);
+            return MaterialManager.get().create(name, PHONG_MATERIAL, properties);
         }
 
         private void setDefaults() {
-
-            flags.enable(PHONG_MATERIAL_BIT);
 
             properties.put(AMBIENT_COLOR, Color.WHITE);
             properties.put(DIFFUSE_COLOR, Color.WHITE);
@@ -160,6 +161,8 @@ public interface PhongMaterial extends IMaterial {
             properties.put(SHININESS, 0.0f);
             properties.put(REFLECTIVITY, 0.0f);
             properties.put(REFRACTIVE_INDEX, 0.0f);
+
+            properties.put(TEXTURE_COORDS_FACTOR, DEFAULT_TEXTURE_COORDS_FACTOR);
 
             Texture2D blankTexture = GraphicsFactory.get().blankTexture2D();
 

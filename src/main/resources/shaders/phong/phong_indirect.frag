@@ -64,13 +64,15 @@ void main() {
 
     // float lod = distance(u_Camera.position.xyz, vertexData.position) / 100.0;
 
-    materialAmbientColor = material.ambientColor * texture(material.ambientMap, vertexData.texCoords);
-    materialDiffuseColor = material.diffuseColor * texture(material.diffuseMap, vertexData.texCoords);
-    materialSpecularColor = material.specularColor * texture(material.specularMap, vertexData.texCoords);
-    materialEmissiveColor = material.emissiveColor * texture(material.emissiveMap, vertexData.texCoords);
+    vec2 texCoords = vertexData.texCoords * material.texCoordsFactor;
+
+    materialAmbientColor = material.ambientColor * texture(material.ambientMap, texCoords);
+    materialDiffuseColor = material.diffuseColor * texture(material.diffuseMap, texCoords);
+    materialSpecularColor = material.specularColor * texture(material.specularMap, texCoords);
+    materialEmissiveColor = material.emissiveColor * texture(material.emissiveMap, texCoords);
 
     // IMPORTANT!!! IF NO MATERIAL IS USED, THIS WILL DISCARD ANY OUTPUT!! COULD CAUSE PROBLEMS WHEN DEBUGGING!!!!!
-    if(materialAmbientColor.a + materialDiffuseColor.a < 0.001) {
+    if(material.alpha == 0.0 || materialAmbientColor.a + materialDiffuseColor.a == 0.0) {
         discard;
     }
 

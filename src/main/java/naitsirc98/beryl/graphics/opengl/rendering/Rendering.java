@@ -9,7 +9,6 @@ import naitsirc98.beryl.graphics.opengl.buffers.GLVertexBuffer;
 import naitsirc98.beryl.graphics.opengl.commands.GLDrawElementsCommand;
 import naitsirc98.beryl.graphics.opengl.shaders.GLShader;
 import naitsirc98.beryl.graphics.opengl.shaders.GLShaderProgram;
-import naitsirc98.beryl.graphics.opengl.textures.GLTexture2D;
 import naitsirc98.beryl.graphics.opengl.vertex.GLVertexArray;
 import naitsirc98.beryl.graphics.rendering.RenderingPath;
 import naitsirc98.beryl.lights.DirectionalLight;
@@ -26,7 +25,6 @@ import naitsirc98.beryl.scenes.components.camera.Camera;
 import naitsirc98.beryl.scenes.components.meshes.MeshInstance;
 import naitsirc98.beryl.scenes.components.meshes.SceneMeshInfo;
 import naitsirc98.beryl.util.Color;
-import naitsirc98.beryl.util.geometry.AABB;
 import naitsirc98.beryl.util.geometry.ISphere;
 import org.joml.Matrix4fc;
 import org.lwjgl.system.MemoryStack;
@@ -37,6 +35,7 @@ import java.util.List;
 import static java.util.stream.IntStream.range;
 import static naitsirc98.beryl.graphics.ShaderStage.*;
 import static naitsirc98.beryl.meshes.vertices.VertexAttribute.*;
+import static naitsirc98.beryl.util.Maths.roundUp2;
 import static naitsirc98.beryl.util.types.DataType.*;
 import static org.lwjgl.opengl.GL11.GL_TRIANGLES;
 import static org.lwjgl.opengl.GL42.GL_COMMAND_BARRIER_BIT;
@@ -64,7 +63,7 @@ public class Rendering extends RenderingPath {
 
     private static final int MAX_POINT_LIGHTS = 10;
     private static final int MAX_SPOT_LIGHTS = 10;
-    private static final int LIGHTS_UNIFORM_BUFFER_SIZE = (1 + MAX_POINT_LIGHTS + MAX_SPOT_LIGHTS) * Light.SIZEOF + INT32_SIZEOF * 2 + FLOAT32_SIZEOF * 4;
+    private static final int LIGHTS_UNIFORM_BUFFER_SIZE = roundUp2((1 + MAX_POINT_LIGHTS + MAX_SPOT_LIGHTS) * Light.SIZEOF + INT32_SIZEOF * 2 + FLOAT32_SIZEOF * 4, VECTOR4_SIZEOF);
     private static final String LIGHTS_UNIFORM_BUFFER_NAME = "Lights";
     private static final int DIRECTIONAL_LIGHT_OFFSET = 0;
     private static final int POINT_LIGHTS_OFFSET = Light.SIZEOF;
@@ -73,7 +72,7 @@ public class Rendering extends RenderingPath {
     private static final int POINT_LIGHTS_COUNT_OFFSET = AMBIENT_COLOR_OFFSET + FLOAT32_SIZEOF * 4;
     private static final int SPOT_LIGHTS_COUNT_OFFSET = POINT_LIGHTS_COUNT_OFFSET + INT32_SIZEOF;
 
-    private static final int BOUNDS_BUFFER_MIN_SIZE = AABB.SIZEOF;
+    private static final int BOUNDS_BUFFER_MIN_SIZE = ISphere.SIZEOF;
     private static final int MATRICES_BUFFER_MIN_SIZE = 16 * FLOAT32_SIZEOF;
     private static final int MATERIALS_BUFFER_MIN_SIZE = Material.SIZEOF;
     private static final int INSTANCE_BUFFER_MIN_SIZE = INT32_SIZEOF * 2;

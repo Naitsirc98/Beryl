@@ -13,6 +13,8 @@ import static naitsirc98.beryl.util.types.TypeUtils.getOrElse;
 
 public final class SceneEnvironment {
 
+    private static final int LIGHTS_BUFFER_SIZE = 1712;
+
     public static final int MAX_POINT_LIGHTS = 10;
     public static final int MAX_SPOT_LIGHTS = 10;
 

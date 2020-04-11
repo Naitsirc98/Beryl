@@ -111,10 +111,10 @@ public class StaticMeshLoader implements ModelLoader {
         PointerBuffer meshes = requireNonNull(aiScene.mMeshes());
         IntBuffer meshIndices = requireNonNull(aiNode.mMeshes());
 
-        range(0, aiNode.mNumMeshes()).unordered().parallel().forEach(i -> {
+        for(int i = 0;i < aiNode.mNumMeshes();i++) {
             AIMesh aiMesh = AIMesh.create(meshes.get(meshIndices.get(i)));
             modelNode.addMesh(i, loadMesh(aiScene, aiMesh, model));
-        });
+        }
     }
 
     private Model.LoadedMesh loadMesh(AIScene aiScene, AIMesh aiMesh, Model model) {
@@ -126,7 +126,9 @@ public class StaticMeshLoader implements ModelLoader {
         processNormalAttribute(aiMesh, vertices);
         processTexCoordsAttribute(aiMesh, vertices);
 
-        return model.newMesh(aiMesh.mName().dataString(), new StaticMesh(vertices, indices));
+        String meshName = aiMesh.mName().dataString();
+
+        return model.newMesh(meshName, StaticMesh.get(meshName, meshData -> meshData.set(vertices, indices)));
     }
 
     private ByteBuffer getIndices(AIMesh aiMesh) {

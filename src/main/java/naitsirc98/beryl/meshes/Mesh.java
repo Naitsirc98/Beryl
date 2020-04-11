@@ -1,12 +1,11 @@
 package naitsirc98.beryl.meshes;
 
+import naitsirc98.beryl.assets.Asset;
 import naitsirc98.beryl.resources.ManagedResource;
 import naitsirc98.beryl.util.geometry.AABB;
 import naitsirc98.beryl.util.geometry.IAABB;
 import naitsirc98.beryl.util.geometry.ISphere;
 import naitsirc98.beryl.util.geometry.Sphere;
-import org.joml.Matrix4f;
-import org.joml.Spheref;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 
@@ -19,7 +18,7 @@ import static naitsirc98.beryl.util.types.DataType.FLOAT32_SIZEOF;
 import static naitsirc98.beryl.util.types.DataType.UINT32_SIZEOF;
 import static org.lwjgl.system.MemoryUtil.memFree;
 
-public abstract class Mesh extends ManagedResource {
+public abstract class Mesh extends ManagedResource implements Asset {
 
     public static final int VERTEX_POSITION_OFFSET = 0;
     public static final int VERTEX_POSITION_SIZE = 3 * FLOAT32_SIZEOF;
@@ -30,22 +29,55 @@ public abstract class Mesh extends ManagedResource {
     public static final int VERTEX_TEXCOORDS_OFFSET = VERTEX_POSITION_SIZE + VERTEX_NORMAL_SIZE;
     public static final int VERTEX_TEXCOORDS_SIZE = 2 * FLOAT32_SIZEOF;
 
+    private final int handle;
+    private final String name;
     private final ByteBuffer vertexData;
     private final ByteBuffer indexData;
     private final AABB boundingBox;
     private final ISphere boundingSphere;
     private final int stride;
+    private long vertexBufferOffset;
+    private long indexBufferOffset;
+    private long boundingSphereOffset;
 
-    public Mesh(ByteBuffer vertexData, int stride) {
-        this(vertexData, null, stride);
-    }
-
-    public Mesh(ByteBuffer vertexData, ByteBuffer indexData, int stride) {
+    public Mesh(int handle, String name, ByteBuffer vertexData, ByteBuffer indexData, int stride) {
+        this.handle = handle;
+        this.name = name;
         this.vertexData = requireNonNull(vertexData);
         this.indexData = requireNonNull(indexData);
         this.stride = stride;
         boundingBox = calculateBounds();
         boundingSphere = calculateBoundingSphere(boundingBox);
+    }
+
+    @Override
+    public String name() {
+        return name;
+    }
+
+    @Override
+    public int handle() {
+        return handle;
+    }
+
+    public long vertexBufferOffset() {
+        return vertexBufferOffset;
+    }
+
+    public long indexBufferOffset() {
+        return indexBufferOffset;
+    }
+
+    public long boundingSphereOffset() {
+        return boundingSphereOffset;
+    }
+
+    public int index() {
+        return (int) (vertexBufferOffset / vertexData.capacity());
+    }
+
+    public int boundingSphereIndex() {
+        return (int) (boundingSphereOffset / ISphere.SIZEOF);
     }
 
     public int vertexCount() {
@@ -161,4 +193,28 @@ public abstract class Mesh extends ManagedResource {
         memFree(indexData);
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Mesh mesh = (Mesh) o;
+        return handle == mesh.handle;
+    }
+
+    @Override
+    public int hashCode() {
+        return handle;
+    }
+
+    public void setVertexBufferOffset(long vertexBufferOffset) {
+        this.vertexBufferOffset = vertexBufferOffset;
+    }
+
+    public void setIndexBufferOffset(long indexBufferOffset) {
+        this.indexBufferOffset = indexBufferOffset;
+    }
+
+    public void setBoundingSphereOffset(long boundingSphereOffset) {
+        this.boundingSphereOffset = boundingSphereOffset;
+    }
 }

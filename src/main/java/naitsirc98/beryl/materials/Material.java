@@ -1,38 +1,39 @@
 package naitsirc98.beryl.materials;
 
 import naitsirc98.beryl.graphics.textures.Texture2D;
-import naitsirc98.beryl.util.BitFlags;
 import naitsirc98.beryl.util.Color;
 import naitsirc98.beryl.util.types.ByteSize;
+import org.joml.Vector2fc;
 
 import java.util.Collections;
 import java.util.Map;
 
-@ByteSize.Static(Material.SIZEOF)
+@ByteSize.Static(IMaterial.SIZEOF)
 public class Material implements IMaterial, PhongMaterial, MetallicMaterial, SpecularMaterial {
-
-    public static final int SIZEOF = 128; // Size of the largest possible material, which is PhongMaterial
 
     private final transient int handle;
     private final String name;
-    private final BitFlags flags;
+    private final Type type;
     private final Map<Byte, Object> properties;
     private transient long offset = -Long.MAX_VALUE; // Offset of this material into the materials buffer
     private transient int index = Integer.MIN_VALUE; // This is the index of this material in this material's type list
     private transient boolean destroyed;
 
-    Material(int handle, String name, BitFlags flags, Map<Byte, Object> properties) {
+    Material(int handle, String name, Type type, Map<Byte, Object> properties) {
         this.handle = handle;
         this.name = name;
-        this.flags = flags;
+        this.type = type;
         this.properties = Collections.unmodifiableMap(properties);
     }
 
     @Override
-    public int type() {
-        return flags.test(PHONG_MATERIAL_BIT) ? PHONG_MATERIAL_BIT :
-                flags.test(METALLIC_MATERIAL_BIT) ? METALLIC_MATERIAL_BIT :
-                        SPECULAR_MATERIAL_BIT;
+    public Vector2fc textureCoordsFactor() {
+        return get(TEXTURE_COORDS_FACTOR);
+    }
+
+    @Override
+    public Type type() {
+        return type;
     }
 
     @Override
@@ -48,11 +49,6 @@ public class Material implements IMaterial, PhongMaterial, MetallicMaterial, Spe
     @Override
     public int index() {
         return index;
-    }
-
-    @Override
-    public BitFlags flags() {
-        return flags;
     }
 
     @Override

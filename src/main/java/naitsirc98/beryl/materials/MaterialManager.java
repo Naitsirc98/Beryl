@@ -3,37 +3,42 @@ package naitsirc98.beryl.materials;
 import naitsirc98.beryl.assets.AssetManager;
 import naitsirc98.beryl.assets.Assets;
 import naitsirc98.beryl.graphics.buffers.StorageBuffer;
-import naitsirc98.beryl.graphics.opengl.buffers.GLStorageBuffer;
 import naitsirc98.beryl.logging.Log;
-import naitsirc98.beryl.util.BitFlags;
+import naitsirc98.beryl.util.types.Singleton;
 import org.lwjgl.system.MemoryStack;
 
 import java.nio.ByteBuffer;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static naitsirc98.beryl.materials.IMaterial.*;
+import static naitsirc98.beryl.materials.IMaterial.Type;
 import static naitsirc98.beryl.util.Asserts.assertFalse;
 import static naitsirc98.beryl.util.Asserts.assertTrue;
 import static naitsirc98.beryl.util.handles.LongHandle.NULL;
-import static org.lwjgl.opengl.ARBDirectStateAccess.glGetNamedBufferSubData;
-import static org.lwjgl.opengl.GL11C.glFinish;
 import static org.lwjgl.system.MemoryUtil.memAddress0;
 import static org.lwjgl.system.libc.LibCString.nmemcpy;
 import static org.lwjgl.system.libc.LibCString.nmemset;
 
 public final class MaterialManager implements AssetManager<IMaterial> {
 
-    private static final int BUFFER_INITIAL_CAPACITY = 16 * Material.SIZEOF;
+    // TODO: handle resizing and concurrent access
+
+    private static final int BUFFER_INITIAL_CAPACITY = 100 * IMaterial.SIZEOF;
+
+    @Singleton
+    private static MaterialManager instance;
 
     public static MaterialManager get() {
-        return Assets.materialManager();
+        return instance;
     }
 
     private AtomicInteger handleProvider;
-    private Map<Integer, List<IMaterial>> materials;
+    private Map<Type, List<IMaterial>> materials;
     private Map<String, IMaterial> materialNames;
     private Queue<Number> recycleQueue;
     private StorageBuffer buffer;
@@ -58,7 +63,7 @@ public final class MaterialManager implements AssetManager<IMaterial> {
     }
 
     @SuppressWarnings("unchecked")
-    synchronized <T extends IMaterial> T create(String name, BitFlags flags, Map<Byte, Object> properties) {
+    synchronized <T extends IMaterial> T create(String name, Type type, Map<Byte, Object> properties) {
 
         if(name == null) {
             Log.fatal("Material name cannot be null");
@@ -70,8 +75,8 @@ public final class MaterialManager implements AssetManager<IMaterial> {
             return null;
         }
 
-        if(flags == null) {
-            Log.fatal("Material flags cannot be null");
+        if(type == null) {
+            Log.fatal("Material type cannot be null");
             return null;
         }
 
@@ -80,7 +85,7 @@ public final class MaterialManager implements AssetManager<IMaterial> {
             return null;
         }
 
-        Material material = new Material(handleProvider.getAndIncrement(), name, flags, properties);
+        Material material = new Material(handleProvider.getAndIncrement(), name, type, properties);
 
         List<IMaterial> typeList = materials.computeIfAbsent(material.type(), k -> new ArrayList<>());
 
@@ -171,40 +176,20 @@ public final class MaterialManager implements AssetManager<IMaterial> {
 
             ByteBuffer data = stack.calloc(Material.SIZEOF);
 
-            if(material.flags().test(PHONG_MATERIAL_BIT)) {
-                copyPhongMaterialToBuffer(material, data);
-            } else if(material.flags().test(METALLIC_MATERIAL_BIT)) {
-                copyMetallicMaterialToBuffer(material, data);
-            } else if(material.flags().test(SPECULAR_MATERIAL_BIT)) {
-                copySpecularMaterialToBuffer(material, data);
+            switch(material.type()) {
+
+                case PHONG_MATERIAL:
+                    copyPhongMaterialToBuffer(material, data);
+                    break;
+                case METALLIC_MATERIAL:
+                    copyMetallicMaterialToBuffer(material, data);
+                    break;
+                case SPECULAR_MATERIAL:
+                    copySpecularMaterialToBuffer(material, data);
+                    break;
             }
 
             nmemcpy(buffer.mappedMemory() + offset, memAddress0(data), Material.SIZEOF);
-
-            glFinish();
-
-            var b = stack.calloc(data.capacity());
-
-            glGetNamedBufferSubData(((GLStorageBuffer)buffer).handle(), offset, b);
-
-            System.out.println("==>\n");
-
-            System.out.println(b.getFloat() + ", " + b.getFloat() + ", " + b.getFloat() + ", " + b.getFloat());
-            System.out.println(b.getFloat() + ", " + b.getFloat() + ", " + b.getFloat() + ", " + b.getFloat());
-            System.out.println(b.getFloat() + ", " + b.getFloat() + ", " + b.getFloat() + ", " + b.getFloat());
-            System.out.println(b.getFloat() + ", " + b.getFloat() + ", " + b.getFloat() + ", " + b.getFloat());
-
-            System.out.println(b.getLong());
-            System.out.println(b.getLong());
-            System.out.println(b.getLong());
-            System.out.println(b.getLong());
-            System.out.println(b.getLong());
-            System.out.println(b.getLong());
-
-            System.out.println(b.getFloat());
-            System.out.println(b.getFloat());
-            System.out.println(b.getFloat());
-            System.out.println(b.getFloat());
         }
     }
 
@@ -223,6 +208,8 @@ public final class MaterialManager implements AssetManager<IMaterial> {
         data.putLong(material.normalMap().makeResident());
         // Padding
         data.putLong(NULL);
+
+        data.putFloat(material.textureCoordsFactor().x()).putFloat(material.textureCoordsFactor().y());
 
         data.putFloat(material.alpha());
         data.putFloat(material.glossiness());
@@ -247,6 +234,8 @@ public final class MaterialManager implements AssetManager<IMaterial> {
         // Padding
         data.putLong(NULL);
 
+        data.putFloat(material.textureCoordsFactor().x()).putFloat(material.textureCoordsFactor().y());
+
         data.putFloat(material.alpha());
         data.putFloat(material.metallic());
         data.putFloat(material.roughness());
@@ -267,29 +256,12 @@ public final class MaterialManager implements AssetManager<IMaterial> {
         data.putLong(material.occlusionMap().makeResident());
         data.putLong(material.normalMap().makeResident());
 
+        data.putFloat(material.textureCoordsFactor().x()).putFloat(material.textureCoordsFactor().y());
+
         data.putFloat(material.alpha());
         data.putFloat(material.shininess());
         data.putFloat(material.reflectivity());
         data.putFloat(material.refractiveIndex());
-
-        data.rewind();
-
-        System.out.println(data.getFloat() + ", " + data.getFloat() + ", " + data.getFloat() + ", " + data.getFloat());
-        System.out.println(data.getFloat() + ", " + data.getFloat() + ", " + data.getFloat() + ", " + data.getFloat());
-        System.out.println(data.getFloat() + ", " + data.getFloat() + ", " + data.getFloat() + ", " + data.getFloat());
-        System.out.println(data.getFloat() + ", " + data.getFloat() + ", " + data.getFloat() + ", " + data.getFloat());
-
-        System.out.println(data.getLong());
-        System.out.println(data.getLong());
-        System.out.println(data.getLong());
-        System.out.println(data.getLong());
-        System.out.println(data.getLong());
-        System.out.println(data.getLong());
-
-        System.out.println(data.getFloat());
-        System.out.println(data.getFloat());
-        System.out.println(data.getFloat());
-        System.out.println(data.getFloat());
     }
 
     private void putDefaults() {

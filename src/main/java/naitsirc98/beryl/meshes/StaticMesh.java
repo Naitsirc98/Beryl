@@ -1,18 +1,47 @@
 package naitsirc98.beryl.meshes;
 
+import naitsirc98.beryl.assets.Asset;
+
 import java.nio.ByteBuffer;
+import java.util.function.Consumer;
 
 import static naitsirc98.beryl.util.types.DataType.FLOAT32_SIZEOF;
 
-public final class StaticMesh extends Mesh {
+public final class StaticMesh extends Mesh implements Asset {
 
     public static final int VERTEX_DATA_SIZE = (3 + 3 + 2) * FLOAT32_SIZEOF;
 
-    public StaticMesh(ByteBuffer vertexData) {
-        super(vertexData, VERTEX_DATA_SIZE);
+    public static StaticMesh get(String name, Consumer<StaticMeshData> meshData) {
+
+        MeshManager manager = MeshManager.get();
+
+        if(manager.exists(name)) {
+            return manager.get(name);
+        }
+
+        StaticMeshData data = new StaticMeshData(name);
+        meshData.accept(data);
+
+        return manager.createStaticMesh(name, data.vertices, data.indices);
     }
 
-    public StaticMesh(ByteBuffer vertexData, ByteBuffer indexData) {
-        super(vertexData, indexData, VERTEX_DATA_SIZE);
+    public StaticMesh(int handle, String name, ByteBuffer vertexData, ByteBuffer indexData) {
+        super(handle, name, vertexData, indexData, VERTEX_DATA_SIZE);
+    }
+
+    public static final class StaticMeshData {
+
+        private final String name;
+        private ByteBuffer vertices;
+        private ByteBuffer indices;
+
+        public StaticMeshData(String name) {
+            this.name = name;
+        }
+
+        public void set(ByteBuffer vertices, ByteBuffer indices) {
+            this.vertices = vertices;
+            this.indices = indices;
+        }
     }
 }

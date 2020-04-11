@@ -27,6 +27,7 @@ public enum DataType implements ByteSize {
     public static final int FLOAT32_SIZEOF = 4;
     public static final int DOUBLE_SIZEOF = 8;
 
+    public static final int VECTOR2_SIZEOF = 2 * FLOAT32_SIZEOF;
     public static final int VECTOR3_SIZEOF = 3 * FLOAT32_SIZEOF;
     public static final int VECTOR4_SIZEOF = 4 * FLOAT32_SIZEOF;
     public static final int MATRIX4_SIZEOF = 4 * 4 * FLOAT32_SIZEOF;

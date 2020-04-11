@@ -23,12 +23,12 @@ import naitsirc98.beryl.meshes.models.ModelEntityFactory;
 import naitsirc98.beryl.meshes.models.StaticMeshLoader;
 import naitsirc98.beryl.scenes.Entity;
 import naitsirc98.beryl.scenes.Scene;
+import naitsirc98.beryl.scenes.SceneEnvironment;
 import naitsirc98.beryl.scenes.components.behaviours.UpdateMutableBehaviour;
 import naitsirc98.beryl.scenes.components.camera.Camera;
 import naitsirc98.beryl.scenes.components.math.Transform;
 import naitsirc98.beryl.scenes.components.meshes.MeshInstance;
 import naitsirc98.beryl.util.Color;
-import org.joml.Vector3f;
 
 import java.util.Random;
 
@@ -85,13 +85,9 @@ public class App1 extends BerylApplication {
 
         Log.trace(treeModel);
 
-/*
         Entity floor = scene.newEntity("floor");
         floor.add(Transform.class).position(0, -0.1f, 0).scale(1000, 0.01f, 1000);
         floor.add(MeshInstance.class).meshView(new MeshView(cubeMesh, getFloorMaterial()));
-
- */
-
 
         ModelEntityFactory treeFactory = new ModelEntityFactory(treeModel).materialsFunction(this::treeMaterialFunction);
 
@@ -108,9 +104,10 @@ public class App1 extends BerylApplication {
         camera.add(Camera.class).lookAt(0, 0).clearColor(new Color(0.3f, 0.3f, 0.3f));
         camera.add(CameraController.class);
 
-        scene.environment().directionalLight(new DirectionalLight()
-                .color(new Color(1))
-                .direction(new Vector3f(0, 0, 1)));
+        SceneEnvironment environment = scene.environment();
+
+        environment.directionalLight(new DirectionalLight().color(Color.WHITE).direction(1, 1, 0));
+        environment.ambientColor(new Color(0.8f, 0.8f, 0.8f));
     }
 
     private PhongMaterial treeMaterialFunction(String meshName) {
@@ -194,6 +191,7 @@ public class App1 extends BerylApplication {
             colorMap.generateMipmaps();
             builder.ambientMap(colorMap).diffuseMap(colorMap);
             builder.shininess(1);
+            builder.textureCoordsFactor(1000, 1000);
         });
     }
 
