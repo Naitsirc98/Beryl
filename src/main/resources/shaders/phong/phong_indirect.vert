@@ -27,7 +27,9 @@ layout(location = 0) out VertexData {
 
 void main() {
 
-    vec4 position = u_ModelMatrices[in_ModelMatrixIndex] * vec4(in_Position, 1.0);
+    mat4 modelMatrix = u_ModelMatrices[in_ModelMatrixIndex];
+
+    vec4 position = modelMatrix * vec4(in_Position, 1.0);
 
     vertexData.position = position.xyz;
     vertexData.normal = normalize(in_Normal);

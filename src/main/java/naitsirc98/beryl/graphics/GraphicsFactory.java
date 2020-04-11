@@ -1,5 +1,6 @@
 package naitsirc98.beryl.graphics;
 
+import naitsirc98.beryl.graphics.buffers.StorageBuffer;
 import naitsirc98.beryl.graphics.textures.Texture2D;
 import naitsirc98.beryl.images.PixelFormat;
 import naitsirc98.beryl.resources.Resource;
@@ -15,4 +16,6 @@ public interface GraphicsFactory extends Resource {
     Texture2D blankTexture2D();
 
     Texture2D newTexture2D(String imagePath, PixelFormat pixelFormat);
+
+    StorageBuffer newStorageBuffer();
 }

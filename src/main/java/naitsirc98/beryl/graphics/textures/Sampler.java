@@ -11,9 +11,9 @@ public interface Sampler extends Resource {
                 .borderColor(BorderColor.BLACK_INT_TRANSPARENT)
                 .compareEnable(false)
                 .compareOperation(CompareOperation.LESS)
-                .lodBias(0.0f)
-                .minLod(0.0f)
-                .maxLod(1.0f)
+                .lodBias(-4.0f)
+                .minLod(-1000.0f)
+                .maxLod(1000.0f)
                 .maxAnisotropy(1.0f);
     }
 

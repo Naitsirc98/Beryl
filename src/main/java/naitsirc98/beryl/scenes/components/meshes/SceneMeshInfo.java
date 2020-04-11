@@ -1,6 +1,6 @@
 package naitsirc98.beryl.scenes.components.meshes;
 
-import naitsirc98.beryl.materials.Material;
+import naitsirc98.beryl.materials.IMaterial;
 import naitsirc98.beryl.meshes.Mesh;
 import naitsirc98.beryl.meshes.MeshView;
 
@@ -21,5 +21,5 @@ public interface SceneMeshInfo {
 
     Map<MeshView, List<MeshInstance>> instancesTable();
 
-    List<Material> materials();
+    List<IMaterial> materials();
 }

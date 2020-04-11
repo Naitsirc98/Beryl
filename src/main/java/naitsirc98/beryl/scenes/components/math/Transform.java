@@ -193,6 +193,39 @@ public final class Transform extends Component<Transform> {
     }
 
     /**
+     * Scale this Transform on the x axis.
+     *
+     * @param scaleX the scale on the x axis
+     * @return this Transform
+     */
+    public Transform scaleX(float scaleX) {
+        assertNotDeleted();
+        return scale(scaleX, scale.y, scale.z);
+    }
+
+    /**
+     * Scale this Transform on the y axis.
+     *
+     * @param scaleY the scale on the y axis
+     * @return this Transform
+     */
+    public Transform scaleY(float scaleY) {
+        assertNotDeleted();
+        return scale(scale.x, scaleY, scale.z);
+    }
+
+    /**
+     * Scale this Transform on the z axis.
+     *
+     * @param scaleZ the scale on the z axis
+     * @return this Transform
+     */
+    public Transform scaleZ(float scaleZ) {
+        assertNotDeleted();
+        return scale(scale.x, scale.y, scaleZ);
+    }
+
+    /**
      * Returns the rotation of this transform.
      *
      * @return the rotation

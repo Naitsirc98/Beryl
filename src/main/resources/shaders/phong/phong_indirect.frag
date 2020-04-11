@@ -4,23 +4,12 @@
 #extension GL_ARB_bindless_texture: require
 
 @include "structs/lights.glsl"
+@include "structs/material.glsl"
 
 #define MAX_POINT_LIGHTS 10
 #define MAX_SPOT_LIGHTS 10
 
 layout(bindless_sampler) uniform;
-
-struct Material {
-    vec4 ambientColor;
-    vec4 diffuseColor;
-    vec4 specularColor;
-    vec4 emissiveColor;
-    float shininess;
-    sampler2D ambientMap;
-    sampler2D diffuseMap;
-    sampler2D specularMap;
-    sampler2D emissiveMap;
-};
 
 layout(std140, set = 0, binding = 0) uniform Camera {
     mat4 projectionViewMatrix;
@@ -28,7 +17,7 @@ layout(std140, set = 0, binding = 0) uniform Camera {
 } u_Camera;
 
 layout(std430, binding = 3) readonly buffer Materials {
-    Material u_Material[];
+    PhongMaterial u_Materials[];
 };
 
 layout(std140, set = 2, binding = 1) uniform Lights {
@@ -54,7 +43,7 @@ layout(location = 0) out vec4 out_FinalColor;
 
 vec3 cameraDirection;
 
-Material material;
+PhongMaterial material;
 
 vec4 materialAmbientColor;
 vec4 materialDiffuseColor;
@@ -71,14 +60,14 @@ void main() {
 
     cameraDirection = normalize(u_Camera.position.xyz - vertexData.position);
 
-    material = u_Material[vertexData.materialIndex];
+    material = u_Materials[vertexData.materialIndex];
 
-    float lod = distance(u_Camera.position.xyz, vertexData.position) / 100.0;
+    // float lod = distance(u_Camera.position.xyz, vertexData.position) / 100.0;
 
-    materialAmbientColor = material.ambientColor * textureLod(material.ambientMap, vertexData.texCoords, lod);
-    materialDiffuseColor = material.diffuseColor * textureLod(material.diffuseMap, vertexData.texCoords, lod);
-    materialSpecularColor = material.specularColor * textureLod(material.specularMap, vertexData.texCoords, lod);
-    materialEmissiveColor = material.emissiveColor * textureLod(material.emissiveMap, vertexData.texCoords, lod);
+    materialAmbientColor = material.ambientColor * texture(material.ambientMap, vertexData.texCoords);
+    materialDiffuseColor = material.diffuseColor * texture(material.diffuseMap, vertexData.texCoords);
+    materialSpecularColor = material.specularColor * texture(material.specularMap, vertexData.texCoords);
+    materialEmissiveColor = material.emissiveColor * texture(material.emissiveMap, vertexData.texCoords);
 
     // IMPORTANT!!! IF NO MATERIAL IS USED, THIS WILL DISCARD ANY OUTPUT!! COULD CAUSE PROBLEMS WHEN DEBUGGING!!!!!
     if(materialAmbientColor.a + materialDiffuseColor.a < 0.001) {
@@ -148,11 +137,9 @@ vec4 computeSpecularColor(vec4 lightColor, vec3 lightDirection) {
     // float specular = pow(computeAngle(cameraDirection, reflectDirection), u_Material.shininess);
 
     // Blinn-Phong
-    vec3 viewDirection = normalize(u_Camera.position.xyz - vertexData.position);
-
     vec3 reflectDirection = reflect(-lightDirection, vertexData.normal);
 
-    vec3 halfwayDirection = normalize(lightDirection + viewDirection);
+    vec3 halfwayDirection = normalize(lightDirection + cameraDirection);
 
     float specular = pow(computeAngle(vertexData.normal, halfwayDirection), material.shininess);
 

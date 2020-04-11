@@ -15,7 +15,7 @@ import naitsirc98.beryl.graphics.rendering.RenderingPath;
 import naitsirc98.beryl.lights.DirectionalLight;
 import naitsirc98.beryl.lights.Light;
 import naitsirc98.beryl.materials.Material;
-import naitsirc98.beryl.materials.PhongMaterial;
+import naitsirc98.beryl.materials.MaterialManager;
 import naitsirc98.beryl.meshes.Mesh;
 import naitsirc98.beryl.meshes.MeshView;
 import naitsirc98.beryl.meshes.StaticMesh;
@@ -75,7 +75,7 @@ public class Rendering extends RenderingPath {
 
     private static final int BOUNDS_BUFFER_MIN_SIZE = AABB.SIZEOF;
     private static final int MATRICES_BUFFER_MIN_SIZE = 16 * FLOAT32_SIZEOF;
-    private static final int MATERIALS_BUFFER_MIN_SIZE = PhongMaterial.SIZEOF + 4 * UINT64_SIZEOF;
+    private static final int MATERIALS_BUFFER_MIN_SIZE = Material.SIZEOF;
     private static final int INSTANCE_BUFFER_MIN_SIZE = INT32_SIZEOF * 2;
 
     private static final int MEMORY_BARRIER_FLAGS =
@@ -105,7 +105,6 @@ public class Rendering extends RenderingPath {
     private GLStorageBuffer boundingSpheresBuffer;
     private GLStorageBuffer meshIDsBuffer;
     private GLStorageBuffer matricesBuffer;
-    private GLStorageBuffer materialsBuffer;
 
     private GLStorageBuffer meshCommandBuffer;
     private GLStorageBuffer instanceCommandBuffer;
@@ -138,7 +137,6 @@ public class Rendering extends RenderingPath {
         boundingSpheresBuffer = new GLStorageBuffer();
         meshIDsBuffer = new GLStorageBuffer();
         matricesBuffer = new GLStorageBuffer();
-        materialsBuffer = new GLStorageBuffer();
 
         meshCommandBuffer = new GLStorageBuffer();
         instanceCommandBuffer = new GLStorageBuffer();
@@ -161,7 +159,6 @@ public class Rendering extends RenderingPath {
         boundingSpheresBuffer.release();
         meshIDsBuffer.release();
         matricesBuffer.release();
-        materialsBuffer.release();
 
         meshCommandBuffer.release();
         instanceCommandBuffer.release();
@@ -198,6 +195,8 @@ public class Rendering extends RenderingPath {
 
         matricesBuffer.bind(2);
 
+        GLStorageBuffer materialsBuffer = MaterialManager.get().buffer();
+
         materialsBuffer.bind(3);
 
         instanceCommandBuffer.bindIndirect();
@@ -226,7 +225,6 @@ public class Rendering extends RenderingPath {
     private void prepareBuffers(SceneMeshInfo meshInfo) {
         prepareMeshBuffers(meshInfo.meshes());
         prepareMatricesBuffer(meshInfo);
-        prepareMaterialsBuffer(meshInfo.materials());
         prepareInstanceBuffer(meshInfo);
     }
 
@@ -268,7 +266,7 @@ public class Rendering extends RenderingPath {
 
                 setInstanceMeshID(objectIndex, meshID);
 
-                final int materialIndex = meshInfo.materials().indexOf(meshView.material());
+                final int materialIndex = meshView.material().bufferIndex();
 
                 setInstanceData(objectIndex, instanceID, materialIndex);
 
@@ -408,45 +406,6 @@ public class Rendering extends RenderingPath {
         });
     }
 
-    private void prepareMaterialsBuffer(List<Material> materials) {
-
-        final int minSize = materials.size() * MATERIALS_BUFFER_MIN_SIZE;
-
-        if (materialsBuffer.size() < minSize) {
-            reallocateBuffer(materialsBuffer, minSize);
-        }
-
-        final long materialsBufferMemory = materialsBuffer.mappedMemory();
-
-        try (MemoryStack stack = stackPush()) {
-
-            ByteBuffer buffer = stack.calloc(MATERIALS_BUFFER_MIN_SIZE);
-            final long srcAddress = memAddress0(buffer);
-
-            for (int i = 0; i < materials.size(); i++) {
-
-                Material material = materials.get(i);
-
-                material.get(0, buffer.rewind());
-
-                PhongMaterial phongMaterial = (PhongMaterial) material;
-
-                GLTexture2D ambientMap = phongMaterial.ambientMap();
-                GLTexture2D diffuseMap = phongMaterial.diffuseMap();
-                GLTexture2D specularMap = phongMaterial.specularMap();
-                GLTexture2D emissiveMap = phongMaterial.emissiveMap();
-
-                buffer.position(PhongMaterial.SIZEOF)
-                        .putLong(ambientMap.makeResident())
-                        .putLong(diffuseMap.makeResident())
-                        .putLong(specularMap.makeResident())
-                        .putLong(emissiveMap.makeResident());
-
-                nmemcpy(materialsBufferMemory + i * MATERIALS_BUFFER_MIN_SIZE, srcAddress, MATERIALS_BUFFER_MIN_SIZE);
-            }
-        }
-    }
-
     private void setCameraUniformBuffer(Camera camera) {
 
         try (MemoryStack stack = stackPush()) {
@@ -516,7 +475,7 @@ public class Rendering extends RenderingPath {
                 nmemcpy(lightsUniformBufferMemory + SPOT_LIGHTS_OFFSET, memAddress(buffer), buffer.limit());
             }
 
-            ByteBuffer buffer = stack.malloc(Color.SIZEOF + INT32_SIZEOF * 2);
+            ByteBuffer buffer = stack.calloc(Color.SIZEOF + INT32_SIZEOF * 2);
 
             environment.ambientColor().getRGBA(buffer).putInt(pointLightsCount).putInt(spotLightsCount);
 

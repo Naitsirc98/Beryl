@@ -1,5 +1,6 @@
 package naitsirc98.beryl.meshes;
 
+import naitsirc98.beryl.materials.IMaterial;
 import naitsirc98.beryl.materials.Material;
 
 import java.util.Objects;
@@ -7,9 +8,9 @@ import java.util.Objects;
 public final class MeshView {
 
     private final Mesh mesh;
-    private final Material material;
+    private final IMaterial material;
 
-    public MeshView(Mesh mesh, Material material) {
+    public MeshView(Mesh mesh, IMaterial material) {
         this.mesh = mesh;
         this.material = material;
     }
@@ -18,7 +19,7 @@ public final class MeshView {
         return mesh;
     }
 
-    public Material material() {
+    public IMaterial material() {
         return material;
     }
 

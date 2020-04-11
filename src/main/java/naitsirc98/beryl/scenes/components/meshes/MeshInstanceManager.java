@@ -1,6 +1,6 @@
 package naitsirc98.beryl.scenes.components.meshes;
 
-import naitsirc98.beryl.materials.Material;
+import naitsirc98.beryl.materials.IMaterial;
 import naitsirc98.beryl.meshes.Mesh;
 import naitsirc98.beryl.meshes.MeshView;
 import naitsirc98.beryl.scenes.Scene;
@@ -18,7 +18,7 @@ public final class MeshInstanceManager extends AbstractComponentManager<MeshInst
     private final List<MeshView> meshViews;
     private final Map<MeshView, List<MeshInstance>> instancesTable;
     private List<Mesh> meshes;
-    private List<Material> materials;
+    private List<IMaterial> materials;
     private final AtomicInteger modifications;
     private int numMeshViewsInstances;
     private int lastModifications;
@@ -114,7 +114,7 @@ public final class MeshInstanceManager extends AbstractComponentManager<MeshInst
     }
 
     @Override
-    public List<Material> materials() {
+    public List<IMaterial> materials() {
         return materials;
     }
 

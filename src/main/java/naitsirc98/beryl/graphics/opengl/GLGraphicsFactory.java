@@ -1,6 +1,8 @@
 package naitsirc98.beryl.graphics.opengl;
 
 import naitsirc98.beryl.graphics.GraphicsFactory;
+import naitsirc98.beryl.graphics.buffers.StorageBuffer;
+import naitsirc98.beryl.graphics.opengl.buffers.GLStorageBuffer;
 import naitsirc98.beryl.graphics.opengl.textures.GLTexture2D;
 import naitsirc98.beryl.graphics.textures.Texture2D;
 import naitsirc98.beryl.images.Image;
@@ -32,10 +34,15 @@ public class GLGraphicsFactory implements GraphicsFactory {
         Texture2D texture = newTexture2D();
 
         try(Image image = ImageFactory.newImage(imagePath, pixelFormat)) {
-            texture.pixels(1, requireNonNull(image));
+            texture.pixels(requireNonNull(image));
         }
 
         return texture;
+    }
+
+    @Override
+    public StorageBuffer newStorageBuffer() {
+        return new GLStorageBuffer();
     }
 
     private Texture2D newBlankTexture2D() {
@@ -43,8 +50,10 @@ public class GLGraphicsFactory implements GraphicsFactory {
         Texture2D texture = newTexture2D();
 
         try(Image image = ImageFactory.newBlankImage(PixelFormat.RGBA)) {
-            texture.pixels(1, image);
+            texture.pixels(image);
         }
+
+        texture.makeResident();
 
         return texture;
     }

@@ -16,7 +16,7 @@ public final class SceneEnvironment {
     public static final int MAX_POINT_LIGHTS = 10;
     public static final int MAX_SPOT_LIGHTS = 10;
 
-    public static final Color DEFAULT_AMBIENT_COLOR = new Color(0.2f, 0.2f, 0.2f, 1.0f);
+    public static final Color DEFAULT_AMBIENT_COLOR = new Color(0.2f, 0.2f, 0.2f);
 
     private DirectionalLight directionalLight;
     private PointLight[] pointLights;

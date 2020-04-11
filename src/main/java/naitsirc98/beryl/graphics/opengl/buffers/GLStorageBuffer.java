@@ -1,8 +1,10 @@
 package naitsirc98.beryl.graphics.opengl.buffers;
 
+import naitsirc98.beryl.graphics.buffers.StorageBuffer;
+
 import static org.lwjgl.opengl.GL44.*;
 
-public class GLStorageBuffer extends GLBuffer {
+public class GLStorageBuffer extends GLBuffer implements StorageBuffer {
 
     public void bind(int binding) {
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, binding, handle());

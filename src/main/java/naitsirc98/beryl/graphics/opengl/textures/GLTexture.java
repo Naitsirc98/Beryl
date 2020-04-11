@@ -26,7 +26,7 @@ public abstract class GLTexture extends ManagedResource implements GLObject, Tex
 
     public GLTexture(int target) {
         this.handle = glCreateTextures(target);
-        // minLod(0).maxLod(1/4.0f).lodBias(1/4.0f);
+        sampler().defaults();
     }
 
     @Override
@@ -34,14 +34,14 @@ public abstract class GLTexture extends ManagedResource implements GLObject, Tex
         return handle;
     }
 
-    public long handleARB() {
-        bind(0);
+    @Override
+    public long residentHandle() {
         return glGetTextureHandleARB(handle);
     }
 
     public long makeResident() {
         if(residentHandle == NULL) {
-            residentHandle = handleARB();
+            residentHandle = residentHandle();
             glMakeTextureHandleResidentARB(residentHandle);
         }
         return residentHandle;
@@ -49,7 +49,7 @@ public abstract class GLTexture extends ManagedResource implements GLObject, Tex
 
     public void makeNonResident() {
         if(residentHandle != NULL) {
-            glMakeTextureHandleNonResidentARB(handleARB());
+            glMakeTextureHandleNonResidentARB(residentHandle());
         }
     }
 
@@ -213,10 +213,10 @@ public abstract class GLTexture extends ManagedResource implements GLObject, Tex
 
             switch (borderColor) {
                 case WHITE_INT_OPAQUE:
-                    glTextureParameteriv(handle, GL_TEXTURE_BORDER_COLOR, stack.ints(1, 1, 1, 1));
+                    glTextureParameterIiv(handle, GL_TEXTURE_BORDER_COLOR, stack.ints(1, 1, 1, 1));
                     break;
                 case BLACK_INT_OPAQUE:
-                    glTextureParameteriv(handle, GL_TEXTURE_BORDER_COLOR, stack.ints(0, 0, 0, 1));
+                    glTextureParameterIiv(handle, GL_TEXTURE_BORDER_COLOR, stack.ints(0, 0, 0, 1));
                     break;
                 case WHITE_FLOAT_OPAQUE:
                     glTextureParameterfv(handle, GL_TEXTURE_BORDER_COLOR, stack.floats(1, 1, 1, 1));
@@ -225,7 +225,7 @@ public abstract class GLTexture extends ManagedResource implements GLObject, Tex
                     glTextureParameterfv(handle, GL_TEXTURE_BORDER_COLOR, stack.floats(0, 0, 0, 1));
                     break;
                 case BLACK_INT_TRANSPARENT:
-                    glTextureParameteriv(handle, GL_TEXTURE_BORDER_COLOR, stack.ints(0, 0, 0, 0));
+                    glTextureParameterIiv(handle, GL_TEXTURE_BORDER_COLOR, stack.ints(0, 0, 0, 0));
                     break;
                 case BLACK_FLOAT_TRANSPARENT:
                     glTextureParameterfv(handle, GL_TEXTURE_BORDER_COLOR, stack.floats(0, 0, 0, 0));
