@@ -11,10 +11,8 @@ import naitsirc98.beryl.graphics.rendering.RenderingPath;
 import naitsirc98.beryl.lights.DirectionalLight;
 import naitsirc98.beryl.lights.Light;
 import naitsirc98.beryl.materials.MaterialManager;
-import naitsirc98.beryl.meshes.MeshManager;
-import naitsirc98.beryl.meshes.MeshView;
-import naitsirc98.beryl.meshes.StaticMesh;
-import naitsirc98.beryl.meshes.StaticMeshManager;
+import naitsirc98.beryl.meshes.*;
+import naitsirc98.beryl.meshes.models.StaticMeshLoader;
 import naitsirc98.beryl.meshes.vertices.VertexLayout;
 import naitsirc98.beryl.scenes.Fog;
 import naitsirc98.beryl.scenes.Scene;
@@ -23,7 +21,8 @@ import naitsirc98.beryl.scenes.components.camera.Camera;
 import naitsirc98.beryl.scenes.components.meshes.MeshInstance;
 import naitsirc98.beryl.scenes.components.meshes.SceneMeshInfo;
 import naitsirc98.beryl.util.Color;
-import org.joml.Vector4f;
+import org.joml.*;
+import org.lwjgl.BufferUtils;
 import org.lwjgl.system.MemoryStack;
 
 import java.nio.ByteBuffer;
@@ -33,6 +32,7 @@ import java.util.List;
 
 import static naitsirc98.beryl.graphics.ShaderStage.*;
 import static naitsirc98.beryl.meshes.vertices.VertexAttribute.*;
+import static naitsirc98.beryl.util.Asserts.assertEquals;
 import static naitsirc98.beryl.util.types.DataType.*;
 import static org.lwjgl.opengl.GL11.GL_TRIANGLES;
 import static org.lwjgl.opengl.GL42.GL_COMMAND_BARRIER_BIT;
@@ -97,7 +97,11 @@ public class Rendering extends RenderingPath {
 
     private GLBuffer instanceCommandBuffer;
 
-    private GLBuffer debug;
+    private GLBuffer debugBuffer;
+
+    private GLShaderProgram debugShader;
+    private GLVertexArray debugVAO;
+    private Mesh debugMesh;
 
     public void init() {
 
@@ -112,6 +116,27 @@ public class Rendering extends RenderingPath {
                 .attach(new GLShader(FRAGMENT_STAGE).source(BerylFiles.getPath("shaders/phong/phong_indirect.frag")))
                 .link();
 
+        debugShader = new GLShaderProgram()
+                .attach(new GLShader(VERTEX_STAGE).source(BerylFiles.getPath("shaders/gl/simple/simple.gl.vert")))
+                .attach(new GLShader(FRAGMENT_STAGE).source(BerylFiles.getPath("shaders/gl/simple/simple.gl.frag")))
+                .link();
+
+        debugBuffer = new GLBuffer();
+        debugBuffer.allocate(1000 * VECTOR4_SIZEOF);
+
+        debugVAO = new GLVertexArray();
+
+        debugMesh = new StaticMeshLoader().load(BerylFiles.getPath("models/cube.obj")).loadedMesh(0).mesh();
+
+        GLBuffer vbo = new GLBuffer();
+        vbo.data(debugMesh.vertexData());
+
+        GLBuffer ibo = new GLBuffer();
+        ibo.data(debugMesh.indexData());
+
+        debugVAO.addVertexBuffer(0, VertexLayout.VERTEX_LAYOUT_3D.attributeList(0), vbo);
+        debugVAO.setIndexBuffer(ibo);
+
         frustumUniformBuffer = new GLBuffer("FRUSTUM_UNIFORM_BUFFER");
         frustumUniformBuffer.allocate(FRUSTUM_UNIFORM_BUFFER_SIZE);
 
@@ -125,9 +150,6 @@ public class Rendering extends RenderingPath {
         meshIndicesBuffer = new GLBuffer("MESH_INDICES_STORAGE_BUFFER");
 
         instanceCommandBuffer = new GLBuffer("INSTANCE_COMMAND_BUFFER");
-
-        debug = new GLBuffer("DEBUG_BUFFER");
-        debug.allocate(10000 * FLOAT32_SIZEOF);
 
         frustumUniformBuffer.mapMemory();
         cameraUniformBuffer.mapMemory();
@@ -163,7 +185,7 @@ public class Rendering extends RenderingPath {
 
     @Override
     public void render(Camera camera, Scene scene) {
-        performCullingPass(scene.meshInfo().numMeshViewsInstances());
+        performCullingPass(scene.meshInfo().numInstancedMeshViews());
         render(camera, scene.meshInfo());
     }
 
@@ -171,8 +193,10 @@ public class Rendering extends RenderingPath {
 
         final Color color = camera.clearColor();
 
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         glEnable(GL_DEPTH_TEST);
-        glEnable(GL_CULL_FACE);
+        glDepthMask(true);
+        // glEnable(GL_CULL_FACE);
         glClearColor(color.red(), color.green(), color.blue(), color.alpha());
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -192,7 +216,106 @@ public class Rendering extends RenderingPath {
 
         vertexArray.bind();
 
-        glMultiDrawElementsIndirect(GL_TRIANGLES, GL_UNSIGNED_INT, NULL, meshInfo.numMeshViewsInstances(), 0);
+        glMultiDrawElementsIndirect(GL_TRIANGLES, GL_UNSIGNED_INT, NULL, meshInfo.numInstancedMeshViews(), 0);
+
+        glFinish();
+
+        ByteBuffer commands = instanceCommandBuffer.get(0);
+
+        for(int i = 0;i < meshInfo.numInstancedMeshViews();i++) {
+            System.out.println(i + " = " + new GLDrawElementsCommand(commands));
+            commands.position(i * GLDrawElementsCommand.SIZEOF);
+        }
+
+        /*
+
+        glFinish();
+
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        glDisable(GL_DEPTH_TEST);
+        glDepthMask(false);
+
+        debugShader.bind();
+
+        debugVAO.bind();
+
+        FloatBuffer mvpBuffer = BufferUtils.createFloatBuffer(16);
+
+        Matrix4f mvp = new Matrix4f();
+
+        Color[] colors = {
+                Color.RED,
+                Color.GREEN,
+                Color.BLUE
+        };
+
+        FloatBuffer frustumData = frustumUniformBuffer.get(0).asFloatBuffer();
+
+        assertEquals(new Matrix4f(frustumData), camera.projectionViewMatrix());
+
+        for(int i = 0;i < 6;i++) {
+            assertEquals(new Vector4f(16 + i * 4, frustumData), camera.frustumPlanes()[i]);
+        }
+
+        ByteBuffer debug = debugBuffer.get(0);
+
+        int total = 0;
+
+        for (int i = 0; i < meshInfo.instances().size(); i++) {
+
+            MeshInstance instance = meshInfo.instances().get(i);
+
+            Matrix4f modelMatrix = new Matrix4f(instance.modelMatrix());
+            Matrix4fc projectionView = camera.projectionViewMatrix();
+
+            Vector3f scale = modelMatrix.getScale(new Vector3f());
+
+            int j = 0;
+
+            for (MeshView meshView : instance) {
+
+                Mesh mesh = meshView.mesh();
+
+                Vector4f center = new Vector4f(mesh.boundingSphere().center(), 1.0f);
+
+                center.mul(modelMatrix);
+
+                System.out.println("invocation cpu = " + new Vector4f(total, total, total, meshView.mesh().index()));
+                System.out.println("invocation gpu = " + new Vector4f(debug.getFloat(), debug.getFloat(), debug.getFloat(), debug.getFloat()));
+
+                mvp.translation(center.x, center.y, center.z).scale(mesh.boundingSphere().radius() * scale.x);
+
+                mvp = camera.projectionViewMatrix().mul(mvp, mvp);
+
+                mvp.get(mvpBuffer);
+
+                debugShader.uniformMatrix4f("u_MVP", false, mvpBuffer);
+                debugShader.uniformColor("color", colors[j % 3]);
+
+                ++j;
+                ++total;
+
+                if (!insideFrustum(camera, center.x, center.y, center.z, mesh.boundingSphere().radius() * scale.x)) {
+                    continue;
+                }
+
+                glDrawElements(GL_TRIANGLES, debugMesh.indexCount(), GL_UNSIGNED_INT, 0);
+            }
+        }
+
+         */
+
+    }
+
+    public boolean insideFrustum(Camera camera, float x0, float y0, float z0, float boundingRadius) {
+        Vector4fc[] planes = camera.frustumPlanes();
+        for (int i = 0; i < planes.length; i++) {
+            Vector4fc plane = planes[i];
+            if (plane.x() * x0 + plane.y() * y0 + plane.z() * z0 + plane.w() <= -boundingRadius) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private void performCullingPass(int numObjects) {
@@ -210,6 +333,7 @@ public class Rendering extends RenderingPath {
         transformsBuffer.bind(GL_SHADER_STORAGE_BUFFER, 3);
         meshIndicesBuffer.bind(GL_SHADER_STORAGE_BUFFER, 4);
         frustumUniformBuffer.bind(GL_UNIFORM_BUFFER, 5);
+        debugBuffer.bind(GL_SHADER_STORAGE_BUFFER, 6);
 
         glDispatchCompute(numObjects, 1, 1);
 
@@ -218,7 +342,6 @@ public class Rendering extends RenderingPath {
 
     private void prepareBuffers(SceneMeshInfo meshInfo) {
 
-        prepareTransformsBuffer(meshInfo);
         prepareInstanceBuffer(meshInfo);
 
         StaticMeshManager meshManager = MeshManager.get().staticMeshManager();
@@ -229,9 +352,9 @@ public class Rendering extends RenderingPath {
 
     private void prepareInstanceBuffer(SceneMeshInfo meshInfo) {
 
-        final int numInstances = meshInfo.numMeshViewsInstances();
+        final int numObjects = meshInfo.numInstancedMeshViews();
 
-        final int instanceCommandsMinSize = numInstances * GLDrawElementsCommand.SIZEOF;
+        final int instanceCommandsMinSize = numObjects * GLDrawElementsCommand.SIZEOF;
 
         if (instanceCommandBuffer.size() < instanceCommandsMinSize) {
             reallocateBuffer(instanceCommandBuffer, instanceCommandsMinSize);
@@ -239,35 +362,43 @@ public class Rendering extends RenderingPath {
 
         instanceCommandBuffer.clear();
 
-        final int instancesMinSize = numInstances * INSTANCE_BUFFER_MIN_SIZE;
+        final int instancesMinSize = numObjects * INSTANCE_BUFFER_MIN_SIZE;
 
         if (instanceBuffer.size() < instancesMinSize) {
             reallocateBuffer(instanceBuffer, instancesMinSize);
             vertexArray.setVertexBuffer(INSTANCE_BUFFER_BINDING, instanceBuffer, INSTANCE_BUFFER_MIN_SIZE);
         }
 
-        final long meshIDsMinSize = numInstances * UINT32_SIZEOF;
+        final long meshIDsMinSize = numObjects * UINT32_SIZEOF;
 
         if (meshIndicesBuffer.size() < meshIDsMinSize) {
             reallocateBuffer(meshIndicesBuffer, meshIDsMinSize);
         }
 
+        final int transformsMinSize = numObjects * TRANSFORMS_BUFFER_MIN_SIZE;
+
+        if (transformsBuffer.size() < transformsMinSize) {
+            reallocateBuffer(transformsBuffer, transformsMinSize);
+        }
+
         final List<MeshInstance> instances = meshInfo.instances();
         int objectIndex = 0;
 
-        for(int instanceID = 0;instanceID < instances.size();instanceID++) {
+        for (int instanceID = 0; instanceID < instances.size(); instanceID++) {
 
             MeshInstance instance = instances.get(instanceID);
 
-            for(MeshView meshView : instance) {
+            for (MeshView meshView : instance) {
 
                 final int meshIndex = meshView.mesh().index();
+
+                setInstanceTransform(objectIndex, instance.modelMatrix(), instance.normalMatrix());
 
                 setInstanceMeshIndex(objectIndex, meshIndex);
 
                 final int materialIndex = meshView.material().bufferIndex();
 
-                setInstanceData(objectIndex, instanceID, materialIndex);
+                setInstanceData(objectIndex, objectIndex, materialIndex);
 
                 ++objectIndex;
             }
@@ -275,9 +406,18 @@ public class Rendering extends RenderingPath {
         }
     }
 
-    private void setInstanceMeshIndex(int instanceID, int meshIndex) {
+    private void setInstanceMeshIndex(int objectIndex, int meshIndex) {
         try (MemoryStack stack = stackPush()) {
-            meshIndicesBuffer.copy(instanceID * UINT32_SIZEOF, stack.ints(meshIndex));
+            meshIndicesBuffer.copy(objectIndex * UINT32_SIZEOF, stack.ints(meshIndex));
+        }
+    }
+
+    private void setInstanceTransform(int objectIndex, Matrix4fc modelMatrix, Matrix4fc normalMatrix) {
+        try(MemoryStack stack = stackPush()) {
+            ByteBuffer buffer = stack.malloc(MATRIX4_SIZEOF * 2);
+            modelMatrix.get(TRANSFORMS_BUFFER_MODEL_MATRIX_OFFSET, buffer);
+            normalMatrix.get(TRANSFORMS_BUFFER_NORMAL_MATRIX_OFFSET, buffer);
+            transformsBuffer.copy(objectIndex * TRANSFORMS_BUFFER_MIN_SIZE, buffer);
         }
     }
 
@@ -290,30 +430,6 @@ public class Rendering extends RenderingPath {
             buffer.put(0, matrixIndex).put(1, materialIndex);
 
             instanceBuffer.copy(instanceID * INSTANCE_BUFFER_MIN_SIZE, buffer);
-        }
-    }
-
-    private void prepareTransformsBuffer(SceneMeshInfo meshInfo) {
-
-        final int minSize = meshInfo.instances().size() * TRANSFORMS_BUFFER_MIN_SIZE;
-
-        if (transformsBuffer.size() < minSize) {
-            reallocateBuffer(transformsBuffer, minSize);
-        }
-
-        try(MemoryStack stack = stackPush()) {
-
-            final ByteBuffer buffer = stack.calloc(TRANSFORMS_BUFFER_MIN_SIZE);
-
-            for(int i = 0;i < meshInfo.instances().size();i++) {
-
-                final MeshInstance instance = meshInfo.instances().get(i);
-
-                instance.modelMatrix().get(TRANSFORMS_BUFFER_MODEL_MATRIX_OFFSET, buffer);
-                instance.normalMatrix().get(TRANSFORMS_BUFFER_NORMAL_MATRIX_OFFSET, buffer);
-
-                transformsBuffer.copy(i * TRANSFORMS_BUFFER_MIN_SIZE, buffer);
-            }
         }
     }
 
@@ -339,7 +455,7 @@ public class Rendering extends RenderingPath {
             camera.projectionViewMatrix().get(FRUSTUM_UNIFORM_BUFFER_PROJECTION_VIEW_OFFSET, buffer);
 
             for (int i = 0; i < 6; i++) {
-                camera.frustumPlanes()[i].get(FRUSTUM_UNIFORM_BUFFER_PLANES_OFFSET + i * 4 * FLOAT32_SIZEOF, buffer);
+                camera.frustumPlanes()[i].get(FRUSTUM_UNIFORM_BUFFER_PLANES_OFFSET + i * VECTOR4_SIZEOF, buffer);
             }
 
             frustumUniformBuffer.copy(0, buffer);

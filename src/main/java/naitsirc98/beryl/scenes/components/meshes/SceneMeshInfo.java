@@ -11,7 +11,7 @@ public interface SceneMeshInfo {
 
     int modifications();
 
-    int numMeshViewsInstances();
+    int numInstancedMeshViews();
 
     List<Mesh> meshes();
 

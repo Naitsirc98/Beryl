@@ -1,9 +1,6 @@
 package naitsirc98.beryl.examples.app1;
 
-import naitsirc98.beryl.core.Beryl;
-import naitsirc98.beryl.core.BerylApplication;
-import naitsirc98.beryl.core.BerylConfiguration;
-import naitsirc98.beryl.core.BerylFiles;
+import naitsirc98.beryl.core.*;
 import naitsirc98.beryl.graphics.GraphicsAPI;
 import naitsirc98.beryl.graphics.GraphicsFactory;
 import naitsirc98.beryl.graphics.textures.Sampler;
@@ -86,37 +83,23 @@ public class App1 extends BerylApplication {
                         .load("C:\\Users\\naits\\Downloads\\uploads_files_1970932_conifer_macedonian_pine(1)\\OBJ format\\conifer_macedonian_pine.obj");
 
         Log.trace(treeModel);
-/*
+
         Entity floor = scene.newEntity("floor");
         floor.add(Transform.class).position(0, 0f, 0).scale(1000, 1000f, 1).rotateX(radians(90));
-        floor.add(MeshInstance.class).meshView(new MeshView(cubeMesh, getFloorMaterial()));
-
- */
-
-        for(int i = 0;i < 10000;i++) {
-            Entity cube = scene.newEntity();
-            cube.get(Transform.class).position(RAND.nextInt(500), RAND.nextInt(500), RAND.nextInt(500)).scale(0.5f);
-            cube.add(MeshInstance.class).meshView(new MeshView(cubeMesh, PhongMaterial.get(""+i%11, builder -> {
-
-                Color color = new Color(RAND.nextFloat(), RAND.nextFloat(), RAND.nextFloat());
-
-                builder.ambientColor(color).diffuseColor(color).specularColor(color);
-
-            })));
-        }
+        floor.add(MeshInstance.class).meshView(new MeshView(quadMesh, getFloorMaterial()));
 
         ModelEntityFactory treeFactory = new ModelEntityFactory(treeModel).materialsFunction(this::treeMaterialFunction);
 
-        for(int i = 0;i < 0;i++) {
+        for(int i = 0;i < 1000;i++) {
             Entity tree = treeFactory.newEntity(scene);
             tree.get(Transform.class).position(RAND.nextInt(500), 0, RAND.nextInt(500)).scale(0.01f);
             if(i == 0) {
-                tree.get(Transform.class).position(0, 0, 0);
+                // tree.get(Transform.class).position(0, 0, 0);
             }
         }
 
         Entity camera = scene.newEntity("Camera");
-        camera.add(Transform.class).position(0, 1.7f, 0);
+        camera.add(Transform.class).position(0, 5, 5);
         camera.add(Camera.class).lookAt(0, 0).clearColor(new Color(0.3f, 0.3f, 0.3f));
         camera.add(CameraController.class);
 

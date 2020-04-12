@@ -52,22 +52,18 @@ layout(std430, binding = 6) writeonly buffer Debug {
 
 
 
-// Computes signed distance between a point and a plane
-// vPlane: Contains plane coefficients (a,b,c,d) where: ax + by + cz = d
-// vPoint: Point to be tested against the plane.
-float distanceToPlane(vec4 vPlane, vec3 vPoint)
-{
-    return dot(vec4(vPoint, 1.0), vPlane);
-}
- 
-// Frustum cullling on a sphere. Returns > 0 if visible, <= 0 otherwise
-float cullSphere(vec4 vPlanes[6], vec3 vCenter, float fRadius)
-{
-   float dist01 = min(distanceToPlane(vPlanes[0], vCenter), distanceToPlane(vPlanes[1], vCenter));
-   float dist23 = min(distanceToPlane(vPlanes[2], vCenter), distanceToPlane(vPlanes[3], vCenter));
-   float dist45 = min(distanceToPlane(vPlanes[4], vCenter), distanceToPlane(vPlanes[5], vCenter));
- 
-   return min(min(dist01, dist23), dist45) + fRadius;
+bool testSphere(vec3 center, float radius) {
+
+    for(int i = 0;i < 6;i++) {
+
+        vec4 plane = u_Frustum.planes[i];
+
+        if (plane.x * center.x + plane.y * center.y + plane.z * center.z + plane.w <= -radius) {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 float getScale(mat4 m) {
@@ -89,10 +85,10 @@ bool isVisible(mat4 modelMatrix, BoundingSphere boundingSphere) {
 
     float radius = boundingSphere.radius * getScale(modelMatrix);
 
-    // debug[gl_GlobalInvocationID.x] = vec4(sphereCenter.xyz, radius);
+    // debug[gl_GlobalInvocationID.x] = vec4(gl_GlobalInvocationID.xyz, 0);
 
     // This does not work. I don't know if it has to do with the bounding sphere, or with the frustum calculation
-    return cullSphere(u_Frustum.planes, sphereCenter.xyz, radius) > 0;
+    return testSphere(sphereCenter.xyz, radius);
 }
 
 void main() {
@@ -101,13 +97,15 @@ void main() {
 
     const int meshIndex = u_MeshIndices[index];
 
+    const Transform transform = u_Transforms[index];
+
     DrawCommand meshCommand = u_MeshCommands[meshIndex];
 
     DrawCommand command = meshCommand;
 
     command.baseInstance = index;
 
-    if(isVisible(u_Transforms[index].modelMatrix, u_BoundingSpheres[meshIndex])) {
+    if(isVisible(transform.modelMatrix, u_BoundingSpheres[meshIndex])) {
         command.instanceCount = 1;
     } else {
         command.instanceCount = 0;

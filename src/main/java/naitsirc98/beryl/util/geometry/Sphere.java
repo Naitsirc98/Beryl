@@ -52,8 +52,8 @@ public class Sphere implements ISphere {
     public ByteBuffer get(int offset, ByteBuffer buffer) {
         assertTrue(buffer.remaining() - offset <= SIZEOF);
 
-        center.get(offset, buffer);
-        buffer.putFloat(offset + 3 * FLOAT32_SIZEOF, radius);
+       center.get(offset, buffer);
+       buffer.putFloat(offset + 3 * FLOAT32_SIZEOF, radius);
 
         return buffer;
     }

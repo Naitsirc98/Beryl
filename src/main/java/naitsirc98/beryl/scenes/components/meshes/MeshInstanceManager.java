@@ -89,7 +89,7 @@ public final class MeshInstanceManager extends AbstractComponentManager<MeshInst
     }
 
     @Override
-    public int numMeshViewsInstances() {
+    public int numInstancedMeshViews() {
         return numMeshViewsInstances;
     }
 
