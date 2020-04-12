@@ -36,6 +36,7 @@ public abstract class Mesh extends ManagedResource implements Asset {
     private final AABB boundingBox;
     private final ISphere boundingSphere;
     private final int stride;
+    private int index;
     private long vertexBufferOffset;
     private long indexBufferOffset;
     private long boundingSphereOffset;
@@ -73,7 +74,7 @@ public abstract class Mesh extends ManagedResource implements Asset {
     }
 
     public int index() {
-        return (int) (vertexBufferOffset / vertexData.capacity());
+        return index;
     }
 
     public int boundingSphereIndex() {
@@ -204,6 +205,10 @@ public abstract class Mesh extends ManagedResource implements Asset {
     @Override
     public int hashCode() {
         return handle;
+    }
+
+    public void setIndex(int index) {
+        this.index = index;
     }
 
     public void setVertexBufferOffset(long vertexBufferOffset) {

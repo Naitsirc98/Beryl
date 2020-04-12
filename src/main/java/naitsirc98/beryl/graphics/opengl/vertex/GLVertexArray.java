@@ -54,6 +54,10 @@ public final class GLVertexArray implements GLObject {
         glBindVertexArray(handle);
     }
 
+    public void unbind() {
+        glBindVertexArray(0);
+    }
+
     private void setVertexAttribute(int binding, VertexAttribute attribute, int location, int offset, int stride) {
 
         if(attribute.dataType().decimal()) {
@@ -103,4 +107,5 @@ public final class GLVertexArray implements GLObject {
     public void release() {
         glDeleteVertexArrays(handle);
     }
+
 }

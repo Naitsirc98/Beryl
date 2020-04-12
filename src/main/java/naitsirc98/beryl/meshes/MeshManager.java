@@ -89,6 +89,10 @@ public final class MeshManager implements AssetManager<Mesh> {
         staticMeshManager.terminate();
     }
 
+    public StaticMeshManager staticMeshManager() {
+        return staticMeshManager;
+    }
+
     private boolean checkMeshData(String name, ByteBuffer vertices, ByteBuffer indices) {
 
         if(name == null) {

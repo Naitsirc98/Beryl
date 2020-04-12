@@ -14,9 +14,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import static java.util.Objects.requireNonNull;
-import static java.util.stream.IntStream.range;
 import static naitsirc98.beryl.util.Asserts.assertTrue;
-import static naitsirc98.beryl.util.types.DataType.*;
+import static naitsirc98.beryl.util.types.DataType.FLOAT32_SIZEOF;
+import static naitsirc98.beryl.util.types.DataType.UINT32_SIZEOF;
 import static org.lwjgl.assimp.Assimp.*;
 import static org.lwjgl.system.MemoryUtil.memAlloc;
 
