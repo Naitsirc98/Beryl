@@ -185,12 +185,15 @@ public class App1 extends BerylApplication {
         return PhongMaterial.get("floor", builder -> {
             Texture2D colorMap = GraphicsFactory.get()
                     .newTexture2D("C:\\Users\\naits\\Downloads\\TexturesCom_Grass0157_1_seamless_S.jpg", PixelFormat.RGBA);
-            colorMap.sampler().wrapMode(Sampler.WrapMode.REPEAT);
-            colorMap.sampler().maxAnisotropy(16);
+            colorMap.sampler().maxAnisotropy(1);
             colorMap.generateMipmaps();
+            colorMap.sampler().wrapMode(Sampler.WrapMode.REPEAT);
+            colorMap.sampler().magFilter(Sampler.MagFilter.LINEAR);
+            colorMap.sampler().minFilter(Sampler.MinFilter.LINEAR_MIPMAP_LINEAR);
+            colorMap.sampler().lodBias(-2);
             builder.ambientMap(colorMap).diffuseMap(colorMap);
             builder.shininess(1);
-            builder.textureCoordsFactor(1000, 1000);
+            builder.textureCoordsFactor(500, 500);
         });
     }
 
