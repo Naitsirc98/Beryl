@@ -15,27 +15,30 @@ struct BoundingSphere {
     float radius;
 };
 
+@include "structs/transform.glsl"
+
 
 layout(local_size_x = 1) in;
 
+
 layout(std430, binding = 0) readonly buffer MeshCommandBuffer {
-    DrawCommand[] meshCommands;
+    DrawCommand[] u_MeshCommands;
 };
 
 layout(std430, binding = 1) writeonly buffer CommandBuffer {
-    DrawCommand[] instanceCommands;
+    DrawCommand[] u_InstanceCommands;
 };
 
 layout(std430, binding = 2) readonly buffer BoundingSpheres {
-    BoundingSphere boundingSpheres[];
+    BoundingSphere u_BoundingSpheres[];
 };
 
 layout(std430, binding = 3) readonly buffer Matrices {
-    mat4 modelMatrices[];
+    Transform u_Transforms[];
 };
 
-layout(std430, binding = 4) readonly buffer MeshIDs {
-    int meshIDs[];
+layout(std430, binding = 4) readonly buffer MeshIndices {
+    int u_MeshIndices[];
 };
 
 layout(std140, binding = 5) uniform Frustum {
@@ -43,26 +46,7 @@ layout(std140, binding = 5) uniform Frustum {
     vec4 planes[6];
 } u_Frustum;
 
-bool isVisible(mat4 modelMatrix, BoundingSphere boundingSphere);
 
-void main() {
-
-    const uint index = gl_GlobalInvocationID.x;
-
-    const int meshID = meshIDs[index];
-
-    if(isVisible(modelMatrices[index], boundingSpheres[meshID])) {
-
-        DrawCommand meshCommand = meshCommands[meshID];
-
-        DrawCommand command = meshCommand;
-
-        command.instanceCount = 1;
-        command.baseInstance = index;
-
-        instanceCommands[index] = command;
-    }
-}
 
 // Computes signed distance between a point and a plane
 // vPlane: Contains plane coefficients (a,b,c,d) where: ax + by + cz = d
@@ -103,4 +87,23 @@ bool isVisible(mat4 modelMatrix, BoundingSphere boundingSphere) {
 
     // This does not work. I don't know if it has to do with the bounding sphere, or with the frustum calculation
     return true;// cullSphere(u_Frustum.planes, sphereCenter.xyz, radius) > 0;
+}
+
+void main() {
+
+    const uint index = gl_GlobalInvocationID.x;
+
+    const int meshIndex = u_MeshIndices[index];
+
+    if(isVisible(u_Transforms[index].modelMatrix, u_BoundingSpheres[meshIndex])) {
+
+        DrawCommand meshCommand = u_MeshCommands[meshIndex];
+
+        DrawCommand command = meshCommand;
+
+        command.instanceCount = 1;
+        command.baseInstance = index;
+
+        u_InstanceCommands[index] = command;
+    }
 }

@@ -44,4 +44,28 @@ public final class StaticMesh extends Mesh implements Asset {
             this.indices = indices;
         }
     }
+
+    static final class Vertex {
+
+        private final ByteBuffer buffer;
+
+        public Vertex(ByteBuffer buffer) {
+            this.buffer = buffer;
+        }
+
+        Vertex position(float x, float y, float z) {
+            buffer.putFloat(x).putFloat(y).putFloat(z);
+            return this;
+        }
+
+        Vertex normal(float x, float y, float z) {
+            buffer.putFloat(x).putFloat(y).putFloat(z);
+            return this;
+        }
+
+        Vertex texCoords(float x, float y) {
+            buffer.putFloat(x).putFloat(y);
+            return this;
+        }
+    }
 }

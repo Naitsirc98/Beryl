@@ -11,22 +11,24 @@
 
 layout(bindless_sampler) uniform;
 
-layout(std140, set = 0, binding = 0) uniform Camera {
+layout(std140, binding = 0) uniform Camera {
     mat4 projectionViewMatrix;
     vec4 position;
 } u_Camera;
 
-layout(std430, binding = 3) readonly buffer Materials {
-    PhongMaterial u_Materials[];
-};
 
-layout(std140, set = 2, binding = 1) uniform Lights {
+layout(std140, binding = 1) uniform Lights {
     Light u_DirectionalLight;
     Light u_PointLights[MAX_POINT_LIGHTS];
     Light u_SpotLights[MAX_SPOT_LIGHTS];
     vec4 u_AmbientColor;
     int u_PointLightsCount;
     int u_SpotLightsCount;
+};
+
+
+layout(std430, binding = 3) readonly buffer Materials {
+    PhongMaterial u_Materials[];
 };
 
 
@@ -153,7 +155,7 @@ vec4 computeDirectionalLighting(Light light) {
 
     vec3 direction = normalize(-light.direction.xyz);
 
-    return computeDiffuseColor(light.color, direction)
+    return computeDiffuseColor(light.color, direction);
          + computeSpecularColor(light.color, direction);
 }
 

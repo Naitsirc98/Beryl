@@ -16,9 +16,12 @@
       <w>glsl</w>
       <w>growable</w>
       <w>lwjgl</w>
+      <w>memcpy</w>
       <w>msaa</w>
       <w>multisample</w>
       <w>multisampled</w>
+      <w>nmapped</w>
+      <w>nsize</w>
       <w>opengl</w>
       <w>phong</w>
       <w>rasterization</w>

@@ -1,7 +1,6 @@
 package naitsirc98.beryl.materials;
 
 import naitsirc98.beryl.assets.AssetManager;
-import naitsirc98.beryl.assets.Assets;
 import naitsirc98.beryl.graphics.buffers.StorageBuffer;
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.util.types.Singleton;
@@ -18,11 +17,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static naitsirc98.beryl.materials.IMaterial.Type;
 import static naitsirc98.beryl.util.Asserts.assertFalse;
-import static naitsirc98.beryl.util.Asserts.assertTrue;
 import static naitsirc98.beryl.util.handles.LongHandle.NULL;
-import static org.lwjgl.system.MemoryUtil.memAddress0;
-import static org.lwjgl.system.libc.LibCString.nmemcpy;
-import static org.lwjgl.system.libc.LibCString.nmemset;
 
 public final class MaterialManager implements AssetManager<IMaterial> {
 
@@ -52,7 +47,6 @@ public final class MaterialManager implements AssetManager<IMaterial> {
         recycleQueue = new ConcurrentLinkedQueue<>();
         buffer = StorageBuffer.create();
         buffer.allocate(BUFFER_INITIAL_CAPACITY);
-        buffer.mapMemory();
         bufferSize = 0;
         putDefaults();
     }
@@ -145,12 +139,6 @@ public final class MaterialManager implements AssetManager<IMaterial> {
 
         materialNames.remove(material.name());
 
-        final long address = buffer.mappedMemory() + offset;
-
-        // Clear the storage buffer as well
-        assertTrue(address <= bufferSize - Material.SIZEOF);
-        nmemset(address, 0, Material.SIZEOF);
-
         recycleQueue.add(offset);
         recycleQueue.add(index);
     }
@@ -158,7 +146,6 @@ public final class MaterialManager implements AssetManager<IMaterial> {
     @Override
     public synchronized void destroyAll() {
         materialNames.values().forEach(material -> ((Material) material).destroy());
-        nmemset(buffer.mappedMemory(), 0, bufferSize);
         recycleQueue.clear();
         materialNames.clear();
         materials.clear();
@@ -189,7 +176,7 @@ public final class MaterialManager implements AssetManager<IMaterial> {
                     break;
             }
 
-            nmemcpy(buffer.mappedMemory() + offset, memAddress0(data), Material.SIZEOF);
+            buffer.update(offset, data.rewind());
         }
     }
 

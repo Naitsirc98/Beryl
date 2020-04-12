@@ -77,8 +77,7 @@ public class App1 extends BerylApplication {
 
         StaticMeshLoader modelLoader = new StaticMeshLoader();
 
-        Mesh cubeMesh = modelLoader.load(BerylFiles.getPath("models/cube.obj")).loadedMesh(0).mesh();
-
+        Mesh cubeMesh = modelLoader.load(BerylFiles.getPath("models/quad.obj")).loadedMesh(0).mesh();
 
         Model treeModel = modelLoader
                         .load("C:\\Users\\naits\\Downloads\\uploads_files_1970932_conifer_macedonian_pine(1)\\OBJ format\\conifer_macedonian_pine.obj");
@@ -86,7 +85,7 @@ public class App1 extends BerylApplication {
         Log.trace(treeModel);
 
         Entity floor = scene.newEntity("floor");
-        floor.add(Transform.class).position(0, -0.1f, 0).scale(1000, 0.01f, 1000);
+        floor.add(Transform.class).position(0, 0f, 0).scale(1000, 1000f, 1).rotateX(radians(90));
         floor.add(MeshInstance.class).meshView(new MeshView(cubeMesh, getFloorMaterial()));
 
         ModelEntityFactory treeFactory = new ModelEntityFactory(treeModel).materialsFunction(this::treeMaterialFunction);
@@ -106,7 +105,7 @@ public class App1 extends BerylApplication {
 
         SceneEnvironment environment = scene.environment();
 
-        environment.directionalLight(new DirectionalLight().color(Color.WHITE).direction(1, 1, 0));
+        environment.directionalLight(new DirectionalLight().color(Color.WHITE).direction(-1, -1, 0));
         environment.ambientColor(new Color(0.8f, 0.8f, 0.8f));
     }
 

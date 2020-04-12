@@ -95,20 +95,24 @@ public final class StaticMeshManager {
         commandBuffer.release();
     }
 
-    public VertexBuffer vertexBuffer() {
-        return vertexBuffer;
+    @SuppressWarnings("unchecked")
+    public <T extends VertexBuffer> T vertexBuffer() {
+        return (T) vertexBuffer;
     }
 
-    public IndexBuffer indexBuffer() {
-        return indexBuffer;
+    @SuppressWarnings("unchecked")
+    public <T extends IndexBuffer> T indexBuffer() {
+        return (T) indexBuffer;
     }
 
-    public StorageBuffer boundingSpheresBuffer() {
-        return boundingSpheresBuffer;
+    @SuppressWarnings("unchecked")
+    public <T extends StorageBuffer> T boundingSpheresBuffer() {
+        return (T) boundingSpheresBuffer;
     }
 
-    public StorageBuffer commandBuffer() {
-        return commandBuffer;
+    @SuppressWarnings("unchecked")
+    public <T extends StorageBuffer> T commandBuffer() {
+        return (T) commandBuffer;
     }
 
     public long vertexBufferOffset() {
@@ -169,12 +173,11 @@ public final class StaticMeshManager {
                     .firstIndex(firstIndex)
                     .baseVertex(baseVertex);
 
-            firstIndex += mesh.indexCount();
-            baseVertex += mesh.vertexCount();
-
             commandBuffer.update(commandBufferOffset, command.buffer());
 
             commandBufferOffset += GLDrawElementsCommand.SIZEOF;
+            firstIndex += mesh.indexCount();
+            baseVertex += mesh.vertexCount();
         }
 
     }

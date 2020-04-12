@@ -4,9 +4,7 @@ import naitsirc98.beryl.graphics.GraphicsFactory;
 import naitsirc98.beryl.graphics.buffers.IndexBuffer;
 import naitsirc98.beryl.graphics.buffers.StorageBuffer;
 import naitsirc98.beryl.graphics.buffers.VertexBuffer;
-import naitsirc98.beryl.graphics.opengl.buffers.GLIndexBuffer;
-import naitsirc98.beryl.graphics.opengl.buffers.GLStorageBuffer;
-import naitsirc98.beryl.graphics.opengl.buffers.GLVertexBuffer;
+import naitsirc98.beryl.graphics.opengl.buffers.GLBuffer;
 import naitsirc98.beryl.graphics.opengl.textures.GLTexture2D;
 import naitsirc98.beryl.graphics.textures.Texture2D;
 import naitsirc98.beryl.images.Image;
@@ -46,17 +44,17 @@ public class GLGraphicsFactory implements GraphicsFactory {
 
     @Override
     public StorageBuffer newStorageBuffer() {
-        return new GLStorageBuffer();
+        return new GLBuffer();
     }
 
     @Override
     public VertexBuffer newVertexBuffer() {
-        return new GLVertexBuffer();
+        return new GLBuffer();
     }
 
     @Override
     public IndexBuffer newIndexBuffer() {
-        return new GLIndexBuffer();
+        return new GLBuffer();
     }
 
     private Texture2D newBlankTexture2D() {
