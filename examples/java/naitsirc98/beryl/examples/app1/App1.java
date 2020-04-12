@@ -93,9 +93,6 @@ public class App1 extends BerylApplication {
         for(int i = 0;i < 1000;i++) {
             Entity tree = treeFactory.newEntity(scene);
             tree.get(Transform.class).position(RAND.nextInt(500), 0, RAND.nextInt(500)).scale(0.01f);
-            if(i == 0) {
-                // tree.get(Transform.class).position(0, 0, 0);
-            }
         }
 
         Entity camera = scene.newEntity("Camera");

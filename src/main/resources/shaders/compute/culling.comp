@@ -46,10 +46,7 @@ layout(std140, binding = 5) uniform Frustum {
     vec4 planes[6];
 } u_Frustum;
 
-layout(std430, binding = 6) writeonly buffer Debug {
-    vec4 debug[];
-};
-
+layout(binding = 6) uniform atomic_uint u_DrawCount;
 
 
 bool testSphere(vec3 center, float radius) {
@@ -107,6 +104,7 @@ void main() {
 
     if(isVisible(transform.modelMatrix, u_BoundingSpheres[meshIndex])) {
         command.instanceCount = 1;
+        atomicCounterIncrement(u_DrawCount);
     } else {
         command.instanceCount = 0;
     }
