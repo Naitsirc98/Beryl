@@ -5,6 +5,7 @@
 
 @include "structs/lights.glsl"
 @include "structs/material.glsl"
+@include "structs/fog.glsl"
 
 #define MAX_POINT_LIGHTS 10
 #define MAX_SPOT_LIGHTS 10
@@ -22,6 +23,7 @@ layout(std140, binding = 1) uniform Lights {
     Light u_PointLights[MAX_POINT_LIGHTS];
     Light u_SpotLights[MAX_SPOT_LIGHTS];
     vec4 u_AmbientColor;
+    Fog u_Fog;
     int u_PointLightsCount;
     int u_SpotLightsCount;
 };
@@ -38,6 +40,8 @@ layout(location = 0) in VertexData {
     vec2 texCoords;
     flat int materialIndex;
 } vertexData;
+
+vec3 fragmentNormal;
 
 
 layout(location = 0) out vec4 out_FinalColor;
@@ -57,8 +61,12 @@ vec4 computeDirectionalLighting(Light light);
 vec4 computePointLighting(Light light);
 vec4 computeSpotLighting(Light light);
 
+vec4 applyFogEffect(vec4 fragmentColor);
+
 
 void main() {
+
+    fragmentNormal = normalize(vertexData.normal);
 
     cameraDirection = normalize(u_Camera.position.xyz - vertexData.position);
 
@@ -78,8 +86,39 @@ void main() {
         discard;
     }
 
-    // TODO: check if material is affected by light
-    out_FinalColor = computeLighting() + materialEmissiveColor;
+    vec4 fragmentColor = vec4(0.0);
+
+    if(materialEmissiveColor.rgb != vec3(0.0)) {
+        fragmentColor = materialEmissiveColor;
+    } else {
+        fragmentColor = computeLighting();
+    }
+
+    if(u_Fog.color.a != 0.0) {
+        fragmentColor = applyFogEffect(fragmentColor);
+    }
+
+    out_FinalColor = fragmentColor;
+}
+
+vec4 applyFogEffect(vec4 fragmentColor) {
+
+    vec3 fogColor = u_Fog.color.rgb * (u_AmbientColor.rgb * u_DirectionalLight.color.rgb);
+
+    float distance = length(u_Camera.position.xyz - vertexData.position) / 100.0;
+
+    float exponent = distance * u_Fog.density;
+
+    if(exponent == 0.0) {
+        return fragmentColor;
+    }
+
+    float fogFactor = 1.0 / exp(exponent * exponent);
+    fogFactor = clamp(fogFactor, 0.0, 1.0);
+
+    vec3 finalColor = mix(fogColor, fragmentColor.rgb, fogFactor);
+
+    return vec4(finalColor, fragmentColor.a);
 }
 
 vec4 computeLighting() {
@@ -128,7 +167,7 @@ float computeIntensity(vec3 normalizedDirection, vec3 lightDirection, float cutO
 
 vec4 computeDiffuseColor(vec4 lightColor, vec3 lightDirection) {
 
-	float diffuse = computeAngle(vertexData.normal, lightDirection);
+	float diffuse = computeAngle(fragmentNormal, lightDirection);
 
 	return vec4(vec3(lightColor * (diffuse * materialDiffuseColor)), materialDiffuseColor.a);
 }
@@ -136,16 +175,16 @@ vec4 computeDiffuseColor(vec4 lightColor, vec3 lightDirection) {
 vec4 computeSpecularColor(vec4 lightColor, vec3 lightDirection) {
 
     // Phong
-	// vec3 reflectDirection = reflect(-lightDirection, vertexData.normal);
+	// vec3 reflectDirection = reflect(-lightDirection, fragmentNormal);
 
     // float specular = pow(computeAngle(cameraDirection, reflectDirection), u_Material.shininess);
 
     // Blinn-Phong
-    vec3 reflectDirection = reflect(-lightDirection, vertexData.normal);
+    vec3 reflectDirection = reflect(-lightDirection, fragmentNormal);
 
     vec3 halfwayDirection = normalize(lightDirection + cameraDirection);
 
-    float specular = pow(computeAngle(vertexData.normal, halfwayDirection), material.shininess);
+    float specular = pow(computeAngle(fragmentNormal, halfwayDirection), material.shininess);
 
 	return vec4(vec3(lightColor * (specular * materialSpecularColor)), materialSpecularColor.a);
 }

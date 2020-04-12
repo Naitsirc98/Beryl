@@ -5,7 +5,7 @@ import naitsirc98.beryl.core.BerylConfiguration;
 import naitsirc98.beryl.graphics.GraphicsAPI;
 import naitsirc98.beryl.util.geometry.Size;
 import naitsirc98.beryl.util.geometry.Sizec;
-import org.lwjgl.glfw.*;
+import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.system.Platform;
 
 import static naitsirc98.beryl.graphics.GraphicsAPI.OPENGL;
@@ -21,6 +21,9 @@ public final class WindowFactory {
 
     private static final int DEFAULT_WIDTH = 1280;
     private static final int DEFAULT_HEIGHT = 720;
+
+    public static final boolean MULTISAMPLE_ENABLE = BerylConfiguration.MULTISAMPLE_ENABLE.get(true);
+    public static final int MSAA_SAMPLES = BerylConfiguration.MSAA_SAMPLES.get(4);
 
     private WindowFactory() {}
 
@@ -80,14 +83,14 @@ public final class WindowFactory {
             glfwWindowHint(GLFW_OPENGL_COMPAT_PROFILE, GLFW_TRUE);
         }
 
-        if(Beryl.DEBUG) {
-            glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
-        }
+        glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, Beryl.DEBUG ? GLFW_TRUE : GLFW_FALSE);
 
         glfwWindowHint(GLFW_SRGB_CAPABLE, GLFW_TRUE);
         glfwWindowHint(GLFW_DOUBLEBUFFER, GLFW_TRUE);
 
-        // glfwWindowHint(GLFW_SAMPLES, 4);
+        if(MULTISAMPLE_ENABLE) {
+            glfwWindowHint(GLFW_SAMPLES, MSAA_SAMPLES);
+        }
     }
 
     private int asGLFWBoolean(boolean value) {

@@ -420,6 +420,7 @@ public final class Camera extends Component<Camera> {
 	}
 
 	private void recalculateView() {
+
 		Vector3fc position = transform().position();
 		Vector3f forward = this.forward;
 		Vector3f up = this.up;

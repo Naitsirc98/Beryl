@@ -23,7 +23,7 @@ public final class MaterialManager implements AssetManager<IMaterial> {
 
     // TODO: handle resizing and concurrent access
 
-    private static final int BUFFER_INITIAL_CAPACITY = 100 * IMaterial.SIZEOF;
+    private static final int BUFFER_INITIAL_CAPACITY = 1000 * IMaterial.SIZEOF;
 
     @Singleton
     private static MaterialManager instance;

@@ -36,6 +36,9 @@ public final class BerylConfiguration<T> {
 
     public static final BerylConfiguration<Boolean> FAST_MATH = new BerylConfiguration<>();
 
+    public static final BerylConfiguration<Boolean> MULTISAMPLE_ENABLE = new BerylConfiguration<>();
+    public static final BerylConfiguration<Integer> MSAA_SAMPLES = new BerylConfiguration<>();
+
     public static final BerylConfiguration<Boolean> MEMORY_USAGE_REPORT = new BerylConfiguration<>();
     public static final BerylConfiguration<Boolean> EVENTS_DEBUG_REPORT = new BerylConfiguration<>();
     public static final BerylConfiguration<Boolean> SCENES_DEBUG_REPORT = new BerylConfiguration<>();
@@ -64,13 +67,6 @@ public final class BerylConfiguration<T> {
     public static final BerylConfiguration<Boolean> WINDOW_FOCUS_ON_SHOW = new BerylConfiguration<>();
 
     public static final BerylConfiguration<Boolean> VSYNC = new BerylConfiguration<>();
-
-    public static final BerylConfiguration<Integer> EVENT_QUEUE_INITIAL_CAPACITY = new BerylConfiguration<>();
-
-    public static final BerylConfiguration<Boolean> VULKAN_ENABLE_DEBUG_MESSAGES = new BerylConfiguration<>();
-    public static final BerylConfiguration<Boolean> VULKAN_ENABLE_VALIDATION_LAYERS = new BerylConfiguration<>();
-    public static final BerylConfiguration<Set<String>> VULKAN_VALIDATION_LAYERS = new BerylConfiguration<>();
-    public static final BerylConfiguration<Set<String>> VULKAN_DEVICE_EXTENSIONS = new BerylConfiguration<>();
 
     public static final BerylConfiguration<Boolean> OPENGL_ENABLE_DEBUG_MESSAGES = new BerylConfiguration<>();
 

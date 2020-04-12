@@ -161,13 +161,14 @@ public abstract class Mesh extends ManagedResource implements Asset {
         centroid.y = bounds.min().y() + (bounds.max().y() - bounds.min().y()) / 2.0f;
         centroid.z = bounds.min().z() + (bounds.max().z() - bounds.min().z()) / 2.0f;
 
+
         Sphere boundingSphere = new Sphere();
         boundingSphere.center.set(centroid);
         boundingSphere.radius = max(
                 max((bounds.max().x()-bounds.min().x())/2, (bounds.max().y() - bounds.min().y())/2),
                 (bounds.max().z() - bounds.min().z())/2);
 
-        /*
+/*
 
         float radius = -Float.MAX_VALUE;
         Sphere boundingSphere = new Sphere(centroid, radius);
@@ -183,7 +184,7 @@ public abstract class Mesh extends ManagedResource implements Asset {
 
         boundingSphere.radius = radius;
 
-         */
+ */
 
         return boundingSphere;
     }

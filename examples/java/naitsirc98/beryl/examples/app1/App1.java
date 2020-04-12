@@ -29,6 +29,8 @@ import naitsirc98.beryl.scenes.components.camera.Camera;
 import naitsirc98.beryl.scenes.components.math.Transform;
 import naitsirc98.beryl.scenes.components.meshes.MeshInstance;
 import naitsirc98.beryl.util.Color;
+import org.lwjgl.opengl.ARBTextureFilterAnisotropic;
+import org.lwjgl.opengl.GL45;
 
 import java.util.Random;
 
@@ -77,29 +79,44 @@ public class App1 extends BerylApplication {
 
         StaticMeshLoader modelLoader = new StaticMeshLoader();
 
-        Mesh cubeMesh = modelLoader.load(BerylFiles.getPath("models/quad.obj")).loadedMesh(0).mesh();
+        Mesh quadMesh = modelLoader.load(BerylFiles.getPath("models/quad.obj")).loadedMesh(0).mesh();
+        Mesh cubeMesh = modelLoader.load(BerylFiles.getPath("models/cube.obj")).loadedMesh(0).mesh();
 
         Model treeModel = modelLoader
                         .load("C:\\Users\\naits\\Downloads\\uploads_files_1970932_conifer_macedonian_pine(1)\\OBJ format\\conifer_macedonian_pine.obj");
 
         Log.trace(treeModel);
-
+/*
         Entity floor = scene.newEntity("floor");
         floor.add(Transform.class).position(0, 0f, 0).scale(1000, 1000f, 1).rotateX(radians(90));
         floor.add(MeshInstance.class).meshView(new MeshView(cubeMesh, getFloorMaterial()));
 
+ */
+
+        for(int i = 0;i < 10000;i++) {
+            Entity cube = scene.newEntity();
+            cube.get(Transform.class).position(RAND.nextInt(500), RAND.nextInt(500), RAND.nextInt(500)).scale(0.5f);
+            cube.add(MeshInstance.class).meshView(new MeshView(cubeMesh, PhongMaterial.get(""+i%11, builder -> {
+
+                Color color = new Color(RAND.nextFloat(), RAND.nextFloat(), RAND.nextFloat());
+
+                builder.ambientColor(color).diffuseColor(color).specularColor(color);
+
+            })));
+        }
+
         ModelEntityFactory treeFactory = new ModelEntityFactory(treeModel).materialsFunction(this::treeMaterialFunction);
 
-        for(int i = 0;i < 1000;i++) {
+        for(int i = 0;i < 0;i++) {
             Entity tree = treeFactory.newEntity(scene);
             tree.get(Transform.class).position(RAND.nextInt(500), 0, RAND.nextInt(500)).scale(0.01f);
-            if (i == 0) {
+            if(i == 0) {
                 tree.get(Transform.class).position(0, 0, 0);
             }
         }
 
         Entity camera = scene.newEntity("Camera");
-        camera.add(Transform.class).position(0, 0, 3);
+        camera.add(Transform.class).position(0, 1.7f, 0);
         camera.add(Camera.class).lookAt(0, 0).clearColor(new Color(0.3f, 0.3f, 0.3f));
         camera.add(CameraController.class);
 
@@ -185,7 +202,7 @@ public class App1 extends BerylApplication {
         return PhongMaterial.get("floor", builder -> {
             Texture2D colorMap = GraphicsFactory.get()
                     .newTexture2D("C:\\Users\\naits\\Downloads\\TexturesCom_Grass0157_1_seamless_S.jpg", PixelFormat.RGBA);
-            colorMap.sampler().maxAnisotropy(1);
+            colorMap.sampler().maxAnisotropy(4);
             colorMap.generateMipmaps();
             colorMap.sampler().wrapMode(Sampler.WrapMode.REPEAT);
             colorMap.sampler().magFilter(Sampler.MagFilter.LINEAR);
@@ -193,7 +210,7 @@ public class App1 extends BerylApplication {
             colorMap.sampler().lodBias(-2);
             builder.ambientMap(colorMap).diffuseMap(colorMap);
             builder.shininess(1);
-            builder.textureCoordsFactor(500, 500);
+            builder.textureCoordsFactor(250, 250);
         });
     }
 

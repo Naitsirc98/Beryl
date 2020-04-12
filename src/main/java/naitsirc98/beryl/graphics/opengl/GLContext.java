@@ -8,6 +8,7 @@ import naitsirc98.beryl.graphics.opengl.rendering.Rendering;
 import naitsirc98.beryl.graphics.rendering.RenderingPath;
 import naitsirc98.beryl.graphics.window.DisplayMode;
 import naitsirc98.beryl.graphics.window.Window;
+import naitsirc98.beryl.graphics.window.WindowFactory;
 import naitsirc98.beryl.util.handles.LongHandle;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GLCapabilities;
@@ -20,6 +21,9 @@ import static naitsirc98.beryl.graphics.rendering.RenderingPaths.RPATH_PHONG;
 import static naitsirc98.beryl.graphics.window.DisplayMode.FULLSCREEN;
 import static org.lwjgl.glfw.GLFW.glfwMakeContextCurrent;
 import static org.lwjgl.glfw.GLFW.glfwSwapInterval;
+import static org.lwjgl.opengl.GL11.glDisable;
+import static org.lwjgl.opengl.GL11.glEnable;
+import static org.lwjgl.opengl.GL13.GL_MULTISAMPLE;
 
 public class GLContext implements GraphicsContext, LongHandle {
 
@@ -40,14 +44,23 @@ public class GLContext implements GraphicsContext, LongHandle {
 
     @Override
     public void init() {
+
         glContext = Window.get().handle();
         makeCurrent();
+
         capabilities = GL.createCapabilities();
         debugMessenger = newGLDebugMessenger();
         graphicsFactory = new GLGraphicsFactory();
         mapper = new GLMapper();
+
         vsync(INITIAL_VSYNC);
-        // glEnable(GL_MULTISAMPLE);
+
+        if(WindowFactory.MULTISAMPLE_ENABLE) {
+            glEnable(GL_MULTISAMPLE);
+        } else {
+            glDisable(GL_MULTISAMPLE);
+        }
+
     }
 
     @Override

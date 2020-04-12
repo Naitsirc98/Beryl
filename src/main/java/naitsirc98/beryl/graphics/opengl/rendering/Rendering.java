@@ -16,23 +16,23 @@ import naitsirc98.beryl.meshes.MeshView;
 import naitsirc98.beryl.meshes.StaticMesh;
 import naitsirc98.beryl.meshes.StaticMeshManager;
 import naitsirc98.beryl.meshes.vertices.VertexLayout;
+import naitsirc98.beryl.scenes.Fog;
 import naitsirc98.beryl.scenes.Scene;
 import naitsirc98.beryl.scenes.SceneEnvironment;
 import naitsirc98.beryl.scenes.components.camera.Camera;
 import naitsirc98.beryl.scenes.components.meshes.MeshInstance;
 import naitsirc98.beryl.scenes.components.meshes.SceneMeshInfo;
 import naitsirc98.beryl.util.Color;
-import org.joml.Matrix4fc;
+import org.joml.Vector4f;
 import org.lwjgl.system.MemoryStack;
 
 import java.nio.ByteBuffer;
+import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.List;
 
-import static java.util.stream.IntStream.range;
 import static naitsirc98.beryl.graphics.ShaderStage.*;
 import static naitsirc98.beryl.meshes.vertices.VertexAttribute.*;
-import static naitsirc98.beryl.util.Maths.roundUp2;
 import static naitsirc98.beryl.util.types.DataType.*;
 import static org.lwjgl.opengl.GL11.GL_TRIANGLES;
 import static org.lwjgl.opengl.GL42.GL_COMMAND_BARRIER_BIT;
@@ -55,12 +55,13 @@ public class Rendering extends RenderingPath {
 
     private static final int MAX_POINT_LIGHTS = 10;
     private static final int MAX_SPOT_LIGHTS = 10;
-    private static final int LIGHTS_UNIFORM_BUFFER_SIZE = roundUp2((1 + MAX_POINT_LIGHTS + MAX_SPOT_LIGHTS) * Light.SIZEOF + INT32_SIZEOF * 2 + FLOAT32_SIZEOF * 4, VECTOR4_SIZEOF);
+    private static final int LIGHTS_UNIFORM_BUFFER_SIZE = Light.SIZEOF + MAX_POINT_LIGHTS * Light.SIZEOF + MAX_SPOT_LIGHTS * Light.SIZEOF + VECTOR4_SIZEOF + Fog.SIZEOF + 2 * INT32_SIZEOF;
     private static final int DIRECTIONAL_LIGHT_OFFSET = 0;
     private static final int POINT_LIGHTS_OFFSET = Light.SIZEOF;
     private static final int SPOT_LIGHTS_OFFSET = POINT_LIGHTS_OFFSET + Light.SIZEOF * MAX_POINT_LIGHTS;
     private static final int AMBIENT_COLOR_OFFSET = SPOT_LIGHTS_OFFSET + Light.SIZEOF * MAX_SPOT_LIGHTS;
-    private static final int POINT_LIGHTS_COUNT_OFFSET = AMBIENT_COLOR_OFFSET + FLOAT32_SIZEOF * 4;
+    private static final int FOG_OFFSET = AMBIENT_COLOR_OFFSET + FLOAT32_SIZEOF * 4;
+    private static final int POINT_LIGHTS_COUNT_OFFSET = FOG_OFFSET + Fog.SIZEOF;
     private static final int SPOT_LIGHTS_COUNT_OFFSET = POINT_LIGHTS_COUNT_OFFSET + INT32_SIZEOF;
 
     private static final int INSTANCE_BUFFER_MIN_SIZE = INT32_SIZEOF * 2;
@@ -96,6 +97,8 @@ public class Rendering extends RenderingPath {
 
     private GLBuffer instanceCommandBuffer;
 
+    private GLBuffer debug;
+
     public void init() {
 
         initVertexArray();
@@ -122,6 +125,9 @@ public class Rendering extends RenderingPath {
         meshIndicesBuffer = new GLBuffer("MESH_INDICES_STORAGE_BUFFER");
 
         instanceCommandBuffer = new GLBuffer("INSTANCE_COMMAND_BUFFER");
+
+        debug = new GLBuffer("DEBUG_BUFFER");
+        debug.allocate(10000 * FLOAT32_SIZEOF);
 
         frustumUniformBuffer.mapMemory();
         cameraUniformBuffer.mapMemory();
@@ -166,7 +172,7 @@ public class Rendering extends RenderingPath {
         final Color color = camera.clearColor();
 
         glEnable(GL_DEPTH_TEST);
-        // glEnable(GL_CULL_FACE);
+        glEnable(GL_CULL_FACE);
         glClearColor(color.red(), color.green(), color.blue(), color.alpha());
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -367,6 +373,7 @@ public class Rendering extends RenderingPath {
             }
 
             environment.ambientColor().getRGBA(AMBIENT_COLOR_OFFSET, buffer);
+            environment.fog().get(FOG_OFFSET, buffer);
             buffer.putInt(POINT_LIGHTS_COUNT_OFFSET, pointLightsCount);
             buffer.putInt(SPOT_LIGHTS_COUNT_OFFSET, spotLightsCount);
 

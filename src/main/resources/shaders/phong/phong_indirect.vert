@@ -31,7 +31,7 @@ void main() {
 
     Transform transform = u_Transforms[in_TransformIndex];
 
-    vec4 position = u_Camera.projectionViewMatrix * transform.modelMatrix * vec4(in_Position, 1.0);
+    vec4 position = transform.modelMatrix * vec4(in_Position, 1.0);
 
     vertexData.position = position.xyz;
     vertexData.normal = normalize(mat3(transform.normalMatrix) * in_Normal);
@@ -39,5 +39,5 @@ void main() {
     vertexData.materialIndex = in_MaterialIndex;
 
 
-    gl_Position = position;// u_Camera.projectionViewMatrix * position;
+    gl_Position = u_Camera.projectionViewMatrix * position;
 }

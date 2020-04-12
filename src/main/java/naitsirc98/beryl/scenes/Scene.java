@@ -100,6 +100,7 @@ public final class Scene {
         cameras.update();
         transforms.update();
         meshes.update();
+        environment.update(camera());
         ((Rendering)camera().renderingPath()).prepare(camera(), this);
     }
 

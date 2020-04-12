@@ -3,6 +3,7 @@ package naitsirc98.beryl.scenes;
 import naitsirc98.beryl.lights.DirectionalLight;
 import naitsirc98.beryl.lights.PointLight;
 import naitsirc98.beryl.lights.SpotLight;
+import naitsirc98.beryl.scenes.components.camera.Camera;
 import naitsirc98.beryl.util.Color;
 
 import java.util.Arrays;
@@ -21,15 +22,23 @@ public final class SceneEnvironment {
     public static final Color DEFAULT_AMBIENT_COLOR = new Color(0.2f, 0.2f, 0.2f);
 
     private DirectionalLight directionalLight;
-    private PointLight[] pointLights;
-    private SpotLight[] spotLights;
+    private final PointLight[] pointLights;
+    private final SpotLight[] spotLights;
+
+    private final Fog fog;
 
     private Color ambientColor;
+
 
     SceneEnvironment() {
         ambientColor = DEFAULT_AMBIENT_COLOR;
         pointLights = new PointLight[MAX_POINT_LIGHTS];
         spotLights = new SpotLight[MAX_SPOT_LIGHTS];
+        fog = new Fog();
+    }
+
+    void update(Camera camera) {
+        fog.color(camera.clearColor());
     }
 
     public DirectionalLight directionalLight() {
@@ -78,5 +87,9 @@ public final class SceneEnvironment {
 
     public void ambientColor(Color ambientColor) {
         this.ambientColor = getOrElse(ambientColor, DEFAULT_AMBIENT_COLOR);
+    }
+
+    public Fog fog() {
+        return fog;
     }
 }

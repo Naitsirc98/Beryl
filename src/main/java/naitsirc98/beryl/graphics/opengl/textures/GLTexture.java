@@ -3,10 +3,12 @@ package naitsirc98.beryl.graphics.opengl.textures;
 import naitsirc98.beryl.graphics.opengl.GLObject;
 import naitsirc98.beryl.graphics.textures.Sampler;
 import naitsirc98.beryl.graphics.textures.Texture;
+import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.resources.ManagedResource;
 import org.lwjgl.system.MemoryStack;
 
 import static java.util.Objects.requireNonNull;
+import static naitsirc98.beryl.graphics.Graphics.opengl;
 import static org.lwjgl.opengl.ARBBindlessTexture.*;
 import static org.lwjgl.opengl.EXTTextureFilterAnisotropic.GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT;
 import static org.lwjgl.opengl.EXTTextureFilterAnisotropic.GL_TEXTURE_MAX_ANISOTROPY_EXT;
@@ -119,17 +121,27 @@ public abstract class GLTexture extends ManagedResource implements GLObject, Tex
 
     @Override
     public float maxSupportedAnisotropy() {
-        return glGetTextureParameterf(handle, GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT);
+        if(opengl().capabilities().GL_EXT_texture_filter_anisotropic) {
+            return glGetTextureParameterf(handle, GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT);
+        }
+        return 1.0f;
     }
 
     @Override
     public float maxAnisotropy() {
-        return glGetTextureParameterf(handle, GL_TEXTURE_MAX_ANISOTROPY_EXT);
+        if(opengl().capabilities().GL_EXT_texture_filter_anisotropic) {
+            return glGetTextureParameterf(handle, GL_TEXTURE_MAX_ANISOTROPY_EXT);
+        }
+        return 1.0f;
     }
 
     @Override
     public Sampler maxAnisotropy(float maxAnisotropy) {
-        glTextureParameterf(handle, GL_TEXTURE_MAX_ANISOTROPY_EXT, maxAnisotropy);
+        if(opengl().capabilities().GL_EXT_texture_filter_anisotropic) {
+            glTextureParameterf(handle, GL_TEXTURE_MAX_ANISOTROPY_EXT, maxAnisotropy);
+        } else {
+            Log.warning("Anisotropic filtering not supported in this device");
+        }
         return this;
     }
 

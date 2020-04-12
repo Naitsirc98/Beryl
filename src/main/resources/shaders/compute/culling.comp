@@ -33,7 +33,7 @@ layout(std430, binding = 2) readonly buffer BoundingSpheres {
     BoundingSphere u_BoundingSpheres[];
 };
 
-layout(std430, binding = 3) readonly buffer Matrices {
+layout(std430, binding = 3) readonly buffer Transforms {
     Transform u_Transforms[];
 };
 
@@ -45,6 +45,10 @@ layout(std140, binding = 5) uniform Frustum {
     mat4 projectionViewMatrix;
     vec4 planes[6];
 } u_Frustum;
+
+layout(std430, binding = 6) writeonly buffer Debug {
+    vec4 debug[];
+};
 
 
 
@@ -81,12 +85,14 @@ bool isVisible(mat4 modelMatrix, BoundingSphere boundingSphere) {
 
     vec4 sphereCenter = vec4(boundingSphere.centerX, boundingSphere.centerY, boundingSphere.centerZ, 1.0);
 
-    sphereCenter = u_Frustum.projectionViewMatrix * modelMatrix * sphereCenter;
+    sphereCenter = modelMatrix * sphereCenter;
 
     float radius = boundingSphere.radius * getScale(modelMatrix);
 
+    // debug[gl_GlobalInvocationID.x] = vec4(sphereCenter.xyz, radius);
+
     // This does not work. I don't know if it has to do with the bounding sphere, or with the frustum calculation
-    return true;// cullSphere(u_Frustum.planes, sphereCenter.xyz, radius) > 0;
+    return cullSphere(u_Frustum.planes, sphereCenter.xyz, radius) > 0;
 }
 
 void main() {
@@ -95,15 +101,17 @@ void main() {
 
     const int meshIndex = u_MeshIndices[index];
 
+    DrawCommand meshCommand = u_MeshCommands[meshIndex];
+
+    DrawCommand command = meshCommand;
+
+    command.baseInstance = index;
+
     if(isVisible(u_Transforms[index].modelMatrix, u_BoundingSpheres[meshIndex])) {
-
-        DrawCommand meshCommand = u_MeshCommands[meshIndex];
-
-        DrawCommand command = meshCommand;
-
         command.instanceCount = 1;
-        command.baseInstance = index;
-
-        u_InstanceCommands[index] = command;
+    } else {
+        command.instanceCount = 0;
     }
+
+    u_InstanceCommands[index] = command;
 }
