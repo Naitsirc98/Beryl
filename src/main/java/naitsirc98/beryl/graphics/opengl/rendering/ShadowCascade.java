@@ -2,7 +2,7 @@ package naitsirc98.beryl.graphics.opengl.rendering;
 
 import naitsirc98.beryl.graphics.window.Window;
 import naitsirc98.beryl.lights.DirectionalLight;
-import naitsirc98.beryl.scenes.components.camera.Camera;
+import naitsirc98.beryl.scenes.Camera;
 import org.joml.*;
 
 import java.lang.Math;

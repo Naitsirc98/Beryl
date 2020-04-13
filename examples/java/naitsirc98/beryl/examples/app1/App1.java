@@ -1,6 +1,9 @@
 package naitsirc98.beryl.examples.app1;
 
-import naitsirc98.beryl.core.*;
+import naitsirc98.beryl.core.Beryl;
+import naitsirc98.beryl.core.BerylApplication;
+import naitsirc98.beryl.core.BerylConfiguration;
+import naitsirc98.beryl.core.BerylFiles;
 import naitsirc98.beryl.graphics.GraphicsAPI;
 import naitsirc98.beryl.graphics.GraphicsFactory;
 import naitsirc98.beryl.graphics.textures.Sampler;
@@ -18,19 +21,18 @@ import naitsirc98.beryl.meshes.MeshView;
 import naitsirc98.beryl.meshes.models.Model;
 import naitsirc98.beryl.meshes.models.ModelEntityFactory;
 import naitsirc98.beryl.meshes.models.StaticMeshLoader;
+import naitsirc98.beryl.scenes.Camera;
 import naitsirc98.beryl.scenes.Entity;
 import naitsirc98.beryl.scenes.Scene;
 import naitsirc98.beryl.scenes.SceneEnvironment;
 import naitsirc98.beryl.scenes.components.behaviours.UpdateMutableBehaviour;
-import naitsirc98.beryl.scenes.components.camera.Camera;
 import naitsirc98.beryl.scenes.components.math.Transform;
 import naitsirc98.beryl.scenes.components.meshes.MeshInstance;
 import naitsirc98.beryl.util.Color;
-import org.lwjgl.opengl.ARBTextureFilterAnisotropic;
-import org.lwjgl.opengl.GL45;
 
 import java.util.Random;
 
+import static naitsirc98.beryl.scenes.Fog.DEFAULT_FOG_DENSITY;
 import static naitsirc98.beryl.scenes.SceneManager.newScene;
 import static naitsirc98.beryl.util.Maths.radians;
 
@@ -95,15 +97,17 @@ public class App1 extends BerylApplication {
             tree.get(Transform.class).position(RAND.nextInt(500), 0, RAND.nextInt(500)).scale(0.01f);
         }
 
-        Entity camera = scene.newEntity("Camera");
-        camera.add(Transform.class).position(0, 5, 5);
-        camera.add(Camera.class).lookAt(0, 0).clearColor(new Color(0.8f, 0.8f, 0.8f));
-        camera.add(CameraController.class);
+        Camera camera = scene.camera();
+        camera.lookAt(0, 0).position(0, 5, 0);
+
+        Entity cameraController = scene.newEntity();
+        cameraController.add(CameraController.class);
 
         SceneEnvironment environment = scene.environment();
 
         environment.directionalLight(new DirectionalLight().color(Color.WHITE).direction(-1, -1, 0));
         environment.ambientColor(new Color(0.8f, 0.8f, 0.8f));
+        environment.fog().density(DEFAULT_FOG_DENSITY * 3.2f);
     }
 
     private PhongMaterial treeMaterialFunction(String meshName) {

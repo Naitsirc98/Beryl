@@ -38,7 +38,11 @@ public class BerylApplication {
 
     }
 
-    protected void onRender() {
+    protected void onRenderBegin() {
+
+    }
+
+    protected void onRenderEnd() {
 
     }
 
@@ -65,7 +69,8 @@ public class BerylApplication {
         private Runnable onInit = () -> {};
         private Runnable onStart = () -> {};
         private Runnable onUpdate = () -> {};
-        private Runnable onRender = () -> {};
+        private Runnable onRenderBegin = () -> {};
+        private Runnable onRenderEnd = () -> {};
         private Consumer<Throwable> onError = e -> {};
         private Runnable onTerminate = () -> {};
 
@@ -87,8 +92,13 @@ public class BerylApplication {
             return this;
         }
 
-        public Builder onRender(Runnable onRender) {
-            this.onRender = requireNonNull(onRender);
+        public Builder onRenderBegin(Runnable onRender) {
+            this.onRenderBegin = requireNonNull(onRender);
+            return this;
+        }
+
+        public Builder onRenderEnd(Runnable onRender) {
+            this.onRenderEnd = requireNonNull(onRender);
             return this;
         }
 
@@ -121,8 +131,8 @@ public class BerylApplication {
                 }
 
                 @Override
-                protected void onRender() {
-                    onRender.run();
+                protected void onRenderBegin() {
+                    onRenderBegin.run();
                 }
 
                 @Override

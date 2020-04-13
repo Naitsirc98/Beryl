@@ -13,11 +13,14 @@ public final class Fog implements ByteSize {
 
     public static final int SIZEOF = 20;
 
+    public static final float DEFAULT_FOG_DENSITY = 0.16f;
+
     private Color color;
     private float density;
 
     public Fog() {
-        density = 0.16f;
+        color = Color.WHITE;
+        density = DEFAULT_FOG_DENSITY;
     }
 
     public Color color() {

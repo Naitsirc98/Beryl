@@ -1,16 +1,8 @@
 package naitsirc98.beryl.graphics.rendering;
 
-import naitsirc98.beryl.resources.Resource;
+public abstract class Renderer {
 
-public interface Renderer extends Resource {
+    protected abstract void init();
 
-    @SuppressWarnings("unchecked")
-    static <T extends Renderer> T get() {
-        return (T) RenderSystem.renderer();
-    }
-
-    boolean begin();
-
-    void end();
-
+    protected abstract void terminate();
 }

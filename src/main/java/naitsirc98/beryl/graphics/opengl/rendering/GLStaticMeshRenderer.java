@@ -7,7 +7,7 @@ import naitsirc98.beryl.graphics.opengl.commands.GLDrawElementsCommand;
 import naitsirc98.beryl.graphics.opengl.shaders.GLShader;
 import naitsirc98.beryl.graphics.opengl.shaders.GLShaderProgram;
 import naitsirc98.beryl.graphics.opengl.vertex.GLVertexArray;
-import naitsirc98.beryl.graphics.rendering.RenderingPath;
+import naitsirc98.beryl.graphics.rendering.renderers.StaticMeshRenderer;
 import naitsirc98.beryl.lights.DirectionalLight;
 import naitsirc98.beryl.lights.Light;
 import naitsirc98.beryl.materials.MaterialManager;
@@ -16,10 +16,10 @@ import naitsirc98.beryl.meshes.MeshView;
 import naitsirc98.beryl.meshes.StaticMesh;
 import naitsirc98.beryl.meshes.StaticMeshManager;
 import naitsirc98.beryl.meshes.vertices.VertexLayout;
+import naitsirc98.beryl.scenes.Camera;
 import naitsirc98.beryl.scenes.Fog;
 import naitsirc98.beryl.scenes.Scene;
 import naitsirc98.beryl.scenes.SceneEnvironment;
-import naitsirc98.beryl.scenes.components.camera.Camera;
 import naitsirc98.beryl.scenes.components.meshes.MeshInstance;
 import naitsirc98.beryl.scenes.components.meshes.SceneMeshInfo;
 import naitsirc98.beryl.util.Color;
@@ -33,7 +33,8 @@ import java.util.List;
 import static naitsirc98.beryl.graphics.ShaderStage.*;
 import static naitsirc98.beryl.meshes.vertices.VertexAttribute.*;
 import static naitsirc98.beryl.util.types.DataType.*;
-import static org.lwjgl.opengl.ARBIndirectParameters.*;
+import static org.lwjgl.opengl.ARBIndirectParameters.GL_PARAMETER_BUFFER_ARB;
+import static org.lwjgl.opengl.ARBIndirectParameters.glMultiDrawElementsIndirectCountARB;
 import static org.lwjgl.opengl.GL11.GL_TRIANGLES;
 import static org.lwjgl.opengl.GL42.GL_COMMAND_BARRIER_BIT;
 import static org.lwjgl.opengl.GL42.glMemoryBarrier;
@@ -41,7 +42,7 @@ import static org.lwjgl.opengl.GL45.*;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
-public class Rendering extends RenderingPath {
+public final class GLStaticMeshRenderer extends StaticMeshRenderer {
 
     // EXPERIMENTAL
 
@@ -70,14 +71,6 @@ public class Rendering extends RenderingPath {
     private static final int TRANSFORMS_BUFFER_MODEL_MATRIX_OFFSET = 0;
     private static final int TRANSFORMS_BUFFER_NORMAL_MATRIX_OFFSET = MATRIX4_SIZEOF;
 
-    private static final int MEMORY_BARRIER_FLAGS =
-            GL_COMMAND_BARRIER_BIT
-                    | GL_SHADER_STORAGE_BARRIER_BIT
-                    | GL_BUFFER_UPDATE_BARRIER_BIT
-                    | GL_UNIFORM_BARRIER_BIT
-                    | GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT
-                    | GL_ELEMENT_ARRAY_BARRIER_BIT;
-
     private static final int VERTEX_BUFFER_BINDING = 0;
     private static final int INSTANCE_BUFFER_BINDING = 1;
 
@@ -97,6 +90,10 @@ public class Rendering extends RenderingPath {
 
     private GLBuffer instanceCommandBuffer;
     private GLBuffer atomicCounterBuffer;
+
+    GLStaticMeshRenderer() {
+
+    }
 
     public void init() {
 
@@ -153,7 +150,8 @@ public class Rendering extends RenderingPath {
         instanceCommandBuffer.release();
     }
 
-    public void prepare(Camera camera, Scene scene) {
+    public void prepare(Scene scene) {
+        Camera camera = scene.camera();
         SceneMeshInfo meshInfo = scene.meshInfo();
         prepareBuffers(meshInfo);
         setLightsUniformBuffer(scene.environment());
@@ -161,21 +159,18 @@ public class Rendering extends RenderingPath {
         setFrustumUniformBuffer(camera);
     }
 
-    @Override
-    public void render(Camera camera, Scene scene) {
+    public void render(Scene scene) {
         performCullingPass(scene.meshInfo().numInstancedMeshViews());
-        render(camera, scene.meshInfo());
+        render(scene.environment().clearColor(), scene.meshInfo());
     }
 
-    private void render(Camera camera, SceneMeshInfo meshInfo) {
-
-        final Color color = camera.clearColor();
+    private void render(Color clearColor, SceneMeshInfo meshInfo) {
 
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         glEnable(GL_DEPTH_TEST);
         glDepthMask(true);
         glEnable(GL_CULL_FACE);
-        glClearColor(color.red(), color.green(), color.blue(), color.alpha());
+        glClearColor(clearColor.red(), clearColor.green(), clearColor.blue(), clearColor.alpha());
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         renderShader.bind();
@@ -319,7 +314,7 @@ public class Rendering extends RenderingPath {
             ByteBuffer buffer = stack.calloc(CAMERA_UNIFORM_BUFFER_SIZE);
 
             camera.projectionViewMatrix().get(CAMERA_UNIFORM_BUFFER_PROJECTION_VIEW_OFFSET, buffer);
-            camera.transform().position().get(CAMERA_UNIFORM_BUFFER_CAMERA_POSITION_OFFSET, buffer);
+            camera.position().get(CAMERA_UNIFORM_BUFFER_CAMERA_POSITION_OFFSET, buffer);
 
             cameraUniformBuffer.copy(0, buffer);
         }

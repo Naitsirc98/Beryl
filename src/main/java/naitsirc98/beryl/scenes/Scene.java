@@ -1,11 +1,9 @@
 package naitsirc98.beryl.scenes;
 
-import naitsirc98.beryl.graphics.opengl.rendering.Rendering;
+import naitsirc98.beryl.graphics.rendering.RenderSystem;
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.scenes.components.behaviours.AbstractBehaviour;
 import naitsirc98.beryl.scenes.components.behaviours.BehaviourManager;
-import naitsirc98.beryl.scenes.components.camera.Camera;
-import naitsirc98.beryl.scenes.components.camera.CameraManager;
 import naitsirc98.beryl.scenes.components.math.Transform;
 import naitsirc98.beryl.scenes.components.math.TransformManager;
 import naitsirc98.beryl.scenes.components.meshes.MeshInstance;
@@ -32,8 +30,9 @@ public final class Scene {
 
     private final SceneEnvironment environment;
 
+    private final Camera camera;
+
     // === Component Managers
-    private final CameraManager cameras;
     private final TransformManager transforms;
     private final BehaviourManager behaviours;
     private final MeshInstanceManager meshes;
@@ -54,7 +53,7 @@ public final class Scene {
         environment = new SceneEnvironment();
 
         // === Component Managers
-        cameras = newInstance(CameraManager.class, this);
+        camera = new Camera();
         transforms = newInstance(TransformManager.class, this);
         behaviours = newInstance(BehaviourManager.class, this);
         meshes = newInstance(MeshInstanceManager.class, this);
@@ -97,19 +96,14 @@ public final class Scene {
     }
 
     void endUpdate() {
-        cameras.update();
+        camera.update();
         transforms.update();
         meshes.update();
-        environment.update(camera());
-        ((Rendering)camera().renderingPath()).prepare(camera(), this);
+        RenderSystem.prepare(this);
     }
 
     void render() {
-        // TODO
-        Camera camera = camera();
-        if(camera != null) {
-            camera().renderingPath().render(camera, this);
-        }
+        RenderSystem.render(this);
     }
 
     void terminate() {
@@ -135,17 +129,7 @@ public final class Scene {
     }
 
     public Camera camera() {
-        return cameras.mainCamera();
-    }
-
-    public void camera(Camera camera) {
-
-        if(camera != null && camera.scene() != this) {
-            Log.error("Cannot set a camera from another scene");
-            return;
-        }
-
-        cameras.mainCamera(camera);
+        return camera;
     }
 
     public Entity newEntity() {
@@ -293,7 +277,6 @@ public final class Scene {
 
         components.put(AbstractBehaviour.class, behaviours);
         components.put(Transform.class, transforms);
-        components.put(Camera.class, cameras);
         components.put(MeshInstance.class, meshes);
 
         return components;

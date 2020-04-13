@@ -8,9 +8,8 @@ import naitsirc98.beryl.input.Joystick;
 import naitsirc98.beryl.input.Joystick.Axis;
 import naitsirc98.beryl.input.Joystick.AxisDirection;
 import naitsirc98.beryl.logging.Log;
+import naitsirc98.beryl.scenes.Camera;
 import naitsirc98.beryl.scenes.components.behaviours.LateBehaviour;
-import naitsirc98.beryl.scenes.components.camera.Camera;
-import org.joml.Vector3f;
 
 import static naitsirc98.beryl.graphics.window.CursorType.DISABLED;
 import static naitsirc98.beryl.graphics.window.CursorType.NORMAL;

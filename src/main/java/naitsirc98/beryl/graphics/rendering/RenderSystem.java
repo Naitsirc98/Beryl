@@ -1,7 +1,8 @@
 package naitsirc98.beryl.graphics.rendering;
 
 import naitsirc98.beryl.core.BerylSystem;
-import naitsirc98.beryl.graphics.opengl.rendering.GLRenderer;
+import naitsirc98.beryl.graphics.opengl.rendering.GLRenderSystem;
+import naitsirc98.beryl.scenes.Scene;
 import naitsirc98.beryl.util.types.Singleton;
 
 import static naitsirc98.beryl.util.types.TypeUtils.newInstance;
@@ -11,26 +12,35 @@ public final class RenderSystem extends BerylSystem {
     @Singleton
     private static RenderSystem instance;
 
-    public static Renderer renderer() {
-        return instance.renderer;
+    private static APIRenderSystem apiRenderSystem;
+
+    public static void prepare(Scene scene) {
+        apiRenderSystem.prepare(scene);
     }
 
-    private Renderer renderer;
+    public static void render(Scene scene) {
+        apiRenderSystem.render(scene);
+    }
 
     private RenderSystem() {
 
     }
 
+    public APIRenderSystem apiRenderSystem() {
+        return apiRenderSystem;
+    }
+
     @Override
     protected void init() {
         // Only supporting OPENGL for now
-        Class<? extends Renderer> rendererClass = GLRenderer.class;
-        renderer = newInstance(rendererClass);
+        Class<? extends APIRenderSystem> rendererClass = GLRenderSystem.class;
+        apiRenderSystem = newInstance(rendererClass);
+        apiRenderSystem.init();
     }
 
     @Override
     protected void terminate() {
-        renderer.release();
-        renderer = null;
+        apiRenderSystem.terminate();
+        apiRenderSystem = null;
     }
 }

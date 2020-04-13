@@ -2,7 +2,8 @@ package naitsirc98.beryl.core;
 
 import naitsirc98.beryl.events.EventManager;
 import naitsirc98.beryl.graphics.GraphicsAPI;
-import naitsirc98.beryl.graphics.rendering.Renderer;
+import naitsirc98.beryl.graphics.rendering.APIRenderSystem;
+import naitsirc98.beryl.graphics.rendering.RenderSystem;
 import naitsirc98.beryl.graphics.window.Window;
 import naitsirc98.beryl.input.Input;
 import naitsirc98.beryl.logging.Log;
@@ -76,7 +77,7 @@ public final class Beryl {
 
     private final BerylApplication application;
     private final BerylSystemManager systems;
-    private Renderer renderer;
+    private APIRenderSystem renderSystem;
     private float updateDelay;
     private int updatesPerSecond;
     private int framesPerSecond;
@@ -106,7 +107,7 @@ public final class Beryl {
 
         application.start();
 
-        renderer = Renderer.get();
+        renderSystem = systems.renderSystem.apiRenderSystem();
 
         setup();
 
@@ -184,14 +185,15 @@ public final class Beryl {
 
     private void render() {
 
-        if(renderer.begin()) {
+        renderSystem.begin();
 
-            application.onRender();
+        application.onRenderBegin();
 
-            systems.sceneManager.render();
+        systems.sceneManager.render();
 
-            renderer.end();
-        }
+        application.onRenderEnd();
+
+        renderSystem.end();
     }
 
     private void error(Throwable error) {
