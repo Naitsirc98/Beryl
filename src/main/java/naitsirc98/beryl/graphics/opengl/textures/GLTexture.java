@@ -28,7 +28,7 @@ public abstract class GLTexture extends ManagedResource implements GLObject, Tex
 
     public GLTexture(int target) {
         this.handle = glCreateTextures(target);
-        sampler().defaults();
+        // sampler().defaults();
     }
 
     @Override

@@ -97,7 +97,7 @@ public class App1 extends BerylApplication {
 
         Entity camera = scene.newEntity("Camera");
         camera.add(Transform.class).position(0, 5, 5);
-        camera.add(Camera.class).lookAt(0, 0).clearColor(new Color(0.3f, 0.3f, 0.3f));
+        camera.add(Camera.class).lookAt(0, 0).clearColor(new Color(0.8f, 0.8f, 0.8f));
         camera.add(CameraController.class);
 
         SceneEnvironment environment = scene.environment();
@@ -121,10 +121,10 @@ public class App1 extends BerylApplication {
 
                         colorTexture.pixels(image);
 
+                        colorTexture.generateMipmaps();
+
                         colorTexture.sampler().minFilter(Sampler.MinFilter.LINEAR_MIPMAP_LINEAR);
                         colorTexture.sampler().magFilter(Sampler.MagFilter.LINEAR);
-
-                        colorTexture.generateMipmaps();
 
                         builder.ambientMap(colorTexture).diffuseMap(colorTexture);
                     }
@@ -142,10 +142,11 @@ public class App1 extends BerylApplication {
 
                         colorTexture.pixels(image);
 
+                        colorTexture.generateMipmaps();
+
                         colorTexture.sampler().minFilter(Sampler.MinFilter.LINEAR_MIPMAP_LINEAR);
                         colorTexture.sampler().magFilter(Sampler.MagFilter.LINEAR);
-
-                        colorTexture.generateMipmaps();
+                        colorTexture.sampler().lodBias(-2.5f);
 
                         builder.ambientMap(colorTexture).diffuseMap(colorTexture);
                     }
@@ -164,10 +165,11 @@ public class App1 extends BerylApplication {
 
                         colorTexture.pixels(image);
 
+                        colorTexture.generateMipmaps();
+
                         colorTexture.sampler().minFilter(Sampler.MinFilter.LINEAR_MIPMAP_LINEAR);
                         colorTexture.sampler().magFilter(Sampler.MagFilter.LINEAR);
-
-                        colorTexture.generateMipmaps();
+                        colorTexture.sampler().lodBias(-2.5f);
 
                         builder.ambientMap(colorTexture).diffuseMap(colorTexture);
                     }
@@ -182,12 +184,12 @@ public class App1 extends BerylApplication {
         return PhongMaterial.get("floor", builder -> {
             Texture2D colorMap = GraphicsFactory.get()
                     .newTexture2D("C:\\Users\\naits\\Downloads\\TexturesCom_Grass0157_1_seamless_S.jpg", PixelFormat.RGBA);
-            colorMap.sampler().maxAnisotropy(4);
+            colorMap.sampler().maxAnisotropy(16);
             colorMap.generateMipmaps();
             colorMap.sampler().wrapMode(Sampler.WrapMode.REPEAT);
             colorMap.sampler().magFilter(Sampler.MagFilter.LINEAR);
             colorMap.sampler().minFilter(Sampler.MinFilter.LINEAR_MIPMAP_LINEAR);
-            colorMap.sampler().lodBias(-2);
+            colorMap.sampler().lodBias(0);
             builder.ambientMap(colorMap).diffuseMap(colorMap);
             builder.shininess(1);
             builder.textureCoordsFactor(250, 250);
