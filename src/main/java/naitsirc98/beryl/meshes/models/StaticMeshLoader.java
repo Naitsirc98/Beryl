@@ -2,6 +2,7 @@ package naitsirc98.beryl.meshes.models;
 
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.meshes.Mesh;
+import naitsirc98.beryl.meshes.MeshManager;
 import naitsirc98.beryl.meshes.StaticMesh;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
@@ -12,6 +13,8 @@ import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.Map;
 
 import static java.util.Objects.requireNonNull;
 import static naitsirc98.beryl.util.Asserts.assertTrue;
@@ -20,7 +23,7 @@ import static naitsirc98.beryl.util.types.DataType.UINT32_SIZEOF;
 import static org.lwjgl.assimp.Assimp.*;
 import static org.lwjgl.system.MemoryUtil.memAlloc;
 
-public class StaticMeshLoader implements ModelLoader {
+public final class StaticMeshLoader implements ModelLoader {
 
     private static final int DEFAULT_FLAGS = // aiProcess_OptimizeMeshes
             // aiProcess_OptimizeGraph
@@ -32,27 +35,49 @@ public class StaticMeshLoader implements ModelLoader {
                     | aiProcess_JoinIdenticalVertices
                     | aiProcess_FixInfacingNormals;
 
-    // TODO: bounding boxes??
+
+    private static final StaticMeshLoader INSTANCE = new StaticMeshLoader();
+
+    public static StaticMeshLoader get() {
+        return INSTANCE;
+    }
+
+    private final Map<Path, Model> cache;
+
+    private StaticMeshLoader() {
+        cache = new HashMap<>();
+    }
 
     @Override
-    public Model load(Path path) {
+    public synchronized Model load(Path path) {
 
         if (Files.notExists(path)) {
             throw new IllegalArgumentException("File " + path + " does not exists");
         }
 
+        if(cache.containsKey(path)) {
+            Model model = cache.get(path);
+            if(model.released()) {
+                cache.remove(path);
+            } else {
+                return model;
+            }
+        }
+
         double start = System.nanoTime();
 
-        Model model = loadAssimp(path);
+        Model<StaticMesh> model = loadAssimp(path);
 
         double end = (System.nanoTime() - start) / 1e6;
 
         Log.info("Model " + path.getName(path.getNameCount() - 1) + " loaded in " + end + " ms");
 
+        cache.put(path, model);
+
         return model;
     }
 
-    private Model loadAssimp(Path path) {
+    private Model<StaticMesh> loadAssimp(Path path) {
 
         AIScene aiScene = aiImportFile(path.toString(), DEFAULT_FLAGS);
 
@@ -64,7 +89,7 @@ public class StaticMeshLoader implements ModelLoader {
 
             AINode aiRoot = aiScene.mRootNode();
 
-            Model model = new Model(path, aiScene.mNumMeshes());
+            Model<StaticMesh> model = new Model<>(path, aiScene.mNumMeshes());
 
             Model.Node rootNode = model.newNode(aiRoot.mName().dataString(), aiRoot.mNumChildren(), aiRoot.mNumMeshes());
 
@@ -77,7 +102,7 @@ public class StaticMeshLoader implements ModelLoader {
         }
     }
 
-    private void processNode(AIScene aiScene, AINode aiNode, Model.Node modelNode, Model model) {
+    private void processNode(AIScene aiScene, AINode aiNode, Model.Node modelNode, Model<StaticMesh> model) {
 
         modelNode.transformation(matrix4fc(aiNode.mTransformation()));
 
@@ -86,7 +111,7 @@ public class StaticMeshLoader implements ModelLoader {
         processNodeChildren(aiScene, aiNode, modelNode, model);
     }
 
-    private void processNodeChildren(AIScene aiScene, AINode aiNode, Model.Node modelNode, Model model) {
+    private void processNodeChildren(AIScene aiScene, AINode aiNode, Model.Node modelNode, Model<StaticMesh> model) {
 
         if (aiNode.mNumChildren() == 0) {
             return;
@@ -102,7 +127,7 @@ public class StaticMeshLoader implements ModelLoader {
         }
     }
 
-    private void processNodeMeshes(AIScene aiScene, AINode aiNode, Model.Node modelNode, Model model) {
+    private void processNodeMeshes(AIScene aiScene, AINode aiNode, Model.Node modelNode, Model<StaticMesh> model) {
 
         if (aiNode.mNumMeshes() == 0) {
             return;
@@ -117,7 +142,15 @@ public class StaticMeshLoader implements ModelLoader {
         }
     }
 
-    private Model.LoadedMesh loadMesh(AIScene aiScene, AIMesh aiMesh, Model model) {
+    private ModelMesh<StaticMesh> loadMesh(AIScene aiScene, AIMesh aiMesh, Model<StaticMesh> model) {
+
+        String meshName = aiMesh.mName().dataString();
+
+        MeshManager meshManager = MeshManager.get();
+
+        if(meshManager.exists(meshName)) {
+            return model.newMesh(meshName, meshManager.get(meshName));
+        }
 
         ByteBuffer vertices = memAlloc(StaticMesh.VERTEX_DATA_SIZE * aiMesh.mNumVertices());
         ByteBuffer indices = getIndices(aiMesh);
@@ -125,8 +158,6 @@ public class StaticMeshLoader implements ModelLoader {
         processPositionAttribute(aiMesh, vertices);
         processNormalAttribute(aiMesh, vertices);
         processTexCoordsAttribute(aiMesh, vertices);
-
-        String meshName = aiMesh.mName().dataString();
 
         return model.newMesh(meshName, StaticMesh.get(meshName, meshData -> meshData.set(vertices, indices)));
     }

@@ -19,6 +19,8 @@ public interface GraphicsBuffer extends Resource {
 
     void reallocate(long newSize);
 
+    void resize(long newSize); // Copy old data
+
     void data(ByteBuffer data);
     void data(IntBuffer data);
     void data(FloatBuffer data);

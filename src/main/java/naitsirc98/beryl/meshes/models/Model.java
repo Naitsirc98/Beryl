@@ -1,7 +1,7 @@
 package naitsirc98.beryl.meshes.models;
 
 import naitsirc98.beryl.meshes.Mesh;
-import naitsirc98.beryl.meshes.vertices.VertexLayout;
+import naitsirc98.beryl.meshes.MeshManager;
 import naitsirc98.beryl.resources.ManagedResource;
 import naitsirc98.beryl.util.collections.LookupTable;
 import org.joml.Matrix4fc;
@@ -14,16 +14,14 @@ import java.util.stream.Stream;
 
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.joining;
-import static org.lwjgl.system.MemoryUtil.memCalloc;
-import static org.lwjgl.system.MemoryUtil.memFree;
 
-public final class Model extends ManagedResource {
+public final class Model<T extends Mesh> extends ManagedResource {
 
     private final Path path;
     private final List<Node> nodes;
     private final LookupTable<String, Node> nodeNames;
-    private final List<LoadedMesh> loadedMeshes;
-    private final LookupTable<String, LoadedMesh> meshNames;
+    private final List<ModelMesh<T>> loadedMeshes;
+    private final LookupTable<String, ModelMesh<T>> meshNames;
 
     Model(Path path, int meshCount) {
         super(false);
@@ -63,11 +61,11 @@ public final class Model extends ManagedResource {
         return nodeNames.valueOf(name);
     }
 
-    public LoadedMesh loadedMesh(int index) {
+    public ModelMesh<T> loadedMesh(int index) {
         return loadedMeshes.get(index);
     }
 
-    public LoadedMesh loadedMesh(String name) {
+    public ModelMesh<T> loadedMesh(String name) {
         return meshNames.valueOf(name);
     }
 
@@ -75,7 +73,7 @@ public final class Model extends ManagedResource {
         return nodeNames.keyOf(node);
     }
 
-    public String nameOf(LoadedMesh loadedMesh) {
+    public String nameOf(ModelMesh<T> loadedMesh) {
         return meshNames.keyOf(loadedMesh);
     }
 
@@ -83,7 +81,7 @@ public final class Model extends ManagedResource {
         return Collections.unmodifiableCollection(nodes);
     }
 
-    public Collection<LoadedMesh> meshes() {
+    public Collection<ModelMesh<T>> meshes() {
         return Collections.unmodifiableCollection(loadedMeshes);
     }
 
@@ -97,9 +95,9 @@ public final class Model extends ManagedResource {
         return node;
     }
 
-    synchronized LoadedMesh newMesh(String name, Mesh mesh) {
+    synchronized ModelMesh<T> newMesh(String name, T mesh) {
 
-        LoadedMesh loadedMesh = new LoadedMesh(loadedMeshes.size(), mesh);
+        ModelMesh<T> loadedMesh = new ModelMesh<>(this, loadedMeshes.size(), mesh);
 
         loadedMeshes.add(loadedMesh);
         meshNames.put(name, loadedMesh);
@@ -116,7 +114,8 @@ public final class Model extends ManagedResource {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Model model = (Model) o;
+        Model<?> model = (Model<?>) o;
+        // TODO: check Mesh type too
         return Objects.equals(path, model.path);
     }
 
@@ -173,7 +172,7 @@ public final class Model extends ManagedResource {
             return nodes.get(indices[index]);
         }
 
-        public LoadedMesh mesh(int index) {
+        public ModelMesh mesh(int index) {
             return loadedMeshes.get(indices[meshIndicesOffset + index]);
         }
 
@@ -181,7 +180,7 @@ public final class Model extends ManagedResource {
             return Arrays.stream(indices, 0, meshIndicesOffset).mapToObj(nodes::get);
         }
 
-        public Stream<LoadedMesh> meshes() {
+        public Stream<ModelMesh> meshes() {
             return Arrays.stream(indices, meshIndicesOffset, indices.length).mapToObj(loadedMeshes::get);
         }
 
@@ -198,8 +197,8 @@ public final class Model extends ManagedResource {
             indices[index] = child.index;
         }
 
-        synchronized void addMesh(int index, LoadedMesh loadedMesh) {
-            indices[meshIndicesOffset + index] = loadedMesh.index;
+        synchronized void addMesh(int index, ModelMesh loadedMesh) {
+            indices[meshIndicesOffset + index] = loadedMesh.index();
         }
 
         @Override
@@ -212,31 +211,9 @@ public final class Model extends ManagedResource {
             String childrenStr = children().map(node -> node.toString(innerIndentation + "  ")).collect(joining(",\n"));
             return String.format("%sNode[%d] '%s' {\n%smeshes:[%s],\n%schildren: [%s]\n%s};",
                     indentation, index, name(),
-                    innerIndentation, meshes().map(LoadedMesh::name).collect(joining(", ")),
+                    innerIndentation, meshes().map(ModelMesh::name).collect(joining(", ")),
                     innerIndentation, childrenStr.isEmpty() ? "" : "\n" + childrenStr + "\n" + innerIndentation, indentation);
         }
     }
 
-    public final class LoadedMesh {
-
-        private final int index;
-        private final Mesh mesh;
-
-        public LoadedMesh(int index, Mesh mesh) {
-            this.index = index;
-            this.mesh = mesh;
-        }
-
-        public int index() {
-            return index;
-        }
-
-        public String name() {
-            return nameOf(this);
-        }
-
-        public Mesh mesh() {
-            return mesh;
-        }
-    }
 }

@@ -8,6 +8,7 @@ import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
+import static java.lang.Math.min;
 import static naitsirc98.beryl.util.types.DataType.FLOAT32_SIZEOF;
 import static naitsirc98.beryl.util.types.DataType.INT32_SIZEOF;
 import static naitsirc98.beryl.util.types.TypeUtils.getOrElse;
@@ -87,6 +88,26 @@ public class GLBuffer implements GLObject, MappedGraphicsBuffer, VertexBuffer, I
             recreate();
             allocate(newSize);
         }
+    }
+
+    @Override
+    public synchronized void resize(long newSize) {
+
+        if(size == newSize) {
+            return;
+        }
+
+        final int srcBuffer = handle;
+        final long oldSize = size;
+
+        final int destBuffer = newBuffer(newSize);
+
+        glCopyNamedBufferSubData(srcBuffer, destBuffer, 0, 0, min(newSize, oldSize));
+
+        release();
+
+        handle = destBuffer;
+        size = newSize;
     }
 
     @Override
@@ -204,6 +225,15 @@ public class GLBuffer implements GLObject, MappedGraphicsBuffer, VertexBuffer, I
     protected void recreate() {
         release();
         handle = glCreateBuffers();
+    }
+
+    private int newBuffer(long size) {
+
+        final int buffer = glCreateBuffers();
+
+        glNamedBufferStorage(buffer, size, storageFlags());
+
+        return buffer;
     }
 
     private boolean invalidMemoryRange(long offset, long size) {

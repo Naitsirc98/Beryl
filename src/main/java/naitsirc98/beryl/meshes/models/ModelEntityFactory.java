@@ -1,7 +1,6 @@
 package naitsirc98.beryl.meshes.models;
 
 import naitsirc98.beryl.materials.IMaterial;
-import naitsirc98.beryl.materials.Material;
 import naitsirc98.beryl.materials.PhongMaterial;
 import naitsirc98.beryl.meshes.MeshView;
 import naitsirc98.beryl.scenes.Entity;
@@ -20,7 +19,7 @@ public class ModelEntityFactory {
     private final Model model;
     private final Map<String, MeshView> meshViews;
     private Function<String, IMaterial> materialsFunction;
-    private MeshViewFactory<Model.LoadedMesh> meshMeshFactory;
+    private MeshViewFactory<ModelMesh> meshMeshFactory;
 
     public ModelEntityFactory(Model model) {
         this.model = requireNonNull(model);
@@ -72,7 +71,7 @@ public class ModelEntityFactory {
         meshInstance.meshViews(meshViews);
     }
 
-    private MeshView getMeshView(Model.LoadedMesh loadedMesh) {
+    private MeshView getMeshView(ModelMesh loadedMesh) {
         return meshViews.computeIfAbsent(loadedMesh.name(), name -> meshMeshFactory.create(loadedMesh, materialsFunction.apply(name)));
     }
 
@@ -108,12 +107,12 @@ public class ModelEntityFactory {
         return this;
     }
 
-    public ModelEntityFactory meshFactory(MeshViewFactory<Model.LoadedMesh> meshMeshFactory) {
+    public ModelEntityFactory meshFactory(MeshViewFactory<ModelMesh> meshMeshFactory) {
         this.meshMeshFactory = requireNonNull(meshMeshFactory);
         return this;
     }
 
-    private MeshView createMeshViewFromModelMesh(Model.LoadedMesh modelLoadedMesh, IMaterial material) {
+    private MeshView createMeshViewFromModelMesh(ModelMesh modelLoadedMesh, IMaterial material) {
         return new MeshView(modelLoadedMesh.mesh(), material);
     }
 

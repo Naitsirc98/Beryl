@@ -22,12 +22,14 @@ public final class MeshManager implements AssetManager<Mesh> {
     private AtomicInteger meshHandleProvider;
     private Map<String, Mesh> meshNames;
     private StaticMeshManager staticMeshManager;
+    private TerrainMeshManager terrainMeshManager;
 
     @Override
     public void init() {
         meshHandleProvider = new AtomicInteger(0);
         meshNames = new ConcurrentHashMap<>();
         staticMeshManager = new StaticMeshManager();
+        terrainMeshManager = new TerrainMeshManager();
     }
 
     synchronized StaticMesh createStaticMesh(String name, ByteBuffer vertices, ByteBuffer indices) {
@@ -37,6 +39,15 @@ public final class MeshManager implements AssetManager<Mesh> {
         }
 
         return staticMeshManager.create(meshHandleProvider.getAndIncrement(), name, vertices, indices);
+    }
+
+    synchronized TerrainMesh createTerrainMesh(String name, ByteBuffer vertices, ByteBuffer indices, float[][] heightMap, float minY, float maxY) {
+
+        if(!checkMeshData(name, vertices, indices)) {
+            return null;
+        }
+
+        return terrainMeshManager.create(meshHandleProvider.getAndIncrement(), name, vertices, indices, heightMap, minY, maxY);
     }
 
     @Override
@@ -58,8 +69,10 @@ public final class MeshManager implements AssetManager<Mesh> {
     @Override
     public void destroy(Mesh mesh) {
 
-        if(mesh instanceof StaticMesh) {
+        if(mesh.getClass() == StaticMesh.class) {
             staticMeshManager.destroy((StaticMesh) mesh);
+        } else if(mesh.getClass() == TerrainMesh.class) {
+            terrainMeshManager.destroy((TerrainMesh) mesh);
         }
 
         meshNames.remove(mesh.name());
@@ -87,10 +100,15 @@ public final class MeshManager implements AssetManager<Mesh> {
     public void terminate() {
         destroyAll();
         staticMeshManager.terminate();
+        terrainMeshManager.terminate();
     }
 
     public StaticMeshManager staticMeshManager() {
         return staticMeshManager;
+    }
+
+    public TerrainMeshManager terrainMeshManager() {
+        return terrainMeshManager;
     }
 
     private boolean checkMeshData(String name, ByteBuffer vertices, ByteBuffer indices) {

@@ -1,9 +1,6 @@
 package naitsirc98.beryl.examples.app1;
 
-import naitsirc98.beryl.core.Beryl;
-import naitsirc98.beryl.core.BerylApplication;
-import naitsirc98.beryl.core.BerylConfiguration;
-import naitsirc98.beryl.core.BerylFiles;
+import naitsirc98.beryl.core.*;
 import naitsirc98.beryl.graphics.GraphicsAPI;
 import naitsirc98.beryl.graphics.GraphicsFactory;
 import naitsirc98.beryl.graphics.textures.Sampler;
@@ -18,6 +15,8 @@ import naitsirc98.beryl.materials.Material;
 import naitsirc98.beryl.materials.PhongMaterial;
 import naitsirc98.beryl.meshes.Mesh;
 import naitsirc98.beryl.meshes.MeshView;
+import naitsirc98.beryl.meshes.TerrainMesh;
+import naitsirc98.beryl.meshes.TerrainMeshLoader;
 import naitsirc98.beryl.meshes.models.Model;
 import naitsirc98.beryl.meshes.models.ModelEntityFactory;
 import naitsirc98.beryl.meshes.models.StaticMeshLoader;
@@ -76,12 +75,11 @@ public class App1 extends BerylApplication {
 
         Scene scene = newScene("Scene");
 
-        StaticMeshLoader modelLoader = new StaticMeshLoader();
+        Mesh quadMesh = StaticMeshLoader.get().load(BerylFiles.getPath("models/quad.obj")).loadedMesh(0).mesh();
+        Mesh cubeMesh = StaticMeshLoader.get().load(BerylFiles.getPath("models/cube.obj")).loadedMesh(0).mesh();
+        TerrainMesh terrainMesh = TerrainMeshLoader.get().load("Terrain", BerylFiles.getString("textures/terrain_heightmap.png"), 0, 0);
 
-        Mesh quadMesh = modelLoader.load(BerylFiles.getPath("models/quad.obj")).loadedMesh(0).mesh();
-        Mesh cubeMesh = modelLoader.load(BerylFiles.getPath("models/cube.obj")).loadedMesh(0).mesh();
-
-        Model treeModel = modelLoader
+        Model treeModel = StaticMeshLoader.get()
                         .load("C:\\Users\\naits\\Downloads\\uploads_files_1970932_conifer_macedonian_pine(1)\\OBJ format\\conifer_macedonian_pine.obj");
 
         Log.trace(treeModel);

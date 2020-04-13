@@ -164,12 +164,34 @@ public final class GLStaticMeshRenderer extends StaticMeshRenderer {
         render(scene.environment().clearColor(), scene.meshInfo());
     }
 
+    private void performCullingPass(int numObjects) {
+
+        StaticMeshManager staticMeshManager = MeshManager.get().staticMeshManager();
+
+        GLBuffer meshCommandBuffer = staticMeshManager.commandBuffer();
+        GLBuffer boundingSpheresBuffer = staticMeshManager.boundingSpheresBuffer();
+
+        cullingShader.bind();
+
+        meshCommandBuffer.bind(GL_SHADER_STORAGE_BUFFER, 0);
+        instanceCommandBuffer.bind(GL_SHADER_STORAGE_BUFFER, 1);
+        boundingSpheresBuffer.bind(GL_SHADER_STORAGE_BUFFER, 2);
+        transformsBuffer.bind(GL_SHADER_STORAGE_BUFFER, 3);
+        meshIndicesBuffer.bind(GL_SHADER_STORAGE_BUFFER, 4);
+        frustumUniformBuffer.bind(GL_UNIFORM_BUFFER, 5);
+        atomicCounterBuffer.bind(GL_ATOMIC_COUNTER_BUFFER, 6);
+
+        glDispatchCompute(numObjects, 1, 1);
+
+        glMemoryBarrier(GL_COMMAND_BARRIER_BIT | GL_SHADER_STORAGE_BUFFER | GL_ATOMIC_COUNTER_BARRIER_BIT);
+    }
+
     private void render(Color clearColor, SceneMeshInfo meshInfo) {
 
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         glEnable(GL_DEPTH_TEST);
         glDepthMask(true);
-        glEnable(GL_CULL_FACE);
+        // glEnable(GL_CULL_FACE);
         glClearColor(clearColor.red(), clearColor.green(), clearColor.blue(), clearColor.alpha());
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -192,28 +214,6 @@ public final class GLStaticMeshRenderer extends StaticMeshRenderer {
         vertexArray.bind();
 
         glMultiDrawElementsIndirectCountARB(GL_TRIANGLES, GL_UNSIGNED_INT, NULL, 0, meshInfo.numInstancedMeshViews(), 0);
-    }
-
-    private void performCullingPass(int numObjects) {
-
-        StaticMeshManager staticMeshManager = MeshManager.get().staticMeshManager();
-
-        GLBuffer meshCommandBuffer = staticMeshManager.commandBuffer();
-        GLBuffer boundingSpheresBuffer = staticMeshManager.boundingSpheresBuffer();
-
-        cullingShader.bind();
-
-        meshCommandBuffer.bind(GL_SHADER_STORAGE_BUFFER, 0);
-        instanceCommandBuffer.bind(GL_SHADER_STORAGE_BUFFER, 1);
-        boundingSpheresBuffer.bind(GL_SHADER_STORAGE_BUFFER, 2);
-        transformsBuffer.bind(GL_SHADER_STORAGE_BUFFER, 3);
-        meshIndicesBuffer.bind(GL_SHADER_STORAGE_BUFFER, 4);
-        frustumUniformBuffer.bind(GL_UNIFORM_BUFFER, 5);
-        atomicCounterBuffer.bind(GL_ATOMIC_COUNTER_BUFFER, 6);
-
-        glDispatchCompute(numObjects, 1, 1);
-
-        glMemoryBarrier(GL_COMMAND_BARRIER_BIT | GL_SHADER_STORAGE_BUFFER | GL_ATOMIC_COUNTER_BARRIER_BIT);
     }
 
     private void prepareBuffers(SceneMeshInfo meshInfo) {

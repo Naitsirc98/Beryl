@@ -7,7 +7,7 @@ import java.util.function.Consumer;
 
 import static naitsirc98.beryl.util.types.DataType.FLOAT32_SIZEOF;
 
-public final class StaticMesh extends Mesh implements Asset {
+public class StaticMesh extends Mesh implements Asset {
 
     public static final int VERTEX_DATA_SIZE = (3 + 3 + 2) * FLOAT32_SIZEOF;
 
@@ -45,27 +45,4 @@ public final class StaticMesh extends Mesh implements Asset {
         }
     }
 
-    static final class Vertex {
-
-        private final ByteBuffer buffer;
-
-        public Vertex(ByteBuffer buffer) {
-            this.buffer = buffer;
-        }
-
-        Vertex position(float x, float y, float z) {
-            buffer.putFloat(x).putFloat(y).putFloat(z);
-            return this;
-        }
-
-        Vertex normal(float x, float y, float z) {
-            buffer.putFloat(x).putFloat(y).putFloat(z);
-            return this;
-        }
-
-        Vertex texCoords(float x, float y) {
-            buffer.putFloat(x).putFloat(y);
-            return this;
-        }
-    }
 }
