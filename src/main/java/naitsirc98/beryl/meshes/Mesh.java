@@ -29,13 +29,13 @@ public abstract class Mesh extends ManagedResource implements Asset {
     public static final int VERTEX_TEXCOORDS_OFFSET = VERTEX_POSITION_SIZE + VERTEX_NORMAL_SIZE;
     public static final int VERTEX_TEXCOORDS_SIZE = 2 * FLOAT32_SIZEOF;
 
-    private final int handle;
-    private final String name;
-    private final ByteBuffer vertexData;
-    private final ByteBuffer indexData;
-    private final AABB boundingBox;
-    private final ISphere boundingSphere;
-    private final int stride;
+    protected final int handle;
+    protected final String name;
+    protected final ByteBuffer vertexData;
+    protected final ByteBuffer indexData;
+    protected final AABB boundingBox;
+    protected final Sphere boundingSphere;
+    protected final int stride;
     private int index;
     private long vertexBufferOffset;
     private long indexBufferOffset;
@@ -152,39 +152,21 @@ public abstract class Mesh extends ManagedResource implements Asset {
         return aabb;
     }
 
-    private ISphere calculateBoundingSphere(IAABB bounds) {
+    private Sphere calculateBoundingSphere(IAABB bounds) {
 
-        Vector3f centroid = new Vector3f();//bounds.centerX(), bounds.centerY(), bounds.centerZ());
-        Vector3f vertexPosition = new Vector3f();
+        Vector3f centroid = new Vector3f();
 
         centroid.x = bounds.min().x() + (bounds.max().x() - bounds.min().x()) / 2.0f;
         centroid.y = bounds.min().y() + (bounds.max().y() - bounds.min().y()) / 2.0f;
         centroid.z = bounds.min().z() + (bounds.max().z() - bounds.min().z()) / 2.0f;
 
-
         Sphere boundingSphere = new Sphere();
+
         boundingSphere.center.set(centroid);
+
         boundingSphere.radius = max(
                 max((bounds.max().x()-bounds.min().x())/2, (bounds.max().y() - bounds.min().y())/2),
                 (bounds.max().z() - bounds.min().z())/2);
-
-/*
-
-        float radius = -Float.MAX_VALUE;
-        Sphere boundingSphere = new Sphere(centroid, radius);
-
-        final int vertexCount = vertexCount();
-
-        for(int i = 0;i < vertexCount;i++) {
-
-            position(i, vertexPosition);
-
-            radius = max(radius, centroid.distance(vertexPosition));
-        }
-
-        boundingSphere.radius = radius;
-
- */
 
         return boundingSphere;
     }

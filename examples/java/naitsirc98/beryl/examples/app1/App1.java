@@ -1,6 +1,9 @@
 package naitsirc98.beryl.examples.app1;
 
-import naitsirc98.beryl.core.*;
+import naitsirc98.beryl.core.Beryl;
+import naitsirc98.beryl.core.BerylApplication;
+import naitsirc98.beryl.core.BerylConfiguration;
+import naitsirc98.beryl.core.BerylFiles;
 import naitsirc98.beryl.graphics.GraphicsAPI;
 import naitsirc98.beryl.graphics.GraphicsFactory;
 import naitsirc98.beryl.graphics.textures.Sampler;
@@ -75,24 +78,36 @@ public class App1 extends BerylApplication {
 
         Scene scene = newScene("Scene");
 
-        Mesh quadMesh = StaticMeshLoader.get().load(BerylFiles.getPath("models/quad.obj")).loadedMesh(0).mesh();
-        Mesh cubeMesh = StaticMeshLoader.get().load(BerylFiles.getPath("models/cube.obj")).loadedMesh(0).mesh();
-        TerrainMesh terrainMesh = TerrainMeshLoader.get().load("Terrain", BerylFiles.getString("textures/terrain_heightmap.png"), 0, 0);
+        float terrainSize = 800;
+
+        TerrainMesh terrainMesh = TerrainMeshLoader.get().load("Terrain", BerylFiles.getString("textures/terrain_heightmap.png"), terrainSize);
 
         Model treeModel = StaticMeshLoader.get()
                         .load("C:\\Users\\naits\\Downloads\\uploads_files_1970932_conifer_macedonian_pine(1)\\OBJ format\\conifer_macedonian_pine.obj");
 
         Log.trace(treeModel);
 
+        /*
+
         Entity floor = scene.newEntity("floor");
         floor.add(Transform.class).position(0, 0f, 0).scale(1000, 1000f, 1).rotateX(radians(90));
         floor.add(MeshInstance.class).meshView(new MeshView(quadMesh, getFloorMaterial()));
+
+         */
+
+        Entity terrain = scene.newEntity();
+        terrain.add(Transform.class).position(0, 0, 0).scale(1);
+        terrain.add(MeshInstance.class).meshView(new MeshView(terrainMesh, getFloorMaterial()));
+
 
         ModelEntityFactory treeFactory = new ModelEntityFactory(treeModel).materialsFunction(this::treeMaterialFunction);
 
         for(int i = 0;i < 1000;i++) {
             Entity tree = treeFactory.newEntity(scene);
-            tree.get(Transform.class).position(RAND.nextInt(500), 0, RAND.nextInt(500)).scale(0.01f);
+            float x = RAND.nextInt((int) terrainSize);
+            float z = RAND.nextInt((int) terrainSize);
+            float y = terrainMesh.heightAt(0, 0, x, z);
+            tree.get(Transform.class).position(x, y, z).scale(0.01f);
         }
 
         Camera camera = scene.camera();
@@ -103,7 +118,7 @@ public class App1 extends BerylApplication {
 
         SceneEnvironment environment = scene.environment();
 
-        environment.directionalLight(new DirectionalLight().color(Color.WHITE).direction(-1, -1, 0));
+        environment.lights().directionalLight(new DirectionalLight().color(Color.WHITE).direction(-1, -1, 0));
         environment.ambientColor(new Color(0.8f, 0.8f, 0.8f));
         environment.fog().density(DEFAULT_FOG_DENSITY * 3.2f);
     }

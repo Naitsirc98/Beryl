@@ -31,6 +31,7 @@ public final class Scene {
     private final SceneEnvironment environment;
 
     private final Camera camera;
+    private final SceneCameraInfo cameraInfo;
 
     // === Component Managers
     private final TransformManager transforms;
@@ -52,8 +53,10 @@ public final class Scene {
 
         environment = new SceneEnvironment();
 
-        // === Component Managers
         camera = new Camera();
+        cameraInfo = new SceneCameraInfo();
+
+        // === Component Managers
         transforms = newInstance(TransformManager.class, this);
         behaviours = newInstance(BehaviourManager.class, this);
         meshes = newInstance(MeshInstanceManager.class, this);
@@ -76,6 +79,10 @@ public final class Scene {
         return meshes;
     }
 
+    public SceneCameraInfo cameraInfo() {
+        return cameraInfo;
+    }
+
     void start() {
         processTasks();
         started = true;
@@ -96,9 +103,13 @@ public final class Scene {
     }
 
     void endUpdate() {
-        camera.update();
+        if(camera.modified()) {
+            camera.update();
+            cameraInfo.update(camera);
+        }
         transforms.update();
         meshes.update();
+        environment.update();
         RenderSystem.prepare(this);
     }
 
@@ -112,6 +123,7 @@ public final class Scene {
         entityManager.remove();
         componentManagers.values().forEach(ComponentManager::removeAll);
         componentManagers.clear();
+        environment.release();
     }
 
     public boolean started() {

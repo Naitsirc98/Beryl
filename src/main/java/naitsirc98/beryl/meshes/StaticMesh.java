@@ -19,7 +19,7 @@ public class StaticMesh extends Mesh implements Asset {
             return manager.get(name);
         }
 
-        StaticMeshData data = new StaticMeshData(name);
+        StaticMeshData data = new StaticMeshData();
         meshData.accept(data);
 
         return manager.createStaticMesh(name, data.vertices, data.indices);
@@ -31,13 +31,8 @@ public class StaticMesh extends Mesh implements Asset {
 
     public static final class StaticMeshData {
 
-        private final String name;
         private ByteBuffer vertices;
         private ByteBuffer indices;
-
-        public StaticMeshData(String name) {
-            this.name = name;
-        }
 
         public void set(ByteBuffer vertices, ByteBuffer indices) {
             this.vertices = vertices;

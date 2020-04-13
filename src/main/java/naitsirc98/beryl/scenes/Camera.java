@@ -54,6 +54,7 @@ public final class Camera {
 	private final Matrix4f projectionMatrix;
 	private final Matrix4f viewMatrix;
 	private final Matrix4f projectionViewMatrix;
+	private final FrustumIntersection frustum;
 	private final Vector4f[] frustumPlanes;
 	// Movement
 	private float lastX;
@@ -88,6 +89,8 @@ public final class Camera {
 		viewMatrix = new Matrix4f();
 		projectionMatrix = new Matrix4f();
 		projectionViewMatrix = new Matrix4f();
+
+		frustum = new FrustumIntersection();
 
 		frustumPlanes = new Vector4f[6];
 		for(int i = 0;i < frustumPlanes.length;i++) {
@@ -369,18 +372,21 @@ public final class Camera {
 		return projectionMatrix;
 	}
 
+	public FrustumIntersection frustum() {
+		return frustum;
+	}
+
 	public Vector4fc frustumPlane(int index) {
 		return frustumPlanes[index];
 	}
 
-	void update() {
-		if(modified) {
-			getViewMatrix(viewMatrix);
-			getProjectionMatrix(projectionMatrix, projectionType);
-			projectionMatrix.mul(viewMatrix, projectionViewMatrix);
-			getFrustumPlanes();
-			modified = false;
-		}
+	public void update() {
+		getViewMatrix(viewMatrix);
+		getProjectionMatrix(projectionMatrix, projectionType);
+		projectionMatrix.mul(viewMatrix, projectionViewMatrix);
+		getFrustumPlanes();
+		frustum.set(projectionViewMatrix);
+		modified = false;
 	}
 
 	private void getFrustumPlanes() {

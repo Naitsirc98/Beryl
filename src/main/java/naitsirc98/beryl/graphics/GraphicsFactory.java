@@ -2,6 +2,7 @@ package naitsirc98.beryl.graphics;
 
 import naitsirc98.beryl.graphics.buffers.IndexBuffer;
 import naitsirc98.beryl.graphics.buffers.StorageBuffer;
+import naitsirc98.beryl.graphics.buffers.UniformBuffer;
 import naitsirc98.beryl.graphics.buffers.VertexBuffer;
 import naitsirc98.beryl.graphics.textures.Texture2D;
 import naitsirc98.beryl.images.PixelFormat;
@@ -24,4 +25,6 @@ public interface GraphicsFactory extends Resource {
     VertexBuffer newVertexBuffer();
 
     IndexBuffer newIndexBuffer();
+
+    UniformBuffer newUniformBuffer();
 }

@@ -1,6 +1,7 @@
 package naitsirc98.beryl.graphics.rendering;
 
 import naitsirc98.beryl.graphics.rendering.renderers.StaticMeshRenderer;
+import naitsirc98.beryl.graphics.rendering.renderers.TerrainRenderer;
 import naitsirc98.beryl.scenes.Scene;
 
 import java.util.LinkedHashMap;
@@ -38,5 +39,6 @@ public abstract class APIRenderSystem {
 
     // Renderers
     protected abstract StaticMeshRenderer getStaticMeshRenderer();
+    protected abstract TerrainRenderer getTerrainMeshRenderer();
     // TODO...
 }

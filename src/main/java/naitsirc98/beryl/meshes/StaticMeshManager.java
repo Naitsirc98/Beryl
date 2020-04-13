@@ -8,18 +8,16 @@ import naitsirc98.beryl.graphics.opengl.commands.GLDrawElementsCommand;
 import naitsirc98.beryl.util.geometry.ISphere;
 import org.lwjgl.system.MemoryStack;
 
-import java.nio.ByteBuffer;
-
 import static org.lwjgl.system.MemoryStack.stackPush;
 
 public final class StaticMeshManager {
 
     // TODO: Handle resizing, destruction leaks and concurrent access
 
-    private static final int VERTEX_BUFFER_INITIAL_CAPACITY = 1024 * 1024; // 1MB
-    private static final int INDEX_BUFFER_INITIAL_CAPACITY = 1024 * 1024; // 1MB
-    private static final int BOUNDING_SPHERES_BUFFER_INITIAL_CAPACITY = 100 * ISphere.SIZEOF;
-    private static final int COMMAND_BUFFER_INITIAL_CAPACITY = 100 * GLDrawElementsCommand.SIZEOF;
+    private static final int VERTEX_BUFFER_INITIAL_CAPACITY = 4096 * 1024; // 4MB
+    private static final int INDEX_BUFFER_INITIAL_CAPACITY = 4096 * 1024; // 4MB
+    private static final int BOUNDING_SPHERES_BUFFER_INITIAL_CAPACITY = 4096 * ISphere.SIZEOF;
+    private static final int COMMAND_BUFFER_INITIAL_CAPACITY = 4096 * GLDrawElementsCommand.SIZEOF;
 
     private final VertexBuffer vertexBuffer;
     private final IndexBuffer indexBuffer;
@@ -53,9 +51,9 @@ public final class StaticMeshManager {
         baseVertex = 0;
     }
 
-    StaticMesh create(int handle, String name, ByteBuffer vertices, ByteBuffer indices) {
+    void setStaticMeshInfo(StaticMesh mesh) {
 
-        StaticMesh mesh = new StaticMesh(handle, name, vertices, indices);
+        checkBuffers(mesh);
 
         copyVertexData(mesh);
         copyIndexData(mesh);
@@ -63,8 +61,6 @@ public final class StaticMeshManager {
         copyCommandInfo(mesh);
 
         mesh.setIndex(count++);
-
-        return mesh;
     }
 
     int count() {
@@ -180,5 +176,27 @@ public final class StaticMeshManager {
             baseVertex += mesh.vertexCount();
         }
 
+    }
+
+    private void checkBuffers(Mesh mesh) {
+
+        final int vertexDataSize = mesh.vertexData().capacity();
+        final int indexDataSize = mesh.indexData().capacity();
+
+        if(vertexBufferOffset + vertexDataSize > vertexBuffer.size()) {
+            vertexBuffer.resize(vertexBuffer.size() + vertexDataSize);
+        }
+
+        if(indexBufferOffset + indexDataSize > indexBuffer.size()) {
+            indexBuffer.resize(indexBuffer.size() + indexDataSize);
+        }
+
+        if(boundingSpheresBufferOffset + ISphere.SIZEOF > boundingSpheresBuffer.size()) {
+            boundingSpheresBuffer.resize(boundingSpheresBuffer.size() + 4 * ISphere.SIZEOF);
+        }
+
+        if(commandBufferOffset + GLDrawElementsCommand.SIZEOF > commandBuffer.size()) {
+            commandBuffer.resize(commandBuffer.size() + 4 * GLDrawElementsCommand.SIZEOF);
+        }
     }
 }

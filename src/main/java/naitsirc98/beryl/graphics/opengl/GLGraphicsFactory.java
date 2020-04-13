@@ -3,6 +3,7 @@ package naitsirc98.beryl.graphics.opengl;
 import naitsirc98.beryl.graphics.GraphicsFactory;
 import naitsirc98.beryl.graphics.buffers.IndexBuffer;
 import naitsirc98.beryl.graphics.buffers.StorageBuffer;
+import naitsirc98.beryl.graphics.buffers.UniformBuffer;
 import naitsirc98.beryl.graphics.buffers.VertexBuffer;
 import naitsirc98.beryl.graphics.opengl.buffers.GLBuffer;
 import naitsirc98.beryl.graphics.opengl.textures.GLTexture2D;
@@ -54,6 +55,11 @@ public class GLGraphicsFactory implements GraphicsFactory {
 
     @Override
     public IndexBuffer newIndexBuffer() {
+        return new GLBuffer();
+    }
+
+    @Override
+    public UniformBuffer newUniformBuffer() {
         return new GLBuffer();
     }
 

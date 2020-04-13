@@ -2,6 +2,7 @@ package naitsirc98.beryl.graphics.opengl.rendering;
 
 import naitsirc98.beryl.graphics.rendering.APIRenderSystem;
 import naitsirc98.beryl.graphics.rendering.renderers.StaticMeshRenderer;
+import naitsirc98.beryl.graphics.rendering.renderers.TerrainRenderer;
 import naitsirc98.beryl.graphics.window.Window;
 import naitsirc98.beryl.scenes.Scene;
 import naitsirc98.beryl.util.geometry.Sizec;
@@ -20,10 +21,12 @@ public final class GLRenderSystem extends APIRenderSystem {
     private final long glContext;
 
     private final GLStaticMeshRenderer staticMeshRenderer;
+    private final GLTerrainRenderer terrainRenderer;
 
     private GLRenderSystem() {
         glContext = opengl().handle();
         staticMeshRenderer = new GLStaticMeshRenderer();
+        terrainRenderer = new GLTerrainRenderer();
     }
 
     @Override
@@ -52,5 +55,10 @@ public final class GLRenderSystem extends APIRenderSystem {
     @Override
     protected StaticMeshRenderer getStaticMeshRenderer() {
         return staticMeshRenderer;
+    }
+
+    @Override
+    protected TerrainRenderer getTerrainMeshRenderer() {
+        return terrainRenderer;
     }
 }
