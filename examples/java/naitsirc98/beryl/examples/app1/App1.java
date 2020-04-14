@@ -23,10 +23,7 @@ import naitsirc98.beryl.meshes.TerrainMeshLoader;
 import naitsirc98.beryl.meshes.models.Model;
 import naitsirc98.beryl.meshes.models.ModelEntityFactory;
 import naitsirc98.beryl.meshes.models.StaticMeshLoader;
-import naitsirc98.beryl.scenes.Camera;
-import naitsirc98.beryl.scenes.Entity;
-import naitsirc98.beryl.scenes.Scene;
-import naitsirc98.beryl.scenes.SceneEnvironment;
+import naitsirc98.beryl.scenes.*;
 import naitsirc98.beryl.scenes.components.behaviours.UpdateMutableBehaviour;
 import naitsirc98.beryl.scenes.components.math.Transform;
 import naitsirc98.beryl.scenes.components.meshes.MeshInstance;
@@ -87,18 +84,9 @@ public class App1 extends BerylApplication {
 
         Log.trace(treeModel);
 
-        /*
-
-        Entity floor = scene.newEntity("floor");
-        floor.add(Transform.class).position(0, 0f, 0).scale(1000, 1000f, 1).rotateX(radians(90));
-        floor.add(MeshInstance.class).meshView(new MeshView(quadMesh, getFloorMaterial()));
-
-         */
-
         Entity terrain = scene.newEntity();
         terrain.add(Transform.class).position(0, 0, 0).scale(1);
         terrain.add(MeshInstance.class).meshView(new MeshView(terrainMesh, getFloorMaterial()));
-
 
         ModelEntityFactory treeFactory = new ModelEntityFactory(treeModel).materialsFunction(this::treeMaterialFunction);
 
@@ -111,16 +99,17 @@ public class App1 extends BerylApplication {
         }
 
         Camera camera = scene.camera();
-        camera.lookAt(0, 0).position(0, 5, 0);
+        camera.lookAt(0, 0).position(terrainSize / 2, 5, terrainSize / 2);
 
         Entity cameraController = scene.newEntity();
         cameraController.add(CameraController.class);
 
         SceneEnvironment environment = scene.environment();
 
+        environment.skybox(new Skybox((BerylFiles.getString("textures/skybox/day"))));
         environment.lights().directionalLight(new DirectionalLight().color(Color.WHITE).direction(-1, -1, 0));
         environment.ambientColor(new Color(0.8f, 0.8f, 0.8f));
-        environment.fog().density(DEFAULT_FOG_DENSITY * 3.2f);
+        environment.fog().density(DEFAULT_FOG_DENSITY);
     }
 
     private PhongMaterial treeMaterialFunction(String meshName) {

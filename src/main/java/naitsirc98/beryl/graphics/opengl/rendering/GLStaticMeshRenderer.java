@@ -146,7 +146,7 @@ public final class GLStaticMeshRenderer extends StaticMeshRenderer {
     private void renderScene(Scene scene) {
 
         final Color clearColor = scene.environment().clearColor();
-        final GLBuffer lightsUniformBuffer = scene.environment().lightsBuffer();
+        final GLBuffer lightsUniformBuffer = scene.environment().buffer();
         final GLBuffer materialsBuffer = MaterialManager.get().buffer();
         final GLBuffer cameraUniformBuffer = scene.cameraInfo().cameraBuffer();
 

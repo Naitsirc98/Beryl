@@ -6,10 +6,9 @@ import naitsirc98.beryl.images.PixelFormat;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 
-public interface Texture2D extends Texture {
+public interface Cubemap extends Texture {
 
     int width();
-
     int height();
 
     default void allocate(int width, int height, PixelFormat internalFormat) {
@@ -42,7 +41,26 @@ public interface Texture2D extends Texture {
 
     void pixels(int mipLevels, int width, int height, PixelFormat format, FloatBuffer pixels);
 
+    // All faces at once
+
     void update(int mipLevel, int xOffset, int yOffset, int width, int height, PixelFormat format, ByteBuffer pixels);
 
     void update(int mipLevel, int xOffset, int yOffset, int width, int height, PixelFormat format, FloatBuffer pixels);
+
+    // Individual faces
+
+    void update(Face face, int mipLevel, int xOffset, int yOffset, int width, int height, PixelFormat format, ByteBuffer pixels);
+
+    void update(Face face, int mipLevel, int xOffset, int yOffset, int width, int height, PixelFormat format, FloatBuffer pixels);
+
+
+    enum Face {
+        LEFT,
+        RIGHT,
+        TOP,
+        BOTTOM,
+        FRONT,
+        BACK
+    }
+
 }

@@ -2,6 +2,7 @@ package naitsirc98.beryl.graphics.opengl;
 
 import naitsirc98.beryl.graphics.GraphicsMapper;
 import naitsirc98.beryl.graphics.rendering.PrimitiveTopology;
+import naitsirc98.beryl.graphics.textures.Cubemap;
 import naitsirc98.beryl.graphics.textures.Sampler.CompareOperation;
 import naitsirc98.beryl.graphics.textures.Sampler.MagFilter;
 import naitsirc98.beryl.graphics.textures.Sampler.MinFilter;
@@ -26,6 +27,7 @@ public class GLMapper extends GraphicsMapper {
         initMagFilterMapper();
         initCompareOpMapper();
         initPrimitiveTopologyMapper();
+        initCubemapFaceMapper();
     }
 
     public int mapToSizedInternalFormat(PixelFormat pixelFormat) {
@@ -148,5 +150,19 @@ public class GLMapper extends GraphicsMapper {
         map.put(CompareOperation.ALWAYS, GL_ALWAYS);
 
         register(CompareOperation.class, EnumMapper.of(map));
+    }
+
+    private void initCubemapFaceMapper() {
+
+        EnumMap<Cubemap.Face, Integer> map = new EnumMap<>(Cubemap.Face.class);
+
+        map.put(Cubemap.Face.LEFT, GL_TEXTURE_CUBE_MAP_NEGATIVE_X);
+        map.put(Cubemap.Face.RIGHT, GL_TEXTURE_CUBE_MAP_POSITIVE_X);
+        map.put(Cubemap.Face.TOP, GL_TEXTURE_CUBE_MAP_POSITIVE_Y);
+        map.put(Cubemap.Face.BOTTOM, GL_TEXTURE_CUBE_MAP_NEGATIVE_Y);
+        map.put(Cubemap.Face.BACK, GL_TEXTURE_CUBE_MAP_POSITIVE_Z);
+        map.put(Cubemap.Face.FRONT, GL_TEXTURE_CUBE_MAP_NEGATIVE_Z);
+
+        register(Cubemap.Face.class, EnumMapper.of(map));
     }
 }

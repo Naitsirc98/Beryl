@@ -74,15 +74,13 @@ public final class GLShaderProgram implements GLObject {
     }
 
     public int uniformLocation(String name) {
-        /*
-        final int location = uniformLocations
-                .compute(name, (key, value) -> value == null || value == -1 ? glGetUniformLocation(handle, name) : value);
 
-         */
         final int location = glGetUniformLocation(handle, name);
+
         if(location < 0) {
             Log.warning("Uniform " + name + " has an invalid location " + location);
         }
+
         return location;
     }
 
@@ -118,12 +116,20 @@ public final class GLShaderProgram implements GLObject {
         glUniform3f(location, data.x(), data.y(), data.z());
     }
 
-    public void uniformColor(String name, Color color) {
-        uniformColor(uniformLocation(name), color);
+    public void uniformColorRGBA(String name, Color color) {
+        uniformColorRGBA(uniformLocation(name), color);
     }
 
-    public void uniformColor(int location, Color color) {
+    public void uniformColorRGBA(int location, Color color) {
         glUniform4f(location, color.red(), color.green(), color.blue(), color.alpha());
+    }
+
+    public void uniformColorRGB(String name, Color color) {
+        uniformColorRGB(uniformLocation(name), color);
+    }
+
+    public void uniformColorRGB(int location, Color color) {
+        glUniform3f(location, color.red(), color.green(), color.blue());
     }
 
     public void uniformSampler(String name, GLTexture texture, int unit) {

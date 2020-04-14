@@ -42,6 +42,7 @@ public final class SceneEnvironment implements Resource {
     private Color ambientColor;
     private Color clearColor;
     private UniformBuffer lightsBuffer;
+    private Skybox skybox;
 
     SceneEnvironment() {
         lights = new SceneLighting();
@@ -78,6 +79,15 @@ public final class SceneEnvironment implements Resource {
     public SceneEnvironment clearColor(Color clearColor) {
         this.clearColor = requireNonNull(clearColor);
         fog.color(clearColor);
+        return this;
+    }
+
+    public Skybox skybox() {
+        return skybox;
+    }
+
+    public SceneEnvironment skybox(Skybox skybox) {
+        this.skybox = skybox;
         return this;
     }
 
@@ -120,7 +130,7 @@ public final class SceneEnvironment implements Resource {
     }
 
     @SuppressWarnings("unchecked")
-    public <T extends UniformBuffer> T lightsBuffer() {
+    public <T extends UniformBuffer> T buffer() {
         return (T) lightsBuffer;
     }
 

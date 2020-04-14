@@ -1,6 +1,7 @@
 package naitsirc98.beryl.graphics.opengl.rendering;
 
 import naitsirc98.beryl.graphics.rendering.APIRenderSystem;
+import naitsirc98.beryl.graphics.rendering.renderers.SkyboxRenderer;
 import naitsirc98.beryl.graphics.rendering.renderers.StaticMeshRenderer;
 import naitsirc98.beryl.graphics.rendering.renderers.TerrainRenderer;
 import naitsirc98.beryl.graphics.window.Window;
@@ -22,11 +23,13 @@ public final class GLRenderSystem extends APIRenderSystem {
 
     private final GLStaticMeshRenderer staticMeshRenderer;
     private final GLTerrainRenderer terrainRenderer;
+    private final GLSkyboxRenderer skyboxRenderer;
 
     private GLRenderSystem() {
         glContext = opengl().handle();
         staticMeshRenderer = new GLStaticMeshRenderer();
         terrainRenderer = new GLTerrainRenderer();
+        skyboxRenderer = new GLSkyboxRenderer();
     }
 
     @Override
@@ -38,12 +41,22 @@ public final class GLRenderSystem extends APIRenderSystem {
 
     @Override
     public void prepare(Scene scene) {
+
         staticMeshRenderer.prepare(scene);
+
+        if(scene.environment().skybox() != null) {
+            skyboxRenderer.prepare(scene);
+        }
     }
 
     @Override
     public void render(Scene scene) {
+
         staticMeshRenderer.render(scene);
+
+        if(scene.environment().skybox() != null) {
+            skyboxRenderer.render(scene);
+        }
     }
 
     @Override
@@ -60,5 +73,10 @@ public final class GLRenderSystem extends APIRenderSystem {
     @Override
     protected TerrainRenderer getTerrainMeshRenderer() {
         return terrainRenderer;
+    }
+
+    @Override
+    protected SkyboxRenderer getSkyboxRenderer() {
+        return skyboxRenderer;
     }
 }

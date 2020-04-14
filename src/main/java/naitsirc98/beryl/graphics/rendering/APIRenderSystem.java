@@ -1,5 +1,6 @@
 package naitsirc98.beryl.graphics.rendering;
 
+import naitsirc98.beryl.graphics.rendering.renderers.SkyboxRenderer;
 import naitsirc98.beryl.graphics.rendering.renderers.StaticMeshRenderer;
 import naitsirc98.beryl.graphics.rendering.renderers.TerrainRenderer;
 import naitsirc98.beryl.scenes.Scene;
@@ -17,6 +18,8 @@ public abstract class APIRenderSystem {
 
     final void init() {
         renderers.put(StaticMeshRenderer.class, getStaticMeshRenderer());
+        renderers.put(TerrainRenderer.class, getTerrainMeshRenderer());
+        renderers.put(SkyboxRenderer.class, getSkyboxRenderer());
         // TODO...
         renderers.values().forEach(Renderer::init);
     }
@@ -40,5 +43,6 @@ public abstract class APIRenderSystem {
     // Renderers
     protected abstract StaticMeshRenderer getStaticMeshRenderer();
     protected abstract TerrainRenderer getTerrainMeshRenderer();
+    protected abstract SkyboxRenderer getSkyboxRenderer();
     // TODO...
 }

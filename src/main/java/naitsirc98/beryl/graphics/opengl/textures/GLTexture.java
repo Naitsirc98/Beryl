@@ -64,6 +64,10 @@ public abstract class GLTexture extends ManagedResource implements GLObject, Tex
         glBindTextureUnit(unit, handle());
     }
 
+    public void unbind(int unit) {
+        glBindTextureUnit(unit, 0);
+    }
+
     @Override
     public WrapMode wrapModeS() {
         return mapFromAPI(WrapMode.class, glGetTextureParameteri(handle, GL_TEXTURE_WRAP_S));

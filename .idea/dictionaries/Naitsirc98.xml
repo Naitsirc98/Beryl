@@ -10,6 +10,7 @@
       <w>bitangents</w>
       <w>blinn</w>
       <w>calloc</w>
+      <w>cubemap</w>
       <w>emissive</w>
       <w>framebuffers</w>
       <w>glfw</w>
@@ -25,6 +26,7 @@
       <w>opengl</w>
       <w>phong</w>
       <w>rasterization</w>
+      <w>skybox</w>
       <w>spirv</w>
       <w>subpass</w>
       <w>subpasses</w>

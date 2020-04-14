@@ -4,6 +4,7 @@ import naitsirc98.beryl.graphics.buffers.IndexBuffer;
 import naitsirc98.beryl.graphics.buffers.StorageBuffer;
 import naitsirc98.beryl.graphics.buffers.UniformBuffer;
 import naitsirc98.beryl.graphics.buffers.VertexBuffer;
+import naitsirc98.beryl.graphics.textures.Cubemap;
 import naitsirc98.beryl.graphics.textures.Texture2D;
 import naitsirc98.beryl.images.PixelFormat;
 import naitsirc98.beryl.resources.Resource;
@@ -19,6 +20,10 @@ public interface GraphicsFactory extends Resource {
     Texture2D blankTexture2D();
 
     Texture2D newTexture2D(String imagePath, PixelFormat pixelFormat);
+
+    Cubemap newCubemap();
+
+    Cubemap newCubemap(String skyboxImagePath, PixelFormat pixelFormat);
 
     StorageBuffer newStorageBuffer();
 
