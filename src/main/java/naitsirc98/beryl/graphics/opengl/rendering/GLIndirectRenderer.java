@@ -10,7 +10,7 @@ import naitsirc98.beryl.graphics.opengl.swapchain.GLFramebuffer;
 import naitsirc98.beryl.graphics.opengl.swapchain.GLRenderbuffer;
 import naitsirc98.beryl.graphics.opengl.textures.GLTexture2DMSAA;
 import naitsirc98.beryl.graphics.opengl.vertex.GLVertexArray;
-import naitsirc98.beryl.graphics.rendering.renderers.StaticMeshRenderer;
+import naitsirc98.beryl.graphics.rendering.Renderer;
 import naitsirc98.beryl.graphics.window.Window;
 import naitsirc98.beryl.images.PixelFormat;
 import naitsirc98.beryl.materials.MaterialManager;
@@ -34,17 +34,34 @@ import java.util.List;
 import static naitsirc98.beryl.core.BerylConfiguration.MSAA_SAMPLES;
 import static naitsirc98.beryl.graphics.ShaderStage.*;
 import static naitsirc98.beryl.meshes.vertices.VertexAttribute.*;
+import static naitsirc98.beryl.meshes.vertices.VertexAttribute.INDEX;
 import static naitsirc98.beryl.util.types.DataType.*;
 import static org.lwjgl.opengl.ARBIndirectParameters.GL_PARAMETER_BUFFER_ARB;
 import static org.lwjgl.opengl.ARBIndirectParameters.glMultiDrawElementsIndirectCountARB;
+import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
+import static org.lwjgl.opengl.GL11.GL_CULL_FACE;
+import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
+import static org.lwjgl.opengl.GL11.GL_DEPTH_TEST;
+import static org.lwjgl.opengl.GL11.GL_FILL;
+import static org.lwjgl.opengl.GL11.GL_FRONT_AND_BACK;
 import static org.lwjgl.opengl.GL11.GL_TRIANGLES;
-import static org.lwjgl.opengl.GL42.GL_COMMAND_BARRIER_BIT;
-import static org.lwjgl.opengl.GL42.glMemoryBarrier;
-import static org.lwjgl.opengl.GL45.*;
+import static org.lwjgl.opengl.GL11.GL_UNSIGNED_INT;
+import static org.lwjgl.opengl.GL11.glClear;
+import static org.lwjgl.opengl.GL11.glClearColor;
+import static org.lwjgl.opengl.GL11.glDepthMask;
+import static org.lwjgl.opengl.GL11.glEnable;
+import static org.lwjgl.opengl.GL11.glPolygonMode;
+import static org.lwjgl.opengl.GL30.*;
+import static org.lwjgl.opengl.GL31.GL_UNIFORM_BUFFER;
+import static org.lwjgl.opengl.GL40.GL_DRAW_INDIRECT_BUFFER;
+import static org.lwjgl.opengl.GL42.*;
+import static org.lwjgl.opengl.GL42.GL_ATOMIC_COUNTER_BARRIER_BIT;
+import static org.lwjgl.opengl.GL43.GL_SHADER_STORAGE_BUFFER;
+import static org.lwjgl.opengl.GL43.glDispatchCompute;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
-public final class GLStaticMeshRenderer extends StaticMeshRenderer {
+public abstract class GLIndirectRenderer extends Renderer {
 
     private static final int INSTANCE_BUFFER_MIN_SIZE = INT32_SIZEOF * 2;
 
@@ -54,7 +71,6 @@ public final class GLStaticMeshRenderer extends StaticMeshRenderer {
 
     private static final int VERTEX_BUFFER_BINDING = 0;
     private static final int INSTANCE_BUFFER_BINDING = 1;
-
 
     private GLShaderProgram cullingShader;
     private GLShaderProgram renderShader;
@@ -68,13 +84,12 @@ public final class GLStaticMeshRenderer extends StaticMeshRenderer {
     private GLBuffer instanceCommandBuffer;
     private GLBuffer atomicCounterBuffer;
 
-    private GLFramebuffer framebuffer;
-
-    GLStaticMeshRenderer() {
+    protected GLIndirectRenderer() {
 
     }
 
-    public void init() {
+    @Override
+    protected void init() {
 
         initVertexArray();
 
@@ -95,22 +110,6 @@ public final class GLStaticMeshRenderer extends StaticMeshRenderer {
         atomicCounterBuffer = new GLBuffer("ATOMIC_COUNTER_BUFFER");
         atomicCounterBuffer.allocate(UINT32_SIZEOF);
         atomicCounterBuffer.clear();
-
-        framebuffer = new GLFramebuffer();
-
-        GLTexture2DMSAA colorBuffer = new GLTexture2DMSAA();
-        Sizec size = Window.get().size();
-        colorBuffer.allocate(MSAA_SAMPLES.get(), size.width(), size.height(), PixelFormat.RGBA);
-
-        GLRenderbuffer depthBuffer = new GLRenderbuffer();
-        depthBuffer.storageMultisample(size.width(), size.height(), GL_DEPTH24_STENCIL8, MSAA_SAMPLES.get());
-
-        framebuffer.attach(GL_COLOR_ATTACHMENT0, colorBuffer, 0);
-        framebuffer.attach(GL_DEPTH_STENCIL_ATTACHMENT, depthBuffer);
-
-        framebuffer.ensureComplete();
-
-        framebuffer.freeAttachmentsOnRelease(true);
     }
 
     @Override
@@ -201,7 +200,7 @@ public final class GLStaticMeshRenderer extends StaticMeshRenderer {
         glMultiDrawElementsIndirectCountARB(GL_TRIANGLES, GL_UNSIGNED_INT, NULL, 0, scene.meshInfo().numInstancedMeshViews(), 0);
     }
 
-    private void prepareInstanceBuffer(SceneMeshInfo meshInfo) {
+    public void prepareInstanceBuffer(SceneMeshInfo meshInfo) {
 
         final int numObjects = meshInfo.numInstancedMeshViews();
 

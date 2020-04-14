@@ -78,6 +78,8 @@ public class App1 extends BerylApplication {
 
         TerrainMesh terrainMesh = TerrainMeshLoader.get().load("Terrain", BerylFiles.getString("textures/terrain_heightmap.png"), terrainSize);
 
+        Mesh quadMesh = StaticMeshLoader.get().load(BerylFiles.getPath("models/quad.obj")).loadedMesh(0).mesh();
+
         Mesh grassMesh = StaticMeshLoader.get().load(BerylFiles.getPath("models/grass.obj"),
                 new StaticVertexHandler.Builder().normalFunction(n -> n.set(0, 1, 0)).build())
                 .loadedMesh(0).mesh();
@@ -92,9 +94,13 @@ public class App1 extends BerylApplication {
         terrain.add(Transform.class).position(0, 0, 0).scale(1);
         terrain.add(MeshInstance.class).meshView(new MeshView(terrainMesh, getFloorMaterial()));
 
+        Entity water = scene.newEntity();
+        water.add(Transform.class).position(268.543f, -11.0f, 526.378f).rotateX(radians(90)).scale(30);
+        water.add(MeshInstance.class).meshView(new MeshView(quadMesh, getWaterMaterial()));
+
         ModelEntityFactory treeFactory = new ModelEntityFactory(treeModel).materialsFunction(this::treeMaterialFunction);
 
-        for(int i = 0;i < 1000;i++) {
+        for(int i = 0;i < 0;i++) {
             Entity tree = treeFactory.newEntity(scene);
             float x = RAND.nextInt((int) terrainSize);
             float z = RAND.nextInt((int) terrainSize);
@@ -109,7 +115,7 @@ public class App1 extends BerylApplication {
             float x = RAND.nextInt((int) terrainSize);
             float z = RAND.nextInt((int) terrainSize);
             float y = terrainMesh.heightAt(0, 0, x, z);
-            grass.get(Transform.class).position(x, y, z).scale(2.0f);
+            grass.get(Transform.class).position(x, y, z).scale(4.0f);
             grass.add(MeshInstance.class).meshView(grassView);
         }
 
@@ -137,6 +143,14 @@ public class App1 extends BerylApplication {
         environment.lights().directionalLight(new DirectionalLight().color(Color.WHITE).direction(-1, -1, 0));
         environment.ambientColor(new Color(0.8f, 0.8f, 0.8f));
         environment.fog().density(DEFAULT_FOG_DENSITY);
+    }
+
+    private IMaterial getWaterMaterial() {
+        return PhongMaterial.get("water", builder -> {
+
+            builder.ambientColor(Color.BLUE).diffuseColor(Color.BLUE);
+
+        });
     }
 
     private IMaterial getGrassMaterial() {

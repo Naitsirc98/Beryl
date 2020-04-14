@@ -68,9 +68,6 @@ public class CameraController extends LateBehaviour {
         checkMouseLookAt();
 
         checkGamepadLookAt();
-
-        // System.out.println("pos = " + camera.transform().position());
-        // System.out.println("forward = " + new Vector3f(camera.forward()).normalize());
      }
 
     private void checkGamepadLookAt() {

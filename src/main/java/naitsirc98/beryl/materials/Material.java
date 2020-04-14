@@ -9,7 +9,7 @@ import java.util.Collections;
 import java.util.Map;
 
 @ByteSize.Static(IMaterial.SIZEOF)
-public class Material implements IMaterial, PhongMaterial, MetallicMaterial, SpecularMaterial {
+public class Material implements IMaterial, PhongMaterial {
 
     private final transient int handle;
     private final String name;
@@ -72,36 +72,6 @@ public class Material implements IMaterial, PhongMaterial, MetallicMaterial, Spe
     }
 
     @Override
-    public Color color() {
-        return get(COLOR);
-    }
-
-    @Override
-    public float metallic() {
-        return get(METALLIC);
-    }
-
-    @Override
-    public float roughness() {
-        return get(ROUGHNESS);
-    }
-
-    @Override
-    public float fresnel() {
-        return get(FRESNEL);
-    }
-
-    @Override
-    public Texture2D colorMap() {
-        return get(COLOR_MAP);
-    }
-
-    @Override
-    public Texture2D metallicRoughnessMap() {
-        return get(METALLIC_ROUGHNESS_MAP);
-    }
-
-    @Override
     public Color ambientColor() {
         return get(AMBIENT_COLOR);
     }
@@ -127,11 +97,6 @@ public class Material implements IMaterial, PhongMaterial, MetallicMaterial, Spe
     }
 
     @Override
-    public float glossiness() {
-        return get(GLOSSINESS);
-    }
-
-    @Override
     public float shininess() {
         return get(SHININESS);
     }
@@ -154,11 +119,6 @@ public class Material implements IMaterial, PhongMaterial, MetallicMaterial, Spe
     @Override
     public Texture2D diffuseMap() {
         return get(DIFFUSE_MAP);
-    }
-
-    @Override
-    public Texture2D specularGlossinessMap() {
-        return get(SPECULAR_GLOSSINESS_MAP);
     }
 
     @Override
