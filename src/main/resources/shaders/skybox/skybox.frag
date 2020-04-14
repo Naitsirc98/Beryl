@@ -8,7 +8,10 @@
 @include "structs/fog.glsl"
 
 
-uniform samplerCube u_SkyboxTexture;
+uniform samplerCube u_SkyboxTexture1;
+uniform samplerCube u_SkyboxTexture2;
+
+uniform float u_TextureBlendFactor;
 
 uniform vec3 u_FogColor;
 
@@ -18,7 +21,10 @@ layout(location = 0) out vec4 out_FinalColor;
 
 void main()
 {
-    vec4 color = textureLod(u_SkyboxTexture, in_FragmentPosition, 0.0);
+    vec4 color1 = textureLod(u_SkyboxTexture1, in_FragmentPosition, 0.0);
+    vec4 color2 = textureLod(u_SkyboxTexture2, in_FragmentPosition, 0.0);
+
+    vec4 color = mix(color1, color2, u_TextureBlendFactor);
 
     // HDR tonemap and gamma correct
     // color /= (color + vec3(1.0));

@@ -1,9 +1,6 @@
 package naitsirc98.beryl.examples.app1;
 
-import naitsirc98.beryl.core.Beryl;
-import naitsirc98.beryl.core.BerylApplication;
-import naitsirc98.beryl.core.BerylConfiguration;
-import naitsirc98.beryl.core.BerylFiles;
+import naitsirc98.beryl.core.*;
 import naitsirc98.beryl.graphics.GraphicsAPI;
 import naitsirc98.beryl.graphics.GraphicsFactory;
 import naitsirc98.beryl.graphics.textures.Sampler;
@@ -33,6 +30,7 @@ import java.util.Random;
 
 import static naitsirc98.beryl.scenes.Fog.DEFAULT_FOG_DENSITY;
 import static naitsirc98.beryl.scenes.SceneManager.newScene;
+import static naitsirc98.beryl.util.Maths.clamp;
 import static naitsirc98.beryl.util.Maths.radians;
 
 
@@ -107,9 +105,22 @@ public class App1 extends BerylApplication {
         SceneEnvironment environment = scene.environment();
 
         Entity skyboxController = scene.newEntity();
-        skyboxController.add(UpdateMutableBehaviour.class).onUpdate(self -> self.scene().environment().skybox().rotate(radians(0.005f)));
+        skyboxController.add(UpdateMutableBehaviour.class).onUpdate(self -> {
 
-        environment.skybox(new Skybox((BerylFiles.getString("textures/skybox/day"))));
+            Skybox skybox = self.scene().environment().skybox();
+
+            skybox.rotate(radians(0.004f));
+
+            final float time = (Time.time() % 60) / 60;
+
+            skybox.textureBlendFactor(time);
+
+            if(time >= 1.0f) {
+                skybox.swapTextures();
+            }
+        });
+
+        environment.skybox(new Skybox(BerylFiles.getString("textures/skybox/day"), BerylFiles.getString("textures/skybox/night")));
         environment.lights().directionalLight(new DirectionalLight().color(Color.WHITE).direction(-1, -1, 0));
         environment.ambientColor(new Color(0.8f, 0.8f, 0.8f));
         environment.fog().density(DEFAULT_FOG_DENSITY);

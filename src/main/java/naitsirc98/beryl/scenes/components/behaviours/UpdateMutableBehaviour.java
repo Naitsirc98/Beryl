@@ -1,5 +1,7 @@
 package naitsirc98.beryl.scenes.components.behaviours;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Consumer;
 
 public final class UpdateMutableBehaviour extends UpdateBehaviour {
@@ -11,8 +13,27 @@ public final class UpdateMutableBehaviour extends UpdateBehaviour {
     private Stage onDisable;
     private Stage onDestroy;
 
+    private Map<String, Object> variables;
+
     private UpdateMutableBehaviour() {
 
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> T get(String variableName) {
+        return (T) variables.get(variableName);
+    }
+
+    public void set(String variableName, Object value) {
+        variables.put(variableName, value);
+    }
+
+    public void remove(String variableName) {
+        variables.remove(variableName);
+    }
+
+    public void clearVariables() {
+        variables.clear();
     }
 
     public UpdateMutableBehaviour onInit(Stage onInit) {
@@ -48,6 +69,7 @@ public final class UpdateMutableBehaviour extends UpdateBehaviour {
     @Override
     protected void onInit() {
         if(onInit != null) {
+            variables = new HashMap<>();
             onInit.accept(this);
         }
     }

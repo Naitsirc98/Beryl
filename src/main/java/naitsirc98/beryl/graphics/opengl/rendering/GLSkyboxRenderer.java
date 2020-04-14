@@ -11,6 +11,8 @@ import naitsirc98.beryl.meshes.Mesh;
 import naitsirc98.beryl.meshes.models.StaticMeshLoader;
 import naitsirc98.beryl.meshes.vertices.VertexLayout;
 import naitsirc98.beryl.scenes.Scene;
+import naitsirc98.beryl.scenes.SceneEnvironment;
+import naitsirc98.beryl.scenes.Skybox;
 import org.joml.Matrix4f;
 import org.lwjgl.system.MemoryStack;
 
@@ -98,7 +100,12 @@ public class GLSkyboxRenderer extends SkyboxRenderer {
     @Override
     public void render(Scene scene) {
 
-        final GLCubemap skyboxTexture = scene.environment().skybox().texture();
+        final SceneEnvironment environment = scene.environment();
+        final Skybox skybox = environment.skybox();
+
+        final GLCubemap skyboxTexture1 = skybox.texture1();
+        final GLCubemap skyboxTexture2 = skybox.texture2();
+        final float textureBlendFactor = skybox.textureBlendFactor();
 
         glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
         glEnable(GL_DEPTH_TEST);
@@ -109,9 +116,17 @@ public class GLSkyboxRenderer extends SkyboxRenderer {
 
         matricesUniformBuffer.bind(GL_UNIFORM_BUFFER, 0);
 
-        shader.uniformColorRGB("u_FogColor", scene.environment().fog().color());
+        shader.uniformColorRGB("u_FogColor", environment.fog().color());
 
-        shader.uniformSampler("u_SkyboxTexture", skyboxTexture, 0);
+        if(skyboxTexture1 != null) {
+            shader.uniformSampler("u_SkyboxTexture1", skyboxTexture1, 0);
+        }
+
+        if(skyboxTexture2 != null) {
+            shader.uniformSampler("u_SkyboxTexture2", skyboxTexture2, 1);
+        }
+
+        shader.uniformFloat("u_TextureBlendFactor", textureBlendFactor);
 
         vertexArray.bind();
 
@@ -119,7 +134,13 @@ public class GLSkyboxRenderer extends SkyboxRenderer {
 
         shader.unbind();
 
-        skyboxTexture.unbind(0);
+        if(skyboxTexture1 != null) {
+            skyboxTexture1.unbind(0);
+        }
+
+        if(skyboxTexture2 != null) {
+            skyboxTexture2.unbind(1);
+        }
     }
 
 }
