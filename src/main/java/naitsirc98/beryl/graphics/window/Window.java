@@ -295,7 +295,7 @@ public final class Window implements LongHandle {
 
                 image.width(icon.width());
                 image.height(icon.height());
-                image.pixels(icon.pixelsi());
+                image.pixels(icon.pixels());
             }
 
             glfwSetWindowIcon(handle, images);

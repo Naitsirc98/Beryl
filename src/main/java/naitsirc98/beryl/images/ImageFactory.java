@@ -3,8 +3,9 @@ package naitsirc98.beryl.images;
 import naitsirc98.beryl.logging.Log;
 import org.lwjgl.system.MemoryStack;
 
-import java.io.IOException;
 import java.nio.Buffer;
+import java.nio.ByteBuffer;
+import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
 import static org.lwjgl.stb.STBImage.*;
@@ -50,11 +51,7 @@ public final class ImageFactory {
      */
     public static Image newImage(int width, int height, PixelFormat format, int pixelValue) {
         Image image = newImage(width, height, format);
-        if(format.dataType().decimal()) {
-            memSet(image.pixelsf(), pixelValue);
-        } else {
-            memSet(image.pixelsi(), pixelValue);
-        }
+        memSet(image.pixels(), pixelValue);
         return image;
     }
 
@@ -80,7 +77,7 @@ public final class ImageFactory {
      * @param buffer the pixel buffer
      * @return the new image
      */
-    public static Image newImage(int width, int height, PixelFormat format, Buffer buffer) {
+    public static Image newImage(int width, int height, PixelFormat format, ByteBuffer buffer) {
         return new BufferedImage(width, height, format, buffer);
     }
 
@@ -110,10 +107,10 @@ public final class ImageFactory {
             IntBuffer channels = stack.mallocInt(1);
             int desiredChannels = pixelFormat == null ? STBI_default : pixelFormat.channels();
 
-            Buffer pixels = readPixelsFromFile(filename, width, height, channels, desiredChannels, pixelFormat, false);
+            ByteBuffer pixels = readPixelsFromFile(filename, width, height, channels, desiredChannels, pixelFormat, false);
 
             if(pixels == null) {
-                throw new IOException();
+                throw new RuntimeException();
             }
 
             if(pixelFormat == null) {
@@ -128,23 +125,31 @@ public final class ImageFactory {
         return null;
     }
 
-    private static Buffer readPixelsFromFile(String filename,
-                                             IntBuffer width, IntBuffer height,
-                                             IntBuffer channels, int desiredChannels,
-                                             PixelFormat pixelFormat, boolean flipY) {
+    private static ByteBuffer readPixelsFromFile(String filename,
+                                                 IntBuffer width, IntBuffer height,
+                                                 IntBuffer channels, int desiredChannels,
+                                                 PixelFormat pixelFormat, boolean flipY) {
 
         stbi_set_flip_vertically_on_load(flipY);
 
         if(pixelFormat != null && pixelFormat.dataType().decimal()) {
-            return stbi_loadf(filename, width, height, channels, desiredChannels);
-        }
 
-        return stbi_load(filename, width, height, channels, desiredChannels);
+            FloatBuffer pixelsf = stbi_loadf(filename, width, height, channels, desiredChannels);
+
+            if(pixelsf != null) {
+                return memByteBuffer(pixelsf);
+            }
+
+            return null;
+
+        } else {
+            return stbi_load(filename, width, height, channels, desiredChannels);
+        }
     }
 
     private static final class STBImage extends Image {
 
-        STBImage(int width, int height, PixelFormat pixelFormat, Buffer pixels) {
+        STBImage(int width, int height, PixelFormat pixelFormat, ByteBuffer pixels) {
             super(width, height, pixelFormat, pixels);
         }
 
@@ -156,7 +161,7 @@ public final class ImageFactory {
 
     private static final class BufferedImage extends Image {
 
-        BufferedImage(int width, int height, PixelFormat pixelFormat, Buffer pixels) {
+        BufferedImage(int width, int height, PixelFormat pixelFormat, ByteBuffer pixels) {
             super(width, height, pixelFormat, pixels);
         }
 

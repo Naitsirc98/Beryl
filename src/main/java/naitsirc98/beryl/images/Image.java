@@ -20,7 +20,7 @@ public abstract class Image extends ManagedResource {
     private final int width;
     private final int height;
     private final PixelFormat pixelFormat;
-    private Buffer pixels;
+    private ByteBuffer pixels;
 
     /**
      * Instantiates a new Image.
@@ -30,7 +30,7 @@ public abstract class Image extends ManagedResource {
      * @param pixelFormat the pixel format
      * @param pixels      the pixel buffer
      */
-    Image(int width, int height, PixelFormat pixelFormat, Buffer pixels) {
+    Image(int width, int height, PixelFormat pixelFormat, ByteBuffer pixels) {
         this.width = width;
         this.height = height;
         this.pixelFormat = pixelFormat;
@@ -74,31 +74,11 @@ public abstract class Image extends ManagedResource {
     }
 
     /**
-     * Returns the pixel buffer
-     *
-     * @param <T> the type of buffer containing this image's pixels
-     * @return the pixel buffer
-     */
-    @SuppressWarnings("unchecked")
-    public <T extends Buffer> T pixels() {
-        return (T) pixels;
-    }
-
-    /**
      * Returns the pixel buffer as a {@link ByteBuffer}
      *
      * @return the pixel byte buffer
      */
-    public ByteBuffer pixelsi() {
-        return (ByteBuffer) pixels;
-    }
-
-    /**
-     * Returns the pixel buffer as a {@link FloatBuffer}
-     *
-     * @return the pixel float buffer
-     */
-    public FloatBuffer pixelsf() {
-        return (FloatBuffer) pixels;
+    public ByteBuffer pixels() {
+        return pixels;
     }
 }

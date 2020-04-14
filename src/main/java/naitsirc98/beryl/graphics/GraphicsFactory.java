@@ -6,6 +6,7 @@ import naitsirc98.beryl.graphics.buffers.UniformBuffer;
 import naitsirc98.beryl.graphics.buffers.VertexBuffer;
 import naitsirc98.beryl.graphics.textures.Cubemap;
 import naitsirc98.beryl.graphics.textures.Texture2D;
+import naitsirc98.beryl.graphics.textures.Texture2DMSAA;
 import naitsirc98.beryl.images.PixelFormat;
 import naitsirc98.beryl.resources.Resource;
 
@@ -20,6 +21,8 @@ public interface GraphicsFactory extends Resource {
     Texture2D blankTexture2D();
 
     Texture2D newTexture2D(String imagePath, PixelFormat pixelFormat);
+    
+    Texture2DMSAA newTexture2DMSAA();
 
     Cubemap newCubemap();
 

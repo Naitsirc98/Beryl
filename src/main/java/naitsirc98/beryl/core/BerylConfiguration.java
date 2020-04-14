@@ -13,8 +13,11 @@ import org.joml.Vector2ic;
 import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Supplier;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * A class to set different configuration variables. The value of each configuration container will be read once and
@@ -26,6 +29,11 @@ import java.util.function.Supplier;
  *
  * */
 public final class BerylConfiguration<T> {
+
+    private static final Object EMPTY = new Object();
+
+    private static final Logger LOGGER = Logger.getLogger(BerylConfiguration.class.getSimpleName());
+
 
     public static final BerylConfiguration<Runnable> SET_CONFIGURATION_METHOD = new BerylConfiguration<>();
 
@@ -71,35 +79,43 @@ public final class BerylConfiguration<T> {
     public static final BerylConfiguration<Boolean> OPENGL_ENABLE_DEBUG_MESSAGES = new BerylConfiguration<>();
 
 
-    private T value;
+    private Object value;
 
     private BerylConfiguration() {
+        value = EMPTY;
     }
 
     public boolean empty() {
-        return value == null;
+        return Objects.equals(value, EMPTY);
     }
 
     public void set(T value) {
-        this.value = value;
+        if(empty()) {
+            this.value = value;
+        } else {
+            LOGGER.log(Level.SEVERE, "A BerylConfiguration can only be set once", new IllegalStateException());
+        }
     }
 
+    @SuppressWarnings("unchecked")
     public T get() {
-        return value;
+        return (T) value;
     }
 
+    @SuppressWarnings("unchecked")
     public T get(T defaultValue) {
         if(empty()) {
             value = defaultValue;
         }
-        return value;
+        return (T) value;
     }
 
+    @SuppressWarnings("unchecked")
     public T get(Supplier<T> defaultValueSupplier) {
         if(empty()) {
             value = defaultValueSupplier.get();
         }
-        return value;
+        return (T) value;
     }
 
 }

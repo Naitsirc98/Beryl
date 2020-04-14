@@ -11,9 +11,24 @@ import static org.lwjgl.opengl.GL45.*;
 
 public class GLFramebuffer implements GLObject {
 
+    public static final int DEFAULT_FRAMEBUFFER = 0;
+
     public static void bindDefault() {
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glBindFramebuffer(GL_FRAMEBUFFER, DEFAULT_FRAMEBUFFER);
     }
+
+    public static void blit(int srcFramebuffer, int destFramebuffer, int width, int height, int bufferMask, int filter) {
+        blit(srcFramebuffer, destFramebuffer, 0, 0, width, height, 0, 0, width, height, bufferMask, filter);
+    }
+
+    public static void blit(int srcFramebuffer, int destFramebuffer,
+                       int srcX, int srcY, int srcWidth, int srcHeight,
+                       int destX, int destY, int destWidth, int destHeight,
+                       int bufferMask, int filter) {
+
+        glBlitNamedFramebuffer(srcFramebuffer, destFramebuffer, srcX, srcY, srcWidth, srcHeight, destX, destY, destWidth, destHeight, bufferMask, filter);
+    }
+
 
     private final int handle;
     private final Map<Integer, GLObject> attachments;
@@ -22,6 +37,7 @@ public class GLFramebuffer implements GLObject {
     public GLFramebuffer() {
         handle = glCreateFramebuffers();
         attachments = new HashMap<>();
+        freeAttachmentsOnRelease = false;
     }
 
     public boolean freeAttachmentsOnRelease() {

@@ -35,11 +35,6 @@ public class GLCubemap extends GLTexture implements GLObject, Cubemap {
     }
 
     @Override
-    public Type type() {
-        return null;
-    }
-
-    @Override
     public PixelFormat internalFormat() {
         return mapFromAPI(PixelFormat.class, glGetTextureLevelParameteri(handle, 0, GL_TEXTURE_INTERNAL_FORMAT));
     }

@@ -11,6 +11,7 @@ import naitsirc98.beryl.images.ImageFactory;
 import naitsirc98.beryl.images.PixelFormat;
 import naitsirc98.beryl.lights.DirectionalLight;
 import naitsirc98.beryl.logging.Log;
+import naitsirc98.beryl.materials.IMaterial;
 import naitsirc98.beryl.materials.Material;
 import naitsirc98.beryl.materials.PhongMaterial;
 import naitsirc98.beryl.meshes.Mesh;
@@ -20,6 +21,7 @@ import naitsirc98.beryl.meshes.TerrainMeshLoader;
 import naitsirc98.beryl.meshes.models.Model;
 import naitsirc98.beryl.meshes.models.ModelEntityFactory;
 import naitsirc98.beryl.meshes.models.StaticMeshLoader;
+import naitsirc98.beryl.meshes.models.StaticVertexHandler;
 import naitsirc98.beryl.scenes.*;
 import naitsirc98.beryl.scenes.components.behaviours.UpdateMutableBehaviour;
 import naitsirc98.beryl.scenes.components.math.Transform;
@@ -30,8 +32,7 @@ import java.util.Random;
 
 import static naitsirc98.beryl.scenes.Fog.DEFAULT_FOG_DENSITY;
 import static naitsirc98.beryl.scenes.SceneManager.newScene;
-import static naitsirc98.beryl.util.Maths.clamp;
-import static naitsirc98.beryl.util.Maths.radians;
+import static naitsirc98.beryl.util.Maths.*;
 
 
 public class App1 extends BerylApplication {
@@ -77,8 +78,13 @@ public class App1 extends BerylApplication {
 
         TerrainMesh terrainMesh = TerrainMeshLoader.get().load("Terrain", BerylFiles.getString("textures/terrain_heightmap.png"), terrainSize);
 
+        Mesh grassMesh = StaticMeshLoader.get().load(BerylFiles.getPath("models/grass.obj"),
+                new StaticVertexHandler.Builder().normalFunction(n -> n.set(0, 1, 0)).build())
+                .loadedMesh(0).mesh();
+
         Model treeModel = StaticMeshLoader.get()
-                        .load("C:\\Users\\naits\\Downloads\\uploads_files_1970932_conifer_macedonian_pine(1)\\OBJ format\\conifer_macedonian_pine.obj");
+                        .load("C:\\Users\\naits\\Downloads\\uploads_files_1970932_conifer_macedonian_pine(1)\\OBJ format\\conifer_macedonian_pine.obj",
+                                new StaticVertexHandler.Builder().positionFunction(p -> p.mul(0.01f)).build());
 
         Log.trace(treeModel);
 
@@ -93,7 +99,18 @@ public class App1 extends BerylApplication {
             float x = RAND.nextInt((int) terrainSize);
             float z = RAND.nextInt((int) terrainSize);
             float y = terrainMesh.heightAt(0, 0, x, z);
-            tree.get(Transform.class).position(x, y, z).scale(0.01f);
+            tree.get(Transform.class).position(x, y, z);
+        }
+
+        MeshView grassView = new MeshView(grassMesh, getGrassMaterial());
+
+        for(int i = 0;i < 1000;i++) {
+            Entity grass = scene.newEntity();
+            float x = RAND.nextInt((int) terrainSize);
+            float z = RAND.nextInt((int) terrainSize);
+            float y = terrainMesh.heightAt(0, 0, x, z);
+            grass.get(Transform.class).position(x, y, z).scale(2.0f);
+            grass.add(MeshInstance.class).meshView(grassView);
         }
 
         Camera camera = scene.camera();
@@ -111,19 +128,31 @@ public class App1 extends BerylApplication {
 
             skybox.rotate(radians(0.004f));
 
-            final float time = (Time.time() % 60) / 60;
+            final float time = Math.abs(sin(Time.minutes()));
 
             skybox.textureBlendFactor(time);
-
-            if(time >= 1.0f) {
-                skybox.swapTextures();
-            }
         });
 
         environment.skybox(new Skybox(BerylFiles.getString("textures/skybox/day"), BerylFiles.getString("textures/skybox/night")));
         environment.lights().directionalLight(new DirectionalLight().color(Color.WHITE).direction(-1, -1, 0));
         environment.ambientColor(new Color(0.8f, 0.8f, 0.8f));
         environment.fog().density(DEFAULT_FOG_DENSITY);
+    }
+
+    private IMaterial getGrassMaterial() {
+
+        return PhongMaterial.get("grass", builder -> {
+
+            Texture2D colorTexture = GraphicsFactory.get().newTexture2D(BerylFiles.getString("textures/grass.png"), PixelFormat.RGBA);
+
+            colorTexture.generateMipmaps();
+            colorTexture.sampler().minFilter(Sampler.MinFilter.LINEAR_MIPMAP_LINEAR);
+            colorTexture.sampler().magFilter(Sampler.MagFilter.LINEAR);
+            colorTexture.sampler().lodBias(-4);
+
+            builder.ambientMap(colorTexture).diffuseMap(colorTexture);
+
+        });
     }
 
     private PhongMaterial treeMaterialFunction(String meshName) {

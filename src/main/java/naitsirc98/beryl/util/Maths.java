@@ -61,6 +61,10 @@ public class Maths {
         return Integer.SIZE - 1 - Integer.numberOfLeadingZeros(n);
     }
 
+    public static float lerp(float a, float b, float t) {
+        return (1 - t) * a + t * b;
+    }
+
     public static float barryCentric(Vector3f p1, Vector3f p2, Vector3f p3, Vector2f pos) {
 
         final float det = (p2.z - p3.z) * (p1.x - p3.x) + (p3.x - p2.x) * (p1.z - p3.z);

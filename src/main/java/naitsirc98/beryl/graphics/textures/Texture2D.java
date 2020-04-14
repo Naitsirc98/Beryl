@@ -23,11 +23,7 @@ public interface Texture2D extends Texture {
     }
 
     default void pixels(int mipLevels, Image image) {
-        if(image.pixelFormat().dataType().decimal()) {
-            pixels(mipLevels, image.width(), image.height(), image.pixelFormat(), image.pixelsf());
-        } else {
-            pixels(mipLevels, image.width(), image.height(), image.pixelFormat(), image.pixelsi());
-        }
+        pixels(mipLevels, image.width(), image.height(), image.pixelFormat(), image.pixels());
     }
 
     default void pixels(int width, int height, PixelFormat format, ByteBuffer pixels) {

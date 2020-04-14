@@ -3,6 +3,7 @@ package naitsirc98.beryl.graphics.opengl.textures;
 import naitsirc98.beryl.graphics.opengl.GLObject;
 import naitsirc98.beryl.graphics.textures.Sampler;
 import naitsirc98.beryl.graphics.textures.Texture;
+import naitsirc98.beryl.images.PixelFormat;
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.resources.ManagedResource;
 import org.lwjgl.system.MemoryStack;
@@ -12,12 +13,33 @@ import static naitsirc98.beryl.graphics.Graphics.opengl;
 import static org.lwjgl.opengl.ARBBindlessTexture.*;
 import static org.lwjgl.opengl.EXTTextureFilterAnisotropic.GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT;
 import static org.lwjgl.opengl.EXTTextureFilterAnisotropic.GL_TEXTURE_MAX_ANISOTROPY_EXT;
-import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL12.*;
+import static org.lwjgl.opengl.GL11.GL_TEXTURE_BORDER_COLOR;
+import static org.lwjgl.opengl.GL11.GL_TEXTURE_MAG_FILTER;
+import static org.lwjgl.opengl.GL11.GL_TEXTURE_MIN_FILTER;
+import static org.lwjgl.opengl.GL11.GL_TEXTURE_WRAP_S;
+import static org.lwjgl.opengl.GL11.GL_TEXTURE_WRAP_T;
+import static org.lwjgl.opengl.GL11.glDeleteTextures;
+import static org.lwjgl.opengl.GL11C.GL_TEXTURE_HEIGHT;
+import static org.lwjgl.opengl.GL11C.GL_TEXTURE_INTERNAL_FORMAT;
+import static org.lwjgl.opengl.GL11C.GL_TEXTURE_WIDTH;
+import static org.lwjgl.opengl.GL12.GL_TEXTURE_MAX_LOD;
+import static org.lwjgl.opengl.GL12.GL_TEXTURE_MIN_LOD;
+import static org.lwjgl.opengl.GL12.GL_TEXTURE_WRAP_R;
+import static org.lwjgl.opengl.GL14.GL_TEXTURE_COMPARE_FUNC;
+import static org.lwjgl.opengl.GL14.GL_TEXTURE_COMPARE_MODE;
+import static org.lwjgl.opengl.GL14.GL_TEXTURE_LOD_BIAS;
 import static org.lwjgl.opengl.GL14.*;
 import static org.lwjgl.opengl.GL30.GL_COMPARE_REF_TO_TEXTURE;
-import static org.lwjgl.opengl.GL45.*;
+import static org.lwjgl.opengl.GL45.glCreateTextures;
+import static org.lwjgl.opengl.GL45.glGetTextureParameterf;
+import static org.lwjgl.opengl.GL45.glGetTextureParameteri;
+import static org.lwjgl.opengl.GL45.glTextureParameterIiv;
+import static org.lwjgl.opengl.GL45.glTextureParameterf;
+import static org.lwjgl.opengl.GL45.glTextureParameterfv;
+import static org.lwjgl.opengl.GL45.glTextureParameteri;
 import static org.lwjgl.opengl.GL45C.glBindTextureUnit;
+import static org.lwjgl.opengl.GL45C.glGenerateTextureMipmap;
+import static org.lwjgl.opengl.GL45C.glGetTextureLevelParameteri;
 import static org.lwjgl.system.MemoryStack.stackPush;
 
 public abstract class GLTexture extends ManagedResource implements GLObject, Texture, Sampler {
@@ -25,10 +47,34 @@ public abstract class GLTexture extends ManagedResource implements GLObject, Tex
     protected int handle;
     private long residentHandle;
     private BorderColor borderColor;
+    protected PixelFormat imageFormat;
 
     public GLTexture(int target) {
         this.handle = glCreateTextures(target);
         // sampler().defaults();
+    }
+
+    @Override
+    public void generateMipmaps() {
+        glGenerateTextureMipmap(handle());
+    }
+
+    public int width() {
+        return glGetTextureLevelParameteri(handle, 0, GL_TEXTURE_WIDTH);
+    }
+
+    public int height() {
+        return glGetTextureLevelParameteri(handle, 0, GL_TEXTURE_HEIGHT);
+    }
+
+    @Override
+    public PixelFormat internalFormat() {
+        return mapFromAPI(PixelFormat.class, glGetTextureLevelParameteri(handle, 0, GL_TEXTURE_INTERNAL_FORMAT));
+    }
+
+    @Override
+    public PixelFormat format() {
+        return imageFormat;
     }
 
     @Override

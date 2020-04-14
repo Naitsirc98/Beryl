@@ -8,21 +8,20 @@ import naitsirc98.beryl.graphics.buffers.VertexBuffer;
 import naitsirc98.beryl.graphics.opengl.buffers.GLBuffer;
 import naitsirc98.beryl.graphics.opengl.textures.GLCubemap;
 import naitsirc98.beryl.graphics.opengl.textures.GLTexture2D;
+import naitsirc98.beryl.graphics.opengl.textures.GLTexture2DMSAA;
 import naitsirc98.beryl.graphics.textures.Cubemap;
 import naitsirc98.beryl.graphics.textures.Cubemap.Face;
 import naitsirc98.beryl.graphics.textures.Texture2D;
+import naitsirc98.beryl.graphics.textures.Texture2DMSAA;
 import naitsirc98.beryl.images.Image;
 import naitsirc98.beryl.images.ImageFactory;
 import naitsirc98.beryl.images.PixelFormat;
 
-import java.nio.ByteBuffer;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 
 import static java.util.Objects.requireNonNull;
-import static naitsirc98.beryl.util.Asserts.assertEquals;
-import static naitsirc98.beryl.util.Asserts.assertTrue;
 
 public class GLGraphicsFactory implements GraphicsFactory {
 
@@ -54,6 +53,11 @@ public class GLGraphicsFactory implements GraphicsFactory {
     }
 
     @Override
+    public Texture2DMSAA newTexture2DMSAA() {
+        return new GLTexture2DMSAA();
+    }
+
+    @Override
     public Cubemap newCubemap() {
         return new GLCubemap();
     }
@@ -79,7 +83,7 @@ public class GLGraphicsFactory implements GraphicsFactory {
                 cubemap.allocate(image.width(), image.height(), pixelFormat);
             }
 
-            cubemap.update(faces[i], 0, 0, 0, image.width(), image.height(), pixelFormat, image.pixelsi());
+            cubemap.update(faces[i], 0, 0, 0, image.width(), image.height(), pixelFormat, image.pixels());
         }
 
         Arrays.stream(images).forEach(Image::release);

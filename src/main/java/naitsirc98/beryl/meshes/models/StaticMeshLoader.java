@@ -6,6 +6,8 @@ import naitsirc98.beryl.meshes.MeshManager;
 import naitsirc98.beryl.meshes.StaticMesh;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
+import org.joml.Vector2f;
+import org.joml.Vector3f;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.assimp.*;
 
@@ -13,17 +15,19 @@ import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
 import static java.util.Objects.requireNonNull;
+import static naitsirc98.beryl.util.Asserts.assertNonNull;
 import static naitsirc98.beryl.util.Asserts.assertTrue;
 import static naitsirc98.beryl.util.types.DataType.FLOAT32_SIZEOF;
 import static naitsirc98.beryl.util.types.DataType.UINT32_SIZEOF;
 import static org.lwjgl.assimp.Assimp.*;
 import static org.lwjgl.system.MemoryUtil.memAlloc;
 
-public final class StaticMeshLoader implements ModelLoader {
+public final class StaticMeshLoader {
 
     private static final int DEFAULT_FLAGS = // aiProcess_OptimizeMeshes
             // aiProcess_OptimizeGraph
@@ -38,6 +42,8 @@ public final class StaticMeshLoader implements ModelLoader {
 
     private static final StaticMeshLoader INSTANCE = new StaticMeshLoader();
 
+    private static final StaticVertexHandler DEFAULT_HANDLER = new StaticVertexHandler();
+
     public static StaticMeshLoader get() {
         return INSTANCE;
     }
@@ -48,8 +54,21 @@ public final class StaticMeshLoader implements ModelLoader {
         cache = new HashMap<>();
     }
 
-    @Override
-    public synchronized Model load(Path path) {
+    public synchronized Model<StaticMesh> load(String path) {
+        return load(Paths.get(path), DEFAULT_HANDLER);
+    }
+
+    public synchronized Model<StaticMesh> load(String path, StaticVertexHandler handler) {
+        return load(Paths.get(path), requireNonNull(handler));
+    }
+
+    public synchronized Model<StaticMesh> load(Path path) {
+        return load(path, DEFAULT_HANDLER);
+    }
+
+    public synchronized Model<StaticMesh> load(Path path, StaticVertexHandler handler) {
+
+        assertNonNull(handler);
 
         if (Files.notExists(path)) {
             throw new IllegalArgumentException("File " + path + " does not exists");
@@ -66,7 +85,7 @@ public final class StaticMeshLoader implements ModelLoader {
 
         double start = System.nanoTime();
 
-        Model<StaticMesh> model = loadAssimp(path);
+        Model<StaticMesh> model = loadAssimp(path, handler);
 
         double end = (System.nanoTime() - start) / 1e6;
 
@@ -77,7 +96,7 @@ public final class StaticMeshLoader implements ModelLoader {
         return model;
     }
 
-    private Model<StaticMesh> loadAssimp(Path path) {
+    private Model<StaticMesh> loadAssimp(Path path, StaticVertexHandler handler) {
 
         AIScene aiScene = aiImportFile(path.toString(), DEFAULT_FLAGS);
 
@@ -93,7 +112,7 @@ public final class StaticMeshLoader implements ModelLoader {
 
             Model.Node rootNode = model.newNode(aiRoot.mName().dataString(), aiRoot.mNumChildren(), aiRoot.mNumMeshes());
 
-            processNode(aiScene, aiRoot, rootNode, model);
+            processNode(aiScene, aiRoot, handler, rootNode, model);
 
             return model;
 
@@ -102,16 +121,16 @@ public final class StaticMeshLoader implements ModelLoader {
         }
     }
 
-    private void processNode(AIScene aiScene, AINode aiNode, Model.Node modelNode, Model<StaticMesh> model) {
+    private void processNode(AIScene aiScene, AINode aiNode, StaticVertexHandler handler, Model.Node modelNode, Model<StaticMesh> model) {
 
         modelNode.transformation(matrix4fc(aiNode.mTransformation()));
 
-        processNodeMeshes(aiScene, aiNode, modelNode, model);
+        processNodeMeshes(aiScene, aiNode, handler, modelNode, model);
 
-        processNodeChildren(aiScene, aiNode, modelNode, model);
+        processNodeChildren(aiScene, aiNode, handler, modelNode, model);
     }
 
-    private void processNodeChildren(AIScene aiScene, AINode aiNode, Model.Node modelNode, Model<StaticMesh> model) {
+    private void processNodeChildren(AIScene aiScene, AINode aiNode, StaticVertexHandler handler, Model.Node modelNode, Model<StaticMesh> model) {
 
         if (aiNode.mNumChildren() == 0) {
             return;
@@ -122,12 +141,12 @@ public final class StaticMeshLoader implements ModelLoader {
         for(int i = 0;i < children.limit();i++) {
             AINode aiChild = AINode.create(children.get(i));
             Model.Node child = model.newNode(aiChild.mName().dataString(), aiChild.mNumChildren(), aiChild.mNumMeshes());
-            processNode(aiScene, aiChild, child, model);
+            processNode(aiScene, aiChild, handler, child, model);
             modelNode.addChild(i, child);
         }
     }
 
-    private void processNodeMeshes(AIScene aiScene, AINode aiNode, Model.Node modelNode, Model<StaticMesh> model) {
+    private void processNodeMeshes(AIScene aiScene, AINode aiNode, StaticVertexHandler handler, Model.Node modelNode, Model<StaticMesh> model) {
 
         if (aiNode.mNumMeshes() == 0) {
             return;
@@ -138,11 +157,11 @@ public final class StaticMeshLoader implements ModelLoader {
 
         for(int i = 0;i < aiNode.mNumMeshes();i++) {
             AIMesh aiMesh = AIMesh.create(meshes.get(meshIndices.get(i)));
-            modelNode.addMesh(i, loadMesh(aiScene, aiMesh, model));
+            modelNode.addMesh(i, loadMesh(aiScene, aiMesh, handler, model));
         }
     }
 
-    private ModelMesh<StaticMesh> loadMesh(AIScene aiScene, AIMesh aiMesh, Model<StaticMesh> model) {
+    private ModelMesh<StaticMesh> loadMesh(AIScene aiScene, AIMesh aiMesh, StaticVertexHandler handler, Model<StaticMesh> model) {
 
         String meshName = aiMesh.mName().dataString();
 
@@ -155,9 +174,9 @@ public final class StaticMeshLoader implements ModelLoader {
         ByteBuffer vertices = memAlloc(StaticMesh.VERTEX_DATA_SIZE * aiMesh.mNumVertices());
         ByteBuffer indices = getIndices(aiMesh);
 
-        processPositionAttribute(aiMesh, vertices);
-        processNormalAttribute(aiMesh, vertices);
-        processTexCoordsAttribute(aiMesh, vertices);
+        processPositionAttribute(aiMesh, handler, vertices);
+        processNormalAttribute(aiMesh, handler, vertices);
+        processTexCoordsAttribute(aiMesh, handler, vertices);
 
         return model.newMesh(meshName, StaticMesh.get(meshName, meshData -> meshData.set(vertices, indices)));
     }
@@ -199,7 +218,7 @@ public final class StaticMeshLoader implements ModelLoader {
         );
     }
 
-    private static void processTexCoordsAttribute(AIMesh aiMesh, ByteBuffer vertices) {
+    private static void processTexCoordsAttribute(AIMesh aiMesh, StaticVertexHandler handler, ByteBuffer vertices) {
 
         AIVector3D.Buffer textureCoordinates = aiMesh.mTextureCoords(0);
 
@@ -211,19 +230,22 @@ public final class StaticMeshLoader implements ModelLoader {
         final int stride = StaticMesh.VERTEX_DATA_SIZE;
         int offset = StaticMesh.VERTEX_TEXCOORDS_OFFSET;
 
+        Vector2f texCoords = new Vector2f();
+
         for (int i = 0; i < textureCoordinates.remaining(); i++) {
 
-            AIVector3D texCoords = textureCoordinates.get(i);
+            AIVector3D aiTexCoords = textureCoordinates.get(i);
 
-            vertices.putFloat(offset, texCoords.x())
-                    .putFloat(offset + FLOAT32_SIZEOF, texCoords.y());
+            texCoords.set(aiTexCoords.x(), aiTexCoords.y());
+
+            handler.mapTextureCoords(texCoords).get(offset, vertices);
 
             offset += stride;
         }
 
     }
 
-    private static void processNormalAttribute(AIMesh aiMesh, ByteBuffer vertices) {
+    private static void processNormalAttribute(AIMesh aiMesh, StaticVertexHandler handler, ByteBuffer vertices) {
 
         AIVector3D.Buffer normals = requireNonNull(aiMesh.mNormals());
 
@@ -234,20 +256,22 @@ public final class StaticMeshLoader implements ModelLoader {
         final int stride = StaticMesh.VERTEX_DATA_SIZE;
         int offset = Mesh.VERTEX_NORMAL_OFFSET;
 
+        Vector3f normal = new Vector3f();
+
         for (int i = 0; i < normals.remaining(); i++) {
 
-            AIVector3D normal = normals.get(i);
+            AIVector3D aiNormal = normals.get(i);
 
-            vertices.putFloat(offset, normal.x())
-                    .putFloat(offset + FLOAT32_SIZEOF, normal.y())
-                    .putFloat(offset + FLOAT32_SIZEOF * 2, normal.z());
+            normal.set(aiNormal.x(), aiNormal.y(), aiNormal.z());
+
+            handler.mapNormal(normal).get(offset, vertices);
 
             offset += stride;
         }
 
     }
 
-    private static void processPositionAttribute(AIMesh aiMesh, ByteBuffer vertices) {
+    private static void processPositionAttribute(AIMesh aiMesh, StaticVertexHandler handler, ByteBuffer vertices) {
 
         if (aiMesh.mNumVertices() == 0) {
             throw new IllegalStateException("Number of positions is zero");
@@ -258,17 +282,20 @@ public final class StaticMeshLoader implements ModelLoader {
         final int stride = StaticMesh.VERTEX_DATA_SIZE;
         int offset = 0;
 
+        Vector3f position = new Vector3f();
+
         for (int i = 0; i < positions.remaining(); i++) {
 
-            AIVector3D position = positions.get(i);
+            AIVector3D aiPosition = positions.get(i);
 
-            vertices.putFloat(offset, position.x())
-                    .putFloat(offset + FLOAT32_SIZEOF, position.y())
-                    .putFloat(offset + FLOAT32_SIZEOF * 2, position.z());
+            position.set(aiPosition.x(), aiPosition.y(), aiPosition.z());
+
+            handler.mapPosition(position).get(offset, vertices);
 
             offset += stride;
         }
 
     }
+
 
 }

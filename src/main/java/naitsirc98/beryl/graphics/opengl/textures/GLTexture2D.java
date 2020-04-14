@@ -7,44 +7,13 @@ import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 
 import static org.lwjgl.opengl.GL11C.GL_TEXTURE_2D;
-import static org.lwjgl.opengl.GL45C.*;
+import static org.lwjgl.opengl.GL45C.glTextureStorage2D;
+import static org.lwjgl.opengl.GL45C.glTextureSubImage2D;
 
 public final class GLTexture2D extends GLTexture implements Texture2D {
 
-    private PixelFormat imageFormat;
-
     public GLTexture2D() {
         super(GL_TEXTURE_2D);
-    }
-
-    @Override
-    public Type type() {
-        return Type.TEXTURE_2D;
-    }
-
-    @Override
-    public void generateMipmaps() {
-        glGenerateTextureMipmap(handle());
-    }
-
-    @Override
-    public int width() {
-        return glGetTextureLevelParameteri(handle, 0, GL_TEXTURE_WIDTH);
-    }
-
-    @Override
-    public int height() {
-        return glGetTextureLevelParameteri(handle, 0, GL_TEXTURE_HEIGHT);
-    }
-
-    @Override
-    public PixelFormat internalFormat() {
-        return mapFromAPI(PixelFormat.class, glGetTextureLevelParameteri(handle, 0, GL_TEXTURE_INTERNAL_FORMAT));
-    }
-
-    @Override
-    public PixelFormat format() {
-        return imageFormat;
     }
 
     public void allocate(int mipLevels, int width, int height, int internalFormat) {

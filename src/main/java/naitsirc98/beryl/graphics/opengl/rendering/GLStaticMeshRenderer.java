@@ -6,8 +6,13 @@ import naitsirc98.beryl.graphics.opengl.buffers.GLBuffer;
 import naitsirc98.beryl.graphics.opengl.commands.GLDrawElementsCommand;
 import naitsirc98.beryl.graphics.opengl.shaders.GLShader;
 import naitsirc98.beryl.graphics.opengl.shaders.GLShaderProgram;
+import naitsirc98.beryl.graphics.opengl.swapchain.GLFramebuffer;
+import naitsirc98.beryl.graphics.opengl.swapchain.GLRenderbuffer;
+import naitsirc98.beryl.graphics.opengl.textures.GLTexture2DMSAA;
 import naitsirc98.beryl.graphics.opengl.vertex.GLVertexArray;
 import naitsirc98.beryl.graphics.rendering.renderers.StaticMeshRenderer;
+import naitsirc98.beryl.graphics.window.Window;
+import naitsirc98.beryl.images.PixelFormat;
 import naitsirc98.beryl.materials.MaterialManager;
 import naitsirc98.beryl.meshes.MeshManager;
 import naitsirc98.beryl.meshes.MeshView;
@@ -18,6 +23,7 @@ import naitsirc98.beryl.scenes.Scene;
 import naitsirc98.beryl.scenes.components.meshes.MeshInstance;
 import naitsirc98.beryl.scenes.components.meshes.SceneMeshInfo;
 import naitsirc98.beryl.util.Color;
+import naitsirc98.beryl.util.geometry.Sizec;
 import org.joml.Matrix4fc;
 import org.lwjgl.system.MemoryStack;
 
@@ -25,7 +31,9 @@ import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.List;
 
+import static naitsirc98.beryl.core.BerylConfiguration.MSAA_SAMPLES;
 import static naitsirc98.beryl.graphics.ShaderStage.*;
+import static naitsirc98.beryl.graphics.opengl.swapchain.GLFramebuffer.DEFAULT_FRAMEBUFFER;
 import static naitsirc98.beryl.meshes.vertices.VertexAttribute.*;
 import static naitsirc98.beryl.util.types.DataType.*;
 import static org.lwjgl.opengl.ARBIndirectParameters.GL_PARAMETER_BUFFER_ARB;
@@ -61,6 +69,8 @@ public final class GLStaticMeshRenderer extends StaticMeshRenderer {
     private GLBuffer instanceCommandBuffer;
     private GLBuffer atomicCounterBuffer;
 
+    private GLFramebuffer framebuffer;
+
     GLStaticMeshRenderer() {
 
     }
@@ -86,6 +96,22 @@ public final class GLStaticMeshRenderer extends StaticMeshRenderer {
         atomicCounterBuffer = new GLBuffer("ATOMIC_COUNTER_BUFFER");
         atomicCounterBuffer.allocate(UINT32_SIZEOF);
         atomicCounterBuffer.clear();
+
+        framebuffer = new GLFramebuffer();
+
+        GLTexture2DMSAA colorBuffer = new GLTexture2DMSAA();
+        Sizec size = Window.get().size();
+        colorBuffer.allocate(MSAA_SAMPLES.get(), size.width(), size.height(), PixelFormat.RGBA);
+
+        GLRenderbuffer depthBuffer = new GLRenderbuffer();
+        depthBuffer.storageMultisample(size.width(), size.height(), GL_DEPTH24_STENCIL8, MSAA_SAMPLES.get());
+
+        framebuffer.attach(GL_COLOR_ATTACHMENT0, colorBuffer, 0);
+        framebuffer.attach(GL_DEPTH_STENCIL_ATTACHMENT, depthBuffer);
+
+        framebuffer.ensureComplete();
+
+        framebuffer.freeAttachmentsOnRelease(true);
     }
 
     @Override
@@ -153,7 +179,7 @@ public final class GLStaticMeshRenderer extends StaticMeshRenderer {
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         glEnable(GL_DEPTH_TEST);
         glDepthMask(true);
-        // glEnable(GL_CULL_FACE);
+        glEnable(GL_CULL_FACE);
         glClearColor(clearColor.red(), clearColor.green(), clearColor.blue(), clearColor.alpha());
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 

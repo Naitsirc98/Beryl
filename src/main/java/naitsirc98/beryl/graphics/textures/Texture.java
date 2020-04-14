@@ -24,8 +24,6 @@ public interface Texture extends Resource {
 
     long makeResident();
 
-    Type type();
-
     Sampler sampler();
 
     PixelFormat internalFormat();
@@ -33,9 +31,4 @@ public interface Texture extends Resource {
     PixelFormat format();
 
     void generateMipmaps();
-
-    enum Type {
-        TEXTURE_2D
-        // TODO
-    }
 }

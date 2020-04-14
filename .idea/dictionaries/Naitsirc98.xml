@@ -16,6 +16,7 @@
       <w>glfw</w>
       <w>glsl</w>
       <w>growable</w>
+      <w>lerp</w>
       <w>lwjgl</w>
       <w>memcpy</w>
       <w>msaa</w>
@@ -25,6 +26,7 @@
       <w>nsize</w>
       <w>opengl</w>
       <w>phong</w>
+      <w>pixelsf</w>
       <w>rasterization</w>
       <w>skybox</w>
       <w>spirv</w>
