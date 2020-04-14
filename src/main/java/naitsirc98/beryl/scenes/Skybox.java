@@ -8,6 +8,7 @@ import naitsirc98.beryl.images.PixelFormat;
 public class Skybox {
 
     private final Cubemap cubemap;
+    private float rotationAngle;
 
     public Skybox(String skyboxImagePath) {
         cubemap = GraphicsFactory.get().newCubemap(skyboxImagePath, PixelFormat.RGBA);
@@ -20,5 +21,19 @@ public class Skybox {
     @SuppressWarnings("unchecked")
     public <T extends Cubemap> T texture() {
         return (T) cubemap;
+    }
+
+    public float rotation() {
+        return rotationAngle;
+    }
+
+    public Skybox rotation(float radians) {
+        this.rotationAngle = radians;
+        return this;
+    }
+
+    public Skybox rotate(float radians) {
+        this.rotationAngle += radians;
+        return this;
     }
 }

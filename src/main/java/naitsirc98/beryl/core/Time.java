@@ -6,6 +6,8 @@ import static org.lwjgl.glfw.GLFW.*;
 
 public final class Time extends BerylSystem {
 
+    public static final float IDEAL_DELTA_TIME = 1.0f / 60.0f;
+
     @Singleton
     private static Time instance;
 

@@ -3,7 +3,7 @@
 #extension GL_KHR_vulkan_glsl: require
 
 #define LOWER_LIMIT 0.0
-#define UPPER_LIMIT 0.3
+#define UPPER_LIMIT 0.25
 
 @include "structs/fog.glsl"
 

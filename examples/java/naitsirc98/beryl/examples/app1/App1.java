@@ -106,6 +106,9 @@ public class App1 extends BerylApplication {
 
         SceneEnvironment environment = scene.environment();
 
+        Entity skyboxController = scene.newEntity();
+        skyboxController.add(UpdateMutableBehaviour.class).onUpdate(self -> self.scene().environment().skybox().rotate(radians(0.005f)));
+
         environment.skybox(new Skybox((BerylFiles.getString("textures/skybox/day"))));
         environment.lights().directionalLight(new DirectionalLight().color(Color.WHITE).direction(-1, -1, 0));
         environment.ambientColor(new Color(0.8f, 0.8f, 0.8f));

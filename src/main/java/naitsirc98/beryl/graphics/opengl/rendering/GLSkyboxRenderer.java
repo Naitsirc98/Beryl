@@ -10,24 +10,20 @@ import naitsirc98.beryl.graphics.rendering.renderers.SkyboxRenderer;
 import naitsirc98.beryl.meshes.Mesh;
 import naitsirc98.beryl.meshes.models.StaticMeshLoader;
 import naitsirc98.beryl.meshes.vertices.VertexLayout;
-import naitsirc98.beryl.scenes.Fog;
 import naitsirc98.beryl.scenes.Scene;
+import org.joml.Matrix4f;
 import org.lwjgl.system.MemoryStack;
 
 import java.nio.ByteBuffer;
 
 import static naitsirc98.beryl.graphics.ShaderStage.FRAGMENT_STAGE;
 import static naitsirc98.beryl.graphics.ShaderStage.VERTEX_STAGE;
-import static naitsirc98.beryl.scenes.SceneEnvironment.FOG_OFFSET;
 import static naitsirc98.beryl.util.handles.LongHandle.NULL;
 import static naitsirc98.beryl.util.types.DataType.MATRIX4_SIZEOF;
-import static naitsirc98.beryl.util.types.DataType.VECTOR3_SIZEOF;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL31C.GL_UNIFORM_BUFFER;
 import static org.lwjgl.opengl.GL32.GL_TEXTURE_CUBE_MAP_SEAMLESS;
 import static org.lwjgl.system.MemoryStack.stackPush;
-import static org.lwjgl.system.MemoryUtil.memAlloc;
-import static org.lwjgl.system.MemoryUtil.memFree;
 
 public class GLSkyboxRenderer extends SkyboxRenderer {
 
@@ -44,6 +40,8 @@ public class GLSkyboxRenderer extends SkyboxRenderer {
     private GLBuffer indexBuffer;
 
     private GLBuffer matricesUniformBuffer;
+
+    private Matrix4f viewMatrix;
 
     @Override
     protected void init() {
@@ -70,6 +68,8 @@ public class GLSkyboxRenderer extends SkyboxRenderer {
         matricesUniformBuffer = new GLBuffer();
         matricesUniformBuffer.allocate(MATRICES_BUFFER_SIZE);
         matricesUniformBuffer.mapMemory();
+
+        viewMatrix = new Matrix4f();
     }
 
     @Override
@@ -86,8 +86,10 @@ public class GLSkyboxRenderer extends SkyboxRenderer {
 
             ByteBuffer buffer = stack.calloc(MATRICES_BUFFER_SIZE);
 
+            viewMatrix.set(scene.camera().viewMatrix()).rotateY(scene.environment().skybox().rotation());
+
             scene.camera().projectionMatrix().get(PROJECTION_MATRIX_OFFSET, buffer);
-            scene.camera().viewMatrix().get(VIEW_MATRIX_OFFSET, buffer);
+            viewMatrix.get(VIEW_MATRIX_OFFSET, buffer);
 
             matricesUniformBuffer.copy(0, buffer);
         }
