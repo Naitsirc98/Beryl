@@ -1,6 +1,5 @@
 package naitsirc98.beryl.materials;
 
-import naitsirc98.beryl.graphics.textures.Texture;
 import naitsirc98.beryl.graphics.textures.Texture2D;
 import naitsirc98.beryl.util.Color;
 import naitsirc98.beryl.util.types.ByteSize;
@@ -180,5 +179,10 @@ public class Material implements IMaterial, PhongMaterial, WaterMaterial {
     @Override
     public Texture2D refractionMap() {
         return get(REFRACTION_MAP);
+    }
+
+    @Override
+    public Texture2D dudvMap() {
+        return get(DUDV_MAP);
     }
 }

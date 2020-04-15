@@ -50,7 +50,7 @@ public final class Window implements LongHandle {
     private Size framebufferSize;
     private Rect rect;
     private DisplayMode displayMode;
-    private final CallbackManager callbacks;
+    final CallbackManager callbacks;
 
     {
         if(instance != null) {
@@ -72,7 +72,9 @@ public final class Window implements LongHandle {
         framebufferSize = new Size();
         rect = new Rect();
 
-        callbacks = new CallbackManager().setup(handle);
+        callbacks = new CallbackManager().setup(this);
+
+        update();
     }
 
     /**
@@ -129,12 +131,7 @@ public final class Window implements LongHandle {
      * @return the position
      */
     public Vector2ic position() {
-        try(MemoryStack stack = stackPush()) {
-            IntBuffer x = stack.mallocInt(1);
-            IntBuffer y = stack.mallocInt(1);
-            glfwGetWindowPos(handle, x, y);
-            return position.set(x.get(0), y.get(0));
-        }
+        return position;
     }
 
     /**
@@ -196,12 +193,7 @@ public final class Window implements LongHandle {
      * @return the size of the window
      */
     public Sizec size() {
-        try(MemoryStack stack = stackPush()) {
-            IntBuffer width = stack.mallocInt(1);
-            IntBuffer height = stack.mallocInt(1);
-            glfwGetWindowSize(handle, width, height);
-            return size.set(width.get(0), height.get(0));
-        }
+        return size;
     }
 
     /**
@@ -222,12 +214,7 @@ public final class Window implements LongHandle {
      * @return the framebuffer's size
      */
     public Sizec framebufferSize() {
-        try(MemoryStack stack = stackPush()) {
-            IntBuffer width = stack.mallocInt(1);
-            IntBuffer height = stack.mallocInt(1);
-            glfwGetFramebufferSize(handle, width, height);
-            return framebufferSize.set(width.get(0), height.get(0));
-        }
+        return framebufferSize;
     }
 
     /**
@@ -237,14 +224,7 @@ public final class Window implements LongHandle {
      * @return the frame size
      */
     public Rectc rect() {
-        try(MemoryStack stack = MemoryStack.stackPush()) {
-            IntBuffer left = stack.ints(0);
-            IntBuffer top = stack.ints(0);
-            IntBuffer right = stack.ints(0);
-            IntBuffer bottom =stack.ints(0);
-            glfwGetWindowFrameSize(handle, left, top, right, bottom);
-            return rect.set(left.get(0), right.get(0), top.get(0), bottom.get(0));
-        }
+        return rect;
     }
 
     /**
@@ -542,6 +522,51 @@ public final class Window implements LongHandle {
                 height,
                 refreshRate);
         return this;
+    }
+
+    void update() {
+        updatePosition();
+        updateSize();
+        updateRect();
+        updateFramebufferSize();
+    }
+
+    private void updatePosition() {
+        try(MemoryStack stack = stackPush()) {
+            IntBuffer x = stack.mallocInt(1);
+            IntBuffer y = stack.mallocInt(1);
+            glfwGetWindowPos(handle, x, y);
+            position.set(x.get(0), y.get(0));
+        }
+    }
+
+    private void updateSize() {
+        try(MemoryStack stack = stackPush()) {
+            IntBuffer width = stack.mallocInt(1);
+            IntBuffer height = stack.mallocInt(1);
+            glfwGetWindowSize(handle, width, height);
+            size.set(width.get(0), height.get(0));
+        }
+    }
+
+    private void updateRect() {
+        try(MemoryStack stack = MemoryStack.stackPush()) {
+            IntBuffer left = stack.ints(0);
+            IntBuffer top = stack.ints(0);
+            IntBuffer right = stack.ints(0);
+            IntBuffer bottom =stack.ints(0);
+            glfwGetWindowFrameSize(handle, left, top, right, bottom);
+            rect.set(left.get(0), right.get(0), top.get(0), bottom.get(0));
+        }
+    }
+
+    private void updateFramebufferSize() {
+        try(MemoryStack stack = stackPush()) {
+            IntBuffer width = stack.mallocInt(1);
+            IntBuffer height = stack.mallocInt(1);
+            glfwGetFramebufferSize(handle, width, height);
+            framebufferSize.set(width.get(0), height.get(0));
+        }
     }
 
 }

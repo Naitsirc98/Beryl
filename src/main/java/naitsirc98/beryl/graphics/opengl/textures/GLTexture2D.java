@@ -2,13 +2,13 @@ package naitsirc98.beryl.graphics.opengl.textures;
 
 import naitsirc98.beryl.graphics.textures.Texture2D;
 import naitsirc98.beryl.images.PixelFormat;
+import naitsirc98.beryl.logging.Log;
 
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 
 import static org.lwjgl.opengl.GL11C.GL_TEXTURE_2D;
-import static org.lwjgl.opengl.GL45C.glTextureStorage2D;
-import static org.lwjgl.opengl.GL45C.glTextureSubImage2D;
+import static org.lwjgl.opengl.GL45C.*;
 
 public final class GLTexture2D extends GLTexture implements Texture2D {
 
@@ -17,12 +17,31 @@ public final class GLTexture2D extends GLTexture implements Texture2D {
     }
 
     public void allocate(int mipLevels, int width, int height, int internalFormat) {
+        if(allocated) {
+            Log.fatal("Texture has been already allocated. Use reallocate instead");
+            return;
+        }
         glTextureStorage2D(handle, mipLevels, internalFormat, width, height);
+        allocated = true;
     }
 
     @Override
     public void allocate(int mipLevels, int width, int height, PixelFormat internalFormat) {
+        if(allocated) {
+            Log.fatal("Texture has been already allocated. Use reallocate instead");
+            return;
+        }
         glTextureStorage2D(handle, mipLevels, mapper().mapToSizedInternalFormat(internalFormat), width, height);
+        allocated = true;
+    }
+
+    @Override
+    public void reallocate(int mipLevels, int width, int height, PixelFormat internalPixelFormat) {
+        if(allocated) {
+            free();
+            handle = glCreateTextures(target);
+        }
+        allocate(mipLevels, width, height, internalPixelFormat);
     }
 
     @Override

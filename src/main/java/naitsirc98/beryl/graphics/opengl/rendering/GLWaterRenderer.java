@@ -18,12 +18,10 @@ import naitsirc98.beryl.meshes.StaticMesh;
 import naitsirc98.beryl.meshes.models.StaticMeshLoader;
 import naitsirc98.beryl.meshes.views.WaterMeshView;
 import naitsirc98.beryl.scenes.Camera;
-import naitsirc98.beryl.scenes.Fog;
 import naitsirc98.beryl.scenes.Scene;
 import naitsirc98.beryl.scenes.SceneEnhancedWater;
 import naitsirc98.beryl.scenes.components.meshes.MeshInstanceList;
 import naitsirc98.beryl.scenes.components.meshes.WaterMeshInstance;
-import naitsirc98.beryl.util.Color;
 import naitsirc98.beryl.util.geometry.Sizec;
 import org.joml.*;
 import org.lwjgl.system.MemoryStack;
@@ -107,12 +105,6 @@ public class GLWaterRenderer implements WaterRenderer {
 
         Vector4f clipPlane = new Vector4f();
 
-        Fog fog = scene.environment().fog();
-
-        final Color fogColor = fog.color();
-
-        fog.color(Color.NONE);
-
         final float pitch = camera.pitch();
 
         for(WaterMeshInstance instance : waterInstances) {
@@ -130,7 +122,7 @@ public class GLWaterRenderer implements WaterRenderer {
             clipPlane.w *= -1;
 
             bakeWaterTexture(scene, enhancedWater, staticMeshRenderer, skyboxRenderer, waterView, clipPlane, size,
-                    (GLTexture2D) waterView.material().reflectionMap());
+                    (GLTexture2D) waterView.material().reflectionMap(), true);
 
             camera.position(cameraPosition.x(), cameraPosition.y() + displacement, cameraPosition.z());
             camera.pitch(pitch);
@@ -141,21 +133,17 @@ public class GLWaterRenderer implements WaterRenderer {
             clipPlane.y *= -1;
 
             bakeWaterTexture(scene, enhancedWater, staticMeshRenderer, skyboxRenderer, waterView, clipPlane, size,
-                    (GLTexture2D) waterView.material().refractionMap());
-
-            skyboxRenderer.render(scene);
+                    (GLTexture2D) waterView.material().refractionMap(), false);
         }
 
         staticMeshRenderer.renderShader.uniformVector4f("u_ClipPlane", 0, 0, 0, 0);
-
-        fog.color(fogColor);
 
         glDisable(GL_CLIP_DISTANCE0);
     }
 
     private void bakeWaterTexture(Scene scene, SceneEnhancedWater enhancedWater,
                                   GLStaticMeshRenderer staticMeshRenderer, GLSkyboxRenderer skyboxRenderer,
-                                  WaterMeshView waterView, Vector4fc clipPlane, Sizec size, GLTexture2D texture) {
+                                  WaterMeshView waterView, Vector4fc clipPlane, Sizec size, GLTexture2D texture, boolean renderSkybox) {
 
         prepareFramebuffer(size, texture);
 
@@ -168,7 +156,9 @@ public class GLWaterRenderer implements WaterRenderer {
             staticMeshRenderer.render(scene);
         }
 
-        skyboxRenderer.render(scene);
+        if(renderSkybox) {
+            skyboxRenderer.render(scene);
+        }
 
         glFinish();
     }
@@ -176,7 +166,7 @@ public class GLWaterRenderer implements WaterRenderer {
     private void prepareFramebuffer(Sizec size, GLTexture2D colorTexture) {
 
         if(colorTexture.width() != size.width() || colorTexture.height() != size.height()) {
-            colorTexture.allocate(1, size.width(), size.height(), PixelFormat.RGBA);
+            colorTexture.reallocate(1, size.width(), size.height(), PixelFormat.RGBA);
         }
 
         framebuffer.attach(GL_COLOR_ATTACHMENT0, colorTexture, 0);
@@ -189,6 +179,8 @@ public class GLWaterRenderer implements WaterRenderer {
 
         final MeshInstanceList<WaterMeshInstance> waterInstances = scene.meshInfo().meshViewsOfType(WaterMeshView.class);
         final Matrix4fc projectionViewMatrix = scene.camera().projectionViewMatrix();
+        final GLShaderProgram waterShader = this.waterShader;
+        final int indexCount = quadMesh.indexCount();
 
         glEnable(GL_DEPTH_TEST);
         glDisable(GL_CULL_FACE);
@@ -203,20 +195,69 @@ public class GLWaterRenderer implements WaterRenderer {
 
             for(WaterMeshInstance instance : waterInstances) {
 
-                WaterMaterial material = instance.meshView().material();
-
-                GLTexture2D reflectionMap = (GLTexture2D) material.reflectionMap();
-                GLTexture2D refractionMap = (GLTexture2D) material.refractionMap();
+                final WaterMeshView view = instance.meshView();
+                final WaterMaterial material = view.material();
 
                 waterShader.uniformMatrix4f("u_MVP", false, projectionViewMatrix.mul(instance.modelMatrix(), mvp).get(mvpBuffer));
-                waterShader.uniformSampler("u_ReflectionMap", reflectionMap, 0);
-                waterShader.uniformSampler("u_RefractionMap", refractionMap, 1);
 
-                glDrawElements(GL_TRIANGLES, quadMesh.indexCount(), GL_UNSIGNED_INT, NULL);
 
-                reflectionMap.unbind(0);
-                refractionMap.unbind(1);
+                waterShader.uniformFloat("u_ReflectionStrength", view.reflectionStrength());
+                waterShader.uniformFloat("u_DistortionStrength", view.distortionStrength());
+                waterShader.uniformFloat("u_TextureCoordsOffset", view.texturesOffset());
+                waterShader.uniformColorRGBA("u_WaterColor", view.waterColor());
+                waterShader.uniformFloat("u_WaterColorStrength", view.waterColorStrength());
+                waterShader.uniformFloat("u_Tiling", view.tiling());
+
+                bindTextures(material);
+
+                glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, NULL);
+
+                unbindTextures(material);
             }
+        }
+    }
+
+    private void unbindTextures(WaterMaterial material) {
+
+        GLTexture2D reflectionMap = (GLTexture2D) material.reflectionMap();
+        GLTexture2D refractionMap = (GLTexture2D) material.refractionMap();
+        GLTexture2D dudvMap = (GLTexture2D) material.dudvMap();
+        GLTexture2D normalMap = (GLTexture2D) material.normalMap();
+
+        reflectionMap.unbind(0);
+        refractionMap.unbind(1);
+
+        if(dudvMap != null) {
+            dudvMap.unbind(2);
+        }
+
+        if(normalMap != null) {
+            normalMap.unbind(3);
+        }
+    }
+
+    private void bindTextures(WaterMaterial material) {
+
+        GLTexture2D reflectionMap = (GLTexture2D) material.reflectionMap();
+        GLTexture2D refractionMap = (GLTexture2D) material.refractionMap();
+        GLTexture2D dudvMap = (GLTexture2D) material.dudvMap();
+        GLTexture2D normalMap = (GLTexture2D) material.normalMap();
+
+        waterShader.uniformSampler("u_ReflectionMap", reflectionMap, 0);
+        waterShader.uniformSampler("u_RefractionMap", refractionMap, 1);
+
+        if(dudvMap != null) {
+            waterShader.uniformSampler("u_DUDVMap", dudvMap, 2);
+            waterShader.uniformBool("u_DUDVMapPresent", true);
+        } else {
+            waterShader.uniformBool("u_DUDVMapPresent", false);
+        }
+
+        if(normalMap != null) {
+            waterShader.uniformSampler("u_NormalMap", normalMap, 3);
+            waterShader.uniformBool("u_NormalMapPresent", true);
+        } else {
+            waterShader.uniformBool("u_NormalMapPresent", false);
         }
     }
 

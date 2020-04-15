@@ -15,13 +15,13 @@ import naitsirc98.beryl.input.MouseButton;
 import naitsirc98.beryl.resources.Resource;
 import org.lwjgl.glfw.*;
 import org.lwjgl.system.Callback;
-import org.lwjgl.system.NativeResource;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
 import static naitsirc98.beryl.events.EventManager.triggerEvent;
+import static naitsirc98.beryl.events.EventManager.triggerEventNow;
 import static org.lwjgl.glfw.GLFW.*;
 
 class CallbackManager implements Resource {
@@ -39,20 +39,22 @@ class CallbackManager implements Resource {
         callbacks.clear();
     }
 
-    CallbackManager setup(long handle) {
+    CallbackManager setup(Window window) {
 
-        glfwSetWindowPosCallback(handle, add(onWindowPos()));
+        final long handle = window.handle();
 
-        glfwSetWindowSizeCallback(handle, add(onWindowResize()));
+        glfwSetWindowPosCallback(handle, add(onWindowPos(window)));
 
-        glfwSetFramebufferSizeCallback(handle, add(onFramebufferResize()));
+        glfwSetWindowSizeCallback(handle, add(onWindowResize(window)));
 
-        glfwSetWindowMaximizeCallback(handle, add(onWindowMaximixe()));
+        glfwSetFramebufferSizeCallback(handle, add(onFramebufferResize(window)));
 
-        glfwSetWindowFocusCallback(handle, add(onWindowFocus()));
+        glfwSetWindowMaximizeCallback(handle, add(onWindowMaximize(window)));
+
+        glfwSetWindowFocusCallback(handle, add(onWindowFocus(window)));
 
         EventManager.addEventCallback(WindowClosedEvent.class, e -> BerylApplication.exit());
-        glfwSetWindowCloseCallback(handle, add(onWindowClose()));
+        glfwSetWindowCloseCallback(handle, add(onWindowClose(window)));
 
         glfwSetKeyCallback(handle, add(onKeyEvent()));
 
@@ -66,22 +68,24 @@ class CallbackManager implements Resource {
 
         glfwSetCursorEnterCallback(handle, add(onCursorEnterEvent()));
 
-        glfwSetWindowIconifyCallback(handle, add(OnWindowIconified()));
+        glfwSetWindowIconifyCallback(handle, add(OnWindowIconified(window)));
 
         return this;
     }
 
-    private GLFWWindowIconifyCallback OnWindowIconified() {
-        return GLFWWindowIconifyCallback.create((handle, iconified) -> triggerEvent(iconified
-                ? new WindowIconifiedEvent() : new WindowRestoredEvent()));
+    private GLFWWindowIconifyCallback OnWindowIconified(Window window) {
+        return GLFWWindowIconifyCallback.create((handle, iconified) -> {
+            triggerEvent(iconified ? new WindowIconifiedEvent() : new WindowRestoredEvent());
+            window.update();
+        });
     }
 
     private GLFWCursorEnterCallback onCursorEnterEvent() {
-        return GLFWCursorEnterCallback.create((handle, entered) -> triggerEvent(entered ? new MouseEnterEvent() : new MouseExitEvent()));
+        return GLFWCursorEnterCallback.create((handle, entered) -> triggerEventNow(entered ? new MouseEnterEvent() : new MouseExitEvent()));
     }
 
     private GLFWCursorPosCallback onCursorPosEvent() {
-        return GLFWCursorPosCallback.create((handle, x, y) -> triggerEvent(new MouseMovedEvent((float)x, (float)y)));
+        return GLFWCursorPosCallback.create((handle, x, y) -> triggerEventNow(new MouseMovedEvent((float)x, (float)y)));
     }
 
     private GLFWScrollCallback onScrollEvent() {
@@ -100,29 +104,46 @@ class CallbackManager implements Resource {
         return GLFWKeyCallback.create((handle, key, scancode, action, mods) -> triggerEvent(newKeyEvent(key, scancode, action, mods)));
     }
 
-    private GLFWWindowCloseCallback onWindowClose() {
-        return GLFWWindowCloseCallback.create((handle) -> triggerEvent(new WindowClosedEvent()));
+    private GLFWWindowCloseCallback onWindowClose(Window window) {
+        return GLFWWindowCloseCallback.create((handle) -> {
+            triggerEventNow(new WindowClosedEvent());
+            window.update();
+        });
     }
 
-    private GLFWWindowFocusCallback onWindowFocus() {
-        return GLFWWindowFocusCallback.create((handle, focused) -> triggerEvent(new WindowFocusEvent(focused)));
+    private GLFWWindowFocusCallback onWindowFocus(Window window) {
+        return GLFWWindowFocusCallback.create((handle, focused) -> {
+            triggerEventNow(new WindowFocusEvent(focused));
+            window.update();
+        });
     }
 
-    private GLFWWindowMaximizeCallback onWindowMaximixe() {
-        return GLFWWindowMaximizeCallback.create((handle, maximized) -> triggerEvent(maximized
-                ? new WindowMaximizedEvent() : new WindowRestoredEvent()));
+    private GLFWWindowMaximizeCallback onWindowMaximize(Window window) {
+        return GLFWWindowMaximizeCallback.create((handle, maximized) -> {
+            triggerEventNow(maximized ? new WindowMaximizedEvent() : new WindowRestoredEvent());
+            window.update();
+        });
     }
 
-    private GLFWFramebufferSizeCallback onFramebufferResize() {
-        return GLFWFramebufferSizeCallback.create((handle, w, h) -> triggerEvent(new FramebufferResizeEvent(w, h)));
+    private GLFWFramebufferSizeCallback onFramebufferResize(Window window) {
+        return GLFWFramebufferSizeCallback.create((handle, w, h) -> {
+            triggerEventNow(new FramebufferResizeEvent(w, h));
+            window.update();
+        });
     }
 
-    private GLFWWindowSizeCallback onWindowResize() {
-        return GLFWWindowSizeCallback.create((handle, w, h) -> triggerEvent(new WindowResizedEvent(w, h)));
+    private GLFWWindowSizeCallback onWindowResize(Window window) {
+        return GLFWWindowSizeCallback.create((handle, w, h) -> {
+            triggerEventNow(new WindowResizedEvent(w, h));
+            window.update();
+        });
     }
 
-    private GLFWWindowPosCallback onWindowPos() {
-        return GLFWWindowPosCallback.create((handle, x, y) -> triggerEvent(new WindowMovedEvent(x, y)));
+    private GLFWWindowPosCallback onWindowPos(Window window) {
+        return GLFWWindowPosCallback.create((handle, x, y) -> {
+            triggerEventNow(new WindowMovedEvent(x, y));
+            window.update();
+        });
     }
 
     private <T extends Callback> T add(T callback) {

@@ -100,20 +100,44 @@ public class App1 extends BerylApplication {
         terrain.add(StaticMeshInstance.class).meshView(new StaticMeshView(terrainMesh, getFloorMaterial()));
 
         Entity water = scene.newEntity();
-        water.add(Transform.class).position(268.543f, -11.0f, 526.378f).rotateX(radians(90)).scale(terrainSize * 0.8f);
-        WaterMeshView waterMeshView = new WaterMeshView(quadMesh, WaterMaterial.get("water0"));
+        water.add(Transform.class).position(terrainSize/2, -11.0f, terrainSize/2).rotateX(radians(90)).scale(400);
+        WaterMeshView waterMeshView = new WaterMeshView(quadMesh, getWaterMaterial()).tiling(50);
         waterMeshView.clipPlane(0, 1, 0, -11);
         water.add(WaterMeshInstance.class).meshView(waterMeshView);
+        water.add(UpdateMutableBehaviour.class).onUpdate(self ->  {
+
+            if(!self.exists("movement")) {
+                self.set("movement", 0.0f);
+            }
+
+            float movement = self.get("movement");
+
+            movement += 0.04f * Time.IDEAL_DELTA_TIME;
+            movement %= 1;
+
+            self.get(WaterMeshInstance.class).meshView().texturesOffset(movement);
+
+            self.set("movement", movement);
+        });
 
         scene.enhancedWater().setEnhancedWaterView(ENHANCED_WATER_UNIT_0, waterMeshView);
 
         StaticModelEntityFactory treeFactory = new StaticModelEntityFactory(treeModel).materialsFunction(this::treeMaterialFunction);
 
         for(int i = 0;i < 300;i++) {
+
             Entity tree = treeFactory.newEntity(scene);
-            float x = RAND.nextInt((int) terrainSize);
-            float z = RAND.nextInt((int) terrainSize);
-            float y = terrainMesh.heightAt(0, 0, x, z);
+
+            float x;
+            float z;
+            float y;
+
+            do {
+                x =  RAND.nextInt((int) terrainSize);
+                z =  RAND.nextInt((int) terrainSize);
+                y =  terrainMesh.heightAt(0, 0, x, z);
+            } while(y <= water.get(Transform.class).position().y() + 1);
+
             tree.get(Transform.class).position(x, y, z);
         }
 
@@ -154,11 +178,19 @@ public class App1 extends BerylApplication {
         environment.fog().density(DEFAULT_FOG_DENSITY);
     }
 
-    private IMaterial getWaterMaterial() {
-        return PhongMaterial.get("water", builder -> {
+    private WaterMaterial getWaterMaterial() {
+        return WaterMaterial.get("water", builder -> {
 
-            builder.ambientColor(Color.BLUE).diffuseColor(Color.BLUE);
+            Texture2D dudv = GraphicsFactory.get().newTexture2D(BerylFiles.getString("textures/water/dudv.png"), PixelFormat.RGBA);
 
+            dudv.generateMipmaps();
+            dudv.sampler().wrapMode(Sampler.WrapMode.REPEAT);
+            dudv.sampler().minFilter(Sampler.MinFilter.LINEAR_MIPMAP_LINEAR);
+            dudv.sampler().magFilter(Sampler.MagFilter.LINEAR);
+            dudv.sampler().maxAnisotropy(16);
+            dudv.sampler().lodBias(0);
+
+            builder.dudvMap(dudv);
         });
     }
 

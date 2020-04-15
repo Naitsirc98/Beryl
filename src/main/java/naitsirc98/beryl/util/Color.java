@@ -18,7 +18,8 @@ public final class Color implements Cloneable, ByteSize {
     public static final Color RED = new Color(1, 0, 0);
     public static final Color GREEN = new Color(0, 1, 0);
     public static final Color BLUE = new Color(0, 0, 1);
-    public static final Color SKY = new Color(13.3f, 50.2f, 69.8f);
+    public static final Color SKY = new Color(0.133f, 0.502f, 0.698f);
+    public static final Color WATER = new Color(0.0f, 0.3f, 0.5f);
     // TODO: more...
 
     private final float red;

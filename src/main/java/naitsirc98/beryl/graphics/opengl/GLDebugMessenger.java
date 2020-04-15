@@ -14,6 +14,38 @@ import static org.lwjgl.system.MemoryUtil.NULL;
 
 public class GLDebugMessenger implements Resource {
 
+    public static String getGLErrorName(int errorCode) {
+        switch (errorCode) {
+            case GL_INVALID_ENUM:
+                return "GL_INVALID_ENUM";
+            case GL_INVALID_VALUE:
+                return "GL_INVALID_VALUE";
+            case GL_INVALID_OPERATION:
+                return "GL_INVALID_OPERATION";
+            case GL_STACK_OVERFLOW:
+                return "GL_STACK_OVERFLOW";
+            case GL_STACK_UNDERFLOW:
+                return "GL_STACK_UNDERFLOW";
+            case GL_OUT_OF_MEMORY:
+                return "GL_OUT_OF_MEMORY";
+            case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
+                return "GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT";
+            case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
+                return "GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT";
+            case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:
+                return "GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER";
+            case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER:
+                return "GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER";
+            case GL_FRAMEBUFFER_UNSUPPORTED:
+                return "GL_FRAMEBUFFER_UNSUPPORTED";
+            case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE:
+                return "GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE";
+            case GL_FRAMEBUFFER_UNDEFINED:
+                return "GL_FRAMEBUFFER_UNDEFINED";
+        }
+        return "GL_UNKNOWN_ERROR";
+    }
+
     static GLDebugMessenger newGLDebugMessenger() {
         return OPENGL_DEBUG_MESSAGES_ENABLED ? new GLDebugMessenger() : null;
     }
@@ -86,7 +118,7 @@ public class GLDebugMessenger implements Resource {
     }
 
     private Level asLogLevel(int severity) {
-        switch(severity) {
+        switch (severity) {
             case GL_DEBUG_SEVERITY_HIGH:
                 return Level.ERROR;
             case GL_DEBUG_SEVERITY_MEDIUM:

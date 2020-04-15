@@ -44,6 +44,7 @@ public interface IMaterial extends Asset, ByteSize {
 
     byte REFLECTION_MAP = 20;
     byte REFRACTION_MAP = 21;
+    byte DUDV_MAP = 22;
 
     Vector2fc DEFAULT_TEXTURE_COORDS_FACTOR = new Vector2f(1.0f, 1.0f);
 

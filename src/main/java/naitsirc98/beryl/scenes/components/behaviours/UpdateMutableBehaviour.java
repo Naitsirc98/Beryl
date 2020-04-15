@@ -19,6 +19,16 @@ public final class UpdateMutableBehaviour extends UpdateBehaviour {
 
     }
 
+    @Override
+    protected void init() {
+        variables = new HashMap<>();
+        super.init();
+    }
+
+    public boolean exists(String variableName) {
+        return variables.containsKey(variableName);
+    }
+
     @SuppressWarnings("unchecked")
     public <T> T get(String variableName) {
         return (T) variables.get(variableName);
@@ -69,7 +79,6 @@ public final class UpdateMutableBehaviour extends UpdateBehaviour {
     @Override
     protected void onInit() {
         if(onInit != null) {
-            variables = new HashMap<>();
             onInit.accept(this);
         }
     }

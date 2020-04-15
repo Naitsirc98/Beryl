@@ -18,6 +18,8 @@ public interface Texture2D extends Texture {
 
     void allocate(int mipLevels, int width, int height, PixelFormat internalFormat);
 
+    void reallocate(int mipLevels, int width, int height, PixelFormat internalPixelFormat);
+
     default void pixels(Image image) {
         pixels(Texture.calculateMipLevels(image.width(), image.height()), image);
     }

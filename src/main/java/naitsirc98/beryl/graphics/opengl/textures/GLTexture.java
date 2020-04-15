@@ -45,11 +45,14 @@ import static org.lwjgl.system.MemoryStack.stackPush;
 public abstract class GLTexture extends ManagedResource implements GLObject, Texture, Sampler {
 
     protected int handle;
+    protected int target;
+    protected boolean allocated;
     private long residentHandle;
     private BorderColor borderColor;
     protected PixelFormat imageFormat;
 
     public GLTexture(int target) {
+        this.target = target;
         this.handle = glCreateTextures(target);
         // sampler().defaults();
     }
@@ -264,9 +267,11 @@ public abstract class GLTexture extends ManagedResource implements GLObject, Tex
 
     @Override
     protected void free() {
+
         makeNonResident();
         glDeleteTextures(handle);
 
+        allocated = false;
         handle = NULL;
     }
 

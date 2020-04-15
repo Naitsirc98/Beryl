@@ -1,5 +1,6 @@
 package naitsirc98.beryl.graphics.opengl.swapchain;
 
+import naitsirc98.beryl.graphics.opengl.GLDebugMessenger;
 import naitsirc98.beryl.graphics.opengl.GLObject;
 import naitsirc98.beryl.graphics.opengl.textures.GLTexture;
 
@@ -55,7 +56,7 @@ public class GLFramebuffer implements GLObject {
     public void ensureComplete() {
         final int status = glCheckNamedFramebufferStatus(handle, GL_FRAMEBUFFER);
         if(status != GL_FRAMEBUFFER_COMPLETE) {
-            throw new IllegalStateException("Framebuffer is not complete: " + status);
+            throw new IllegalStateException("Framebuffer is not complete: " + GLDebugMessenger.getGLErrorName(status));
         }
     }
 

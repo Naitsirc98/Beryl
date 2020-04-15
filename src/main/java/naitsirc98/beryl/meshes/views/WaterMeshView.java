@@ -2,17 +2,32 @@ package naitsirc98.beryl.meshes.views;
 
 import naitsirc98.beryl.materials.WaterMaterial;
 import naitsirc98.beryl.meshes.StaticMesh;
+import naitsirc98.beryl.util.Color;
 import org.joml.Vector3fc;
 import org.joml.Vector4f;
 import org.joml.Vector4fc;
 
+import static java.util.Objects.requireNonNull;
+
 public final class WaterMeshView extends StaticMeshView {
 
     private final Vector4f clipPlane;
+    private float reflectionStrength;
+    private float distortionStrength;
+    private float texturesOffset;
+    private Color waterColor;
+    private float waterColorStrength;
+    private float tiling;
 
     public WaterMeshView(StaticMesh mesh, WaterMaterial material) {
         super(mesh, material);
         this.clipPlane = new Vector4f(0, 1, 0, 0);
+        reflectionStrength = 0.5f;
+        distortionStrength = 0.02f;
+        texturesOffset = 0.0f;
+        waterColor = Color.WATER;
+        waterColorStrength = 0.2f;
+        tiling = 1;
     }
 
     @Override
@@ -36,6 +51,60 @@ public final class WaterMeshView extends StaticMeshView {
 
     public WaterMeshView clipPlane(float x, float y, float z, float w) {
         clipPlane.set(x, y, z, w);
+        return this;
+    }
+
+    public float reflectionStrength() {
+        return reflectionStrength;
+    }
+
+    public WaterMeshView reflectionStrength(float reflectionStrength) {
+        this.reflectionStrength = reflectionStrength;
+        return this;
+    }
+
+    public float distortionStrength() {
+        return distortionStrength;
+    }
+
+    public WaterMeshView distortionStrength(float distortionStrength) {
+        this.distortionStrength = distortionStrength;
+        return this;
+    }
+
+    public float texturesOffset() {
+        return texturesOffset;
+    }
+
+    public WaterMeshView texturesOffset(float texturesOffset) {
+        this.texturesOffset = texturesOffset;
+        return this;
+    }
+
+    public Color waterColor() {
+        return waterColor;
+    }
+
+    public WaterMeshView waterColor(Color waterColor) {
+        this.waterColor = requireNonNull(waterColor);
+        return this;
+    }
+
+    public float waterColorStrength() {
+        return waterColorStrength;
+    }
+
+    public WaterMeshView waterColorStrength(float waterColorStrength) {
+        this.waterColorStrength = waterColorStrength;
+        return this;
+    }
+
+    public float tiling() {
+        return tiling;
+    }
+
+    public WaterMeshView tiling(float tiling) {
+        this.tiling = tiling;
         return this;
     }
 }

@@ -75,10 +75,11 @@ public final class GLShaderProgram implements GLObject {
 
     public int uniformLocation(String name) {
 
-        final int location = glGetUniformLocation(handle, name);
+        Integer location = uniformLocations.get(name);
 
-        if(location < 0) {
-            Log.warning("Uniform " + name + " has an invalid location " + location);
+        if(location == null) {
+            location = glGetUniformLocation(handle, name);
+            uniformLocations.put(name, location);
         }
 
         return location;
@@ -153,6 +154,10 @@ public final class GLShaderProgram implements GLObject {
         glUniform1f(location, value);
     }
 
+    public void uniformInt(String name, int value) {
+        glUniform1i(uniformLocation(name), value);
+    }
+
     public void uniformBool(String name, boolean value) {
         glUniform1f(uniformLocation(name), value ? 1 : 0);
     }
@@ -163,5 +168,4 @@ public final class GLShaderProgram implements GLObject {
         shaders = null;
         uniformLocations = null;
     }
-
 }
