@@ -56,8 +56,9 @@ public final class Scene {
 
         enhancedWater = new SceneEnhancedWater();
 
-        camera = new Camera();
         cameraInfo = new SceneCameraInfo();
+
+        camera = new Camera(cameraInfo);
 
         // === Component Managers
         transforms = newInstance(TransformManager.class, this);
@@ -112,7 +113,6 @@ public final class Scene {
     void endUpdate() {
         if(camera.modified()) {
             camera.update();
-            cameraInfo.update(camera);
         }
         transforms.update();
         environment.update();

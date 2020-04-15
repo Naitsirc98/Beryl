@@ -124,7 +124,6 @@ public class GLWaterRenderer implements WaterRenderer {
             camera.position(cameraPosition.x(), cameraPosition.y() - displacement, cameraPosition.z());
             camera.pitch(-pitch);
             camera.update();
-            scene.cameraInfo().update(camera);
 
             clipPlane.set(waterView.clipPlane());
 
@@ -136,7 +135,6 @@ public class GLWaterRenderer implements WaterRenderer {
             camera.position(cameraPosition.x(), cameraPosition.y() + displacement, cameraPosition.z());
             camera.pitch(pitch);
             camera.update();
-            scene.cameraInfo().update(camera);
 
             clipPlane.set(waterView.clipPlane());
 
@@ -170,7 +168,6 @@ public class GLWaterRenderer implements WaterRenderer {
             staticMeshRenderer.render(scene);
         }
 
-        skyboxRenderer.prepare(scene);
         skyboxRenderer.render(scene);
 
         glFinish();

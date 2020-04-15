@@ -18,6 +18,9 @@ public enum PixelFormat implements ByteSize {
     RGB(3, UINT8),
     RGBA(4, UINT8),
 
+    SRGB(3, UINT8),
+    SRGBA(4, UINT8),
+
     RED16F(1, FLOAT16),
     RG16F(2, FLOAT16),
     RGB16F(3, FLOAT16),

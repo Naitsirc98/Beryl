@@ -34,6 +34,10 @@ public class GLMapper extends GraphicsMapper {
         return toSizedInternalFormat(mapToAPI(pixelFormat));
     }
 
+    public int mapToFormat(PixelFormat internalImageFormat) {
+        return toFormat(mapToAPI(internalImageFormat));
+    }
+
     private void initPrimitiveTopologyMapper() {
 
         EnumMap<PrimitiveTopology, Integer> map = new EnumMap<>(PrimitiveTopology.class);
@@ -46,6 +50,16 @@ public class GLMapper extends GraphicsMapper {
         register(PrimitiveTopology.class, EnumMapper.of(map));
     }
 
+    private int toFormat(int internalFormat) {
+        switch (internalFormat) {
+            case GL_SRGB:
+                return GL_RGB;
+            case GL_SRGB_ALPHA:
+                return GL_RGBA;
+        }
+        return internalFormat;
+    }
+
     private int toSizedInternalFormat(int internalFormat) {
         switch(internalFormat) {
             case GL_RED:
@@ -54,8 +68,12 @@ public class GLMapper extends GraphicsMapper {
                 return GL_RG8;
             case GL_RGB:
                 return GL_RGB8;
+            case GL_SRGB:
+                return GL_SRGB8;
             case GL_RGBA:
                 return GL_RGBA8;
+            case GL_SRGB_ALPHA:
+                return GL_SRGB8_ALPHA8;
             default:
                 return internalFormat;
         }
@@ -86,6 +104,9 @@ public class GLMapper extends GraphicsMapper {
         map.put(PixelFormat.RG, GL_RG);
         map.put(PixelFormat.RGB, GL_RGB);
         map.put(PixelFormat.RGBA, GL_RGBA);
+
+        map.put(PixelFormat.SRGB, GL_SRGB);
+        map.put(PixelFormat.SRGBA, GL_SRGB_ALPHA);
 
         map.put(PixelFormat.RED16F, GL_R16F);
         map.put(PixelFormat.RG16F, GL_RG16F);

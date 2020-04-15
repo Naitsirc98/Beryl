@@ -31,6 +31,7 @@
       <w>rasterization</w>
       <w>skybox</w>
       <w>spirv</w>
+      <w>srgba</w>
       <w>subpass</w>
       <w>subpasses</w>
       <w>subresource</w>

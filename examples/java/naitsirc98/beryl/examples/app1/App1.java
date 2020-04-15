@@ -166,7 +166,7 @@ public class App1 extends BerylApplication {
 
         return PhongMaterial.get("grass", builder -> {
 
-            Texture2D colorTexture = GraphicsFactory.get().newTexture2D(BerylFiles.getString("textures/grass.png"), PixelFormat.RGBA);
+            Texture2D colorTexture = GraphicsFactory.get().newTexture2D(BerylFiles.getString("textures/grass.png"), PixelFormat.SRGBA);
 
             colorTexture.generateMipmaps();
             colorTexture.sampler().minFilter(Sampler.MinFilter.LINEAR_MIPMAP_LINEAR);
@@ -187,7 +187,7 @@ public class App1 extends BerylApplication {
 
                     try(Image image = ImageFactory
                             .newImage("C:\\Users\\naits\\Downloads\\uploads_files_1970932_conifer_macedonian_pine(1)\\OBJ format\\Bark_Color.png",
-                                    PixelFormat.RGBA)) {
+                                    PixelFormat.SRGBA)) {
 
                         Texture2D colorTexture = GraphicsFactory.get().newTexture2D();
 
@@ -208,7 +208,7 @@ public class App1 extends BerylApplication {
 
                     try(Image image = ImageFactory
                             .newImage("C:\\Users\\naits\\Downloads\\uploads_files_1970932_conifer_macedonian_pine(1)\\OBJ format\\Cap_Color.png",
-                                    PixelFormat.RGBA)) {
+                                    PixelFormat.SRGBA)) {
 
                         Texture2D colorTexture = GraphicsFactory.get().newTexture2D();
 
@@ -231,7 +231,7 @@ public class App1 extends BerylApplication {
 
                     try(Image image = ImageFactory
                             .newImage("C:\\Users\\naits\\Downloads\\uploads_files_1970932_conifer_macedonian_pine(1)\\OBJ format\\conifer_macedonian_pine_Color.png",
-                                    PixelFormat.RGBA)) {
+                                    PixelFormat.SRGBA)) {
 
                         Texture2D colorTexture = GraphicsFactory.get().newTexture2D();
 
@@ -255,7 +255,7 @@ public class App1 extends BerylApplication {
     private PhongMaterial getFloorMaterial() {
         return PhongMaterial.get("floor", builder -> {
             Texture2D colorMap = GraphicsFactory.get()
-                    .newTexture2D("C:\\Users\\naits\\Downloads\\TexturesCom_Grass0157_1_seamless_S.jpg", PixelFormat.RGBA);
+                    .newTexture2D("C:\\Users\\naits\\Downloads\\TexturesCom_Grass0157_1_seamless_S.jpg", PixelFormat.SRGBA);
             colorMap.sampler().maxAnisotropy(16);
             colorMap.generateMipmaps();
             colorMap.sampler().wrapMode(Sampler.WrapMode.REPEAT);

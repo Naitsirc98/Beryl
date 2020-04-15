@@ -64,10 +64,6 @@ public final class GLRenderSystem extends APIRenderSystem {
 
         staticMeshRenderer.clearCommandBuffer();
         staticMeshRenderer.performCullingPass(scene, scene.meshInfo().meshViewsOfType(StaticMeshView.class), false);
-
-        if(scene.environment().skybox() != null) {
-            skyboxRenderer.prepare(scene);
-        }
     }
 
     @Override

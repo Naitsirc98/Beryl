@@ -39,13 +39,13 @@ public final class GLTexture2D extends GLTexture implements Texture2D {
 
     @Override
     public void update(int mipLevel, int xOffset, int yOffset, int width, int height, PixelFormat format, ByteBuffer pixels) {
-        glTextureSubImage2D(handle, mipLevel, xOffset, yOffset, width, height, mapToAPI(format), mapToAPI(format.dataType()), pixels);
+        glTextureSubImage2D(handle, mipLevel, xOffset, yOffset, width, height, mapper().mapToFormat(format), mapToAPI(format.dataType()), pixels);
         this.imageFormat = format;
     }
 
     @Override
     public void update(int mipLevel, int xOffset, int yOffset, int width, int height, PixelFormat format, FloatBuffer pixels) {
-        glTextureSubImage2D(handle, mipLevel, xOffset, yOffset, width, height, mapToAPI(format), mapToAPI(format.dataType()), pixels);
+        glTextureSubImage2D(handle, mipLevel, xOffset, yOffset, width, height, mapper().mapToFormat(format), mapToAPI(format.dataType()), pixels);
         this.imageFormat = format;
     }
 }

@@ -85,21 +85,6 @@ public class GLSkyboxRenderer implements SkyboxRenderer {
         return shader;
     }
 
-    public void prepare(Scene scene) {
-
-        try(MemoryStack stack = stackPush()) {
-
-            ByteBuffer buffer = stack.calloc(MATRICES_BUFFER_SIZE);
-
-            viewMatrix.set(scene.camera().viewMatrix()).rotateY(scene.environment().skybox().rotation());
-
-            scene.camera().projectionMatrix().get(PROJECTION_MATRIX_OFFSET, buffer);
-            viewMatrix.get(VIEW_MATRIX_OFFSET, buffer);
-
-            matricesUniformBuffer.copy(0, buffer);
-        }
-    }
-
     @Override
     public void render(Scene scene) {
 
@@ -109,6 +94,8 @@ public class GLSkyboxRenderer implements SkyboxRenderer {
         final GLCubemap skyboxTexture1 = skybox.texture1();
         final GLCubemap skyboxTexture2 = skybox.texture2();
         final float textureBlendFactor = skybox.textureBlendFactor();
+
+        updateMatrices(scene);
 
         glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
         glEnable(GL_DEPTH_TEST);
@@ -141,6 +128,21 @@ public class GLSkyboxRenderer implements SkyboxRenderer {
 
         if(skyboxTexture2 != null) {
             skyboxTexture2.unbind(1);
+        }
+    }
+
+    private void updateMatrices(Scene scene) {
+
+        try(MemoryStack stack = stackPush()) {
+
+            ByteBuffer buffer = stack.calloc(MATRICES_BUFFER_SIZE);
+
+            viewMatrix.set(scene.camera().viewMatrix()).rotateY(scene.environment().skybox().rotation());
+
+            scene.camera().projectionMatrix().get(PROJECTION_MATRIX_OFFSET, buffer);
+            viewMatrix.get(VIEW_MATRIX_OFFSET, buffer);
+
+            matricesUniformBuffer.copy(0, buffer);
         }
     }
 

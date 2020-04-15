@@ -9,6 +9,7 @@ import org.joml.*;
 
 import java.util.Vector;
 
+import static java.util.Objects.requireNonNull;
 import static naitsirc98.beryl.util.Asserts.assertNonNull;
 import static naitsirc98.beryl.util.Maths.*;
 import static org.joml.Math.max;
@@ -64,7 +65,11 @@ public final class Camera {
 
 	private boolean modified;
 
-	public Camera() {
+	private SceneCameraInfo sceneCameraInfo;
+
+	Camera(SceneCameraInfo sceneCameraInfo) {
+
+		this.sceneCameraInfo = requireNonNull(sceneCameraInfo);
 
 		projectionType = ProjectionType.PERSPECTIVE;
 
@@ -395,6 +400,7 @@ public final class Camera {
 		projectionMatrix.mul(viewMatrix, projectionViewMatrix);
 		getFrustumPlanes();
 		frustum.set(projectionViewMatrix);
+		sceneCameraInfo.update(this);
 		modified = false;
 	}
 

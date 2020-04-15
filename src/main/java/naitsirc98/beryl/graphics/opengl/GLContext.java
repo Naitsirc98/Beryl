@@ -16,6 +16,7 @@ import static org.lwjgl.glfw.GLFW.glfwSwapInterval;
 import static org.lwjgl.opengl.GL11.glDisable;
 import static org.lwjgl.opengl.GL11.glEnable;
 import static org.lwjgl.opengl.GL13.GL_MULTISAMPLE;
+import static org.lwjgl.opengl.GL30C.GL_FRAMEBUFFER_SRGB;
 
 public class GLContext implements GraphicsContext, LongHandle {
 
@@ -53,6 +54,7 @@ public class GLContext implements GraphicsContext, LongHandle {
             glDisable(GL_MULTISAMPLE);
         }
 
+        glEnable(GL_FRAMEBUFFER_SRGB);
     }
 
     @Override

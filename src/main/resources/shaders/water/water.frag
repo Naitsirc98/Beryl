@@ -14,5 +14,5 @@ void main() {
     vec4 reflectionColor = texture(u_ReflectionMap, vec2(ndc.x, -ndc.y));
     vec4 refractionColor = texture(u_RefractionMap, ndc);
 
-    out_FragmentColor = mix(reflectionColor, refractionColor, 0);
+    out_FragmentColor = mix(reflectionColor, refractionColor, 0.5);
 }
