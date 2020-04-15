@@ -178,6 +178,7 @@ public class GLWaterRenderer implements WaterRenderer {
         final GLShaderProgram waterShader = this.waterShader;
         final int indexCount = quadMesh.indexCount();
         final GLBuffer cameraBuffer = scene.cameraInfo().cameraBuffer();
+        final GLBuffer lightsBuffer = scene.environment().buffer();
 
         glEnable(GL_DEPTH_TEST);
         glDisable(GL_CULL_FACE);
@@ -185,6 +186,8 @@ public class GLWaterRenderer implements WaterRenderer {
         waterShader.bind();
 
         cameraBuffer.bind(GL_UNIFORM_BUFFER, 0);
+
+        lightsBuffer.bind(GL_UNIFORM_BUFFER, 1);
 
         vertexArray.bind();
 

@@ -173,7 +173,7 @@ public class App1 extends BerylApplication {
         });
 
         environment.skybox(new Skybox(BerylFiles.getString("textures/skybox/day"), BerylFiles.getString("textures/skybox/night")));
-        environment.lights().directionalLight(new DirectionalLight().color(Color.WHITE).direction(-1, -1, 0));
+        environment.lights().directionalLight(new DirectionalLight().color(Color.WHITE).direction(-0.23f, -0.5f, 0.34f));
         environment.ambientColor(new Color(0.8f, 0.8f, 0.8f));
         environment.fog().density(DEFAULT_FOG_DENSITY * 2);
     }
@@ -212,7 +212,7 @@ public class App1 extends BerylApplication {
             colorTexture.generateMipmaps();
             colorTexture.sampler().minFilter(Sampler.MinFilter.LINEAR_MIPMAP_LINEAR);
             colorTexture.sampler().magFilter(Sampler.MagFilter.LINEAR);
-            colorTexture.sampler().lodBias(-4);
+            colorTexture.sampler().lodBias(1);
 
             builder.ambientMap(colorTexture).diffuseMap(colorTexture);
 
@@ -259,7 +259,7 @@ public class App1 extends BerylApplication {
 
                         colorTexture.sampler().minFilter(Sampler.MinFilter.LINEAR_MIPMAP_LINEAR);
                         colorTexture.sampler().magFilter(Sampler.MagFilter.LINEAR);
-                        colorTexture.sampler().lodBias(-2.5f);
+                        colorTexture.sampler().lodBias(-1.8f);
 
                         builder.ambientMap(colorTexture).diffuseMap(colorTexture);
                     }
@@ -282,7 +282,7 @@ public class App1 extends BerylApplication {
 
                         colorTexture.sampler().minFilter(Sampler.MinFilter.LINEAR_MIPMAP_LINEAR);
                         colorTexture.sampler().magFilter(Sampler.MagFilter.LINEAR);
-                        colorTexture.sampler().lodBias(-2.5f);
+                        colorTexture.sampler().lodBias(-1.8f);
 
                         builder.ambientMap(colorTexture).diffuseMap(colorTexture);
                     }

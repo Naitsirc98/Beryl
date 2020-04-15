@@ -14,6 +14,7 @@ import naitsirc98.beryl.images.PixelFormat;
 import naitsirc98.beryl.meshes.views.StaticMeshView;
 import naitsirc98.beryl.scenes.Scene;
 import naitsirc98.beryl.scenes.SceneEnhancedWater;
+import naitsirc98.beryl.util.Color;
 import naitsirc98.beryl.util.geometry.Sizec;
 
 import static naitsirc98.beryl.core.BerylConfiguration.MSAA_SAMPLES;
@@ -21,6 +22,7 @@ import static naitsirc98.beryl.graphics.Graphics.opengl;
 import static org.lwjgl.glfw.GLFW.glfwSwapBuffers;
 import static org.lwjgl.opengl.GL11.glFinish;
 import static org.lwjgl.opengl.GL11.glViewport;
+import static org.lwjgl.opengl.GL11C.glClearColor;
 import static org.lwjgl.opengl.GL30.*;
 
 public final class GLRenderSystem extends APIRenderSystem {
@@ -65,6 +67,9 @@ public final class GLRenderSystem extends APIRenderSystem {
 
     @Override
     public void render(Scene scene) {
+
+        final Color color = scene.environment().clearColor();
+        glClearColor(color.red(), color.green(), color.blue(), color.alpha());
 
         mainFramebuffer.bind();
 

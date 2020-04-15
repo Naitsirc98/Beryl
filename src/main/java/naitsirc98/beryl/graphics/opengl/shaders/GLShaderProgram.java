@@ -75,9 +75,9 @@ public final class GLShaderProgram implements GLObject {
 
     public int uniformLocation(String name) {
 
-        Integer location = uniformLocations.get(name);
+        int location = uniformLocations.getOrDefault(name, Integer.MIN_VALUE);
 
-        if(location == null) {
+        if(location == Integer.MIN_VALUE) {
             location = glGetUniformLocation(handle, name);
             uniformLocations.put(name, location);
         }

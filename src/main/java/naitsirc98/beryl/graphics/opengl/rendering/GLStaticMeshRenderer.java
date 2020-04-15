@@ -35,8 +35,6 @@ public final class GLStaticMeshRenderer extends GLIndirectRenderer implements St
     }
 
     public void prepare(Scene scene) {
-        final Color color = scene.environment().clearColor();
-        glClearColor(color.red(), color.green(), color.blue(), color.alpha());
         updateVertexArrayVertexBuffer();
         prepareInstanceBuffer(getStaticInstances(scene), vertexArray);
     }
