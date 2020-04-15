@@ -2,13 +2,11 @@ package naitsirc98.beryl.graphics.rendering;
 
 import naitsirc98.beryl.scenes.Scene;
 
-public abstract class Renderer {
+public interface Renderer {
 
-    protected abstract void init();
+    void init();
 
-    protected abstract void terminate();
+    void terminate();
 
-    public abstract void prepare(Scene scene);
-
-    public abstract void render(Scene scene);
+    void render(Scene scene);
 }

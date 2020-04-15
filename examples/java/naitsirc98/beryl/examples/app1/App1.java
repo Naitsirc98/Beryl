@@ -12,27 +12,32 @@ import naitsirc98.beryl.images.PixelFormat;
 import naitsirc98.beryl.lights.DirectionalLight;
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.materials.IMaterial;
-import naitsirc98.beryl.materials.Material;
 import naitsirc98.beryl.materials.PhongMaterial;
-import naitsirc98.beryl.meshes.Mesh;
-import naitsirc98.beryl.meshes.MeshView;
+import naitsirc98.beryl.materials.WaterMaterial;
+import naitsirc98.beryl.meshes.StaticMesh;
 import naitsirc98.beryl.meshes.TerrainMesh;
 import naitsirc98.beryl.meshes.TerrainMeshLoader;
 import naitsirc98.beryl.meshes.models.Model;
-import naitsirc98.beryl.meshes.models.ModelEntityFactory;
 import naitsirc98.beryl.meshes.models.StaticMeshLoader;
+import naitsirc98.beryl.meshes.models.StaticModelEntityFactory;
 import naitsirc98.beryl.meshes.models.StaticVertexHandler;
+import naitsirc98.beryl.meshes.views.StaticMeshView;
+import naitsirc98.beryl.meshes.views.WaterMeshView;
 import naitsirc98.beryl.scenes.*;
 import naitsirc98.beryl.scenes.components.behaviours.UpdateMutableBehaviour;
 import naitsirc98.beryl.scenes.components.math.Transform;
-import naitsirc98.beryl.scenes.components.meshes.MeshInstance;
+import naitsirc98.beryl.scenes.components.meshes.StaticMeshInstance;
+import naitsirc98.beryl.scenes.components.meshes.WaterMeshInstance;
 import naitsirc98.beryl.util.Color;
+import org.joml.Vector3f;
 
 import java.util.Random;
 
+import static naitsirc98.beryl.scenes.EnhancedWaterUnit.ENHANCED_WATER_UNIT_0;
 import static naitsirc98.beryl.scenes.Fog.DEFAULT_FOG_DENSITY;
 import static naitsirc98.beryl.scenes.SceneManager.newScene;
-import static naitsirc98.beryl.util.Maths.*;
+import static naitsirc98.beryl.util.Maths.radians;
+import static naitsirc98.beryl.util.Maths.sin;
 
 
 public class App1 extends BerylApplication {
@@ -78,13 +83,13 @@ public class App1 extends BerylApplication {
 
         TerrainMesh terrainMesh = TerrainMeshLoader.get().load("Terrain", BerylFiles.getString("textures/terrain_heightmap.png"), terrainSize);
 
-        Mesh quadMesh = StaticMeshLoader.get().load(BerylFiles.getPath("models/quad.obj")).loadedMesh(0).mesh();
+        StaticMesh quadMesh = StaticMeshLoader.get().load(BerylFiles.getPath("models/quad.obj")).loadedMesh(0).mesh();
 
-        Mesh grassMesh = StaticMeshLoader.get().load(BerylFiles.getPath("models/grass.obj"),
+        StaticMesh grassMesh = StaticMeshLoader.get().load(BerylFiles.getPath("models/grass.obj"),
                 new StaticVertexHandler.Builder().normalFunction(n -> n.set(0, 1, 0)).build())
                 .loadedMesh(0).mesh();
 
-        Model treeModel = StaticMeshLoader.get()
+        Model<StaticMesh> treeModel = StaticMeshLoader.get()
                         .load("C:\\Users\\naits\\Downloads\\uploads_files_1970932_conifer_macedonian_pine(1)\\OBJ format\\conifer_macedonian_pine.obj",
                                 new StaticVertexHandler.Builder().positionFunction(p -> p.mul(0.01f)).build());
 
@@ -92,15 +97,19 @@ public class App1 extends BerylApplication {
 
         Entity terrain = scene.newEntity();
         terrain.add(Transform.class).position(0, 0, 0).scale(1);
-        terrain.add(MeshInstance.class).meshView(new MeshView(terrainMesh, getFloorMaterial()));
+        terrain.add(StaticMeshInstance.class).meshView(new StaticMeshView(terrainMesh, getFloorMaterial()));
 
         Entity water = scene.newEntity();
-        water.add(Transform.class).position(268.543f, -11.0f, 526.378f).rotateX(radians(90)).scale(30);
-        water.add(MeshInstance.class).meshView(new MeshView(quadMesh, getWaterMaterial()));
+        water.add(Transform.class).position(268.543f, -11.0f, 526.378f).rotateX(radians(90)).scale(terrainSize * 0.8f);
+        WaterMeshView waterMeshView = new WaterMeshView(quadMesh, WaterMaterial.get("water0"));
+        waterMeshView.clipPlane(0, 1, 0, -11);
+        water.add(WaterMeshInstance.class).meshView(waterMeshView);
 
-        ModelEntityFactory treeFactory = new ModelEntityFactory(treeModel).materialsFunction(this::treeMaterialFunction);
+        scene.enhancedWater().setEnhancedWaterView(ENHANCED_WATER_UNIT_0, waterMeshView);
 
-        for(int i = 0;i < 0;i++) {
+        StaticModelEntityFactory treeFactory = new StaticModelEntityFactory(treeModel).materialsFunction(this::treeMaterialFunction);
+
+        for(int i = 0;i < 300;i++) {
             Entity tree = treeFactory.newEntity(scene);
             float x = RAND.nextInt((int) terrainSize);
             float z = RAND.nextInt((int) terrainSize);
@@ -108,19 +117,19 @@ public class App1 extends BerylApplication {
             tree.get(Transform.class).position(x, y, z);
         }
 
-        MeshView grassView = new MeshView(grassMesh, getGrassMaterial());
+        StaticMeshView grassView = new StaticMeshView(grassMesh, getGrassMaterial());
 
-        for(int i = 0;i < 1000;i++) {
+        for(int i = 0;i < 500;i++) {
             Entity grass = scene.newEntity();
             float x = RAND.nextInt((int) terrainSize);
             float z = RAND.nextInt((int) terrainSize);
             float y = terrainMesh.heightAt(0, 0, x, z);
-            grass.get(Transform.class).position(x, y, z).scale(4.0f);
-            grass.add(MeshInstance.class).meshView(grassView);
+            grass.get(Transform.class).position(x, y, z).scale(5.0f);
+            grass.add(StaticMeshInstance.class).meshView(grassView);
         }
 
         Camera camera = scene.camera();
-        camera.lookAt(0, 0).position(terrainSize / 2, 5, terrainSize / 2);
+        camera.lookAt(0, 0).position(268.543f, 10.0f, 526.378f);//.position(terrainSize / 2, 5, terrainSize / 2);
 
         Entity cameraController = scene.newEntity();
         cameraController.add(CameraController.class);
@@ -134,7 +143,7 @@ public class App1 extends BerylApplication {
 
             skybox.rotate(radians(0.004f));
 
-            final float time = Math.abs(sin(Time.minutes()));
+            final float time = Math.abs(sin(Time.minutes() / 10));
 
             skybox.textureBlendFactor(time);
         });
@@ -262,24 +271,5 @@ public class App1 extends BerylApplication {
     @Override
     protected void onUpdate() {
 
-    }
-
-    private void addOrRemoveRandomly(Entity entity, Mesh mesh, Material material) {
-
-        if(RAND.nextFloat() < 0.001f) {
-
-            entity.destroy();
-
-            final float angle = RAND.nextFloat();
-
-            Entity model = entity.scene().newEntity();
-            model.add(Transform.class).scale(0.25f).position(RAND.nextInt(500), -RAND.nextInt(500), -RAND.nextInt(500));
-            model.add(MeshInstance.class).meshView(new MeshView(mesh, material));
-            model.add(UpdateMutableBehaviour.class).onUpdate(thisBehaviour -> {
-                Transform transform = thisBehaviour.get(Transform.class);
-                transform.rotateY(radians(angle));
-                addOrRemoveRandomly(thisBehaviour.entity(), mesh, material);
-            });
-        }
     }
 }

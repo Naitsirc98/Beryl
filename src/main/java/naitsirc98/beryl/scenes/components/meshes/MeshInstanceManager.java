@@ -1,158 +1,84 @@
 package naitsirc98.beryl.scenes.components.meshes;
 
-import naitsirc98.beryl.materials.IMaterial;
-import naitsirc98.beryl.meshes.Mesh;
-import naitsirc98.beryl.meshes.MeshView;
+import naitsirc98.beryl.meshes.views.MeshView;
 import naitsirc98.beryl.scenes.Scene;
 import naitsirc98.beryl.scenes.components.AbstractComponentManager;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 
 public final class MeshInstanceManager extends AbstractComponentManager<MeshInstance> implements SceneMeshInfo {
 
-    private final List<MeshView> meshViews;
-    private final Map<MeshView, List<MeshInstance>> instancesTable;
-    private List<Mesh> meshes;
-    private List<IMaterial> materials;
-    private final AtomicInteger modifications;
-    private int numMeshViewsInstances;
-    private int lastModifications;
+    private final Map<Class<MeshView>, MeshInstanceList> meshInstancesTable;
 
     protected MeshInstanceManager(Scene scene) {
         super(scene);
-        meshViews = new ArrayList<>();
-        instancesTable = new HashMap<>();
-        meshes = new ArrayList<>();
-        materials = new ArrayList<>();
-        modifications = new AtomicInteger();
-        lastModifications = Integer.MIN_VALUE;
+        meshInstancesTable = new HashMap<>();
     }
 
-    public void update() {
+    @Override
+    public Map<Class<MeshView>, MeshInstanceList> allInstances() {
+        return meshInstancesTable;
+    }
 
-        final int modifications = modifications();
+    @Override
+    @SuppressWarnings("unchecked")
+    public <T extends MeshView, U extends MeshInstance> MeshInstanceList<U> meshViewsOfType(Class<T> meshViewType) {
+        return (MeshInstanceList<U>) meshInstancesTable.get(meshViewType);
+    }
 
-        if(lastModifications != modifications) {
-            numMeshViewsInstances = instances().parallelStream().mapToInt(MeshInstance::numMeshViews).sum();
-            meshes = meshViews.parallelStream().map(MeshView::mesh).collect(Collectors.toList());
-            materials = meshViews.parallelStream().map(MeshView::material).distinct().collect(Collectors.toList());
-            lastModifications = modifications();
+    @Override
+    protected void add(MeshInstance meshInstance) {
+        super.add(meshInstance);
+        
+        if(meshInstance.enabled()) {
+            register(meshInstance);
         }
     }
 
     @Override
-    protected void add(MeshInstance instance) {
-        super.add(instance);
-
-        if(instance.enabled()) {
-            addInstance(instance);
-        }
+    protected void enable(MeshInstance meshInstance) {
+        super.enable(meshInstance);
+        register(meshInstance);
     }
 
     @Override
-    protected void enable(MeshInstance instance) {
-        if(!components.enabled().contains(instance)) {
-            super.enable(instance);
-            addInstance(instance);
-        }
+    protected void disable(MeshInstance meshInstance) {
+        super.disable(meshInstance);
+        unregister(meshInstance);
     }
 
     @Override
-    protected void disable(MeshInstance instance) {
-        super.disable(instance);
-        removeInstance(instance);
-    }
-
-    @Override
-    protected void remove(MeshInstance instance) {
-        super.remove(instance);
-        removeInstance(instance);
+    protected void remove(MeshInstance meshInstance) {
+        super.remove(meshInstance);
+        unregister(meshInstance);
     }
 
     @Override
     protected void removeAll() {
         super.removeAll();
-        meshViews.clear();
-        instancesTable.clear();
-        meshes.clear();
-        materials.clear();
+        meshInstancesTable.clear();
     }
 
-    @Override
-    public int modifications() {
-        return modifications.get();
-    }
+    @SuppressWarnings("unchecked")
+    private void register(MeshInstance meshInstance) {
 
-    @Override
-    public int numInstancedMeshViews() {
-        return numMeshViewsInstances;
-    }
+        Class<MeshView> meshViewType = meshInstance.meshViewType();
 
-    @Override
-    public List<Mesh> meshes() {
-        return meshes;
-    }
+        MeshInstanceList meshInstancesOfThatType;
 
-    @Override
-    public List<MeshView> meshViews() {
-        return meshViews;
-    }
-
-    @Override
-    public List<MeshInstance> instances() {
-        return components.enabled();
-    }
-
-    @Override
-    public Map<MeshView, List<MeshInstance>> instancesTable() {
-        return instancesTable;
-    }
-
-    @Override
-    public List<IMaterial> materials() {
-        return materials;
-    }
-
-    private void addInstance(MeshInstance instance) {
-
-        for(MeshView meshView : instance) {
-
-            List<MeshInstance> instances;
-
-            if(!instancesTable.containsKey(meshView)) {
-                meshViews.add(meshView);
-                instances = new ArrayList<>(1);
-                instancesTable.put(meshView, instances);
-            } else {
-                instances = instancesTable.get(meshView);
-            }
-
-            instances.add(instance);
-
-            modifications.incrementAndGet();
+        if(meshInstancesTable.containsKey(meshViewType)) {
+            meshInstancesOfThatType = meshInstancesTable.get(meshViewType);
+        } else {
+            meshInstancesOfThatType = new MeshInstanceList();
+            meshInstancesTable.put(meshViewType, meshInstancesOfThatType);
         }
+
+        meshInstancesOfThatType.add(meshInstance);
     }
 
-    private void removeInstance(MeshInstance instance) {
-
-        for(MeshView meshView : instance) {
-
-            List<MeshInstance> instances = instancesTable.get(meshView);
-
-            instances.remove(instance);
-
-            if(instances.isEmpty()) {
-                instancesTable.remove(meshView);
-                meshViews.remove(meshView);
-            }
-
-            modifications.incrementAndGet();
-
-        }
+    @SuppressWarnings("unchecked")
+    private void unregister(MeshInstance meshInstance) {
+        meshInstancesTable.get(meshInstance.meshViewType()).remove(meshInstance);
     }
 }

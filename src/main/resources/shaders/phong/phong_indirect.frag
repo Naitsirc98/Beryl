@@ -41,13 +41,12 @@ layout(location = 0) in VertexData {
     flat int materialIndex;
 } vertexData;
 
-vec3 fragmentNormal;
 
-
-layout(location = 0) out vec4 out_FinalColor;
+layout(location = 0) out vec4 out_FragmentColor;
 
 
 vec3 cameraDirection;
+vec3 fragmentNormal;
 
 PhongMaterial material;
 
@@ -62,7 +61,6 @@ vec4 computePointLighting(Light light);
 vec4 computeSpotLighting(Light light);
 
 vec4 applyFogEffect(vec4 fragmentColor);
-
 
 void main() {
 
@@ -98,8 +96,9 @@ void main() {
         fragmentColor = applyFogEffect(fragmentColor);
     }
 
-    out_FinalColor = fragmentColor;
+    out_FragmentColor = fragmentColor;
 }
+
 
 vec4 applyFogEffect(vec4 fragmentColor) {
 

@@ -29,6 +29,7 @@ public final class Scene {
     private final EntityManager entityManager;
 
     private final SceneEnvironment environment;
+    private final SceneEnhancedWater enhancedWater;
 
     private final Camera camera;
     private final SceneCameraInfo cameraInfo;
@@ -53,6 +54,8 @@ public final class Scene {
 
         environment = new SceneEnvironment();
 
+        enhancedWater = new SceneEnhancedWater();
+
         camera = new Camera();
         cameraInfo = new SceneCameraInfo();
 
@@ -73,6 +76,10 @@ public final class Scene {
 
     public SceneEnvironment environment() {
         return environment;
+    }
+
+    public SceneEnhancedWater enhancedWater() {
+        return enhancedWater;
     }
 
     public SceneMeshInfo meshInfo() {
@@ -108,7 +115,6 @@ public final class Scene {
             cameraInfo.update(camera);
         }
         transforms.update();
-        meshes.update();
         environment.update();
         RenderSystem.prepare(this);
     }

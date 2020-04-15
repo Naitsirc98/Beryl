@@ -1,10 +1,10 @@
 package naitsirc98.beryl.meshes.models;
 
 import naitsirc98.beryl.materials.IMaterial;
-import naitsirc98.beryl.meshes.MeshView;
+import naitsirc98.beryl.meshes.views.MeshView;
 
-public interface MeshViewFactory<T> {
+public interface MeshViewFactory<T, U extends MeshView> {
 
-    MeshView create(T key, IMaterial material);
+    U create(T key, IMaterial material);
 
 }

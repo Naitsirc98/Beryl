@@ -17,7 +17,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static naitsirc98.beryl.materials.IMaterial.Type;
 import static naitsirc98.beryl.util.Asserts.assertFalse;
-import static naitsirc98.beryl.util.handles.LongHandle.NULL;
 
 public final class MaterialManager implements AssetManager<IMaterial> {
 
@@ -168,65 +167,16 @@ public final class MaterialManager implements AssetManager<IMaterial> {
                 case PHONG_MATERIAL:
                     copyPhongMaterialToBuffer(material, data);
                     break;
-                case METALLIC_MATERIAL:
-                    copyMetallicMaterialToBuffer(material, data);
+                case WATER_MATERIAL:
+                    // A water material does not need to copy any data
                     break;
-                case SPECULAR_MATERIAL:
-                    copySpecularMaterialToBuffer(material, data);
-                    break;
+                default:
+                    Log.fatal("Unknown material type: " + material.type());
+                    return;
             }
 
             buffer.update(offset, data.rewind());
         }
-    }
-
-    private void copySpecularMaterialToBuffer(SpecularMaterial material, ByteBuffer data) {
-
-        material.diffuseColor().getRGBA(data);
-        material.specularColor().getRGBA(data);
-        material.emissiveColor().getRGBA(data);
-        // Padding
-        data.putFloat(0).putFloat(0).putFloat(0).putFloat(0);
-
-        data.putLong(material.diffuseMap().makeResident());
-        data.putLong(material.specularGlossinessMap().makeResident());
-        data.putLong(material.emissiveMap().makeResident());
-        data.putLong(material.occlusionMap().makeResident());
-        data.putLong(material.normalMap().makeResident());
-        // Padding
-        data.putLong(NULL);
-
-        data.putFloat(material.textureCoordsFactor().x()).putFloat(material.textureCoordsFactor().y());
-
-        data.putFloat(material.alpha());
-        data.putFloat(material.glossiness());
-        data.putFloat(material.fresnel());
-        // Padding
-        data.putFloat(0);
-    }
-
-    private void copyMetallicMaterialToBuffer(MetallicMaterial material, ByteBuffer data) {
-
-        material.color().getRGBA(data);
-        material.emissiveColor().getRGBA(data);
-        // Padding
-        data.putFloat(0).putFloat(0).putFloat(0).putFloat(0);
-        data.putFloat(0).putFloat(0).putFloat(0).putFloat(0);
-
-        data.putLong(material.colorMap().makeResident());
-        data.putLong(material.metallicRoughnessMap().makeResident());
-        data.putLong(material.emissiveMap().makeResident());
-        data.putLong(material.occlusionMap().makeResident());
-        data.putLong(material.normalMap().makeResident());
-        // Padding
-        data.putLong(NULL);
-
-        data.putFloat(material.textureCoordsFactor().x()).putFloat(material.textureCoordsFactor().y());
-
-        data.putFloat(material.alpha());
-        data.putFloat(material.metallic());
-        data.putFloat(material.roughness());
-        data.putFloat(material.fresnel());
     }
 
     private void copyPhongMaterialToBuffer(PhongMaterial material, ByteBuffer data) {
@@ -236,6 +186,7 @@ public final class MaterialManager implements AssetManager<IMaterial> {
         material.specularColor().getRGBA(data);
         material.emissiveColor().getRGBA(data);
 
+        // Phong materials use resident textures
         data.putLong(material.ambientMap().makeResident());
         data.putLong(material.diffuseMap().makeResident());
         data.putLong(material.specularMap().makeResident());

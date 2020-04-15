@@ -51,6 +51,8 @@ public abstract class Mesh extends ManagedResource implements Asset {
         boundingSphere = calculateBoundingSphere(boundingBox);
     }
 
+    public abstract Class<? extends Mesh> type();
+
     @Override
     public String name() {
         return name;

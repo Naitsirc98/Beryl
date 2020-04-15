@@ -52,7 +52,7 @@ public final class SceneCameraInfo implements Resource {
         frustumBuffer.release();
     }
 
-    void update(Camera camera) {
+    public void update(Camera camera) {
         updateCameraBuffer(camera);
         updateFrustumBuffer(camera);
     }

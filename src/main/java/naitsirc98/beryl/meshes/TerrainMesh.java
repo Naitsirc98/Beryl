@@ -1,9 +1,5 @@
 package naitsirc98.beryl.meshes;
 
-import naitsirc98.beryl.util.Maths;
-import org.joml.Vector2f;
-import org.joml.Vector3f;
-
 import java.nio.ByteBuffer;
 
 import static java.lang.Math.floor;
@@ -26,6 +22,11 @@ public final class TerrainMesh extends StaticMesh {
         this.minY = minY;
         this.maxY = maxY;
         boundingSphere.radius *= 1.5f;
+    }
+
+    @Override
+    public Class<? extends Mesh> type() {
+        return StaticMesh.class;
     }
 
     public float size() {

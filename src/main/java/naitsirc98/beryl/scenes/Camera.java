@@ -7,6 +7,8 @@ import naitsirc98.beryl.util.geometry.Viewport;
 import naitsirc98.beryl.util.geometry.Viewportc;
 import org.joml.*;
 
+import java.util.Vector;
+
 import static naitsirc98.beryl.util.Asserts.assertNonNull;
 import static naitsirc98.beryl.util.Maths.*;
 import static org.joml.Math.max;
@@ -128,11 +130,17 @@ public final class Camera {
 		yaw += xOffset;
 		pitch = clamp(MIN_PITCH, MAX_PITCH, yOffset + pitch);
 
-		updateCameraVectors();
-
 		modify();
 
 		return this;
+	}
+
+	public float lastLookAtX() {
+		return lastX;
+	}
+
+	public float lastLookAtY() {
+		return lastY;
 	}
 	
 	public void move(Direction direction, float amount) {
@@ -348,8 +356,8 @@ public final class Camera {
 		Vector3f up = this.up;
 
 		return viewMatrix.setLookAt(
-				position.x(), position.y(), position.z(),
-				position.x() + forward.x, position.y() + forward.y, position.z() + forward.z,
+				position.x, position.y, position.z,
+				position.x + forward.x, position.y + forward.y, position.z + forward.z,
 				up.x, up.y, up.z);
 	}
 
@@ -381,6 +389,7 @@ public final class Camera {
 	}
 
 	public void update() {
+		updateCameraVectors();
 		getViewMatrix(viewMatrix);
 		getProjectionMatrix(projectionMatrix, projectionType);
 		projectionMatrix.mul(viewMatrix, projectionViewMatrix);

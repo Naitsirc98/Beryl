@@ -29,6 +29,11 @@ public class StaticMesh extends Mesh implements Asset {
         super(handle, name, vertexData, indexData, VERTEX_DATA_SIZE);
     }
 
+    @Override
+    public Class<? extends Mesh> type() {
+        return StaticMesh.class;
+    }
+
     public static final class StaticMeshData {
 
         private ByteBuffer vertices;

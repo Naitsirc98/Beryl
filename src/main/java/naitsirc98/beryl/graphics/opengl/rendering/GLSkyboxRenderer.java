@@ -27,7 +27,7 @@ import static org.lwjgl.opengl.GL31C.GL_UNIFORM_BUFFER;
 import static org.lwjgl.opengl.GL32.GL_TEXTURE_CUBE_MAP_SEAMLESS;
 import static org.lwjgl.system.MemoryStack.stackPush;
 
-public class GLSkyboxRenderer extends SkyboxRenderer {
+public class GLSkyboxRenderer implements SkyboxRenderer {
 
     private static final int MATRICES_BUFFER_SIZE = MATRIX4_SIZEOF * 2;
     private static final int PROJECTION_MATRIX_OFFSET = 0;
@@ -46,7 +46,7 @@ public class GLSkyboxRenderer extends SkyboxRenderer {
     private Matrix4f viewMatrix;
 
     @Override
-    protected void init() {
+    public void init() {
 
         shader = new GLShaderProgram()
                 .attach(new GLShader(VERTEX_STAGE).source(BerylFiles.getPath("shaders/skybox/skybox.vert")))
@@ -75,13 +75,16 @@ public class GLSkyboxRenderer extends SkyboxRenderer {
     }
 
     @Override
-    protected void terminate() {
+    public void terminate() {
         vertexArray.release();
         vertexBuffer.release();
         indexBuffer.release();
     }
 
-    @Override
+    public GLShaderProgram shader() {
+        return shader;
+    }
+
     public void prepare(Scene scene) {
 
         try(MemoryStack stack = stackPush()) {
@@ -116,7 +119,7 @@ public class GLSkyboxRenderer extends SkyboxRenderer {
 
         matricesUniformBuffer.bind(GL_UNIFORM_BUFFER, 0);
 
-        shader.uniformColorRGB("u_FogColor", environment.fog().color());
+        shader.uniformColorRGBA("u_FogColor", environment.fog().color());
 
         if(skyboxTexture1 != null) {
             shader.uniformSampler("u_SkyboxTexture1", skyboxTexture1, 0);
@@ -131,8 +134,6 @@ public class GLSkyboxRenderer extends SkyboxRenderer {
         vertexArray.bind();
 
         glDrawElements(GL_TRIANGLES, SKYBOX_INDEX_COUNT, GL_UNSIGNED_INT, NULL);
-
-        shader.unbind();
 
         if(skyboxTexture1 != null) {
             skyboxTexture1.unbind(0);

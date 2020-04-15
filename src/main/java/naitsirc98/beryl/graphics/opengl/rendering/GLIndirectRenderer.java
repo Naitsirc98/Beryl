@@ -6,62 +6,33 @@ import naitsirc98.beryl.graphics.opengl.buffers.GLBuffer;
 import naitsirc98.beryl.graphics.opengl.commands.GLDrawElementsCommand;
 import naitsirc98.beryl.graphics.opengl.shaders.GLShader;
 import naitsirc98.beryl.graphics.opengl.shaders.GLShaderProgram;
-import naitsirc98.beryl.graphics.opengl.swapchain.GLFramebuffer;
-import naitsirc98.beryl.graphics.opengl.swapchain.GLRenderbuffer;
-import naitsirc98.beryl.graphics.opengl.textures.GLTexture2DMSAA;
 import naitsirc98.beryl.graphics.opengl.vertex.GLVertexArray;
 import naitsirc98.beryl.graphics.rendering.Renderer;
-import naitsirc98.beryl.graphics.window.Window;
-import naitsirc98.beryl.images.PixelFormat;
 import naitsirc98.beryl.materials.MaterialManager;
 import naitsirc98.beryl.meshes.MeshManager;
-import naitsirc98.beryl.meshes.MeshView;
-import naitsirc98.beryl.meshes.StaticMesh;
 import naitsirc98.beryl.meshes.StaticMeshManager;
-import naitsirc98.beryl.meshes.vertices.VertexLayout;
+import naitsirc98.beryl.meshes.views.MeshView;
 import naitsirc98.beryl.scenes.Scene;
 import naitsirc98.beryl.scenes.components.meshes.MeshInstance;
-import naitsirc98.beryl.scenes.components.meshes.SceneMeshInfo;
-import naitsirc98.beryl.util.Color;
-import naitsirc98.beryl.util.geometry.Sizec;
+import naitsirc98.beryl.scenes.components.meshes.MeshInstanceList;
 import org.joml.Matrix4fc;
 import org.lwjgl.system.MemoryStack;
 
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
-import java.util.List;
 
-import static naitsirc98.beryl.core.BerylConfiguration.MSAA_SAMPLES;
 import static naitsirc98.beryl.graphics.ShaderStage.*;
-import static naitsirc98.beryl.meshes.vertices.VertexAttribute.*;
-import static naitsirc98.beryl.meshes.vertices.VertexAttribute.INDEX;
 import static naitsirc98.beryl.util.types.DataType.*;
 import static org.lwjgl.opengl.ARBIndirectParameters.GL_PARAMETER_BUFFER_ARB;
 import static org.lwjgl.opengl.ARBIndirectParameters.glMultiDrawElementsIndirectCountARB;
-import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
-import static org.lwjgl.opengl.GL11.GL_CULL_FACE;
-import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
-import static org.lwjgl.opengl.GL11.GL_DEPTH_TEST;
-import static org.lwjgl.opengl.GL11.GL_FILL;
-import static org.lwjgl.opengl.GL11.GL_FRONT_AND_BACK;
 import static org.lwjgl.opengl.GL11.GL_TRIANGLES;
-import static org.lwjgl.opengl.GL11.GL_UNSIGNED_INT;
-import static org.lwjgl.opengl.GL11.glClear;
-import static org.lwjgl.opengl.GL11.glClearColor;
-import static org.lwjgl.opengl.GL11.glDepthMask;
-import static org.lwjgl.opengl.GL11.glEnable;
-import static org.lwjgl.opengl.GL11.glPolygonMode;
-import static org.lwjgl.opengl.GL30.*;
-import static org.lwjgl.opengl.GL31.GL_UNIFORM_BUFFER;
-import static org.lwjgl.opengl.GL40.GL_DRAW_INDIRECT_BUFFER;
-import static org.lwjgl.opengl.GL42.*;
-import static org.lwjgl.opengl.GL42.GL_ATOMIC_COUNTER_BARRIER_BIT;
-import static org.lwjgl.opengl.GL43.GL_SHADER_STORAGE_BUFFER;
-import static org.lwjgl.opengl.GL43.glDispatchCompute;
+import static org.lwjgl.opengl.GL42.GL_COMMAND_BARRIER_BIT;
+import static org.lwjgl.opengl.GL42.glMemoryBarrier;
+import static org.lwjgl.opengl.GL45.*;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
-public abstract class GLIndirectRenderer extends Renderer {
+public abstract class GLIndirectRenderer implements Renderer {
 
     private static final int INSTANCE_BUFFER_MIN_SIZE = INT32_SIZEOF * 2;
 
@@ -72,24 +43,26 @@ public abstract class GLIndirectRenderer extends Renderer {
     private static final int VERTEX_BUFFER_BINDING = 0;
     private static final int INSTANCE_BUFFER_BINDING = 1;
 
-    private GLShaderProgram cullingShader;
-    private GLShaderProgram renderShader;
+    protected GLShaderProgram cullingShader;
+    protected GLShaderProgram renderShader;
 
-    private GLVertexArray vertexArray;
-    private GLBuffer instanceBuffer; // model matrix + material + bounding sphere indices
+    protected GLVertexArray vertexArray;
+    protected GLBuffer instanceBuffer; // model matrix + material + bounding sphere indices
 
-    private GLBuffer transformsBuffer;
-    private GLBuffer meshIndicesBuffer;
+    protected GLBuffer transformsBuffer;
+    protected GLBuffer meshIndicesBuffer;
 
-    private GLBuffer instanceCommandBuffer;
-    private GLBuffer atomicCounterBuffer;
+    protected GLBuffer instanceCommandBuffer;
+    protected GLBuffer atomicCounterBuffer;
 
     protected GLIndirectRenderer() {
 
     }
 
     @Override
-    protected void init() {
+    public void init() {
+
+        instanceBuffer = new GLBuffer();
 
         initVertexArray();
 
@@ -113,13 +86,13 @@ public abstract class GLIndirectRenderer extends Renderer {
     }
 
     @Override
-    protected void terminate() {
+    public void terminate() {
 
         cullingShader.release();
         renderShader.release();
 
-        instanceBuffer.release();
         vertexArray.release();
+        instanceBuffer.release();
 
         transformsBuffer.release();
         meshIndicesBuffer.release();
@@ -127,30 +100,22 @@ public abstract class GLIndirectRenderer extends Renderer {
         instanceCommandBuffer.release();
     }
 
-    public void prepare(Scene scene) {
-
-        prepareInstanceBuffer(scene.meshInfo());
-
-        StaticMeshManager meshManager = MeshManager.get().staticMeshManager();
-
-        vertexArray.setVertexBuffer(VERTEX_BUFFER_BINDING, meshManager.vertexBuffer(), StaticMesh.VERTEX_DATA_SIZE);
-        vertexArray.setIndexBuffer(meshManager.indexBuffer());
+    protected void setOpenGLState(Scene scene) {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        glEnable(GL_DEPTH_TEST);
+        glDepthMask(true);
+        glEnable(GL_CULL_FACE);
     }
 
-    public void render(Scene scene) {
-        performCullingPass(scene);
-        renderScene(scene);
-    }
+    protected void performCullingPass(Scene scene, MeshInstanceList<?> instances, boolean alwaysPass) {
 
-    private void performCullingPass(Scene scene) {
-
-        final int numObjects = scene.meshInfo().numInstancedMeshViews();
+        final int numObjects = instances.numMeshViews();
 
         StaticMeshManager staticMeshManager = MeshManager.get().staticMeshManager();
 
         GLBuffer meshCommandBuffer = staticMeshManager.commandBuffer();
         GLBuffer boundingSpheresBuffer = staticMeshManager.boundingSpheresBuffer();
-        GLBuffer frustumUniformBuffer = scene.cameraInfo().frustumBuffer();
+        GLBuffer frustumBuffer = scene.cameraInfo().frustumBuffer();
 
         cullingShader.bind();
 
@@ -159,29 +124,24 @@ public abstract class GLIndirectRenderer extends Renderer {
         boundingSpheresBuffer.bind(GL_SHADER_STORAGE_BUFFER, 2);
         transformsBuffer.bind(GL_SHADER_STORAGE_BUFFER, 3);
         meshIndicesBuffer.bind(GL_SHADER_STORAGE_BUFFER, 4);
-        frustumUniformBuffer.bind(GL_UNIFORM_BUFFER, 5);
+        frustumBuffer.bind(GL_UNIFORM_BUFFER, 5);
         atomicCounterBuffer.bind(GL_ATOMIC_COUNTER_BUFFER, 6);
+        cullingShader.uniformBool("u_AlwaysPass", alwaysPass);
 
         glDispatchCompute(numObjects, 1, 1);
 
         glMemoryBarrier(GL_COMMAND_BARRIER_BIT | GL_SHADER_STORAGE_BUFFER | GL_ATOMIC_COUNTER_BARRIER_BIT);
     }
 
-    private void renderScene(Scene scene) {
+    protected void renderScene(Scene scene, MeshInstanceList<?> instances, GLVertexArray vertexArray, GLShaderProgram shader) {
 
-        final Color clearColor = scene.environment().clearColor();
         final GLBuffer lightsUniformBuffer = scene.environment().buffer();
         final GLBuffer materialsBuffer = MaterialManager.get().buffer();
         final GLBuffer cameraUniformBuffer = scene.cameraInfo().cameraBuffer();
 
-        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-        glEnable(GL_DEPTH_TEST);
-        glDepthMask(true);
-        glEnable(GL_CULL_FACE);
-        glClearColor(clearColor.red(), clearColor.green(), clearColor.blue(), clearColor.alpha());
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        setOpenGLState(scene);
 
-        renderShader.bind();
+        shader.bind();
 
         cameraUniformBuffer.bind(GL_UNIFORM_BUFFER, 0);
 
@@ -197,12 +157,12 @@ public abstract class GLIndirectRenderer extends Renderer {
 
         vertexArray.bind();
 
-        glMultiDrawElementsIndirectCountARB(GL_TRIANGLES, GL_UNSIGNED_INT, NULL, 0, scene.meshInfo().numInstancedMeshViews(), 0);
+        glMultiDrawElementsIndirectCountARB(GL_TRIANGLES, GL_UNSIGNED_INT, NULL, 0, instances.numMeshViews(), 0);
     }
 
-    public void prepareInstanceBuffer(SceneMeshInfo meshInfo) {
+    protected void prepareInstanceBuffer(MeshInstanceList<?> instances, GLVertexArray vertexArray) {
 
-        final int numObjects = meshInfo.numInstancedMeshViews();
+        final int numObjects = instances.numMeshViews();
 
         final int instanceCommandsMinSize = numObjects * GLDrawElementsCommand.SIZEOF;
 
@@ -210,7 +170,7 @@ public abstract class GLIndirectRenderer extends Renderer {
             reallocateBuffer(instanceCommandBuffer, instanceCommandsMinSize);
         }
 
-        instanceCommandBuffer.clear();
+        clearCommandBuffer();
 
         final int instancesMinSize = numObjects * INSTANCE_BUFFER_MIN_SIZE;
 
@@ -231,16 +191,11 @@ public abstract class GLIndirectRenderer extends Renderer {
             reallocateBuffer(transformsBuffer, transformsMinSize);
         }
 
-        final List<MeshInstance> instances = meshInfo.instances();
         int objectIndex = 0;
 
-        for(MeshInstance instance : instances) {
+        for(MeshInstance<?> instance : instances) {
 
-            for (MeshView meshView : instance) {
-
-                if(!(meshView.mesh() instanceof StaticMesh)) {
-                    continue;
-                }
+            for(MeshView<?> meshView : instance) {
 
                 final int meshIndex = meshView.mesh().index();
 
@@ -258,13 +213,17 @@ public abstract class GLIndirectRenderer extends Renderer {
         }
     }
 
-    private void setInstanceMeshIndex(int objectIndex, int meshIndex) {
+    public void clearCommandBuffer() {
+        instanceCommandBuffer.clear();
+    }
+
+    protected void setInstanceMeshIndex(int objectIndex, int meshIndex) {
         try (MemoryStack stack = stackPush()) {
             meshIndicesBuffer.copy(objectIndex * UINT32_SIZEOF, stack.ints(meshIndex));
         }
     }
 
-    private void setInstanceTransform(int objectIndex, Matrix4fc modelMatrix, Matrix4fc normalMatrix) {
+    protected void setInstanceTransform(int objectIndex, Matrix4fc modelMatrix, Matrix4fc normalMatrix) {
         try(MemoryStack stack = stackPush()) {
             ByteBuffer buffer = stack.malloc(MATRIX4_SIZEOF * 2);
             modelMatrix.get(TRANSFORMS_BUFFER_MODEL_MATRIX_OFFSET, buffer);
@@ -273,7 +232,7 @@ public abstract class GLIndirectRenderer extends Renderer {
         }
     }
 
-    private void setInstanceData(int instanceID, int matrixIndex, int materialIndex) {
+    protected void setInstanceData(int instanceID, int matrixIndex, int materialIndex) {
 
         try (MemoryStack stack = stackPush()) {
 
@@ -285,26 +244,11 @@ public abstract class GLIndirectRenderer extends Renderer {
         }
     }
 
-    private void initVertexArray() {
-
-        vertexArray = new GLVertexArray();
-
-        VertexLayout vertexLayout = new VertexLayout.Builder(2)
-                .put(0, 0, POSITION3D, NORMAL, TEXCOORDS2D)
-                .put(1, 3, INDEX, INDEX).instanced(1, true)
-                .build();
-
-        for (int i = 0; i < vertexLayout.bindings(); i++) {
-            vertexArray.setVertexAttributes(i, vertexLayout.attributeList(i));
-        }
-
-        instanceBuffer = new GLBuffer("INSTANCE_VERTEX_BUFFER");
-    }
-
-    private void reallocateBuffer(MappedGraphicsBuffer buffer, long size) {
+    protected void reallocateBuffer(MappedGraphicsBuffer buffer, long size) {
         buffer.unmapMemory();
         buffer.reallocate(size);
         buffer.mapMemory();
     }
 
+    protected abstract void initVertexArray();
 }

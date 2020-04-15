@@ -77,6 +77,10 @@ public class GLFramebuffer implements GLObject {
         glNamedFramebufferDrawBuffers(handle, drawBuffers);
     }
 
+    public void drawBuffers(int... drawBuffers) {
+        glNamedFramebufferDrawBuffers(handle, drawBuffers);
+    }
+
     public void readBuffer(int readBuffer) {
         glNamedFramebufferReadBuffer(handle, readBuffer);
     }

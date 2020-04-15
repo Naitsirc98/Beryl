@@ -53,9 +53,9 @@ public class GLMapper extends GraphicsMapper {
             case GL_RG:
                 return GL_RG8;
             case GL_RGB:
-                return GL_SRGB8;
+                return GL_RGB8;
             case GL_RGBA:
-                return GL_SRGB8_ALPHA8;
+                return GL_RGBA8;
             default:
                 return internalFormat;
         }

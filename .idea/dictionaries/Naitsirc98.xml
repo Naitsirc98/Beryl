@@ -11,6 +11,7 @@
       <w>blinn</w>
       <w>calloc</w>
       <w>cubemap</w>
+      <w>dudv</w>
       <w>emissive</w>
       <w>framebuffers</w>
       <w>glfw</w>

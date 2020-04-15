@@ -12,7 +12,7 @@ public final class Color implements Cloneable, ByteSize {
 
     public static final int SIZEOF = 4 * FLOAT32_SIZEOF;
 
-    public static final Color NONE = new Color(Float.MIN_VALUE, Float.MIN_VALUE, Float.MIN_VALUE, Float.MIN_VALUE);
+    public static final Color NONE = new Color(0, 0, 0, 0);
     public static final Color WHITE = new Color(1, 1, 1);
     public static final Color BLACK = new Color(0, 0, 0);
     public static final Color RED = new Color(1, 0, 0);

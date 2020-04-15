@@ -42,6 +42,9 @@ public interface IMaterial extends Asset, ByteSize {
     byte METALLIC = 18;
     byte ROUGHNESS = 19;
 
+    byte REFLECTION_MAP = 20;
+    byte REFRACTION_MAP = 21;
+
     Vector2fc DEFAULT_TEXTURE_COORDS_FACTOR = new Vector2f(1.0f, 1.0f);
 
 
@@ -61,6 +64,7 @@ public interface IMaterial extends Asset, ByteSize {
     enum Type {
         PHONG_MATERIAL,
         METALLIC_MATERIAL,
-        SPECULAR_MATERIAL
+        SPECULAR_MATERIAL,
+        WATER_MATERIAL
     }
 }

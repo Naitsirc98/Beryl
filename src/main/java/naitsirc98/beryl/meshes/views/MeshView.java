@@ -1,21 +1,23 @@
-package naitsirc98.beryl.meshes;
+package naitsirc98.beryl.meshes.views;
 
 import naitsirc98.beryl.materials.IMaterial;
+import naitsirc98.beryl.meshes.Mesh;
 
 import java.util.Objects;
 
-public final class MeshView {
+public abstract class MeshView<T extends Mesh> {
 
-    private final Mesh mesh;
+    private final T mesh;
     private final IMaterial material;
 
-    public MeshView(Mesh mesh, IMaterial material) {
+    public MeshView(T mesh, IMaterial material) {
         this.mesh = mesh;
         this.material = material;
     }
 
-    public Mesh mesh() {
-        return mesh;
+    @SuppressWarnings("unchecked")
+    public <U extends T> U mesh() {
+        return (U) mesh;
     }
 
     public IMaterial material() {

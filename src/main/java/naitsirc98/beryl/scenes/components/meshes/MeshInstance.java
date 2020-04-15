@@ -1,23 +1,23 @@
 package naitsirc98.beryl.scenes.components.meshes;
 
 import naitsirc98.beryl.logging.Log;
-import naitsirc98.beryl.meshes.MeshView;
+import naitsirc98.beryl.meshes.views.MeshView;
 import naitsirc98.beryl.scenes.Component;
 import naitsirc98.beryl.scenes.components.math.Transform;
 import org.joml.Matrix4fc;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 import java.util.stream.Stream;
 
 import static naitsirc98.beryl.util.Asserts.assertNonNull;
-import static naitsirc98.beryl.util.Asserts.assertTrue;
 
-public class MeshInstance extends Component<MeshInstance> implements Iterable<MeshView> {
+public abstract class MeshInstance<T extends MeshView> extends Component<MeshInstance> implements Iterable<T> {
 
-    private List<MeshView> meshViews;
+    protected List<T> meshViews;
 
-    private MeshInstance() {
+    protected MeshInstance() {
 
     }
 
@@ -27,7 +27,13 @@ public class MeshInstance extends Component<MeshInstance> implements Iterable<Me
         meshViews = null;
     }
 
-    public MeshView meshView(int index) {
+    public abstract Class<T> meshViewType();
+
+    public T meshView() {
+        return meshView(0);
+    }
+
+    public T meshView(int index) {
         return meshViews.get(index);
     }
 
@@ -35,11 +41,11 @@ public class MeshInstance extends Component<MeshInstance> implements Iterable<Me
         return meshViews.size();
     }
 
-    public MeshInstance meshView(MeshView meshView) {
+    public MeshInstance meshView(T meshView) {
         return meshViews(meshView);
     }
 
-    public MeshInstance meshViews(MeshView meshView) {
+    public MeshInstance meshViews(T meshView) {
         if(meshViews != null) {
             Log.error("Cannot modify Mesh Instance component once you have set its Mesh Views");
         } else {
@@ -50,16 +56,8 @@ public class MeshInstance extends Component<MeshInstance> implements Iterable<Me
         return this;
     }
 
-    public MeshInstance meshViews(MeshView... meshViews) {
-        if(this.meshViews != null) {
-            Log.error("Cannot modify Mesh Instance component once you have set its Mesh Views");
-        } else {
-            assertNonNull(meshViews);
-            assertTrue(meshViews.length > 0);
-            this.meshViews = Arrays.stream(meshViews).filter(Objects::nonNull).distinct().collect(Collectors.toUnmodifiableList());
-            doLater(() -> manager().enable(this));
-        }
-        return this;
+    public Transform transform() {
+        return requires(Transform.class);
     }
 
     public Matrix4fc modelMatrix() {
@@ -71,7 +69,7 @@ public class MeshInstance extends Component<MeshInstance> implements Iterable<Me
     }
 
     @Override
-    public Class<? extends Component> type() {
+    public final Class<? extends Component> type() {
         return MeshInstance.class;
     }
 
@@ -100,12 +98,12 @@ public class MeshInstance extends Component<MeshInstance> implements Iterable<Me
 
     }
 
-    public Stream<MeshView> meshViews() {
+    public Stream<T> meshViews() {
         return meshViews.stream();
     }
 
     @Override
-    public Iterator<MeshView> iterator() {
+    public Iterator<T> iterator() {
         return meshViews.iterator();
     }
 

@@ -104,6 +104,10 @@ public final class GLShaderProgram implements GLObject {
         glUniform4f(location, data.x(), data.y(), data.z(), data.w());
     }
 
+    public void uniformVector4f(String name, float x, float y, float z, float w) {
+        glUniform4f(uniformLocation(name), x, y, z, w);
+    }
+
     public void uniformVector4f(int location, float x, float y, float z, float w) {
         glUniform4f(location, x, y, z, w);
     }
@@ -149,10 +153,15 @@ public final class GLShaderProgram implements GLObject {
         glUniform1f(location, value);
     }
 
+    public void uniformBool(String name, boolean value) {
+        glUniform1f(uniformLocation(name), value ? 1 : 0);
+    }
+
     @Override
     public void release() {
         glDeleteProgram(handle);
         shaders = null;
         uniformLocations = null;
     }
+
 }

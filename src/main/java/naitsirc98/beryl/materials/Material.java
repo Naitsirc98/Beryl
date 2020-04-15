@@ -1,5 +1,6 @@
 package naitsirc98.beryl.materials;
 
+import naitsirc98.beryl.graphics.textures.Texture;
 import naitsirc98.beryl.graphics.textures.Texture2D;
 import naitsirc98.beryl.util.Color;
 import naitsirc98.beryl.util.types.ByteSize;
@@ -9,7 +10,7 @@ import java.util.Collections;
 import java.util.Map;
 
 @ByteSize.Static(IMaterial.SIZEOF)
-public class Material implements IMaterial, PhongMaterial {
+public class Material implements IMaterial, PhongMaterial, WaterMaterial {
 
     private final transient int handle;
     private final String name;
@@ -169,5 +170,15 @@ public class Material implements IMaterial, PhongMaterial {
     @SuppressWarnings("unchecked")
     private <T> T get(int propertyID) {
         return (T) properties.get((byte)propertyID);
+    }
+
+    @Override
+    public Texture2D reflectionMap() {
+        return get(REFLECTION_MAP);
+    }
+
+    @Override
+    public Texture2D refractionMap() {
+        return get(REFRACTION_MAP);
     }
 }

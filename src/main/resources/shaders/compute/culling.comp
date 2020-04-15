@@ -18,7 +18,7 @@ struct BoundingSphere {
 @include "structs/transform.glsl"
 
 
-layout(local_size_x = 1) in;
+layout(local_size_x = 128) in;
 
 
 layout(std430, binding = 0) readonly buffer MeshCommandBuffer {
@@ -47,6 +47,8 @@ layout(std140, binding = 5) uniform Frustum {
 } u_Frustum;
 
 layout(binding = 6) uniform atomic_uint u_DrawCount;
+
+uniform bool u_AlwaysPass;
 
 
 bool testSphere(vec3 center, float radius) {
@@ -102,7 +104,7 @@ void main() {
 
     command.baseInstance = index;
 
-    if(isVisible(transform.modelMatrix, u_BoundingSpheres[meshIndex])) {
+    if(u_AlwaysPass || isVisible(transform.modelMatrix, u_BoundingSpheres[meshIndex])) {
         command.instanceCount = 1;
         atomicCounterIncrement(u_DrawCount);
     } else {

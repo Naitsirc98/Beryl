@@ -13,7 +13,7 @@ uniform samplerCube u_SkyboxTexture2;
 
 uniform float u_TextureBlendFactor;
 
-uniform vec3 u_FogColor;
+uniform vec4 u_FogColor;
 
 layout(location = 0) in vec3 in_FragmentPosition;
 
@@ -30,8 +30,11 @@ void main()
     // color /= (color + vec3(1.0));
     // color = pow(color, vec3(2.2));
 
-    float factor = (in_FragmentPosition.y - LOWER_LIMIT) / (UPPER_LIMIT - LOWER_LIMIT);
-    factor = clamp(factor, 0.0, 1.0);
-
-    out_FinalColor = mix(vec4(u_FogColor, 1.0), color, factor);
+    if(u_FogColor.a == 0.0) {
+        out_FinalColor = color;
+    } else {
+        float factor = (in_FragmentPosition.y - LOWER_LIMIT) / (UPPER_LIMIT - LOWER_LIMIT);
+        factor = clamp(factor, 0.0, 1.0);
+        out_FinalColor = mix(u_FogColor, color, factor);
+    }
 }
