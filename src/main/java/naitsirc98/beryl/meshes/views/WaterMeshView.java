@@ -12,7 +12,6 @@ import static java.util.Objects.requireNonNull;
 public final class WaterMeshView extends StaticMeshView {
 
     private final Vector4f clipPlane;
-    private float reflectionStrength;
     private float distortionStrength;
     private float texturesOffset;
     private Color waterColor;
@@ -22,7 +21,6 @@ public final class WaterMeshView extends StaticMeshView {
     public WaterMeshView(StaticMesh mesh, WaterMaterial material) {
         super(mesh, material);
         this.clipPlane = new Vector4f(0, 1, 0, 0);
-        reflectionStrength = 0.5f;
         distortionStrength = 0.02f;
         texturesOffset = 0.0f;
         waterColor = Color.WATER;
@@ -51,15 +49,6 @@ public final class WaterMeshView extends StaticMeshView {
 
     public WaterMeshView clipPlane(float x, float y, float z, float w) {
         clipPlane.set(x, y, z, w);
-        return this;
-    }
-
-    public float reflectionStrength() {
-        return reflectionStrength;
-    }
-
-    public WaterMeshView reflectionStrength(float reflectionStrength) {
-        this.reflectionStrength = reflectionStrength;
         return this;
     }
 

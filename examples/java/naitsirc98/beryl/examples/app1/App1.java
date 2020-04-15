@@ -100,9 +100,9 @@ public class App1 extends BerylApplication {
         terrain.add(StaticMeshInstance.class).meshView(new StaticMeshView(terrainMesh, getFloorMaterial()));
 
         Entity water = scene.newEntity();
-        water.add(Transform.class).position(terrainSize/2, -11.0f, terrainSize/2).rotateX(radians(90)).scale(400);
-        WaterMeshView waterMeshView = new WaterMeshView(quadMesh, getWaterMaterial()).tiling(50);
-        waterMeshView.clipPlane(0, 1, 0, -11);
+        water.add(Transform.class).position(terrainSize/2, -8.0f, terrainSize/2).rotateX(radians(90)).scale(400);
+        WaterMeshView waterMeshView = new WaterMeshView(quadMesh, getWaterMaterial()).tiling(24).waterColorStrength(0.05f);
+        waterMeshView.clipPlane(0, 1, 0, water.get(Transform.class).position().y());
         water.add(WaterMeshInstance.class).meshView(waterMeshView);
         water.add(UpdateMutableBehaviour.class).onUpdate(self ->  {
 
@@ -112,7 +112,7 @@ public class App1 extends BerylApplication {
 
             float movement = self.get("movement");
 
-            movement += 0.04f * Time.IDEAL_DELTA_TIME;
+            movement += 0.02f * Time.IDEAL_DELTA_TIME;
             movement %= 1;
 
             self.get(WaterMeshInstance.class).meshView().texturesOffset(movement);
@@ -124,7 +124,7 @@ public class App1 extends BerylApplication {
 
         StaticModelEntityFactory treeFactory = new StaticModelEntityFactory(treeModel).materialsFunction(this::treeMaterialFunction);
 
-        for(int i = 0;i < 300;i++) {
+        for(int i = 0;i < 400;i++) {
 
             Entity tree = treeFactory.newEntity(scene);
 
@@ -138,17 +138,17 @@ public class App1 extends BerylApplication {
                 y =  terrainMesh.heightAt(0, 0, x, z);
             } while(y <= water.get(Transform.class).position().y() + 1);
 
-            tree.get(Transform.class).position(x, y, z);
+            tree.get(Transform.class).position(x, y - 1, z);
         }
 
         StaticMeshView grassView = new StaticMeshView(grassMesh, getGrassMaterial());
 
-        for(int i = 0;i < 500;i++) {
+        for(int i = 0;i < 100;i++) {
             Entity grass = scene.newEntity();
             float x = RAND.nextInt((int) terrainSize);
             float z = RAND.nextInt((int) terrainSize);
             float y = terrainMesh.heightAt(0, 0, x, z);
-            grass.get(Transform.class).position(x, y, z).scale(5.0f);
+            grass.get(Transform.class).position(x, y, z).scale(6.0f);
             grass.add(StaticMeshInstance.class).meshView(grassView);
         }
 
@@ -175,22 +175,31 @@ public class App1 extends BerylApplication {
         environment.skybox(new Skybox(BerylFiles.getString("textures/skybox/day"), BerylFiles.getString("textures/skybox/night")));
         environment.lights().directionalLight(new DirectionalLight().color(Color.WHITE).direction(-1, -1, 0));
         environment.ambientColor(new Color(0.8f, 0.8f, 0.8f));
-        environment.fog().density(DEFAULT_FOG_DENSITY);
+        environment.fog().density(DEFAULT_FOG_DENSITY * 2);
     }
 
     private WaterMaterial getWaterMaterial() {
         return WaterMaterial.get("water", builder -> {
 
             Texture2D dudv = GraphicsFactory.get().newTexture2D(BerylFiles.getString("textures/water/dudv.png"), PixelFormat.RGBA);
+            Texture2D normalMap = GraphicsFactory.get().newTexture2D(BerylFiles.getString("textures/water/normalMap.png"), PixelFormat.RGBA);
+
 
             dudv.generateMipmaps();
             dudv.sampler().wrapMode(Sampler.WrapMode.REPEAT);
             dudv.sampler().minFilter(Sampler.MinFilter.LINEAR_MIPMAP_LINEAR);
             dudv.sampler().magFilter(Sampler.MagFilter.LINEAR);
-            dudv.sampler().maxAnisotropy(16);
+            dudv.sampler().maxAnisotropy(4);
             dudv.sampler().lodBias(0);
 
-            builder.dudvMap(dudv);
+            normalMap.generateMipmaps();
+            normalMap.sampler().wrapMode(Sampler.WrapMode.REPEAT);
+            normalMap.sampler().minFilter(Sampler.MinFilter.LINEAR_MIPMAP_LINEAR);
+            normalMap.sampler().magFilter(Sampler.MagFilter.LINEAR);
+            normalMap.sampler().maxAnisotropy(4);
+            normalMap.sampler().lodBias(0);
+
+            builder.dudvMap(dudv).normalMap(normalMap);
         });
     }
 

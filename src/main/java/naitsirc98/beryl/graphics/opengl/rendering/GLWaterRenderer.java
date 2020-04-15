@@ -33,6 +33,7 @@ import static naitsirc98.beryl.graphics.ShaderStage.VERTEX_STAGE;
 import static naitsirc98.beryl.meshes.vertices.VertexLayout.VERTEX_LAYOUT_3D;
 import static naitsirc98.beryl.util.handles.LongHandle.NULL;
 import static org.lwjgl.opengl.GL30.*;
+import static org.lwjgl.opengl.GL31C.GL_UNIFORM_BUFFER;
 import static org.lwjgl.system.MemoryStack.stackPush;
 
 public class GLWaterRenderer implements WaterRenderer {
@@ -48,12 +49,8 @@ public class GLWaterRenderer implements WaterRenderer {
 
     private StaticMesh quadMesh;
 
-    private Matrix4f mvp;
-
     @Override
     public void init() {
-
-        mvp = new Matrix4f();
 
         waterShader = new GLShaderProgram()
                 .attach(new GLShader(VERTEX_STAGE).source(BerylFiles.getPath("shaders/water/water.vert")))
@@ -178,30 +175,30 @@ public class GLWaterRenderer implements WaterRenderer {
     public void render(Scene scene) {
 
         final MeshInstanceList<WaterMeshInstance> waterInstances = scene.meshInfo().meshViewsOfType(WaterMeshView.class);
-        final Matrix4fc projectionViewMatrix = scene.camera().projectionViewMatrix();
         final GLShaderProgram waterShader = this.waterShader;
         final int indexCount = quadMesh.indexCount();
+        final GLBuffer cameraBuffer = scene.cameraInfo().cameraBuffer();
 
         glEnable(GL_DEPTH_TEST);
         glDisable(GL_CULL_FACE);
 
         waterShader.bind();
 
+        cameraBuffer.bind(GL_UNIFORM_BUFFER, 0);
+
         vertexArray.bind();
 
         try(MemoryStack stack = stackPush()) {
 
-            FloatBuffer mvpBuffer = stack.mallocFloat(16);
+            FloatBuffer modelMatrixBuffer = stack.mallocFloat(16);
 
             for(WaterMeshInstance instance : waterInstances) {
 
                 final WaterMeshView view = instance.meshView();
                 final WaterMaterial material = view.material();
 
-                waterShader.uniformMatrix4f("u_MVP", false, projectionViewMatrix.mul(instance.modelMatrix(), mvp).get(mvpBuffer));
+                waterShader.uniformMatrix4f("u_ModelMatrix", false, instance.modelMatrix().get(modelMatrixBuffer));
 
-
-                waterShader.uniformFloat("u_ReflectionStrength", view.reflectionStrength());
                 waterShader.uniformFloat("u_DistortionStrength", view.distortionStrength());
                 waterShader.uniformFloat("u_TextureCoordsOffset", view.texturesOffset());
                 waterShader.uniformColorRGBA("u_WaterColor", view.waterColor());
@@ -268,9 +265,9 @@ public class GLWaterRenderer implements WaterRenderer {
         Sizec size = Window.get().size();
 
         depthBuffer = new GLRenderbuffer();
-        depthBuffer.storage(size.width(), size.height(), GL_DEPTH24_STENCIL8);
+        depthBuffer.storage(size.width(), size.height(), GL_DEPTH_COMPONENT16);
 
-        framebuffer.attach(GL_DEPTH_STENCIL_ATTACHMENT, depthBuffer);
+        framebuffer.attach(GL_DEPTH_ATTACHMENT, depthBuffer);
     }
 
     private void recreateFramebuffer(WindowResizedEvent e) {

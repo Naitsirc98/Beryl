@@ -61,9 +61,6 @@ public final class GLRenderSystem extends APIRenderSystem {
         staticMeshRenderer.prepare(scene);
 
         waterRenderer.bakeWaterTextures(scene, staticMeshRenderer, skyboxRenderer);
-
-        staticMeshRenderer.clearCommandBuffer();
-        staticMeshRenderer.performCullingPass(scene, scene.meshInfo().meshViewsOfType(StaticMeshView.class), false);
     }
 
     @Override
