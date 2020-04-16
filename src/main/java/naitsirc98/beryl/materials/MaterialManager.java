@@ -2,7 +2,9 @@ package naitsirc98.beryl.materials;
 
 import naitsirc98.beryl.assets.AssetManager;
 import naitsirc98.beryl.graphics.buffers.StorageBuffer;
+import naitsirc98.beryl.graphics.textures.Texture;
 import naitsirc98.beryl.logging.Log;
+import naitsirc98.beryl.util.BitFlags;
 import naitsirc98.beryl.util.types.Singleton;
 import org.lwjgl.system.MemoryStack;
 
@@ -17,6 +19,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static naitsirc98.beryl.materials.IMaterial.Type;
 import static naitsirc98.beryl.util.Asserts.assertFalse;
+import static naitsirc98.beryl.util.handles.LongHandle.NULL;
+import static naitsirc98.beryl.util.types.DataType.INT32_SIZEOF;
 
 public final class MaterialManager implements AssetManager<IMaterial> {
 
@@ -56,7 +60,7 @@ public final class MaterialManager implements AssetManager<IMaterial> {
     }
 
     @SuppressWarnings("unchecked")
-    synchronized <T extends IMaterial> T create(String name, Type type, Map<Byte, Object> properties) {
+    synchronized <T extends IMaterial> T create(String name, Type type, Map<Byte, Object> properties, BitFlags flags) {
 
         if(name == null) {
             Log.fatal("Material name cannot be null");
@@ -78,7 +82,7 @@ public final class MaterialManager implements AssetManager<IMaterial> {
             return null;
         }
 
-        Material material = new Material(handleProvider.getAndIncrement(), name, type, properties);
+        Material material = new Material(handleProvider.getAndIncrement(), name, type, properties, flags);
 
         List<IMaterial> typeList = materials.computeIfAbsent(material.type(), k -> new ArrayList<>());
 
@@ -168,7 +172,7 @@ public final class MaterialManager implements AssetManager<IMaterial> {
                     copyPhongMaterialToBuffer(material, data);
                     break;
                 case WATER_MATERIAL:
-                    // A water material does not need to copy any data
+                    data.putInt(IMaterial.SIZEOF - INT32_SIZEOF, material.flags());
                     break;
                 default:
                     Log.fatal("Unknown material type: " + material.type());
@@ -187,12 +191,12 @@ public final class MaterialManager implements AssetManager<IMaterial> {
         material.emissiveColor().getRGBA(data);
 
         // Phong materials use resident textures
-        data.putLong(material.ambientMap().makeResident());
-        data.putLong(material.diffuseMap().makeResident());
-        data.putLong(material.specularMap().makeResident());
-        data.putLong(material.emissiveMap().makeResident());
-        data.putLong(material.occlusionMap().makeResident());
-        data.putLong(material.normalMap().makeResident());
+        data.putLong(handle(material.ambientMap()));
+        data.putLong(handle(material.diffuseMap()));
+        data.putLong(handle(material.specularMap()));
+        data.putLong(handle(material.emissiveMap()));
+        data.putLong(handle(material.occlusionMap()));
+        data.putLong(handle(material.normalMap()));
 
         data.putFloat(material.textureCoordsFactor().x()).putFloat(material.textureCoordsFactor().y());
 
@@ -200,6 +204,12 @@ public final class MaterialManager implements AssetManager<IMaterial> {
         data.putFloat(material.shininess());
         data.putFloat(material.reflectivity());
         data.putFloat(material.refractiveIndex());
+
+        data.putInt(material.flags());
+    }
+
+    private long handle(Texture texture) {
+        return texture == null ? NULL : texture.makeResident();
     }
 
     private void putDefaults() {

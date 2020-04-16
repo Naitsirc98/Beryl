@@ -73,7 +73,7 @@ public final class GLRenderSystem extends APIRenderSystem {
 
         mainFramebuffer.bind();
 
-        staticMeshRenderer.render(scene);
+        staticMeshRenderer.render(scene, staticMeshRenderer.performCullingPassCPU(scene, false));
 
         waterRenderer.render(scene);
 

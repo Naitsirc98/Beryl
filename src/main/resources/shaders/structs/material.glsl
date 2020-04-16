@@ -1,4 +1,4 @@
-#define MATERIAL_SIZEOF 136
+#define MATERIAL_SIZEOF 144
 
 struct PhongMaterial {
 
@@ -20,6 +20,8 @@ struct PhongMaterial {
     float shininess;
     float reflectivity;
     float refractiveIndex;
+
+    int flags;
 };
 
 
@@ -43,6 +45,8 @@ struct MetallicMaterial {
     float metallic;
     float roughness;
     float fresnel;
+
+    int flags;
 };
 
 struct SpecularMap {
@@ -65,4 +69,15 @@ struct SpecularMap {
     float glossiness;
     float fresnel;
     float _padding2;
+
+    int flags;
 };
+
+
+// === FLAGS === //
+
+bool testMaterialFlag(int materialFlags, int flag) {
+    return (materialFlags & flag) == flag;
+}
+
+#define NORMAL_MAP_PRESENT 0x1

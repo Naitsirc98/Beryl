@@ -47,7 +47,6 @@ public class CameraController extends LateBehaviour {
         }
 
         if(isKeyTyped(KEY_V)) {
-            System.out.println("V");
             Graphics.get().vsync(!Graphics.get().vsync());
         }
 

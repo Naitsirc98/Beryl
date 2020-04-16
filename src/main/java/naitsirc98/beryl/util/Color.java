@@ -117,4 +117,14 @@ public final class Color implements Cloneable, ByteSize {
     public ByteBuffer getRGBA(int pos, ByteBuffer buffer) {
         return buffer.putFloat(pos, red).putFloat(pos + 4, green).putFloat(pos + 8, blue).putFloat(pos + 12, alpha);
     }
+
+    @Override
+    public String toString() {
+        return "Color{" +
+                "red=" + red +
+                ", green=" + green +
+                ", blue=" + blue +
+                ", alpha=" + alpha +
+                '}';
+    }
 }

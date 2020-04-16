@@ -12,7 +12,6 @@ import naitsirc98.beryl.meshes.views.StaticMeshView;
 import naitsirc98.beryl.scenes.Scene;
 import naitsirc98.beryl.scenes.components.meshes.MeshInstanceList;
 import naitsirc98.beryl.scenes.components.meshes.StaticMeshInstance;
-import naitsirc98.beryl.util.Color;
 
 import static naitsirc98.beryl.meshes.vertices.VertexAttribute.*;
 import static org.lwjgl.opengl.GL11.glClear;
@@ -36,7 +35,7 @@ public final class GLStaticMeshRenderer extends GLIndirectRenderer implements St
 
     public void prepare(Scene scene) {
         updateVertexArrayVertexBuffer();
-        prepareInstanceBuffer(getStaticInstances(scene), vertexArray);
+        // prepareInstanceBuffer(scene, getStaticInstances(scene), vertexArray);
     }
 
     @Override
@@ -48,6 +47,20 @@ public final class GLStaticMeshRenderer extends GLIndirectRenderer implements St
     public void render(Scene scene, GLShaderProgram shader) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         renderScene(scene, getStaticInstances(scene), vertexArray, shader);
+    }
+
+    public void render(Scene scene, int drawCount) {
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        renderScene(scene, drawCount, vertexArray, renderShader);
+    }
+
+    public void render(Scene scene, GLShaderProgram shader, int drawCount) {
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        renderScene(scene, drawCount, vertexArray, shader);
+    }
+
+    public int performCullingPassCPU(Scene scene, boolean alwaysPass) {
+        return performCullingPassCPU(scene, getStaticInstances(scene), vertexArray, alwaysPass);
     }
 
     private void updateVertexArrayVertexBuffer() {

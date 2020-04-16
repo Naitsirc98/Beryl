@@ -2,6 +2,7 @@ package naitsirc98.beryl.materials;
 
 import naitsirc98.beryl.graphics.GraphicsFactory;
 import naitsirc98.beryl.graphics.textures.Texture2D;
+import naitsirc98.beryl.util.BitFlags;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -20,6 +21,8 @@ public interface WaterMaterial extends IMaterial {
         Builder builder = new Builder();
         builderConsumer.accept(builder);
 
+        BitFlags flags = new BitFlags();
+
         GraphicsFactory graphicsFactory = GraphicsFactory.get();
 
         Map<Byte, Object> properties = new HashMap<>(5);
@@ -29,7 +32,11 @@ public interface WaterMaterial extends IMaterial {
         properties.put(DUDV_MAP, builder.dudvMap);
         properties.put(NORMAL_MAP, builder.normalMap);
 
-        return materialManager.create(name, Type.WATER_MATERIAL, properties);
+        if(builder.normalMap != null) {
+            flags.enable(NORMAL_MAP_PRESENT);
+        }
+
+        return materialManager.create(name, Type.WATER_MATERIAL, properties, flags);
     }
 
     Texture2D reflectionMap();

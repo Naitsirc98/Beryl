@@ -64,11 +64,17 @@ vec4 applyFogEffect(vec4 fragmentColor);
 
 void main() {
 
-    fragmentNormal = normalize(vertexData.normal);
-
     cameraDirection = normalize(u_Camera.position.xyz - vertexData.position);
 
     material = u_Materials[vertexData.materialIndex];
+
+    if(testMaterialFlag(material.flags, NORMAL_MAP_PRESENT)) {
+        fragmentNormal = texture(material.normalMap, vertexData.texCoords).rgb;
+        fragmentNormal = vec3(fragmentNormal.r, fragmentNormal.g, fragmentNormal.b) * 2.0 - 1.0;
+        fragmentNormal = normalize(fragmentNormal);
+    } else {
+        fragmentNormal = normalize(vertexData.normal);
+    }
 
     // float lod = distance(u_Camera.position.xyz, vertexData.position) / 100.0;
 

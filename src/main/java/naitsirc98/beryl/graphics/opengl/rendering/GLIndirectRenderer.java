@@ -9,17 +9,22 @@ import naitsirc98.beryl.graphics.opengl.shaders.GLShaderProgram;
 import naitsirc98.beryl.graphics.opengl.vertex.GLVertexArray;
 import naitsirc98.beryl.graphics.rendering.Renderer;
 import naitsirc98.beryl.materials.MaterialManager;
+import naitsirc98.beryl.meshes.Mesh;
 import naitsirc98.beryl.meshes.MeshManager;
 import naitsirc98.beryl.meshes.StaticMeshManager;
 import naitsirc98.beryl.meshes.views.MeshView;
+import naitsirc98.beryl.scenes.Camera;
 import naitsirc98.beryl.scenes.Scene;
+import naitsirc98.beryl.scenes.components.math.Transform;
 import naitsirc98.beryl.scenes.components.meshes.MeshInstance;
 import naitsirc98.beryl.scenes.components.meshes.MeshInstanceList;
-import org.joml.Matrix4fc;
+import naitsirc98.beryl.util.geometry.ISphere;
+import org.joml.*;
 import org.lwjgl.system.MemoryStack;
 
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static naitsirc98.beryl.graphics.ShaderStage.*;
 import static naitsirc98.beryl.util.types.DataType.*;
@@ -133,6 +138,107 @@ public abstract class GLIndirectRenderer implements Renderer {
         glMemoryBarrier(GL_COMMAND_BARRIER_BIT | GL_SHADER_STORAGE_BUFFER | GL_ATOMIC_COUNTER_BARRIER_BIT);
     }
 
+    protected int performCullingPassCPU(Scene scene, MeshInstanceList<?> instances, GLVertexArray vertexArray, boolean alwaysPass) {
+
+        prepareInstanceBuffer(scene, instances, vertexArray);
+
+        GLBuffer commandBuffer = this.instanceCommandBuffer;
+
+        final FrustumIntersection frustum = scene.camera().frustum();
+
+        AtomicInteger baseInstance = new AtomicInteger();
+
+        instances.stream().parallel().unordered().map(e -> (MeshInstance<?>) e).forEach(instance -> {
+
+            try(MemoryStack stack = stackPush()) {
+
+                Vector4f center = new Vector4f();
+
+                GLDrawElementsCommand command = GLDrawElementsCommand.callocStack(stack);
+
+                final Vector3fc scale = instance.transform().scale();
+                final float maxScale = scale.get(scale.maxComponent());
+                final Matrix4fc modelMatrix = instance.modelMatrix();
+
+                for (MeshView<?> meshView : instance) {
+
+                    final Mesh mesh = meshView.mesh();
+                    final ISphere sphere = mesh.boundingSphere();
+
+                    center.set(sphere.center(), 1.0f).mul(modelMatrix);
+
+                    final float radius = sphere.radius() * maxScale;
+
+                    if(alwaysPass || frustum.testSphere(center.x, center.y, center.z, radius)) {
+
+                        final int instanceID = baseInstance.getAndIncrement();
+
+                        setInstanceTransform(instanceID, instance.modelMatrix(), instance.normalMatrix());
+
+                        final int materialIndex = meshView.material().bufferIndex();
+
+                        setInstanceData(instanceID, instanceID, materialIndex);
+
+                        command.count(mesh.indexCount())
+                                .primCount(1)
+                                .firstIndex(mesh.firstIndex())
+                                .baseVertex(mesh.baseVertex())
+                                .baseInstance(instanceID);
+
+                        commandBuffer.copy(instanceID * GLDrawElementsCommand.SIZEOF, command.buffer());
+                    }
+                }
+            }
+        });
+
+        /*
+
+        try(MemoryStack stack = stackPush()) {
+
+            GLDrawElementsCommand command = GLDrawElementsCommand.callocStack(stack);
+
+            for(MeshInstance<?> instance : instances) {
+
+                final Vector3fc scale = instance.transform().scale();
+                final float maxScale = scale.get(scale.maxComponent());
+                final Matrix4fc modelMatrix = instance.modelMatrix();
+
+                for(MeshView<?> meshView : instance) {
+
+                    final Mesh mesh = meshView.mesh();
+                    final ISphere sphere = mesh.boundingSphere();
+
+                    center.set(sphere.center(), 1.0f).mul(modelMatrix);
+
+                    final float radius = sphere.radius() * maxScale;
+
+                    if(alwaysPass || frustum.testSphere(center.x, center.y, center.z, radius)) {
+
+                        setInstanceTransform(visibleObjectsCount, instance.modelMatrix(), instance.normalMatrix());
+
+                        final int materialIndex = meshView.material().bufferIndex();
+
+                        setInstanceData(visibleObjectsCount, visibleObjectsCount, materialIndex);
+
+                        command.count(mesh.indexCount())
+                                .primCount(1)
+                                .firstIndex(mesh.firstIndex())
+                                .baseVertex(mesh.baseVertex())
+                                .baseInstance(visibleObjectsCount);
+
+                        commandBuffer.copy(visibleObjectsCount * GLDrawElementsCommand.SIZEOF, command.buffer());
+
+                        ++visibleObjectsCount;
+                    }
+                }
+            }
+        }
+
+         */
+
+        return baseInstance.get();
+    }
+
     protected void renderScene(Scene scene, MeshInstanceList<?> instances, GLVertexArray vertexArray, GLShaderProgram shader) {
 
         final GLBuffer lightsUniformBuffer = scene.environment().buffer();
@@ -160,7 +266,32 @@ public abstract class GLIndirectRenderer implements Renderer {
         glMultiDrawElementsIndirectCountARB(GL_TRIANGLES, GL_UNSIGNED_INT, NULL, 0, instances.numMeshViews(), 0);
     }
 
-    protected void prepareInstanceBuffer(MeshInstanceList<?> instances, GLVertexArray vertexArray) {
+    protected void renderScene(Scene scene, int drawCount, GLVertexArray vertexArray, GLShaderProgram shader) {
+
+        final GLBuffer lightsUniformBuffer = scene.environment().buffer();
+        final GLBuffer materialsBuffer = MaterialManager.get().buffer();
+        final GLBuffer cameraUniformBuffer = scene.cameraInfo().cameraBuffer();
+
+        setOpenGLState(scene);
+
+        shader.bind();
+
+        cameraUniformBuffer.bind(GL_UNIFORM_BUFFER, 0);
+
+        lightsUniformBuffer.bind(GL_UNIFORM_BUFFER, 1);
+
+        transformsBuffer.bind(GL_SHADER_STORAGE_BUFFER, 2);
+
+        materialsBuffer.bind(GL_SHADER_STORAGE_BUFFER, 3);
+
+        instanceCommandBuffer.bind(GL_DRAW_INDIRECT_BUFFER);
+
+        vertexArray.bind();
+
+        glMultiDrawElementsIndirect(GL_TRIANGLES, GL_UNSIGNED_INT, NULL, drawCount, 0);
+    }
+
+    protected void prepareInstanceBuffer(Scene scene, MeshInstanceList<?> instances, GLVertexArray vertexArray) {
 
         final int numObjects = instances.numMeshViews();
 
@@ -170,7 +301,7 @@ public abstract class GLIndirectRenderer implements Renderer {
             reallocateBuffer(instanceCommandBuffer, instanceCommandsMinSize);
         }
 
-        clearCommandBuffer();
+        // clearCommandBuffer();
 
         final int instancesMinSize = numObjects * INSTANCE_BUFFER_MIN_SIZE;
 
@@ -179,17 +310,23 @@ public abstract class GLIndirectRenderer implements Renderer {
             vertexArray.setVertexBuffer(INSTANCE_BUFFER_BINDING, instanceBuffer, INSTANCE_BUFFER_MIN_SIZE);
         }
 
+        /*
+
         final long meshIDsMinSize = numObjects * UINT32_SIZEOF;
 
         if (meshIndicesBuffer.size() < meshIDsMinSize) {
             reallocateBuffer(meshIndicesBuffer, meshIDsMinSize);
         }
 
+         */
+
         final int transformsMinSize = numObjects * TRANSFORMS_BUFFER_MIN_SIZE;
 
         if (transformsBuffer.size() < transformsMinSize) {
             reallocateBuffer(transformsBuffer, transformsMinSize);
         }
+
+        /*
 
         int objectIndex = 0;
 
@@ -211,6 +348,8 @@ public abstract class GLIndirectRenderer implements Renderer {
             }
 
         }
+
+         */
     }
 
     public void clearCommandBuffer() {

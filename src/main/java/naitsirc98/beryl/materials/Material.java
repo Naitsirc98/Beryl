@@ -1,6 +1,7 @@
 package naitsirc98.beryl.materials;
 
 import naitsirc98.beryl.graphics.textures.Texture2D;
+import naitsirc98.beryl.util.BitFlags;
 import naitsirc98.beryl.util.Color;
 import naitsirc98.beryl.util.types.ByteSize;
 import org.joml.Vector2fc;
@@ -15,15 +16,17 @@ public class Material implements IMaterial, PhongMaterial, WaterMaterial {
     private final String name;
     private final Type type;
     private final Map<Byte, Object> properties;
+    private final BitFlags flags;
     private transient long offset = -Long.MAX_VALUE; // Offset of this material into the materials buffer
     private transient int index = Integer.MIN_VALUE; // This is the index of this material in this material's type list
     private transient boolean destroyed;
 
-    Material(int handle, String name, Type type, Map<Byte, Object> properties) {
+    Material(int handle, String name, Type type, Map<Byte, Object> properties, BitFlags flags) {
         this.handle = handle;
         this.name = name;
         this.type = type;
         this.properties = Collections.unmodifiableMap(properties);
+        this.flags = flags;
     }
 
     @Override
@@ -49,6 +52,11 @@ public class Material implements IMaterial, PhongMaterial, WaterMaterial {
     @Override
     public int index() {
         return index;
+    }
+
+    @Override
+    public int flags() {
+        return flags.get();
     }
 
     @Override

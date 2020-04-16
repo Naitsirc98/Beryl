@@ -96,6 +96,10 @@ public class GLWaterRenderer implements WaterRenderer {
 
         final MeshInstanceList<WaterMeshInstance> waterInstances = scene.meshInfo().meshViewsOfType(WaterMeshView.class);
 
+        if(waterInstances == null) {
+            return;
+        }
+
         final SceneEnhancedWater enhancedWater = scene.enhancedWater();
 
         final Vector3fc cameraPosition = camera.position();
@@ -147,10 +151,10 @@ public class GLWaterRenderer implements WaterRenderer {
         framebuffer.bind();
 
         if(enhancedWater.isEnhanced(waterView)) {
-            staticMeshRenderer.performCullingPass(scene, staticMeshRenderer.getStaticInstances(scene), false);
+            int drawCount = staticMeshRenderer.performCullingPassCPU(scene, false);
             staticMeshRenderer.renderShader.bind();
             staticMeshRenderer.renderShader.uniformVector4f("u_ClipPlane", clipPlane);
-            staticMeshRenderer.render(scene);
+            staticMeshRenderer.render(scene, staticMeshRenderer.renderShader, drawCount);
         }
 
         if(renderSkybox) {
@@ -175,6 +179,11 @@ public class GLWaterRenderer implements WaterRenderer {
     public void render(Scene scene) {
 
         final MeshInstanceList<WaterMeshInstance> waterInstances = scene.meshInfo().meshViewsOfType(WaterMeshView.class);
+
+        if(waterInstances == null) {
+            return;
+        }
+
         final GLShaderProgram waterShader = this.waterShader;
         final int indexCount = quadMesh.indexCount();
         final Camera camera = scene.camera();

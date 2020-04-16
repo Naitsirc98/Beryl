@@ -172,6 +172,8 @@ public final class StaticMeshManager {
             commandBuffer.update(commandBufferOffset, command.buffer());
 
             commandBufferOffset += GLDrawElementsCommand.SIZEOF;
+            mesh.setFirstIndex(firstIndex);
+            mesh.setBaseVertex(baseVertex);
             firstIndex += mesh.indexCount();
             baseVertex += mesh.vertexCount();
         }

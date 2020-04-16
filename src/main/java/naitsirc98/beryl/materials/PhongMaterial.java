@@ -60,10 +60,12 @@ public interface PhongMaterial extends IMaterial {
 
         private final Map<Byte, Object> properties;
         private String name;
+        private final BitFlags flags;
 
         public Builder() {
             properties = new HashMap<>();
             setDefaults();
+            flags = new BitFlags();
         }
 
         public Builder name(String name) {
@@ -117,6 +119,11 @@ public interface PhongMaterial extends IMaterial {
         }
 
         public Builder normalMap(Texture2D map) {
+            if(map != null) {
+                flags.enable(NORMAL_MAP_PRESENT);
+            } else {
+                flags.disable(NORMAL_MAP_PRESENT);
+            }
             properties.put(NORMAL_MAP, map);
             return this;
         }
@@ -147,7 +154,7 @@ public interface PhongMaterial extends IMaterial {
         }
 
         private PhongMaterial build() {
-            return MaterialManager.get().create(name, PHONG_MATERIAL, properties);
+            return MaterialManager.get().create(name, PHONG_MATERIAL, properties, flags);
         }
 
         private void setDefaults() {
@@ -169,9 +176,6 @@ public interface PhongMaterial extends IMaterial {
             properties.put(AMBIENT_MAP, blankTexture);
             properties.put(DIFFUSE_MAP, blankTexture);
             properties.put(SPECULAR_MAP, blankTexture);
-            properties.put(EMISSIVE_MAP, blankTexture);
-            properties.put(NORMAL_MAP, blankTexture);
-            properties.put(OCCLUSION_MAP, blankTexture);
         }
     }
 }

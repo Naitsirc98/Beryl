@@ -40,6 +40,8 @@ public abstract class Mesh extends ManagedResource implements Asset {
     private long vertexBufferOffset;
     private long indexBufferOffset;
     private long boundingSphereOffset;
+    private int firstIndex;
+    private int baseVertex;
 
     public Mesh(int handle, String name, ByteBuffer vertexData, ByteBuffer indexData, int stride) {
         this.handle = handle;
@@ -93,6 +95,14 @@ public abstract class Mesh extends ManagedResource implements Asset {
 
     public int indexCount() {
         return indexed() ? indexData.capacity() / UINT32_SIZEOF : 0;
+    }
+
+    public int firstIndex() {
+        return firstIndex;
+    }
+
+    public int baseVertex() {
+        return baseVertex;
     }
 
     public IAABB bounds() {
@@ -206,5 +216,13 @@ public abstract class Mesh extends ManagedResource implements Asset {
 
     public void setBoundingSphereOffset(long boundingSphereOffset) {
         this.boundingSphereOffset = boundingSphereOffset;
+    }
+
+    public void setFirstIndex(int firstIndex) {
+        this.firstIndex = firstIndex;
+    }
+
+    public void setBaseVertex(int baseVertex) {
+        this.baseVertex = baseVertex;
     }
 }

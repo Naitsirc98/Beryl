@@ -10,7 +10,7 @@ public interface IMaterial extends Asset, ByteSize {
 
     // int SIZEOF = roundUp2(4 * Color.SIZEOF + 6 * UINT64_SIZEOF + VECTOR2_SIZEOF + 4 * FLOAT32_SIZEOF, VECTOR4_SIZEOF);
 
-    int SIZEOF = 136 + 8; // Need to be a multiple of 16
+    int SIZEOF = 144;
 
     // Colors
     byte AMBIENT_COLOR = 0;
@@ -46,6 +46,11 @@ public interface IMaterial extends Asset, ByteSize {
     byte REFRACTION_MAP = 21;
     byte DUDV_MAP = 22;
 
+    // === FLAGS === //
+
+    int NORMAL_MAP_PRESENT = 0x1;
+
+
     Vector2fc DEFAULT_TEXTURE_COORDS_FACTOR = new Vector2f(1.0f, 1.0f);
 
 
@@ -58,6 +63,8 @@ public interface IMaterial extends Asset, ByteSize {
     int bufferIndex();
 
     int index();
+
+    int flags();
 
     boolean destroyed();
 
