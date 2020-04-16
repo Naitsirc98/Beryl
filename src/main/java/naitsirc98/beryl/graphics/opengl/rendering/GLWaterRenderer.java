@@ -45,7 +45,7 @@ public class GLWaterRenderer implements WaterRenderer {
     private GLBuffer indexBuffer;
 
     private GLFramebuffer framebuffer;
-    private GLRenderbuffer depthBuffer;
+    private GLTexture2D depthTexture;
 
     private StaticMesh quadMesh;
 
@@ -82,7 +82,7 @@ public class GLWaterRenderer implements WaterRenderer {
         vertexBuffer.release();
         indexBuffer.release();
         framebuffer.release();
-        depthBuffer.release();
+        depthTexture.release();
         quadMesh = null;
     }
 
@@ -177,17 +177,24 @@ public class GLWaterRenderer implements WaterRenderer {
         final MeshInstanceList<WaterMeshInstance> waterInstances = scene.meshInfo().meshViewsOfType(WaterMeshView.class);
         final GLShaderProgram waterShader = this.waterShader;
         final int indexCount = quadMesh.indexCount();
+        final Camera camera = scene.camera();
         final GLBuffer cameraBuffer = scene.cameraInfo().cameraBuffer();
         final GLBuffer lightsBuffer = scene.environment().buffer();
 
         glEnable(GL_DEPTH_TEST);
         glDisable(GL_CULL_FACE);
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
         waterShader.bind();
 
         cameraBuffer.bind(GL_UNIFORM_BUFFER, 0);
 
         lightsBuffer.bind(GL_UNIFORM_BUFFER, 1);
+
+        waterShader.uniformSampler("u_DepthTexture", depthTexture, 0);
+        waterShader.uniformFloat("u_NearPlane", camera.nearPlane());
+        waterShader.uniformFloat("u_FarPlane", camera.farPlane());
 
         vertexArray.bind();
 
@@ -215,6 +222,8 @@ public class GLWaterRenderer implements WaterRenderer {
                 unbindTextures(material);
             }
         }
+
+        glDisable(GL_BLEND);
     }
 
     private void unbindTextures(WaterMaterial material) {
@@ -224,15 +233,15 @@ public class GLWaterRenderer implements WaterRenderer {
         GLTexture2D dudvMap = (GLTexture2D) material.dudvMap();
         GLTexture2D normalMap = (GLTexture2D) material.normalMap();
 
-        reflectionMap.unbind(0);
-        refractionMap.unbind(1);
+        reflectionMap.unbind(1);
+        refractionMap.unbind(2);
 
         if(dudvMap != null) {
-            dudvMap.unbind(2);
+            dudvMap.unbind(3);
         }
 
         if(normalMap != null) {
-            normalMap.unbind(3);
+            normalMap.unbind(4);
         }
     }
 
@@ -243,18 +252,18 @@ public class GLWaterRenderer implements WaterRenderer {
         GLTexture2D dudvMap = (GLTexture2D) material.dudvMap();
         GLTexture2D normalMap = (GLTexture2D) material.normalMap();
 
-        waterShader.uniformSampler("u_ReflectionMap", reflectionMap, 0);
-        waterShader.uniformSampler("u_RefractionMap", refractionMap, 1);
+        waterShader.uniformSampler("u_ReflectionMap", reflectionMap, 1);
+        waterShader.uniformSampler("u_RefractionMap", refractionMap, 2);
 
         if(dudvMap != null) {
-            waterShader.uniformSampler("u_DUDVMap", dudvMap, 2);
+            waterShader.uniformSampler("u_DUDVMap", dudvMap, 3);
             waterShader.uniformBool("u_DUDVMapPresent", true);
         } else {
             waterShader.uniformBool("u_DUDVMapPresent", false);
         }
 
         if(normalMap != null) {
-            waterShader.uniformSampler("u_NormalMap", normalMap, 3);
+            waterShader.uniformSampler("u_NormalMap", normalMap, 4);
             waterShader.uniformBool("u_NormalMapPresent", true);
         } else {
             waterShader.uniformBool("u_NormalMapPresent", false);
@@ -267,14 +276,15 @@ public class GLWaterRenderer implements WaterRenderer {
 
         Sizec size = Window.get().size();
 
-        depthBuffer = new GLRenderbuffer();
-        depthBuffer.storage(size.width(), size.height(), GL_DEPTH_COMPONENT16);
+        depthTexture = new GLTexture2D();
+        depthTexture.reallocate(1, size.width(), size.height(), GL_DEPTH_COMPONENT24);
 
-        framebuffer.attach(GL_DEPTH_ATTACHMENT, depthBuffer);
+        framebuffer.attach(GL_DEPTH_ATTACHMENT, depthTexture, 0);
     }
 
     private void recreateFramebuffer(WindowResizedEvent e) {
         if(framebuffer != null) {
+            depthTexture.release();
             framebuffer.release();
             createFramebuffer();
         }

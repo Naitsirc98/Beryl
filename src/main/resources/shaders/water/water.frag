@@ -24,6 +24,10 @@ layout(std140, binding = 1) uniform Lights {
     int u_SpotLightsCount;
 };
 
+uniform float u_NearPlane;
+uniform float u_FarPlane;
+
+uniform sampler2D u_DepthTexture;
 uniform sampler2D u_ReflectionMap;
 uniform sampler2D u_RefractionMap;
 uniform sampler2D u_DUDVMap;
@@ -51,6 +55,9 @@ layout(location = 0) out vec4 out_FragmentColor;
 
 const float shininess = 20.0;
 const float reflectivity = 0.6;
+const float waterFlatFactor = 1.5;
+const float edgesBlendFactor = 6.0;
+const float distortionBlendFactor = 24.0;
 
 vec3 viewDirection;
 vec3 fragmentNormal;
@@ -134,6 +141,19 @@ vec4 specularHighlights() {
     return vec4(highlights, 0.0);
 }
 
+float linearizeDepth(float depth) {
+    float linearDepth = 2.0 * u_NearPlane * u_FarPlane;
+    return linearDepth / (u_FarPlane + u_NearPlane - (2.0 * depth - 1.0) * (u_FarPlane - u_NearPlane));
+}
+
+float getFloorDistance(vec2 depthCoords) {
+    float depth = texture(u_DepthTexture, depthCoords).r;
+    return linearizeDepth(depth);
+}
+
+float getWaterDistance(vec2 depthCoords) {
+    return linearizeDepth(gl_FragCoord.z); 
+}
 
 void main() {
 
@@ -141,6 +161,8 @@ void main() {
 
     vec2 reflectionTexCoords = vec2(ndc.x, -ndc.y);
     vec2 refractionTexCoords = ndc;
+
+    float waterDepth = getFloorDistance(ndc) - getWaterDistance(ndc);
 
     vec2 distortionTexCoords = vec2(0.0);
     vec2 distortion = vec2(0.0);
@@ -153,11 +175,16 @@ void main() {
         distortionTexCoords = texCoords + vec2(distortionTexCoords.x, distortionTexCoords.y + u_TextureCoordsOffset);
 
         distortion = (texture(u_DUDVMap, distortionTexCoords).rg * 2.0 - 1.0) * u_DistortionStrength;
+
+        // Do not distort the edges
+        float distortionBlending = clamp(waterDepth / distortionBlendFactor, 0.0, 1.0);
+
+        distortion *= distortionBlending;
     }
 
     if(u_NormalMapPresent) {
         fragmentNormal = texture(u_NormalMap, distortionTexCoords).rgb;
-        fragmentNormal = vec3(fragmentNormal.r * 2.0 - 1.0, fragmentNormal.b, fragmentNormal.g * 2.0 - 1.0);
+        fragmentNormal = vec3(fragmentNormal.r * 2.0 - 1.0, fragmentNormal.b * waterFlatFactor, fragmentNormal.g * 2.0 - 1.0);
         fragmentNormal = normalize(fragmentNormal);
     } else {
         fragmentNormal = normalize(fragmentData.normal);
@@ -180,5 +207,12 @@ void main() {
 
     vec4 waterColor = mix(environmentColor, u_WaterColor, u_WaterColorStrength);
 
-    out_FragmentColor = waterColor + specularHighlights();
+    // Smooth edges by blending them gradually. Blending must be enabled
+    waterColor.a = clamp(waterDepth / edgesBlendFactor, 0.0, 1.0);
+
+    // Reduce highlights at the edges so they don't ruin the smooth effect
+    float specularEdgeFactor = clamp(waterDepth / edgesBlendFactor, 0.0, 1.0);
+    vec4 specularHighlights = specularHighlights() * specularEdgeFactor;
+
+    out_FragmentColor = waterColor + specularHighlights;
 }

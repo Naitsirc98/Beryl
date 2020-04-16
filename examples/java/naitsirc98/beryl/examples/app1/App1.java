@@ -29,7 +29,6 @@ import naitsirc98.beryl.scenes.components.math.Transform;
 import naitsirc98.beryl.scenes.components.meshes.StaticMeshInstance;
 import naitsirc98.beryl.scenes.components.meshes.WaterMeshInstance;
 import naitsirc98.beryl.util.Color;
-import org.joml.Vector3f;
 
 import java.util.Random;
 
@@ -100,9 +99,14 @@ public class App1 extends BerylApplication {
         terrain.add(StaticMeshInstance.class).meshView(new StaticMeshView(terrainMesh, getFloorMaterial()));
 
         Entity water = scene.newEntity();
-        water.add(Transform.class).position(terrainSize/2, -8.0f, terrainSize/2).rotateX(radians(90)).scale(400);
-        WaterMeshView waterMeshView = new WaterMeshView(quadMesh, getWaterMaterial()).tiling(24).waterColorStrength(0.05f);
-        waterMeshView.clipPlane(0, 1, 0, water.get(Transform.class).position().y());
+        water.add(Transform.class).position(terrainSize/2, -6.0f, terrainSize/2).rotateX(radians(90)).scale(400);
+
+        WaterMeshView waterMeshView = new WaterMeshView(quadMesh, getWaterMaterial())
+                .tiling(20)
+                .waterColorStrength(0.05f)
+                .distortionStrength(0.03f);
+
+        waterMeshView.clipPlane(0, 1, 0, water.get(Transform.class).position().y() + 0.2f);
         water.add(WaterMeshInstance.class).meshView(waterMeshView);
         water.add(UpdateMutableBehaviour.class).onUpdate(self ->  {
 

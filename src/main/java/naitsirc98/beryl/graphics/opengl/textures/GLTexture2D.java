@@ -35,6 +35,14 @@ public final class GLTexture2D extends GLTexture implements Texture2D {
         allocated = true;
     }
 
+    public void reallocate(int mipLevels, int width, int height, int internalPixelFormat) {
+        if(allocated) {
+            free();
+            handle = glCreateTextures(target);
+        }
+        allocate(mipLevels, width, height, internalPixelFormat);
+    }
+
     @Override
     public void reallocate(int mipLevels, int width, int height, PixelFormat internalPixelFormat) {
         if(allocated) {
