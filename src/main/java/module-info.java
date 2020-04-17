@@ -28,6 +28,9 @@ module Beryl {
     requires org.lwjgl.assimp;
     requires org.lwjgl.assimp.natives;
 
+    requires org.lwjgl.openal;
+    requires org.lwjgl.openal.natives;
+
     requires org.joml;
 
     // <===

@@ -1,6 +1,7 @@
 package naitsirc98.beryl.core;
 
 import naitsirc98.beryl.assets.Assets;
+import naitsirc98.beryl.audio.AudioSystem;
 import naitsirc98.beryl.events.EventManager;
 import naitsirc98.beryl.graphics.Graphics;
 import naitsirc98.beryl.graphics.rendering.RenderSystem;
@@ -27,6 +28,7 @@ public class BerylSystemManager {
     final ResourceManager resourceManager;
     final Assets assets;
     final RenderSystem renderSystem;
+    final AudioSystem audioSystem;
     final TaskManager taskManager;
     final SceneManager sceneManager;
     private final BerylSystem[] systems;
@@ -42,6 +44,7 @@ public class BerylSystemManager {
                 resourceManager = createSystem(ResourceManager.class),
                 assets = createSystem(Assets.class),
                 renderSystem = createSystem(RenderSystem.class),
+                audioSystem = createSystem(AudioSystem.class),
                 taskManager = createSystem(TaskManager.class),
                 sceneManager = createSystem(SceneManager.class)
         };
@@ -52,9 +55,9 @@ public class BerylSystemManager {
         Throwable error = null;
         for(BerylSystem system : systems) {
             error = initialize(system);
-        }
-        if(error != null) {
-            throw error;
+            if(error != null) {
+                throw error;
+            }
         }
     }
 

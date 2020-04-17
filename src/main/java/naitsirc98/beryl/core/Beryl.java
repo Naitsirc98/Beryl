@@ -1,5 +1,6 @@
 package naitsirc98.beryl.core;
 
+import naitsirc98.beryl.audio.AudioSystem;
 import naitsirc98.beryl.events.EventManager;
 import naitsirc98.beryl.graphics.GraphicsAPI;
 import naitsirc98.beryl.graphics.rendering.APIRenderSystem;
@@ -78,6 +79,7 @@ public final class Beryl {
     private final BerylApplication application;
     private final BerylSystemManager systems;
     private APIRenderSystem renderSystem;
+    private AudioSystem audioSystem;
     private float updateDelay;
     private int updatesPerSecond;
     private int framesPerSecond;
@@ -108,6 +110,7 @@ public final class Beryl {
         application.start();
 
         renderSystem = systems.renderSystem.apiRenderSystem();
+        audioSystem = systems.audioSystem;
 
         setup();
 
@@ -154,6 +157,7 @@ public final class Beryl {
         final EventManager eventManager = systems.eventManager;
         final Input input = systems.input;
         final SceneManager sceneManager = systems.sceneManager;
+        final AudioSystem audio = audioSystem;
 
         updateDelay += deltaTime;
 
@@ -166,6 +170,8 @@ public final class Beryl {
             eventManager.processEvents();
 
             input.update();
+
+            audio.update();
 
             sceneManager.update();
 

@@ -1,5 +1,6 @@
 package naitsirc98.beryl.assets;
 
+import naitsirc98.beryl.audio.AudioClipManager;
 import naitsirc98.beryl.core.BerylSystem;
 import naitsirc98.beryl.materials.MaterialManager;
 import naitsirc98.beryl.meshes.MeshManager;
@@ -15,20 +16,24 @@ public class Assets extends BerylSystem {
 
     private final MeshManager meshManager;
     private final MaterialManager materialManager;
+    private final AudioClipManager audioClipManager;
 
     public Assets() {
         meshManager = newAssetManager(MeshManager.class);
         materialManager = newAssetManager(MaterialManager.class);
+        audioClipManager = newAssetManager(AudioClipManager.class);
     }
 
     @Override
     protected void init() {
         meshManager.init();
         materialManager.init();
+        audioClipManager.init();
     }
 
     @Override
     protected void terminate() {
+        audioClipManager.terminate();
         materialManager.terminate();
         meshManager.terminate();
     }

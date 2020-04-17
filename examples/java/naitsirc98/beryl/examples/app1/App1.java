@@ -84,6 +84,8 @@ public class App1 extends BerylApplication {
 
         StaticMesh quadMesh = StaticMeshLoader.get().load(BerylFiles.getPath("models/quad.obj")).loadedMesh(0).mesh();
 
+        StaticMesh cubeMesh = StaticMeshLoader.get().load(BerylFiles.getPath("models/cube.obj")).loadedMesh(0).mesh();
+
         StaticMesh grassMesh = StaticMeshLoader.get().load(BerylFiles.getPath("models/grass.obj"),
                 new StaticVertexHandler.Builder().normalFunction(n -> n.set(0, 1, 0)).build())
                 .loadedMesh(0).mesh();
@@ -93,6 +95,13 @@ public class App1 extends BerylApplication {
                                 new StaticVertexHandler.Builder().positionFunction(p -> p.mul(0.01f)).build());
 
         Log.trace(treeModel);
+
+        Entity cube = scene.newEntity();
+        float cubeX = RAND.nextInt((int) (terrainSize / 2));
+        float cubeZ = RAND.nextInt((int) (terrainSize / 2));
+        float cubeY = terrainMesh.heightAt(0, 0, cubeX, cubeZ);
+        cube.add(Transform.class).position(cubeX, cubeY + 0.5f, cubeZ).scale(0.2f);
+        cube.add(StaticMeshInstance.class).meshView(new StaticMeshView(cubeMesh, PhongMaterial.get("cube", builder -> builder.ambientColor(Color.SKY))));
 
         Entity terrain = scene.newEntity();
         terrain.add(Transform.class).position(0, 0, 0).scale(1);
@@ -174,7 +183,7 @@ public class App1 extends BerylApplication {
 
             skybox.rotate(radians(0.0045f));
 
-            final float time = Math.abs(sin(Time.minutes() / 20));
+            final float time = Math.abs(sin(Time.minutes() / 1.5f));
 
             skybox.textureBlendFactor(time);
 
@@ -182,7 +191,7 @@ public class App1 extends BerylApplication {
 
             sun.color(Color.WHITE.intensify((1.0f - time)));
 
-            scene.environment().fog().density(time * 0.8f);
+            scene.environment().fog().density(time * 3.0f);
         });
 
         environment.skybox(new Skybox(BerylFiles.getString("textures/skybox/day"), BerylFiles.getString("textures/skybox/night")));
