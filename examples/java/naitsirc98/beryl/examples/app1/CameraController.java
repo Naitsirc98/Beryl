@@ -1,15 +1,18 @@
 package naitsirc98.beryl.examples.app1;
 
 
+import naitsirc98.beryl.audio.AudioListener;
 import naitsirc98.beryl.graphics.Graphics;
 import naitsirc98.beryl.graphics.window.Window;
 import naitsirc98.beryl.input.Gamepad;
+import naitsirc98.beryl.input.Input;
 import naitsirc98.beryl.input.Joystick;
 import naitsirc98.beryl.input.Joystick.Axis;
 import naitsirc98.beryl.input.Joystick.AxisDirection;
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.scenes.Camera;
 import naitsirc98.beryl.scenes.components.behaviours.LateBehaviour;
+import org.joml.Vector3f;
 
 import static naitsirc98.beryl.graphics.window.CursorType.DISABLED;
 import static naitsirc98.beryl.graphics.window.CursorType.NORMAL;
@@ -19,11 +22,13 @@ import static naitsirc98.beryl.input.Key.*;
 public class CameraController extends LateBehaviour {
 
     private Camera camera;
+    private Vector3f lastPosition;
 
     @Override
     protected void onStart() {
         Log.info("Initializing Camera controller...");
         camera = scene().camera();
+        lastPosition = new Vector3f();
     }
 
     @Override
@@ -64,9 +69,20 @@ public class CameraController extends LateBehaviour {
             Window.get().show();
         }
 
+        if(Input.isKeyPressed(KEY_P)) {
+            Log.trace("Camera position: " + camera.position() + ", forward = " + camera.forward());
+        }
+
+
         checkMouseLookAt();
 
         checkGamepadLookAt();
+
+        AudioListener.get().position(camera.position());
+        AudioListener.get().orientation(camera.forward(), camera.up());
+        AudioListener.get().velocity(lastPosition.sub(camera.position()).negate());
+
+        lastPosition.set(camera.position());
      }
 
     private void checkGamepadLookAt() {

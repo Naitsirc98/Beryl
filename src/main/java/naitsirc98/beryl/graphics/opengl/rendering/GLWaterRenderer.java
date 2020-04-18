@@ -112,6 +112,14 @@ public class GLWaterRenderer implements WaterRenderer {
 
             WaterMeshView waterView = instance.meshView();
 
+            if(camera.position().y() - instance.transform().position().y() < 0.0f) {
+                // If the camera is below the water, then just render normally.
+
+                bakeWaterTexture(scene, enhancedWater, staticMeshRenderer, skyboxRenderer, waterView, clipPlane, size,
+                        (GLTexture2D) waterView.material().refractionMap(), true);
+                continue;
+            }
+
             final float displacement = 2 * (cameraPosition.y() - instance.transform().position().y());
 
             camera.position(cameraPosition.x(), cameraPosition.y() - displacement, cameraPosition.z());
@@ -119,7 +127,6 @@ public class GLWaterRenderer implements WaterRenderer {
             camera.update();
 
             clipPlane.set(waterView.clipPlane());
-
             clipPlane.w *= -1;
 
             bakeWaterTexture(scene, enhancedWater, staticMeshRenderer, skyboxRenderer, waterView, clipPlane, size,

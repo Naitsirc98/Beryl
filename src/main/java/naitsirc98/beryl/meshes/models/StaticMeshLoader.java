@@ -22,7 +22,6 @@ import java.util.Map;
 import static java.util.Objects.requireNonNull;
 import static naitsirc98.beryl.util.Asserts.assertNonNull;
 import static naitsirc98.beryl.util.Asserts.assertTrue;
-import static naitsirc98.beryl.util.types.DataType.FLOAT32_SIZEOF;
 import static naitsirc98.beryl.util.types.DataType.UINT32_SIZEOF;
 import static org.lwjgl.assimp.Assimp.*;
 import static org.lwjgl.system.MemoryUtil.memAlloc;
@@ -30,14 +29,14 @@ import static org.lwjgl.system.MemoryUtil.memAlloc;
 public final class StaticMeshLoader {
 
     private static final int DEFAULT_FLAGS = // aiProcess_OptimizeMeshes
-            // aiProcess_OptimizeGraph
-                      aiProcess_Triangulate
-                    | aiProcess_GenNormals
-                    | aiProcess_GenSmoothNormals
-                    | aiProcess_GenUVCoords
-                    | aiProcess_FlipUVs
-                    | aiProcess_JoinIdenticalVertices
-                    | aiProcess_FixInfacingNormals;
+            aiProcess_OptimizeGraph
+                             | aiProcess_Triangulate
+                             | aiProcess_GenNormals
+                             | aiProcess_GenSmoothNormals
+                             | aiProcess_GenUVCoords
+                             | aiProcess_FlipUVs
+                             | aiProcess_JoinIdenticalVertices
+                             | aiProcess_FixInfacingNormals;
 
 
     private static final StaticMeshLoader INSTANCE = new StaticMeshLoader();

@@ -1,12 +1,10 @@
 package naitsirc98.beryl.materials;
 
 import naitsirc98.beryl.graphics.GraphicsFactory;
-import naitsirc98.beryl.graphics.textures.Texture;
 import naitsirc98.beryl.graphics.textures.Texture2D;
 import naitsirc98.beryl.util.BitFlags;
 import naitsirc98.beryl.util.Color;
 import naitsirc98.beryl.util.types.ByteSize;
-import naitsirc98.beryl.util.types.IBuilder;
 import org.joml.Vector2f;
 
 import java.util.HashMap;
@@ -14,7 +12,6 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 import static naitsirc98.beryl.materials.IMaterial.Type.PHONG_MATERIAL;
-import static naitsirc98.beryl.util.types.DataType.FLOAT32_SIZEOF;
 
 @ByteSize.Static(IMaterial.SIZEOF)
 public interface PhongMaterial extends IMaterial {
@@ -39,9 +36,16 @@ public interface PhongMaterial extends IMaterial {
     }
 
     Color ambientColor();
+    PhongMaterial ambientColor(Color color);
+
     Color diffuseColor();
+    PhongMaterial diffuseColor(Color color);
+
     Color specularColor();
+    PhongMaterial specularColor(Color color);
+
     Color emissiveColor();
+    PhongMaterial emissiveColor(Color color);
 
     Texture2D ambientMap();
     Texture2D diffuseMap();
@@ -165,7 +169,7 @@ public interface PhongMaterial extends IMaterial {
             properties.put(EMISSIVE_COLOR, Color.BLACK);
 
             properties.put(ALPHA, 1.0f);
-            properties.put(SHININESS, 0.0f);
+            properties.put(SHININESS, 1.0f);
             properties.put(REFLECTIVITY, 0.0f);
             properties.put(REFRACTIVE_INDEX, 0.0f);
 

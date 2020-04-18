@@ -17,7 +17,7 @@ public class AudioSource implements IntHandle, Resource {
     private int handle;
     private final AudioQueue queue;
 
-    public AudioSource() {
+    private AudioSource() {
         handle = alGenSources();
         checkAudioErrors();
         queue = new AudioQueue(handle);
@@ -30,6 +30,10 @@ public class AudioSource implements IntHandle, Resource {
 
     public AudioQueue queue() {
         return queue;
+    }
+
+    public void buffer(AudioBuffer buffer) {
+        alSourcei(handle, AL_BUFFER, buffer.handle());
     }
 
     public void play() {
@@ -240,6 +244,7 @@ public class AudioSource implements IntHandle, Resource {
 
     @Override
     public void release() {
+        stop();
         alDeleteSources(handle);
     }
 }

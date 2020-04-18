@@ -17,20 +17,21 @@ import static java.lang.Math.min;
 import static java.util.Objects.requireNonNull;
 import static naitsirc98.beryl.scenes.SceneLighting.MAX_POINT_LIGHTS;
 import static naitsirc98.beryl.scenes.SceneLighting.MAX_SPOT_LIGHTS;
+import static naitsirc98.beryl.util.Maths.roundUp2;
 import static naitsirc98.beryl.util.types.DataType.*;
 import static naitsirc98.beryl.util.types.TypeUtils.getOrElse;
 import static org.lwjgl.system.MemoryStack.stackPush;
 
 public final class SceneEnvironment implements Resource {
 
-    public static final int LIGHTS_BUFFER_SIZE = Light.SIZEOF + MAX_POINT_LIGHTS * Light.SIZEOF + MAX_SPOT_LIGHTS * Light.SIZEOF + VECTOR4_SIZEOF + Fog.SIZEOF + 2 * INT32_SIZEOF;
     public static final int DIRECTIONAL_LIGHT_OFFSET = 0;
-    public static final int POINT_LIGHTS_OFFSET = Light.SIZEOF;
-    public static final int SPOT_LIGHTS_OFFSET = POINT_LIGHTS_OFFSET + Light.SIZEOF * MAX_POINT_LIGHTS;
-    public static final int AMBIENT_COLOR_OFFSET = SPOT_LIGHTS_OFFSET + Light.SIZEOF * MAX_SPOT_LIGHTS;
-    public static final int FOG_OFFSET = AMBIENT_COLOR_OFFSET + FLOAT32_SIZEOF * 4;
-    public static final int POINT_LIGHTS_COUNT_OFFSET = FOG_OFFSET + Fog.SIZEOF;
-    public static final int SPOT_LIGHTS_COUNT_OFFSET = POINT_LIGHTS_COUNT_OFFSET + INT32_SIZEOF;
+    public static final int POINT_LIGHTS_OFFSET = roundUp2(Light.SIZEOF, VECTOR4_SIZEOF);
+    public static final int SPOT_LIGHTS_OFFSET = roundUp2(POINT_LIGHTS_OFFSET + Light.SIZEOF * MAX_POINT_LIGHTS, VECTOR4_SIZEOF);
+    public static final int AMBIENT_COLOR_OFFSET = roundUp2(SPOT_LIGHTS_OFFSET + Light.SIZEOF * MAX_SPOT_LIGHTS, VECTOR4_SIZEOF);
+    public static final int FOG_OFFSET = roundUp2(AMBIENT_COLOR_OFFSET + Color.SIZEOF, VECTOR4_SIZEOF);
+    public static final int POINT_LIGHTS_COUNT_OFFSET = 1728;//roundUp2(FOG_OFFSET + Fog.SIZEOF, INT32_SIZEOF);
+    public static final int SPOT_LIGHTS_COUNT_OFFSET = 1744;//roundUp2(POINT_LIGHTS_COUNT_OFFSET + INT32_SIZEOF, INT32_SIZEOF);
+    public static final int LIGHTS_BUFFER_SIZE = roundUp2(SPOT_LIGHTS_COUNT_OFFSET + INT32_SIZEOF, VECTOR4_SIZEOF);
 
 
     public static final Color DEFAULT_AMBIENT_COLOR = new Color(0.2f, 0.2f, 0.2f);

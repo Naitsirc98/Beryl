@@ -9,10 +9,7 @@ import naitsirc98.beryl.util.types.Singleton;
 import org.lwjgl.system.MemoryStack;
 
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -41,6 +38,7 @@ public final class MaterialManager implements AssetManager<IMaterial> {
     private Queue<Number> recycleQueue;
     private StorageBuffer buffer;
     private long bufferSize;
+    private Queue<IMaterial> modifiedMaterials;
 
     @Override
     public void init() {
@@ -51,6 +49,7 @@ public final class MaterialManager implements AssetManager<IMaterial> {
         buffer = StorageBuffer.create();
         buffer.allocate(BUFFER_INITIAL_CAPACITY);
         bufferSize = 0;
+        modifiedMaterials = new ArrayDeque<>();
         putDefaults();
     }
 
@@ -160,6 +159,18 @@ public final class MaterialManager implements AssetManager<IMaterial> {
         buffer.release();
     }
 
+    public void update() {
+        while(!modifiedMaterials.isEmpty()) {
+            Material material = (Material) modifiedMaterials.poll();
+            copyMaterialToBuffer(material, material.offset());
+            material.markUpdated();
+        }
+    }
+
+    void setModified(IMaterial material) {
+        modifiedMaterials.add(material);
+    }
+
     private void copyMaterialToBuffer(Material material, long offset) {
 
         try(MemoryStack stack = MemoryStack.stackPush()) {
@@ -217,6 +228,6 @@ public final class MaterialManager implements AssetManager<IMaterial> {
         PhongMaterial.get(PhongMaterial.PHONG_MATERIAL_DEFAULT_NAME, builder -> {});
 
         // TODO...
-
     }
+
 }

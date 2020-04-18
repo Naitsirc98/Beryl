@@ -9,6 +9,8 @@ import org.joml.Vector2fc;
 import java.util.Collections;
 import java.util.Map;
 
+import static java.util.Objects.requireNonNull;
+
 @ByteSize.Static(IMaterial.SIZEOF)
 public class Material implements IMaterial, PhongMaterial, WaterMaterial {
 
@@ -20,12 +22,13 @@ public class Material implements IMaterial, PhongMaterial, WaterMaterial {
     private transient long offset = -Long.MAX_VALUE; // Offset of this material into the materials buffer
     private transient int index = Integer.MIN_VALUE; // This is the index of this material in this material's type list
     private transient boolean destroyed;
+    private transient boolean modified;
 
     Material(int handle, String name, Type type, Map<Byte, Object> properties, BitFlags flags) {
         this.handle = handle;
         this.name = name;
         this.type = type;
-        this.properties = Collections.unmodifiableMap(properties);
+        this.properties = properties;
         this.flags = flags;
     }
 
@@ -60,6 +63,15 @@ public class Material implements IMaterial, PhongMaterial, WaterMaterial {
     }
 
     @Override
+    public boolean modified() {
+        return modified;
+    }
+
+    void markUpdated() {
+        modified = false;
+    }
+
+    @Override
     public boolean destroyed() {
         return destroyed;
     }
@@ -85,8 +97,22 @@ public class Material implements IMaterial, PhongMaterial, WaterMaterial {
     }
 
     @Override
+    public PhongMaterial ambientColor(Color color) {
+        properties.put(AMBIENT_COLOR, requireNonNull(color));
+        modify();
+        return this;
+    }
+
+    @Override
     public Color diffuseColor() {
         return get(DIFFUSE_COLOR);
+    }
+
+    @Override
+    public PhongMaterial diffuseColor(Color color) {
+        properties.put(DIFFUSE_COLOR, requireNonNull(color));
+        modify();
+        return this;
     }
 
     @Override
@@ -95,8 +121,22 @@ public class Material implements IMaterial, PhongMaterial, WaterMaterial {
     }
 
     @Override
+    public PhongMaterial specularColor(Color color) {
+        properties.put(SPECULAR_COLOR, requireNonNull(color));
+        modify();
+        return this;
+    }
+
+    @Override
     public Color emissiveColor() {
         return get(EMISSIVE_COLOR);
+    }
+
+    @Override
+    public PhongMaterial emissiveColor(Color color) {
+        properties.put(EMISSIVE_COLOR, requireNonNull(color));
+        modify();
+        return this;
     }
 
     @Override
@@ -192,5 +232,12 @@ public class Material implements IMaterial, PhongMaterial, WaterMaterial {
     @Override
     public Texture2D dudvMap() {
         return get(DUDV_MAP);
+    }
+
+    private void modify() {
+        if(!modified) {
+            modified = true;
+            MaterialManager.get().setModified(this);
+        }
     }
 }

@@ -79,7 +79,7 @@ public final class TaskManager extends BerylSystem {
         Log.info("[TASK-MANAGER]: Waiting for " + taskCount() + " tasks to complete...");
 
         try {
-            taskThread.awaitTermination(Long.MAX_VALUE, MILLISECONDS);
+            taskThread.awaitTermination(1000, MILLISECONDS);
         } catch (InterruptedException e) {
             Log.error("Timeout error while waiting for TaskManager to terminate", e);
         }

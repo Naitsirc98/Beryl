@@ -8,6 +8,8 @@ import naitsirc98.beryl.graphics.rendering.RenderSystem;
 import naitsirc98.beryl.graphics.window.Window;
 import naitsirc98.beryl.input.Input;
 import naitsirc98.beryl.logging.Log;
+import naitsirc98.beryl.materials.Material;
+import naitsirc98.beryl.materials.MaterialManager;
 import naitsirc98.beryl.scenes.SceneManager;
 import naitsirc98.beryl.util.Version;
 import org.lwjgl.system.Configuration;
@@ -158,6 +160,7 @@ public final class Beryl {
         final Input input = systems.input;
         final SceneManager sceneManager = systems.sceneManager;
         final AudioSystem audio = audioSystem;
+        final MaterialManager materials = MaterialManager.get();
 
         updateDelay += deltaTime;
 
@@ -185,6 +188,7 @@ public final class Beryl {
         }
 
         if(wasUpdated) {
+            materials.update();
             sceneManager.endUpdate();
         }
     }

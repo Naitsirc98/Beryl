@@ -31,6 +31,10 @@ module Beryl {
     requires org.lwjgl.openal;
     requires org.lwjgl.openal.natives;
 
+    requires jlayer;
+
+    requires java.desktop;
+
     requires org.joml;
 
     // <===

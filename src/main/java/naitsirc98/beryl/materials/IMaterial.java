@@ -66,6 +66,8 @@ public interface IMaterial extends Asset, ByteSize {
 
     int flags();
 
+    boolean modified();
+
     boolean destroyed();
 
 

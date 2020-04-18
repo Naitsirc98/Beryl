@@ -9,22 +9,11 @@ import naitsirc98.beryl.graphics.opengl.shaders.GLShaderProgram;
 import naitsirc98.beryl.graphics.opengl.vertex.GLVertexArray;
 import naitsirc98.beryl.graphics.rendering.Renderer;
 import naitsirc98.beryl.materials.MaterialManager;
-import naitsirc98.beryl.meshes.Mesh;
 import naitsirc98.beryl.meshes.MeshManager;
 import naitsirc98.beryl.meshes.StaticMeshManager;
-import naitsirc98.beryl.meshes.views.MeshView;
-import naitsirc98.beryl.scenes.Camera;
 import naitsirc98.beryl.scenes.Scene;
-import naitsirc98.beryl.scenes.components.math.Transform;
-import naitsirc98.beryl.scenes.components.meshes.MeshInstance;
 import naitsirc98.beryl.scenes.components.meshes.MeshInstanceList;
-import naitsirc98.beryl.util.geometry.ISphere;
-import org.joml.*;
 import org.lwjgl.system.MemoryStack;
-
-import java.nio.ByteBuffer;
-import java.nio.IntBuffer;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static naitsirc98.beryl.graphics.ShaderStage.*;
 import static naitsirc98.beryl.util.types.DataType.*;
@@ -60,6 +49,8 @@ public abstract class GLIndirectRenderer implements Renderer {
     protected GLBuffer instanceCommandBuffer;
     protected GLBuffer atomicCounterBuffer;
 
+    protected GLFrustumCuller frustumCuller;
+
     protected GLIndirectRenderer() {
 
     }
@@ -88,10 +79,14 @@ public abstract class GLIndirectRenderer implements Renderer {
         atomicCounterBuffer = new GLBuffer("ATOMIC_COUNTER_BUFFER");
         atomicCounterBuffer.allocate(UINT32_SIZEOF);
         atomicCounterBuffer.clear();
+
+        frustumCuller = new GLFrustumCuller(instanceCommandBuffer, transformsBuffer, instanceBuffer);
     }
 
     @Override
     public void terminate() {
+
+        frustumCuller.terminate();
 
         cullingShader.release();
         renderShader.release();
@@ -142,101 +137,7 @@ public abstract class GLIndirectRenderer implements Renderer {
 
         prepareInstanceBuffer(scene, instances, vertexArray);
 
-        GLBuffer commandBuffer = this.instanceCommandBuffer;
-
-        final FrustumIntersection frustum = scene.camera().frustum();
-
-        AtomicInteger baseInstance = new AtomicInteger();
-
-        instances.stream().parallel().unordered().map(e -> (MeshInstance<?>) e).forEach(instance -> {
-
-            try(MemoryStack stack = stackPush()) {
-
-                Vector4f center = new Vector4f();
-
-                GLDrawElementsCommand command = GLDrawElementsCommand.callocStack(stack);
-
-                final Vector3fc scale = instance.transform().scale();
-                final float maxScale = scale.get(scale.maxComponent());
-                final Matrix4fc modelMatrix = instance.modelMatrix();
-
-                for (MeshView<?> meshView : instance) {
-
-                    final Mesh mesh = meshView.mesh();
-                    final ISphere sphere = mesh.boundingSphere();
-
-                    center.set(sphere.center(), 1.0f).mul(modelMatrix);
-
-                    final float radius = sphere.radius() * maxScale;
-
-                    if(alwaysPass || frustum.testSphere(center.x, center.y, center.z, radius)) {
-
-                        final int instanceID = baseInstance.getAndIncrement();
-
-                        setInstanceTransform(instanceID, instance.modelMatrix(), instance.normalMatrix());
-
-                        final int materialIndex = meshView.material().bufferIndex();
-
-                        setInstanceData(instanceID, instanceID, materialIndex);
-
-                        command.count(mesh.indexCount())
-                                .primCount(1)
-                                .firstIndex(mesh.firstIndex())
-                                .baseVertex(mesh.baseVertex())
-                                .baseInstance(instanceID);
-
-                        commandBuffer.copy(instanceID * GLDrawElementsCommand.SIZEOF, command.buffer());
-                    }
-                }
-            }
-        });
-
-        /*
-
-        try(MemoryStack stack = stackPush()) {
-
-            GLDrawElementsCommand command = GLDrawElementsCommand.callocStack(stack);
-
-            for(MeshInstance<?> instance : instances) {
-
-                final Vector3fc scale = instance.transform().scale();
-                final float maxScale = scale.get(scale.maxComponent());
-                final Matrix4fc modelMatrix = instance.modelMatrix();
-
-                for(MeshView<?> meshView : instance) {
-
-                    final Mesh mesh = meshView.mesh();
-                    final ISphere sphere = mesh.boundingSphere();
-
-                    center.set(sphere.center(), 1.0f).mul(modelMatrix);
-
-                    final float radius = sphere.radius() * maxScale;
-
-                    if(alwaysPass || frustum.testSphere(center.x, center.y, center.z, radius)) {
-
-                        setInstanceTransform(visibleObjectsCount, instance.modelMatrix(), instance.normalMatrix());
-
-                        final int materialIndex = meshView.material().bufferIndex();
-
-                        setInstanceData(visibleObjectsCount, visibleObjectsCount, materialIndex);
-
-                        command.count(mesh.indexCount())
-                                .primCount(1)
-                                .firstIndex(mesh.firstIndex())
-                                .baseVertex(mesh.baseVertex())
-                                .baseInstance(visibleObjectsCount);
-
-                        commandBuffer.copy(visibleObjectsCount * GLDrawElementsCommand.SIZEOF, command.buffer());
-
-                        ++visibleObjectsCount;
-                    }
-                }
-            }
-        }
-
-         */
-
-        return baseInstance.get();
+        return frustumCuller.performCullingCPU(scene, instances, alwaysPass);
     }
 
     protected void renderScene(Scene scene, MeshInstanceList<?> instances, GLVertexArray vertexArray, GLShaderProgram shader) {
@@ -362,26 +263,6 @@ public abstract class GLIndirectRenderer implements Renderer {
         }
     }
 
-    protected void setInstanceTransform(int objectIndex, Matrix4fc modelMatrix, Matrix4fc normalMatrix) {
-        try(MemoryStack stack = stackPush()) {
-            ByteBuffer buffer = stack.malloc(MATRIX4_SIZEOF * 2);
-            modelMatrix.get(TRANSFORMS_BUFFER_MODEL_MATRIX_OFFSET, buffer);
-            normalMatrix.get(TRANSFORMS_BUFFER_NORMAL_MATRIX_OFFSET, buffer);
-            transformsBuffer.copy(objectIndex * TRANSFORMS_BUFFER_MIN_SIZE, buffer);
-        }
-    }
-
-    protected void setInstanceData(int instanceID, int matrixIndex, int materialIndex) {
-
-        try (MemoryStack stack = stackPush()) {
-
-            IntBuffer buffer = stack.mallocInt(2);
-
-            buffer.put(0, matrixIndex).put(1, materialIndex);
-
-            instanceBuffer.copy(instanceID * INSTANCE_BUFFER_MIN_SIZE, buffer);
-        }
-    }
 
     protected void reallocateBuffer(MappedGraphicsBuffer buffer, long size) {
         buffer.unmapMemory();

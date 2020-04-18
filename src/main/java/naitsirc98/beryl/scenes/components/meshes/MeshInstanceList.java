@@ -27,6 +27,10 @@ public final class MeshInstanceList<T extends MeshInstance> implements Iterable<
         return numMeshViews;
     }
 
+    public T get(int index) {
+        return instances.get(index);
+    }
+
     public void add(T instance) {
         instances.add(instance);
         numMeshViews += instance.numMeshViews();

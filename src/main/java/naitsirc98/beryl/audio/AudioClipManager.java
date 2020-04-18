@@ -34,13 +34,14 @@ public final class AudioClipManager implements AssetManager<AudioClip> {
 
     }
 
-    public synchronized AudioClip createAudioClip(String audioFile, AudioFormat format, AudioDataFormat dataFormat) {
+    public synchronized AudioClip createAudioClip(String name, String audioFile,AudioDataFormat dataFormat) {
 
-        if(invalidAudioClipParameters(audioFile, format, dataFormat)) {
+        if(invalidAudioClipParameters(name, audioFile, dataFormat)) {
             return null;
         }
 
-        AudioClip audioClip = new AudioClip(handleProvider.getAndIncrement(), getFileName(audioFile), format, decodeAudioData(audioFile, format, dataFormat));
+        AudioClip audioClip = new AudioClip(handleProvider.getAndIncrement(),
+                name, decodeAudioData(audioFile, dataFormat));
 
         audioClips.put(audioClip.name(), audioClip);
 
@@ -82,7 +83,17 @@ public final class AudioClipManager implements AssetManager<AudioClip> {
         destroyAll();
     }
 
-    private boolean invalidAudioClipParameters(String audioFile, AudioFormat format, AudioDataFormat dataFormat) {
+    private boolean invalidAudioClipParameters(String name, String audioFile, AudioDataFormat dataFormat) {
+
+        if(name == null) {
+            Log.error("Name cannot be null");
+            return true;
+        }
+
+        if(exists(name)) {
+            Log.error("There is already an Audio Clip called " + name);
+            return true;
+        }
 
         if(audioFile == null) {
             Log.error("Audio file cannot be null");
@@ -91,11 +102,6 @@ public final class AudioClipManager implements AssetManager<AudioClip> {
 
         if(Files.notExists(Paths.get(audioFile))) {
             Log.error("File " + audioFile + "does not exists");
-            return true;
-        }
-
-        if(format == null) {
-            Log.error("Audio format cannot be null");
             return true;
         }
 
@@ -111,8 +117,8 @@ public final class AudioClipManager implements AssetManager<AudioClip> {
         return audioFile.substring(audioFile.lastIndexOf(File.pathSeparatorChar) + 1);
     }
 
-    private AudioBuffer decodeAudioData(String audioFile, AudioFormat format, AudioDataFormat dataFormat) {
-        return AudioDecoder.decode(audioFile, format, dataFormat);
+    private AudioBuffer decodeAudioData(String audioFile, AudioDataFormat dataFormat) {
+        return AudioDecoder.decode(audioFile, dataFormat);
     }
 
 }

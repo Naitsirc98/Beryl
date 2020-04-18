@@ -1,5 +1,6 @@
 package naitsirc98.beryl.audio;
 
+import naitsirc98.beryl.core.BerylConfiguration;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
 import org.lwjgl.system.MemoryStack;
@@ -19,12 +20,14 @@ public final class AudioListener {
 
     private final Vector3f position;
     private final Vector3f velocity;
-    private final Vector3f orientation;
+    private final Vector3f forward;
+    private final Vector3f up;
 
     AudioListener() {
         position = new Vector3f();
         velocity = new Vector3f();
-        orientation = new Vector3f();
+        forward = new Vector3f();
+        up = new Vector3f();
     }
 
     public float gain() {
@@ -64,23 +67,30 @@ public final class AudioListener {
         return this;
     }
 
-    public Vector3fc orientation() {
-        return orientation;
+    public Vector3fc forward() {
+        return forward;
     }
 
-    public AudioListener orientation(Vector3fc orientation) {
-        return velocity(orientation.x(), orientation.y(), orientation.z());
+    public Vector3fc up() {
+        return up;
     }
 
-    private AudioListener orientation(float x, float y, float z) {
-        alListener3f(AL_ORIENTATION, x, y, z);
-        this.orientation.set(x, y, z);
+    public AudioListener orientation(Vector3fc forward, Vector3fc up) {
+        return orientation(forward.x(), forward.y(), forward.z(), up.x(), up.y(), up.z());
+    }
+
+    private AudioListener orientation(float forwardX, float forwardY, float forwardZ, float upX, float upY, float upZ) {
+        try(MemoryStack stack = stackPush()) {
+            alListenerfv(AL_ORIENTATION, stack.floats(forwardX, forwardY, forwardZ, upX, upY, upZ));
+        }
+        this.forward.set(forwardX, forwardY, forwardZ);
+        this.up.set(upX, upY, upZ);
         return this;
     }
 
     void update() {
         try(MemoryStack stack = stackPush()) {
-            FloatBuffer buffer = stack.mallocFloat(3);
+            FloatBuffer buffer = stack.mallocFloat(6);
             cachePosition(buffer);
             cacheVelocity(buffer);
             cacheOrientation(buffer);
@@ -99,6 +109,7 @@ public final class AudioListener {
 
     private void cacheOrientation(FloatBuffer buffer) {
         alGetListenerfv(AL_ORIENTATION, buffer);
-        orientation.set(buffer);
+        forward.set(buffer);
+        up.set(3, buffer);
     }
 }

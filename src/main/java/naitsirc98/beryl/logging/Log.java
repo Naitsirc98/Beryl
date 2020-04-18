@@ -20,14 +20,14 @@ import java.util.logging.Logger;
 
 import static java.util.Objects.requireNonNull;
 import static java.util.concurrent.Executors.newSingleThreadExecutor;
-import static java.util.concurrent.TimeUnit.SECONDS;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 /**
  * Utility Logger class for both internal and client side
  * */
 public final class Log extends BerylSystem {
 
-    private static final int MSG_QUEUE_TERMINATION_WAIT_TIME = Integer.MAX_VALUE;
+    private static final int MSG_QUEUE_TERMINATION_WAIT_TIME = 1000;
 
     private static final String PATTERN = "%s[%s]: %s\n";
 
@@ -247,7 +247,7 @@ public final class Log extends BerylSystem {
         messageQueue.add(TERMINATION_COMMAND);
         executor.shutdown();
         try {
-            executor.awaitTermination(MSG_QUEUE_TERMINATION_WAIT_TIME, SECONDS);
+            executor.awaitTermination(MSG_QUEUE_TERMINATION_WAIT_TIME, MILLISECONDS);
         } catch (InterruptedException e) {
             Logger.getLogger(Log.class.getName()).log(java.util.logging.Level.SEVERE, "Error while terminating logging system", e);
         } finally {

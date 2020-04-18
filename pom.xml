@@ -22,6 +22,7 @@
                 <directory>src/main/resources</directory>
                 <includes>
                     <include>shaders/**</include>
+                    <include>audio/**</include>
                     <include>models/**</include>
                     <include>textures/**</include>
                 </includes>
@@ -215,6 +216,11 @@
             <groupId>org.joml</groupId>
             <artifactId>joml</artifactId>
             <version>${joml.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>javazoom</groupId>
+            <artifactId>jlayer</artifactId>
+            <version>1.0.1</version>
         </dependency>
     </dependencies>
 </project>

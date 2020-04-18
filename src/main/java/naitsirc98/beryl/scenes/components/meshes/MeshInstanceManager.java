@@ -30,10 +30,6 @@ public final class MeshInstanceManager extends AbstractComponentManager<MeshInst
     @Override
     protected void add(MeshInstance meshInstance) {
         super.add(meshInstance);
-        
-        if(meshInstance.enabled()) {
-            register(meshInstance);
-        }
     }
 
     @Override

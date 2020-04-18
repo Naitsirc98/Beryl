@@ -11,6 +11,7 @@ import static org.lwjgl.openal.AL10.*;
 public class AudioBuffer implements IntHandle, Resource {
 
     private int handle;
+    private AudioFormat format;
 
     public AudioBuffer() {
 
@@ -43,17 +44,23 @@ public class AudioBuffer implements IntHandle, Resource {
         return alGetBufferi(handle, AL_SIZE);
     }
 
+    public AudioFormat format() {
+        return format;
+    }
+
     public void data(long audioDataPtr, int size, AudioFormat format, int frequency) {
         nalBufferData(handle, asOpenALFormat(format), audioDataPtr, size, frequency);
         if(DEBUG) {
             checkAudioErrors();
         }
+        this.format = format;
     }
 
     @Override
     public void release() {
         alDeleteBuffers(handle);
         handle = NULL;
+        format = null;
     }
 
     private int asOpenALFormat(AudioFormat format) {

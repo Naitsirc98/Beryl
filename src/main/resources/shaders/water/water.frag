@@ -152,7 +152,7 @@ float getFloorDistance(vec2 depthCoords) {
 }
 
 float getWaterDistance(vec2 depthCoords) {
-    return linearizeDepth(gl_FragCoord.z); 
+    return linearizeDepth(gl_FragCoord.z);
 }
 
 void main() {

@@ -2,6 +2,8 @@ package naitsirc98.beryl.scenes;
 
 import naitsirc98.beryl.graphics.rendering.RenderSystem;
 import naitsirc98.beryl.logging.Log;
+import naitsirc98.beryl.scenes.components.audio.AudioPlayer;
+import naitsirc98.beryl.scenes.components.audio.AudioPlayerManager;
 import naitsirc98.beryl.scenes.components.behaviours.AbstractBehaviour;
 import naitsirc98.beryl.scenes.components.behaviours.BehaviourManager;
 import naitsirc98.beryl.scenes.components.math.Transform;
@@ -38,6 +40,7 @@ public final class Scene {
     private final TransformManager transforms;
     private final BehaviourManager behaviours;
     private final MeshInstanceManager meshes;
+    private final AudioPlayerManager audio;
 
     private final Map<Class<? extends Component>, ComponentManager<?>> componentManagers;
     // ===
@@ -64,6 +67,7 @@ public final class Scene {
         transforms = newInstance(TransformManager.class, this);
         behaviours = newInstance(BehaviourManager.class, this);
         meshes = newInstance(MeshInstanceManager.class, this);
+        audio = newInstance(AudioPlayerManager.class, this);
 
         componentManagers = createComponentManagersMap();
         // ===
@@ -296,6 +300,7 @@ public final class Scene {
         components.put(AbstractBehaviour.class, behaviours);
         components.put(Transform.class, transforms);
         components.put(MeshInstance.class, meshes);
+        components.put(AudioPlayer.class, audio);
 
         return components;
     }

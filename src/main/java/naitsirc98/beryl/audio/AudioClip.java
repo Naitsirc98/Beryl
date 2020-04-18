@@ -3,17 +3,33 @@ package naitsirc98.beryl.audio;
 import naitsirc98.beryl.assets.Asset;
 import naitsirc98.beryl.resources.ManagedResource;
 
+import java.util.function.Consumer;
+
 public class AudioClip extends ManagedResource implements Asset {
+
+    public static AudioClip get(String name, Consumer<AudioClipParams> audioClipParamsConsumer) {
+
+        AudioClipManager manager = AudioClipManager.get();
+
+        if(manager.exists(name)) {
+            return manager.get(name);
+        }
+
+        AudioClipParams params = new AudioClipParams();
+        audioClipParamsConsumer.accept(params);
+
+        return manager.createAudioClip(name, params.audioFile, params.dataFormat);
+    }
 
     private final int handle;
     private final String name;
     private final AudioFormat format;
     private final AudioBuffer buffer;
 
-    AudioClip(int handle, String name, AudioFormat format, AudioBuffer buffer) {
+    AudioClip(int handle, String name, AudioBuffer buffer) {
         this.handle = handle;
         this.name = name;
-        this.format = format;
+        this.format = buffer.format();
         this.buffer = buffer;
     }
 
@@ -51,5 +67,25 @@ public class AudioClip extends ManagedResource implements Asset {
     @Override
     public int hashCode() {
         return handle;
+    }
+
+    public static final class AudioClipParams {
+
+        private String audioFile;
+        private AudioDataFormat dataFormat;
+
+        public AudioClipParams() {
+            dataFormat = AudioDataFormat.OGG;
+        }
+
+        public AudioClipParams audioFile(String audioFile) {
+            this.audioFile = audioFile;
+            return this;
+        }
+
+        public AudioClipParams dataFormat(AudioDataFormat dataFormat) {
+            this.dataFormat = dataFormat;
+            return this;
+        }
     }
 }

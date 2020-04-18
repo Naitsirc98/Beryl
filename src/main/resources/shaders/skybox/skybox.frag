@@ -3,7 +3,7 @@
 #extension GL_KHR_vulkan_glsl: require
 
 #define LOWER_LIMIT 0.0
-#define UPPER_LIMIT 0.2
+#define UPPER_LIMIT 0.0
 
 @include "structs/fog.glsl"
 
@@ -30,7 +30,7 @@ void main()
     // color /= (color + vec3(1.0));
     // color = pow(color, vec3(2.2));
 
-    if(u_FogColor.a == 0.0) {
+    if(true || u_FogColor.a == 0.0) {
         out_FinalColor = color;
     } else {
         float factor = (in_FragmentPosition.y - LOWER_LIMIT) / (UPPER_LIMIT - LOWER_LIMIT);
