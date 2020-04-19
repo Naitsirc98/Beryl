@@ -1,8 +1,6 @@
 package naitsirc98.beryl.examples.app1;
 
 import naitsirc98.beryl.audio.AudioClip;
-import naitsirc98.beryl.audio.AudioDistanceModel;
-import naitsirc98.beryl.audio.AudioSystem;
 import naitsirc98.beryl.core.*;
 import naitsirc98.beryl.graphics.GraphicsAPI;
 import naitsirc98.beryl.graphics.GraphicsFactory;
@@ -26,19 +24,16 @@ import naitsirc98.beryl.meshes.models.Model;
 import naitsirc98.beryl.meshes.models.StaticMeshLoader;
 import naitsirc98.beryl.meshes.models.StaticModelEntityFactory;
 import naitsirc98.beryl.meshes.models.StaticVertexHandler;
-import naitsirc98.beryl.meshes.views.MeshView;
 import naitsirc98.beryl.meshes.views.StaticMeshView;
 import naitsirc98.beryl.meshes.views.WaterMeshView;
 import naitsirc98.beryl.scenes.*;
 import naitsirc98.beryl.scenes.components.audio.AudioPlayer;
 import naitsirc98.beryl.scenes.components.behaviours.UpdateMutableBehaviour;
 import naitsirc98.beryl.scenes.components.math.Transform;
-import naitsirc98.beryl.scenes.components.meshes.MeshInstance;
 import naitsirc98.beryl.scenes.components.meshes.StaticMeshInstance;
 import naitsirc98.beryl.scenes.components.meshes.WaterMeshInstance;
 import naitsirc98.beryl.util.Color;
 import org.joml.Vector3f;
-import org.lwjgl.openal.AL11;
 
 import java.util.Random;
 
@@ -146,7 +141,7 @@ public class App1 extends BerylApplication {
 
         StaticModelEntityFactory treeFactory = new StaticModelEntityFactory(treeModel).materialsFunction(this::treeMaterialFunction);
 
-        for(int i = 0;i < 400;i++) {
+        for(int i = 0;i < 1000;i++) {
 
             Entity tree = treeFactory.newEntity(scene);
 
@@ -430,7 +425,7 @@ public class App1 extends BerylApplication {
             colorMap.sampler().wrapMode(Sampler.WrapMode.REPEAT);
             colorMap.sampler().magFilter(Sampler.MagFilter.LINEAR);
             colorMap.sampler().minFilter(Sampler.MinFilter.LINEAR_MIPMAP_LINEAR);
-            colorMap.sampler().lodBias(-0.1f);
+            colorMap.sampler().lodBias(-1f);
             builder.ambientMap(colorMap).diffuseMap(colorMap);
             builder.shininess(1);
             builder.textureCoordsFactor(50, 50);

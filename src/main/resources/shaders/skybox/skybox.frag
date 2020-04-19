@@ -21,8 +21,8 @@ layout(location = 0) out vec4 out_FinalColor;
 
 void main()
 {
-    vec4 color1 = textureLod(u_SkyboxTexture1, in_FragmentPosition, 0.0);
-    vec4 color2 = textureLod(u_SkyboxTexture2, in_FragmentPosition, 0.0);
+    vec4 color1 = textureLod(u_SkyboxTexture1, in_FragmentPosition, -1);
+    vec4 color2 = textureLod(u_SkyboxTexture2, in_FragmentPosition, -1);
 
     vec4 color = mix(color1, color2, u_TextureBlendFactor);
 

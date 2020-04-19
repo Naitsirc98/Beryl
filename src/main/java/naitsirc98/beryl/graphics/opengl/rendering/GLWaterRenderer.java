@@ -112,11 +112,15 @@ public class GLWaterRenderer implements WaterRenderer {
 
             WaterMeshView waterView = instance.meshView();
 
-            if(camera.position().y() - instance.transform().position().y() < 0.0f) {
-                // If the camera is below the water, then just render normally.
+            final boolean underWater = camera.position().y() - instance.transform().position().y() < 0.0f;
+
+            // instance.cameraIsUnderWater(underWater);
+
+            if(underWater) {
 
                 bakeWaterTexture(scene, enhancedWater, staticMeshRenderer, skyboxRenderer, waterView, clipPlane, size,
                         (GLTexture2D) waterView.material().refractionMap(), true);
+
                 continue;
             }
 
@@ -144,8 +148,6 @@ public class GLWaterRenderer implements WaterRenderer {
                     (GLTexture2D) waterView.material().refractionMap(), false);
         }
 
-        staticMeshRenderer.renderShader.uniformVector4f("u_ClipPlane", 0, 0, 0, 0);
-
         glDisable(GL_CLIP_DISTANCE0);
     }
 
@@ -161,7 +163,8 @@ public class GLWaterRenderer implements WaterRenderer {
             int drawCount = staticMeshRenderer.performCullingPassCPU(scene, false);
             staticMeshRenderer.renderShader.bind();
             staticMeshRenderer.renderShader.uniformVector4f("u_ClipPlane", clipPlane);
-            staticMeshRenderer.render(scene, staticMeshRenderer.renderShader, drawCount);
+            staticMeshRenderer.render(scene, drawCount);
+            staticMeshRenderer.renderShader.uniformVector4f("u_ClipPlane", 0, 0, 0, 0);
         }
 
         if(renderSkybox) {

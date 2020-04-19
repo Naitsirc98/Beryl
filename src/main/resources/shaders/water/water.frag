@@ -203,7 +203,9 @@ void main() {
     viewDirection = normalize(u_Camera.position.xyz - fragmentData.position);
     float reflectionFactor = dot(viewDirection, fragmentNormal);
 
-    vec4 environmentColor = mix(reflectionColor, refractionColor, reflectionFactor);
+    bool underWater = u_Camera.position.y - fragmentData.position.y < 0.0;
+
+    vec4 environmentColor = underWater ? refractionColor : mix(reflectionColor, refractionColor, reflectionFactor);
 
     vec4 waterColor = mix(environmentColor, u_WaterColor, u_WaterColorStrength);
 
