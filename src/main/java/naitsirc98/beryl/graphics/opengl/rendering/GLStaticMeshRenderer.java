@@ -15,7 +15,8 @@ import naitsirc98.beryl.scenes.components.meshes.StaticMeshInstance;
 
 import static naitsirc98.beryl.meshes.vertices.VertexAttribute.*;
 import static org.lwjgl.opengl.GL11.glClear;
-import static org.lwjgl.opengl.GL11C.*;
+import static org.lwjgl.opengl.GL11C.GL_COLOR_BUFFER_BIT;
+import static org.lwjgl.opengl.GL11C.GL_DEPTH_BUFFER_BIT;
 
 public final class GLStaticMeshRenderer extends GLIndirectRenderer implements StaticMeshRenderer {
 
@@ -35,7 +36,6 @@ public final class GLStaticMeshRenderer extends GLIndirectRenderer implements St
 
     public void prepare(Scene scene) {
         updateVertexArrayVertexBuffer();
-        // prepareInstanceBuffer(scene, getStaticInstances(scene), vertexArray);
     }
 
     @Override

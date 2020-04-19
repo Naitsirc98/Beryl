@@ -10,7 +10,7 @@ import java.lang.Math;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 import static java.util.stream.IntStream.range;
-import static naitsirc98.beryl.util.Maths.*;
+import static naitsirc98.beryl.util.Maths.radians;
 
 public class ShadowCascade {
 

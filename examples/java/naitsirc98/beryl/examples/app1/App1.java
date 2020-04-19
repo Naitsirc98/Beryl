@@ -20,9 +20,8 @@ import naitsirc98.beryl.materials.WaterMaterial;
 import naitsirc98.beryl.meshes.StaticMesh;
 import naitsirc98.beryl.meshes.TerrainMesh;
 import naitsirc98.beryl.meshes.TerrainMeshLoader;
-import naitsirc98.beryl.meshes.models.Model;
-import naitsirc98.beryl.meshes.models.StaticMeshLoader;
-import naitsirc98.beryl.meshes.models.StaticModelEntityFactory;
+import naitsirc98.beryl.meshes.models.StaticModel;
+import naitsirc98.beryl.meshes.models.StaticModelLoader;
 import naitsirc98.beryl.meshes.models.StaticVertexHandler;
 import naitsirc98.beryl.meshes.views.StaticMeshView;
 import naitsirc98.beryl.meshes.views.WaterMeshView;
@@ -35,7 +34,10 @@ import naitsirc98.beryl.scenes.components.meshes.WaterMeshInstance;
 import naitsirc98.beryl.util.Color;
 import org.joml.Vector3f;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 import static naitsirc98.beryl.scenes.EnhancedWaterUnit.ENHANCED_WATER_UNIT_0;
 import static naitsirc98.beryl.scenes.Fog.DEFAULT_FOG_DENSITY;
@@ -86,21 +88,20 @@ public class App1 extends BerylApplication {
 
         TerrainMesh terrainMesh = TerrainMeshLoader.get().load("Terrain", BerylFiles.getString("textures/terrain_heightmap.png"), terrainSize);
 
-        StaticMesh quadMesh = StaticMeshLoader.get().load(BerylFiles.getPath("models/quad.obj")).loadedMesh(0).mesh();
+        StaticMesh quadMesh = StaticModelLoader.get().load(BerylFiles.getPath("models/quad.obj")).mesh(0);
 
-        StaticMesh cubeMesh = StaticMeshLoader.get().load(BerylFiles.getPath("models/cube.obj")).loadedMesh(0).mesh();
+        StaticMesh cubeMesh = StaticModelLoader.get().load(BerylFiles.getPath("models/cube.obj")).mesh(0);
 
-        StaticMesh grassMesh = StaticMeshLoader.get().load(BerylFiles.getPath("models/grass.obj"),
-                new StaticVertexHandler.Builder().normalFunction(n -> n.set(0, 1, 0)).build())
-                .loadedMesh(0).mesh();
+        StaticMesh grassMesh = StaticModelLoader.get().load(BerylFiles.getPath("models/grass.obj"),
+                new StaticVertexHandler.Builder().normalFunction(n -> n.set(0, 1, 0)).build()).mesh(0);
 
-        Model<StaticMesh> treeModel = StaticMeshLoader.get()
+        StaticModel treeModel = StaticModelLoader.get()
                         .load("C:\\Users\\naits\\Downloads\\uploads_files_1970932_conifer_macedonian_pine(1)\\OBJ format\\conifer_macedonian_pine.obj",
                                 new StaticVertexHandler.Builder().positionFunction(p -> p.mul(0.01f)).build());
 
         Log.trace(treeModel);
 
-        Model<StaticMesh> lampModel = StaticMeshLoader.get()
+        StaticModel lampModel = StaticModelLoader.get()
                 .load("C:\\Users\\naits\\Downloads\\uploads_files_1923232_2otdoorlightning\\lightning1.fbx",
                         new StaticVertexHandler.Builder().positionFunction(p -> p.mul(0.01f)).build());
 
@@ -139,11 +140,15 @@ public class App1 extends BerylApplication {
 
         scene.enhancedWater().setEnhancedWaterView(ENHANCED_WATER_UNIT_0, waterMeshView);
 
-        StaticModelEntityFactory treeFactory = new StaticModelEntityFactory(treeModel).materialsFunction(this::treeMaterialFunction);
+        List<StaticMeshView> treeMeshViews = Arrays.stream(treeModel.meshes())
+                .map(mesh -> new StaticMeshView(mesh, treeMaterialFunction(mesh.name())))
+                .collect(Collectors.toList());
 
         for(int i = 0;i < 1000;i++) {
 
-            Entity tree = treeFactory.newEntity(scene);
+            Entity tree = scene.newEntity("Tree" + i);
+
+            tree.add(StaticMeshInstance.class).meshViews(treeMeshViews);
 
             float x;
             float z;
@@ -155,7 +160,7 @@ public class App1 extends BerylApplication {
                 y =  terrainMesh.heightAt(0, 0, x, z);
             } while(y <= water.get(Transform.class).position().y() + 1);
 
-            tree.get(Transform.class).position(x, y - 1, z);
+            tree.add(Transform.class).position(x, y - 1, z);
         }
 
         StaticMeshView grassView = new StaticMeshView(grassMesh, getGrassMaterial());
@@ -169,10 +174,8 @@ public class App1 extends BerylApplication {
             grass.add(StaticMeshInstance.class).meshView(grassView);
         }
 
-        StaticModelEntityFactory lampFactory = new StaticModelEntityFactory(lampModel);
-        lampFactory.materialsFunction(this::lampMaterials);
-
-        Entity lamp = lampFactory.newEntity("", scene);
+        Entity lamp = scene.newEntity("Lamp");
+        lamp.add(StaticMeshInstance.class).meshView(new StaticMeshView(lampModel.mesh(0), getLampMaterial()));
         lamp.get(Transform.class).position(473.74f, 0.067f, 376.301f).scale(4);
 
         Camera camera = scene.camera();
@@ -242,7 +245,7 @@ public class App1 extends BerylApplication {
             scene.environment().ambientColor(Color.WHITE.intensify(clamp(0.2f, 0.9f, 1.0f - time)));
 
             PhongMaterial lampMaterial = (PhongMaterial) lamp.get(StaticMeshInstance.class).meshView().material();
-            lampMaterial.emissiveColor(Color.WHITE.intensify(clamp(0.2f, 2.0f, time * 1.2f)));
+            lampMaterial.emissiveColor(Color.WHITE.intensify(clamp(0.2f, 2.0f, time * 1.25f)));
         });
 
         // AudioSystem.distanceModel(AudioDistanceModel.EXPONENT_DISTANCE);
@@ -254,7 +257,7 @@ public class App1 extends BerylApplication {
         environment.fog().density(DEFAULT_FOG_DENSITY);
     }
 
-    private IMaterial lampMaterials(String meshName) {
+    private IMaterial getLampMaterial() {
 
         String dir = "C:\\Users\\naits\\Downloads\\uploads_files_1923232_2otdoorlightning\\textures\\unreal\\lightning1\\";
 
@@ -306,7 +309,6 @@ public class App1 extends BerylApplication {
 
             Texture2D dudv = GraphicsFactory.get().newTexture2D(BerylFiles.getString("textures/water/dudv.png"), PixelFormat.RGBA);
             Texture2D normalMap = GraphicsFactory.get().newTexture2D(BerylFiles.getString("textures/water/normalMap.png"), PixelFormat.RGBA);
-
 
             dudv.generateMipmaps();
             dudv.sampler().wrapMode(Sampler.WrapMode.REPEAT);

@@ -7,7 +7,6 @@ import naitsirc98.beryl.graphics.opengl.buffers.GLBuffer;
 import naitsirc98.beryl.graphics.opengl.shaders.GLShader;
 import naitsirc98.beryl.graphics.opengl.shaders.GLShaderProgram;
 import naitsirc98.beryl.graphics.opengl.swapchain.GLFramebuffer;
-import naitsirc98.beryl.graphics.opengl.swapchain.GLRenderbuffer;
 import naitsirc98.beryl.graphics.opengl.textures.GLTexture2D;
 import naitsirc98.beryl.graphics.opengl.vertex.GLVertexArray;
 import naitsirc98.beryl.graphics.rendering.renderers.WaterRenderer;
@@ -15,7 +14,7 @@ import naitsirc98.beryl.graphics.window.Window;
 import naitsirc98.beryl.images.PixelFormat;
 import naitsirc98.beryl.materials.WaterMaterial;
 import naitsirc98.beryl.meshes.StaticMesh;
-import naitsirc98.beryl.meshes.models.StaticMeshLoader;
+import naitsirc98.beryl.meshes.models.StaticModelLoader;
 import naitsirc98.beryl.meshes.views.WaterMeshView;
 import naitsirc98.beryl.scenes.Camera;
 import naitsirc98.beryl.scenes.Scene;
@@ -57,7 +56,7 @@ public class GLWaterRenderer implements WaterRenderer {
                 .attach(new GLShader(FRAGMENT_STAGE).source(BerylFiles.getPath("shaders/water/water.frag")))
                 .link();
 
-        quadMesh = StaticMeshLoader.get().load(BerylFiles.getPath("models/quad.obj")).loadedMesh(0).mesh();
+        quadMesh = StaticModelLoader.get().load(BerylFiles.getPath("models/quad.obj")).mesh(0);
 
         vertexArray = new GLVertexArray();
 
