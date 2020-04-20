@@ -2,6 +2,7 @@ package naitsirc98.beryl.graphics.opengl.rendering;
 
 import naitsirc98.beryl.core.BerylFiles;
 import naitsirc98.beryl.graphics.opengl.buffers.GLBuffer;
+import naitsirc98.beryl.graphics.opengl.commands.GLDrawElementsCommand;
 import naitsirc98.beryl.graphics.opengl.shaders.GLShader;
 import naitsirc98.beryl.graphics.opengl.shaders.GLShaderProgram;
 import naitsirc98.beryl.graphics.opengl.vertex.GLVertexArray;
@@ -9,12 +10,20 @@ import naitsirc98.beryl.graphics.rendering.renderers.AnimMeshRenderer;
 import naitsirc98.beryl.materials.MaterialManager;
 import naitsirc98.beryl.meshes.AnimMesh;
 import naitsirc98.beryl.meshes.AnimMeshManager;
+import naitsirc98.beryl.meshes.Bone;
 import naitsirc98.beryl.meshes.MeshManager;
 import naitsirc98.beryl.meshes.vertices.VertexLayout;
 import naitsirc98.beryl.meshes.views.AnimMeshView;
 import naitsirc98.beryl.scenes.Scene;
+import naitsirc98.beryl.scenes.components.animations.Animator;
 import naitsirc98.beryl.scenes.components.meshes.AnimMeshInstance;
 import naitsirc98.beryl.scenes.components.meshes.MeshInstanceList;
+import org.joml.Matrix4f;
+import org.joml.Matrix4fc;
+import org.lwjgl.system.MemoryStack;
+
+import java.nio.ByteBuffer;
+import java.util.Map;
 
 import static naitsirc98.beryl.graphics.ShaderStage.FRAGMENT_STAGE;
 import static naitsirc98.beryl.graphics.ShaderStage.VERTEX_STAGE;
@@ -26,13 +35,18 @@ import static org.lwjgl.opengl.GL31.GL_UNIFORM_BUFFER;
 import static org.lwjgl.opengl.GL40.GL_DRAW_INDIRECT_BUFFER;
 import static org.lwjgl.opengl.GL43.GL_SHADER_STORAGE_BUFFER;
 import static org.lwjgl.opengl.GL43.glMultiDrawElementsIndirect;
+import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
 public final class GLAnimMeshRenderer extends GLIndirectRenderer implements AnimMeshRenderer {
 
+    private GLBuffer bonesBuffer;
+
     @Override
     public void init() {
         super.init();
+
+        bonesBuffer = new GLBuffer();
     }
 
     @Override
@@ -66,7 +80,7 @@ public final class GLAnimMeshRenderer extends GLIndirectRenderer implements Anim
     }
 
     public int performCullingPassCPU(Scene scene, boolean alwaysPass) {
-        return performCullingPassCPU(scene, getAnimMeshInstances(scene), vertexArray, true);
+        return performCullingPassCPU(scene, getAnimMeshInstances(scene), vertexArray, alwaysPass);
     }
 
     private void updateVertexArrayVertexBuffer() {
@@ -114,7 +128,6 @@ public final class GLAnimMeshRenderer extends GLIndirectRenderer implements Anim
         final GLBuffer lightsUniformBuffer = scene.environment().buffer();
         final GLBuffer materialsBuffer = MaterialManager.get().buffer();
         final GLBuffer cameraUniformBuffer = scene.cameraInfo().cameraBuffer();
-        final GLBuffer bonesBuffer = MeshManager.get().animMeshManager().bonesBuffer();
 
         setOpenGLState(scene);
 
@@ -135,5 +148,37 @@ public final class GLAnimMeshRenderer extends GLIndirectRenderer implements Anim
         vertexArray.bind();
 
         glMultiDrawElementsIndirect(GL_TRIANGLES, GL_UNSIGNED_INT, NULL, drawCount, 0);
+    }
+
+    protected void prepareInstanceBuffer(Scene scene, MeshInstanceList<?> instances, GLVertexArray vertexArray) {
+
+        super.prepareInstanceBuffer(scene, instances, vertexArray);
+
+        if(instances == null || instances.size() == 0) {
+            return;
+        }
+
+        final int bonesBufferMinSize = MeshManager.get().animMeshManager().bonesCount() * Bone.SIZEOF;
+
+        if(bonesBuffer.size() < bonesBufferMinSize) {
+            bonesBuffer.reallocate(bonesBufferMinSize);
+            bonesBuffer.mapMemory();
+        }
+
+        Animator animator = (Animator) instances.get(0).get(Animator.class);
+
+        Map<Integer, Matrix4f> boneTransformations = animator.currentBoneTransformations();
+
+        try(MemoryStack stack = stackPush()) {
+
+            ByteBuffer buffer = stack.malloc(Bone.SIZEOF);
+
+            boneTransformations.forEach((boneID, transformation) -> {
+
+                transformation.get(buffer);
+
+                bonesBuffer.copy(boneID * Bone.SIZEOF, buffer);
+            });
+        }
     }
 }

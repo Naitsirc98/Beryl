@@ -99,12 +99,26 @@ public class AnimModel {
     }
 
     void addBone(Bone bone) {
+        bones.add(bone);
+        /*
         if(!bones.contains(bone)) {
             bones.add(bone);
         }
+         */
     }
 
     void addAnimation(Animation animation) {
         animations.put(animation.name(), animation);
+    }
+
+    @Override
+    public String toString() {
+
+        StringBuilder builder = new StringBuilder();
+
+        builder.append("Model '").append(path).append("' {\n").append("  Path: ").append("\"").append(path).append("\"").append('\n');
+        builder.append("  Structure:\n").append(nodes.get(0).toString("    ")).append('\n');
+
+        return builder.append("  };").toString();
     }
 }

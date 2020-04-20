@@ -1,6 +1,7 @@
 package naitsirc98.beryl.util;
 
 import org.joml.Math;
+import org.joml.Quaternionf;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 
@@ -63,6 +64,36 @@ public class Maths {
 
     public static float lerp(float a, float b, float t) {
         return (1 - t) * a + t * b;
+    }
+
+    public static Vector3f lerp(Vector3f start, Vector3f end, float t) {
+        final float x = start.x + (end.x - start.x) * t;
+        final float y = start.y + (end.y - start.y) * t;
+        final float z = start.z + (end.z - start.z) * t;
+        return new Vector3f(x, y, z);
+    }
+
+    public static Quaternionf lerp(Quaternionf a, Quaternionf b, float t) {
+
+        Quaternionf result = new Quaternionf();
+
+        final float dot = a.w * b.w + a.x * b.x + a.y * b.y + a.z * b.z;
+
+        final float blendI = 1.0f - t;
+
+        if(dot < 0) {
+            result.w = blendI * a.w + t * -b.w;
+            result.x = blendI * a.x + t * -b.x;
+            result.y = blendI * a.y + t * -b.y;
+            result.z = blendI * a.z + t * -b.z;
+        } else {
+            result.w = blendI * a.w + t * b.w;
+            result.x = blendI * a.x + t * b.x;
+            result.y = blendI * a.y + t * b.y;
+            result.z = blendI * a.z + t * b.z;
+        }
+
+        return result.normalize();
     }
 
     public static float barryCentric(Vector3f p1, Vector3f p2, Vector3f p3, Vector2f pos) {

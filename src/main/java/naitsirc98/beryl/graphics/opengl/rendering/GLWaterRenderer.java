@@ -23,6 +23,7 @@ import naitsirc98.beryl.scenes.components.meshes.MeshInstanceList;
 import naitsirc98.beryl.scenes.components.meshes.WaterMeshInstance;
 import naitsirc98.beryl.util.geometry.Sizec;
 import org.joml.*;
+import org.lwjgl.opengl.GL11C;
 import org.lwjgl.system.MemoryStack;
 
 import java.nio.FloatBuffer;
@@ -31,6 +32,7 @@ import static naitsirc98.beryl.graphics.ShaderStage.FRAGMENT_STAGE;
 import static naitsirc98.beryl.graphics.ShaderStage.VERTEX_STAGE;
 import static naitsirc98.beryl.meshes.vertices.VertexLayout.VERTEX_LAYOUT_3D;
 import static naitsirc98.beryl.util.handles.LongHandle.NULL;
+import static org.lwjgl.opengl.GL11C.GL_COLOR_BUFFER_BIT;
 import static org.lwjgl.opengl.GL30.*;
 import static org.lwjgl.opengl.GL31C.GL_UNIFORM_BUFFER;
 import static org.lwjgl.system.MemoryStack.stackPush;
@@ -113,8 +115,6 @@ public class GLWaterRenderer implements WaterRenderer {
 
             final boolean underWater = camera.position().y() - instance.transform().position().y() < 0.0f;
 
-            // instance.cameraIsUnderWater(underWater);
-
             if(underWater) {
 
                 bakeWaterTexture(scene, enhancedWater, staticMeshRenderer, skyboxRenderer, waterView, clipPlane, size,
@@ -157,6 +157,8 @@ public class GLWaterRenderer implements WaterRenderer {
         prepareFramebuffer(size, texture);
 
         framebuffer.bind();
+
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         if(enhancedWater.isEnhanced(waterView)) {
             int drawCount = staticMeshRenderer.performCullingPassCPU(scene, false);

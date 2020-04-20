@@ -26,6 +26,7 @@ import naitsirc98.beryl.meshes.views.AnimMeshView;
 import naitsirc98.beryl.meshes.views.StaticMeshView;
 import naitsirc98.beryl.meshes.views.WaterMeshView;
 import naitsirc98.beryl.scenes.*;
+import naitsirc98.beryl.scenes.components.animations.Animator;
 import naitsirc98.beryl.scenes.components.audio.AudioPlayer;
 import naitsirc98.beryl.scenes.components.behaviours.UpdateMutableBehaviour;
 import naitsirc98.beryl.scenes.components.math.Transform;
@@ -107,12 +108,20 @@ public class App1 extends BerylApplication {
 
         Log.trace(lampModel);
 
-        AnimModel birdModel = AnimModelLoader.get().load(Paths.get("C:\\Users\\naits\\Downloads\\low-poly-bird-animated\\source\\Bird_Asset.fbx"));
+        AnimModel birdModel = AnimModelLoader.get().load(Paths.get("C:\\Users\\naits\\Desktop\\model.dae"));
+
+        /*
+
+        Log.trace(birdModel);
 
         Entity bird = scene.newEntity();
-        bird.add(Transform.class).position(terrainSize/2, 0, terrainSize/2).scale(40);
+        bird.add(Transform.class).position(terrainSize/2, 0, terrainSize/2).scale(1).rotateX(radians(-90));
+        bird.add(Animator.class).model(birdModel);
         bird.add(AnimMeshInstance.class).meshViews(birdModel.meshes().stream()
                 .map(mesh -> new AnimMeshView(mesh, PhongMaterial.getDefault())).collect(Collectors.toList()));
+
+
+         */
 
         Entity terrain = scene.newEntity();
         terrain.add(Transform.class).position(0, 0, 0).scale(1);
@@ -151,7 +160,7 @@ public class App1 extends BerylApplication {
                 .map(mesh -> new StaticMeshView(mesh, treeMaterialFunction(mesh.name())))
                 .collect(Collectors.toList());
 
-        for(int i = 0;i < 1000;i++) {
+        for(int i = 0;i < 800;i++) {
 
             Entity tree = scene.newEntity("Tree" + i);
 
@@ -168,6 +177,10 @@ public class App1 extends BerylApplication {
             } while(y <= water.get(Transform.class).position().y() + 1);
 
             tree.add(Transform.class).position(x, y - 1, z);
+
+            tree.add(UpdateMutableBehaviour.class).onUpdate(self -> {
+               self.get(Transform.class).rotate(sin(Time.seconds()) / 98, 0, 0, 1);
+            });
         }
 
         StaticMeshView grassView = new StaticMeshView(grassMesh, getGrassMaterial());

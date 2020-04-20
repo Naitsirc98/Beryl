@@ -22,8 +22,6 @@ import static org.lwjgl.glfw.GLFW.glfwSwapBuffers;
 import static org.lwjgl.opengl.GL11.glFinish;
 import static org.lwjgl.opengl.GL11.glViewport;
 import static org.lwjgl.opengl.GL11C.GL_COLOR_BUFFER_BIT;
-import static org.lwjgl.opengl.GL11C.GL_DEPTH_BUFFER_BIT;
-import static org.lwjgl.opengl.GL11C.glClearColor;
 import static org.lwjgl.opengl.GL30.*;
 
 public final class GLRenderSystem extends APIRenderSystem {
@@ -88,16 +86,16 @@ public final class GLRenderSystem extends APIRenderSystem {
         }
     }
 
-    private void clear(Color color) {
-        glClearColor(color.red(), color.green(), color.blue(), color.alpha());
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-    }
-
     @Override
     public void end() {
         glFinish();
         copyFramebufferToScreen();
         glfwSwapBuffers(glContext);
+    }
+
+    private void clear(Color color) {
+        glClearColor(color.red(), color.green(), color.blue(), color.alpha());
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
 
     @Override

@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static java.lang.Integer.max;
+import static java.util.stream.Collectors.joining;
 
 public class AnimNode {
 
@@ -90,5 +91,19 @@ public class AnimNode {
 
     void addTransformation(Matrix4fc transformation) {
         transformations.add(transformation);
+    }
+
+    @Override
+    public String toString() {
+        return toString("");
+    }
+
+    public String toString(String indentation) {
+        String innerIndentation = indentation + "  ";
+        String childrenStr = Arrays.stream(children()).map(node -> node.toString(innerIndentation + "  ")).collect(joining(",\n"));
+        return String.format("%sAnimNode '%s' {\n%smeshes:[%s],\n%schildren: [%s]\n%s};",
+                indentation, name(),
+                innerIndentation, Arrays.stream(meshes()).map(AnimMesh::name).collect(joining(", ")),
+                innerIndentation, childrenStr.isEmpty() ? "" : "\n" + childrenStr + "\n" + innerIndentation, indentation);
     }
 }

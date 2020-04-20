@@ -2,11 +2,14 @@ package naitsirc98.beryl.meshes.models;
 
 import naitsirc98.beryl.animations.Animation;
 import naitsirc98.beryl.animations.KeyFrame;
+import naitsirc98.beryl.core.Time;
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.meshes.AnimMesh;
 import naitsirc98.beryl.meshes.Bone;
 import naitsirc98.beryl.meshes.MeshManager;
-import org.joml.*;
+import org.joml.Matrix4f;
+import org.joml.Matrix4fc;
+import org.joml.Quaternionf;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.assimp.*;
 
@@ -17,7 +20,6 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 
-import static java.lang.Math.min;
 import static java.util.Objects.requireNonNull;
 import static naitsirc98.beryl.util.Asserts.assertNonNull;
 import static naitsirc98.beryl.util.types.DataType.FLOAT32_SIZEOF;
@@ -27,7 +29,8 @@ import static org.lwjgl.system.MemoryUtil.memAlloc;
 
 public class AnimModelLoader extends AssimpLoader {
 
-    private static final int FLAGS = aiProcess_LimitBoneWeights
+    private static final int FLAGS = aiProcess_OptimizeGraph
+            | aiProcess_LimitBoneWeights
             | aiProcess_Triangulate
             | aiProcess_GenNormals
             | aiProcess_GenSmoothNormals
@@ -208,7 +211,7 @@ public class AnimModelLoader extends AssimpLoader {
 
             AIVertexWeight.Buffer weights = aiBone.mWeights();
 
-            final int numWeights = weights.capacity();// min(weights.capacity(), 4);
+            final int numWeights = weights.capacity();
 
             for(int j = 0;j < numWeights;j++) {
 
@@ -251,15 +254,17 @@ public class AnimModelLoader extends AssimpLoader {
                 setNodeTransformations(aiNodeAnim, node);
             }
 
-            KeyFrame[] keyFrames = getAnimationKeyFrames(model, matrix4fc(aiRootNode.mTransformation()));
+            KeyFrame[] keyFrames = getAnimationKeyFrames(aiAnimation, model, matrix4fc(aiRootNode.mTransformation()));
             Animation animation = new Animation(nameMapper.rename(aiAnimation.mName().dataString()), keyFrames, duration);
             model.addAnimation(animation);
         }
     }
 
-    private KeyFrame[] getAnimationKeyFrames(AnimModel model, Matrix4fc rootTransformation) {
+    private KeyFrame[] getAnimationKeyFrames(AIAnimation aiAnimation, AnimModel model, Matrix4fc rootTransformation) {
 
         final int numKeyFrames = model.node(0).numAnimationKeyFrames();
+
+        AIVectorKey.Buffer aiFrameKeys = AINodeAnim.createSafe(aiAnimation.mChannels().get(0)).mPositionKeys();
 
         KeyFrame[] keyFrames = new KeyFrame[numKeyFrames];
 
@@ -277,12 +282,14 @@ public class AnimModelLoader extends AssimpLoader {
 
                 AnimNode node = model.node(bone.name());
 
-                node.computeTransformationAt(i, transformation.identity());
+                node.computeTransformationAt(i, transformation.identity()).mul(bone.transformation());
 
                 transformations[j] = new Matrix4f(rootTransformation).mul(transformation);
             }
 
-            keyFrames[i] = new KeyFrame(transformations);
+            final float keyFrameTime = (float) aiFrameKeys.get(i).mTime();// * Time.IDEAL_DELTA_TIME;
+
+            keyFrames[i] = new KeyFrame(keyFrameTime, transformations);
         }
 
         return keyFrames;

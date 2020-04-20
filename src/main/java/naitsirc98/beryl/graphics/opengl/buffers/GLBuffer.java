@@ -251,7 +251,7 @@ public class GLBuffer implements GLObject, MappedGraphicsBuffer, VertexBuffer, I
         final long dstAddress = memoryPtr + offset;
 
         if(dstAddress + size > mappedMemoryEndPtr()) {
-            Log.fatal("Memory region is out of range: " + dstAddress + size + " > " + size());
+            Log.fatal("Memory region is out of range: " + dstAddress + size + " > " + mappedMemoryEndPtr());
             return true;
         }
 

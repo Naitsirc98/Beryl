@@ -23,4 +23,12 @@ public class Animation {
     public int frameCount() {
         return frames.length;
     }
+
+    public KeyFrame frame(int index) {
+        return frames[index];
+    }
+
+    public KeyFrame[] frames() {
+        return frames;
+    }
 }

@@ -110,6 +110,10 @@ public final class AnimMeshManager {
         return boneID;
     }
 
+    public int bonesCount() {
+        return boneNames.size();
+    }
+
     int count() {
         return count;
     }
