@@ -1,39 +1,50 @@
 package naitsirc98.beryl.meshes;
 
-import naitsirc98.beryl.core.BerylFiles;
 import naitsirc98.beryl.graphics.GraphicsFactory;
 import naitsirc98.beryl.graphics.buffers.IndexBuffer;
 import naitsirc98.beryl.graphics.buffers.StorageBuffer;
 import naitsirc98.beryl.graphics.buffers.VertexBuffer;
+import naitsirc98.beryl.graphics.opengl.buffers.GLBuffer;
 import naitsirc98.beryl.graphics.opengl.commands.GLDrawElementsCommand;
-import naitsirc98.beryl.meshes.models.StaticModelLoader;
 import naitsirc98.beryl.util.geometry.ISphere;
+import org.joml.Matrix4f;
+import org.joml.Matrix4fc;
 import org.lwjgl.system.MemoryStack;
+
+import java.nio.ByteBuffer;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.lwjgl.system.MemoryStack.stackPush;
 
-public final class StaticMeshManager {
+public final class AnimMeshManager {
 
     // TODO: Handle resizing, destruction leaks and concurrent access
 
-    private static final int VERTEX_BUFFER_INITIAL_CAPACITY = 4096 * 1024; // 4MB
-    private static final int INDEX_BUFFER_INITIAL_CAPACITY = 4096 * 1024; // 4MB
+    private static final int VERTEX_BUFFER_INITIAL_CAPACITY = 1024 * 1024; // 1MB
+    private static final int INDEX_BUFFER_INITIAL_CAPACITY = 2048 * 1024; // 2MB
     private static final int BOUNDING_SPHERES_BUFFER_INITIAL_CAPACITY = 10 * ISphere.SIZEOF;
+    private static final int BONES_ID_INITIAL_CAPACITY = 10 * Bone.SIZEOF;
     private static final int COMMAND_BUFFER_INITIAL_CAPACITY = 10 * GLDrawElementsCommand.SIZEOF;
 
     private final VertexBuffer vertexBuffer;
     private final IndexBuffer indexBuffer;
     private final StorageBuffer boundingSpheresBuffer;
+    private final StorageBuffer bonesBuffer;
     private final StorageBuffer commandBuffer;
+    private final Map<String, Bone> boneNames;
+
     private long vertexBufferOffset;
     private long indexBufferOffset;
     private long boundingSpheresBufferOffset;
+    private long bonesBufferOffset;
     private long commandBufferOffset;
     private int firstIndex;
     private int baseVertex;
     private int count;
 
-    StaticMeshManager() {
+    AnimMeshManager() {
+
         vertexBuffer = GraphicsFactory.get().newVertexBuffer();
         vertexBuffer.allocate(VERTEX_BUFFER_INITIAL_CAPACITY);
         vertexBufferOffset = 0;
@@ -46,6 +57,12 @@ public final class StaticMeshManager {
         boundingSpheresBuffer.allocate(BOUNDING_SPHERES_BUFFER_INITIAL_CAPACITY);
         boundingSpheresBufferOffset = 0;
 
+        bonesBuffer = GraphicsFactory.get().newStorageBuffer();
+        bonesBuffer.allocate(BONES_ID_INITIAL_CAPACITY);
+        bonesBufferOffset = 0;
+
+        boneNames = new HashMap<>();
+
         commandBuffer = GraphicsFactory.get().newStorageBuffer();
         commandBuffer.allocate(COMMAND_BUFFER_INITIAL_CAPACITY);
         commandBufferOffset = 0;
@@ -53,7 +70,7 @@ public final class StaticMeshManager {
         baseVertex = 0;
     }
 
-    void setStaticMeshInfo(StaticMesh mesh) {
+    void setAnimMeshInfo(AnimMesh mesh) {
 
         checkBuffers(mesh);
 
@@ -65,11 +82,39 @@ public final class StaticMeshManager {
         mesh.setIndex(count++);
     }
 
+    public Bone bone(String name) {
+        return boneNames.get(name);
+    }
+
+    public int setBoneData(Bone bone) {
+
+        if(bonesBufferOffset >= bonesBuffer.size()) {
+            bonesBuffer.resize(bonesBuffer.size() * 2);
+        }
+
+        final int boneID = (int) (bonesBufferOffset / Bone.SIZEOF);
+
+        try(MemoryStack stack = stackPush()) {
+
+            ByteBuffer data = stack.malloc(Bone.SIZEOF);
+
+            bone.transformation().get(data);
+
+            bonesBuffer.update(bonesBufferOffset, data);
+
+            bonesBufferOffset += Bone.SIZEOF;
+        }
+
+        boneNames.put(bone.name(), bone);
+
+        return boneID;
+    }
+
     int count() {
         return count;
     }
 
-    void destroy(StaticMesh mesh) {
+    void destroy(AnimMesh mesh) {
 
         // TODO: manage memory leaks
 
@@ -129,7 +174,11 @@ public final class StaticMeshManager {
         return commandBufferOffset;
     }
 
-    private void copyVertexData(StaticMesh mesh) {
+    public <T extends StorageBuffer> T bonesBuffer() {
+        return (T) bonesBuffer;
+    }
+
+    private void copyVertexData(AnimMesh mesh) {
 
         vertexBuffer.update(vertexBufferOffset, mesh.vertexData());
 
@@ -138,7 +187,7 @@ public final class StaticMeshManager {
         vertexBufferOffset += mesh.vertexData().capacity();
     }
 
-    private void copyIndexData(StaticMesh mesh) {
+    private void copyIndexData(AnimMesh mesh) {
 
         indexBuffer.update(indexBufferOffset, mesh.indexData());
 
@@ -147,7 +196,7 @@ public final class StaticMeshManager {
         indexBufferOffset += mesh.indexData().capacity();
     }
 
-    private void copyBoundingSphereData(StaticMesh mesh) {
+    private void copyBoundingSphereData(AnimMesh mesh) {
 
         try(MemoryStack stack = stackPush()) {
 
@@ -161,7 +210,7 @@ public final class StaticMeshManager {
         }
     }
 
-    private void copyCommandInfo(StaticMesh mesh) {
+    private void copyCommandInfo(AnimMesh mesh) {
 
         try(MemoryStack stack = stackPush()) {
 
@@ -203,4 +252,5 @@ public final class StaticMeshManager {
             commandBuffer.resize(commandBuffer.size() + 4 * GLDrawElementsCommand.SIZEOF);
         }
     }
+
 }

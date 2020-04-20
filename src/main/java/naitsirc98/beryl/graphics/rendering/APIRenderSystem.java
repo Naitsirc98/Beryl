@@ -1,5 +1,6 @@
 package naitsirc98.beryl.graphics.rendering;
 
+import naitsirc98.beryl.graphics.rendering.renderers.AnimMeshRenderer;
 import naitsirc98.beryl.graphics.rendering.renderers.SkyboxRenderer;
 import naitsirc98.beryl.graphics.rendering.renderers.StaticMeshRenderer;
 import naitsirc98.beryl.graphics.rendering.renderers.WaterRenderer;
@@ -18,6 +19,7 @@ public abstract class APIRenderSystem {
 
     final void init() {
         renderers.put(StaticMeshRenderer.class, getStaticMeshRenderer());
+        renderers.put(AnimMeshRenderer.class, getAnimMeshRenderer());
         renderers.put(SkyboxRenderer.class, getSkyboxRenderer());
         renderers.put(WaterRenderer.class, getWaterRenderer());
         // TODO...
@@ -42,6 +44,7 @@ public abstract class APIRenderSystem {
 
     // Renderers
     protected abstract StaticMeshRenderer getStaticMeshRenderer();
+    protected abstract AnimMeshRenderer getAnimMeshRenderer();
     protected abstract SkyboxRenderer getSkyboxRenderer();
     protected abstract WaterRenderer getWaterRenderer();
     // TODO...

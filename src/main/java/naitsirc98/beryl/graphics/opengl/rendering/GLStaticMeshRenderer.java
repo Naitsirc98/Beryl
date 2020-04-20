@@ -1,6 +1,8 @@
 package naitsirc98.beryl.graphics.opengl.rendering;
 
+import naitsirc98.beryl.core.BerylFiles;
 import naitsirc98.beryl.graphics.opengl.buffers.GLBuffer;
+import naitsirc98.beryl.graphics.opengl.shaders.GLShader;
 import naitsirc98.beryl.graphics.opengl.shaders.GLShaderProgram;
 import naitsirc98.beryl.graphics.opengl.vertex.GLVertexArray;
 import naitsirc98.beryl.graphics.rendering.renderers.StaticMeshRenderer;
@@ -13,10 +15,9 @@ import naitsirc98.beryl.scenes.Scene;
 import naitsirc98.beryl.scenes.components.meshes.MeshInstanceList;
 import naitsirc98.beryl.scenes.components.meshes.StaticMeshInstance;
 
+import static naitsirc98.beryl.graphics.ShaderStage.FRAGMENT_STAGE;
+import static naitsirc98.beryl.graphics.ShaderStage.VERTEX_STAGE;
 import static naitsirc98.beryl.meshes.vertices.VertexAttribute.*;
-import static org.lwjgl.opengl.GL11.glClear;
-import static org.lwjgl.opengl.GL11C.GL_COLOR_BUFFER_BIT;
-import static org.lwjgl.opengl.GL11C.GL_DEPTH_BUFFER_BIT;
 
 public final class GLStaticMeshRenderer extends GLIndirectRenderer implements StaticMeshRenderer {
 
@@ -40,22 +41,18 @@ public final class GLStaticMeshRenderer extends GLIndirectRenderer implements St
 
     @Override
     public void render(Scene scene) {
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         renderScene(scene, getStaticInstances(scene), vertexArray, renderShader);
     }
 
     public void render(Scene scene, GLShaderProgram shader) {
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         renderScene(scene, getStaticInstances(scene), vertexArray, shader);
     }
 
     public void render(Scene scene, int drawCount) {
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         renderScene(scene, drawCount, vertexArray, renderShader);
     }
 
     public void render(Scene scene, GLShaderProgram shader, int drawCount) {
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         renderScene(scene, drawCount, vertexArray, shader);
     }
 
@@ -93,5 +90,13 @@ public final class GLStaticMeshRenderer extends GLIndirectRenderer implements St
         }
 
         instanceBuffer = new GLBuffer("INSTANCE_VERTEX_BUFFER");
+    }
+
+    @Override
+    protected void initRenderShader() {
+        renderShader = new GLShaderProgram()
+                .attach(new GLShader(VERTEX_STAGE).source(BerylFiles.getPath("shaders/phong/phong_indirect.vert")))
+                .attach(new GLShader(FRAGMENT_STAGE).source(BerylFiles.getPath("shaders/phong/phong_indirect.frag")))
+                .link();
     }
 }

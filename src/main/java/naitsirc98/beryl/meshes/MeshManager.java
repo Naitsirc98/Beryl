@@ -1,7 +1,9 @@
 package naitsirc98.beryl.meshes;
 
 import naitsirc98.beryl.assets.AssetManager;
+import naitsirc98.beryl.core.BerylFiles;
 import naitsirc98.beryl.logging.Log;
+import naitsirc98.beryl.meshes.models.StaticModelLoader;
 import naitsirc98.beryl.util.types.Singleton;
 
 import java.nio.ByteBuffer;
@@ -18,16 +20,18 @@ public final class MeshManager implements AssetManager<Mesh> {
         return instance;
     }
 
-
     private AtomicInteger meshHandleProvider;
     private Map<String, Mesh> meshNames;
     private StaticMeshManager staticMeshManager;
+    private AnimMeshManager animMeshManager;
 
     @Override
     public void init() {
         meshHandleProvider = new AtomicInteger(0);
         meshNames = new ConcurrentHashMap<>();
         staticMeshManager = new StaticMeshManager();
+        animMeshManager = new AnimMeshManager();
+        loadBasicMeshes();
     }
 
     synchronized StaticMesh createStaticMesh(String name, ByteBuffer vertices, ByteBuffer indices) {
@@ -39,6 +43,23 @@ public final class MeshManager implements AssetManager<Mesh> {
         StaticMesh mesh = new StaticMesh(meshHandleProvider.getAndIncrement(), name, vertices, indices);
 
         staticMeshManager.setStaticMeshInfo(mesh);
+
+        meshNames.put(name, mesh);
+
+        return mesh;
+    }
+
+    synchronized AnimMesh createAnimMesh(String name, ByteBuffer vertices, ByteBuffer indices) {
+
+        if(invalidMeshData(name, vertices, indices)) {
+            return null;
+        }
+
+        AnimMesh mesh = new AnimMesh(meshHandleProvider.getAndIncrement(), name, vertices, indices);
+
+        animMeshManager.setAnimMeshInfo(mesh);
+
+        meshNames.put(name, mesh);
 
         return mesh;
     }
@@ -55,6 +76,8 @@ public final class MeshManager implements AssetManager<Mesh> {
         staticMeshManager.setStaticMeshInfo(mesh);
 
         staticMeshManager.setStaticMeshInfo(mesh);
+
+        meshNames.put(name, mesh);
 
         return mesh;
     }
@@ -113,6 +136,10 @@ public final class MeshManager implements AssetManager<Mesh> {
         return staticMeshManager;
     }
 
+    public AnimMeshManager animMeshManager() {
+        return animMeshManager;
+    }
+
     private boolean invalidMeshData(String name, ByteBuffer vertices, ByteBuffer indices) {
 
         if(name == null) {
@@ -136,6 +163,15 @@ public final class MeshManager implements AssetManager<Mesh> {
         }
 
         return false;
+    }
+
+    private void loadBasicMeshes() {
+
+        StaticModelLoader loader = StaticModelLoader.get();
+
+        loader.load(BerylFiles.getPath("models/cube.obj"), name -> "CUBE");
+        loader.load(BerylFiles.getPath("models/quad.obj"), name -> "QUAD");
+        loader.load(BerylFiles.getPath("models/sphere.obj"), name -> "SPHERE");
     }
 
 }

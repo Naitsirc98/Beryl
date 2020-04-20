@@ -65,7 +65,15 @@ public class GLFrustumCuller {
 
     public int performCullingCPU(Scene scene, MeshInstanceList<?> instances, boolean alwaysPass) {
 
+        if(instances == null) {
+            return 0;
+        }
+
         final int batchSize = (int) Math.ceil((float) instances.size() / (float) THREAD_COUNT);
+
+        if(batchSize == 0) {
+            return 0;
+        }
 
         final GLBuffer commandBuffer = this.commandBuffer;
 

@@ -8,6 +8,7 @@ import naitsirc98.beryl.graphics.opengl.textures.GLCubemap;
 import naitsirc98.beryl.graphics.opengl.vertex.GLVertexArray;
 import naitsirc98.beryl.graphics.rendering.renderers.SkyboxRenderer;
 import naitsirc98.beryl.meshes.Mesh;
+import naitsirc98.beryl.meshes.StaticMesh;
 import naitsirc98.beryl.meshes.models.StaticModelLoader;
 import naitsirc98.beryl.meshes.vertices.VertexLayout;
 import naitsirc98.beryl.scenes.Scene;
@@ -53,7 +54,7 @@ public class GLSkyboxRenderer implements SkyboxRenderer {
                 .attach(new GLShader(FRAGMENT_STAGE).source(BerylFiles.getPath("shaders/skybox/skybox.frag")))
                 .link();
 
-        Mesh cubeMesh = StaticModelLoader.get().load(BerylFiles.getPath("models/cube.obj")).mesh(0);
+        Mesh cubeMesh = StaticMesh.cube();
 
         vertexArray = new GLVertexArray();
 

@@ -11,7 +11,19 @@ public class StaticMesh extends Mesh implements Asset {
 
     public static final int VERTEX_DATA_SIZE = (3 + 3 + 2) * FLOAT32_SIZEOF;
 
-    public static StaticMesh get(String name, Consumer<StaticMeshData> meshData) {
+    public static StaticMesh cube() {
+        return MeshManager.get().get("CUBE");
+    }
+
+    public static StaticMesh quad() {
+        return MeshManager.get().get("QUAD");
+    }
+
+    public static StaticMesh sphere() {
+        return MeshManager.get().get("SPHERE");
+    }
+
+    public static StaticMesh get(String name, Consumer<MeshData> meshData) {
 
         MeshManager manager = MeshManager.get();
 
@@ -19,10 +31,10 @@ public class StaticMesh extends Mesh implements Asset {
             return manager.get(name);
         }
 
-        StaticMeshData data = new StaticMeshData();
+        MeshData data = new MeshData();
         meshData.accept(data);
 
-        return manager.createStaticMesh(name, data.vertices, data.indices);
+        return manager.createStaticMesh(name, data.vertices(), data.indices());
     }
 
     public StaticMesh(int handle, String name, ByteBuffer vertexData, ByteBuffer indexData) {
@@ -32,17 +44,6 @@ public class StaticMesh extends Mesh implements Asset {
     @Override
     public Class<? extends Mesh> type() {
         return StaticMesh.class;
-    }
-
-    public static final class StaticMeshData {
-
-        private ByteBuffer vertices;
-        private ByteBuffer indices;
-
-        public void set(ByteBuffer vertices, ByteBuffer indices) {
-            this.vertices = vertices;
-            this.indices = indices;
-        }
     }
 
 }

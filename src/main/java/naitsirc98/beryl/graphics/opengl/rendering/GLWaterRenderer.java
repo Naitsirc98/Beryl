@@ -56,7 +56,7 @@ public class GLWaterRenderer implements WaterRenderer {
                 .attach(new GLShader(FRAGMENT_STAGE).source(BerylFiles.getPath("shaders/water/water.frag")))
                 .link();
 
-        quadMesh = StaticModelLoader.get().load(BerylFiles.getPath("models/quad.obj")).mesh(0);
+        quadMesh = StaticMesh.quad();
 
         vertexArray = new GLVertexArray();
 

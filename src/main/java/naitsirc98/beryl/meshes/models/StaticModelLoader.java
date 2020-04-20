@@ -14,6 +14,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 
 import static java.util.Objects.requireNonNull;
 import static naitsirc98.beryl.util.Asserts.assertNonNull;
@@ -22,8 +23,7 @@ import static org.lwjgl.system.MemoryUtil.memAlloc;
 
 public final class StaticModelLoader extends AssimpLoader {
 
-    private static final int DEFAULT_FLAGS = // aiProcess_OptimizeMeshes
-            aiProcess_OptimizeGraph
+    private static final int DEFAULT_FLAGS = aiProcess_OptimizeGraph
                              | aiProcess_Triangulate
                              | aiProcess_GenNormals
                              | aiProcess_GenSmoothNormals
@@ -37,6 +37,8 @@ public final class StaticModelLoader extends AssimpLoader {
 
     private static final StaticVertexHandler DEFAULT_HANDLER = new StaticVertexHandler();
 
+    private static final NameMapper DEFAULT_NAME_MAPPER = name -> name;
+
     public static StaticModelLoader get() {
         return INSTANCE;
     }
@@ -47,19 +49,19 @@ public final class StaticModelLoader extends AssimpLoader {
         cache = new HashMap<>();
     }
 
-    public synchronized StaticModel load(String path) {
-        return load(Paths.get(path), DEFAULT_HANDLER);
-    }
-
-    public synchronized StaticModel load(String path, StaticVertexHandler handler) {
-        return load(Paths.get(path), requireNonNull(handler));
-    }
-
     public synchronized StaticModel load(Path path) {
-        return load(path, DEFAULT_HANDLER);
+        return load(path, DEFAULT_HANDLER, DEFAULT_NAME_MAPPER);
     }
 
     public synchronized StaticModel load(Path path, StaticVertexHandler handler) {
+        return load(path, handler, DEFAULT_NAME_MAPPER);
+    }
+
+    public synchronized StaticModel load(Path path, NameMapper nameMapper) {
+        return load(path, DEFAULT_HANDLER, nameMapper);
+    }
+
+    public synchronized StaticModel load(Path path, StaticVertexHandler handler, NameMapper nameMapper) {
 
         assertNonNull(handler);
 
@@ -78,7 +80,7 @@ public final class StaticModelLoader extends AssimpLoader {
 
         float start = System.nanoTime();
 
-        StaticModel model = loadAssimp(path, handler);
+        StaticModel model = loadAssimp(path, handler, nameMapper);
 
         float end = (float) ((System.nanoTime() - start) / 1e6);
 
@@ -89,7 +91,7 @@ public final class StaticModelLoader extends AssimpLoader {
         return model;
     }
 
-    private StaticModel loadAssimp(Path path, StaticVertexHandler handler) {
+    private StaticModel loadAssimp(Path path, StaticVertexHandler handler, NameMapper nameMapper) {
 
         AIScene aiScene = aiImportFile(path.toString(), DEFAULT_FLAGS);
 
@@ -106,7 +108,7 @@ public final class StaticModelLoader extends AssimpLoader {
             PointerBuffer meshes = aiScene.mMeshes();
 
             for(int i = 0;i < meshes.capacity();i++) {
-                model.meshes()[i] = loadMesh(requireNonNull(AIMesh.createSafe(meshes.get(i))), handler);
+                model.meshes()[i] = loadMesh(requireNonNull(AIMesh.createSafe(meshes.get(i))), handler, nameMapper);
             }
 
             return model;
@@ -116,9 +118,9 @@ public final class StaticModelLoader extends AssimpLoader {
         }
     }
 
-    private StaticMesh loadMesh(AIMesh aiMesh, StaticVertexHandler handler) {
+    private StaticMesh loadMesh(AIMesh aiMesh, StaticVertexHandler handler, NameMapper nameMapper) {
 
-        String meshName = aiMesh.mName().dataString();
+        final String meshName = nameMapper.rename(aiMesh.mName().dataString());
 
         MeshManager meshManager = MeshManager.get();
 
@@ -129,9 +131,9 @@ public final class StaticModelLoader extends AssimpLoader {
         ByteBuffer vertices = memAlloc(StaticMesh.VERTEX_DATA_SIZE * aiMesh.mNumVertices());
         ByteBuffer indices = getIndices(aiMesh);
 
-        processPositionAttribute(aiMesh, handler, vertices);
-        processNormalAttribute(aiMesh, handler, vertices);
-        processTexCoordsAttribute(aiMesh, handler, vertices);
+        processPositionAttribute(aiMesh, handler, vertices, StaticMesh.VERTEX_DATA_SIZE);
+        processNormalAttribute(aiMesh, handler, vertices, StaticMesh.VERTEX_DATA_SIZE);
+        processTexCoordsAttribute(aiMesh, handler, vertices, StaticMesh.VERTEX_DATA_SIZE);
 
         return StaticMesh.get(meshName, staticMeshData -> staticMeshData.set(vertices, indices));
     }

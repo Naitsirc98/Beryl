@@ -62,13 +62,10 @@ public abstract class GLIndirectRenderer implements Renderer {
 
         initVertexArray();
 
+        initRenderShader();
+
         cullingShader = new GLShaderProgram()
                 .attach(new GLShader(COMPUTE_STAGE).source(BerylFiles.getPath("shaders/compute/culling.comp")))
-                .link();
-
-        renderShader = new GLShaderProgram()
-                .attach(new GLShader(VERTEX_STAGE).source(BerylFiles.getPath("shaders/phong/phong_indirect.vert")))
-                .attach(new GLShader(FRAGMENT_STAGE).source(BerylFiles.getPath("shaders/phong/phong_indirect.frag")))
                 .link();
 
         transformsBuffer = new GLBuffer("TRANSFORMS_STORAGE_BUFFER");
@@ -194,7 +191,15 @@ public abstract class GLIndirectRenderer implements Renderer {
 
     protected void prepareInstanceBuffer(Scene scene, MeshInstanceList<?> instances, GLVertexArray vertexArray) {
 
+        if(instances == null) {
+            return;
+        }
+
         final int numObjects = instances.numMeshViews();
+
+        if(numObjects == 0) {
+            return;
+        }
 
         final int instanceCommandsMinSize = numObjects * GLDrawElementsCommand.SIZEOF;
 
@@ -271,4 +276,6 @@ public abstract class GLIndirectRenderer implements Renderer {
     }
 
     protected abstract void initVertexArray();
+
+    protected abstract void initRenderShader();
 }

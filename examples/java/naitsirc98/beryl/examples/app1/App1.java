@@ -17,23 +17,25 @@ import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.materials.IMaterial;
 import naitsirc98.beryl.materials.PhongMaterial;
 import naitsirc98.beryl.materials.WaterMaterial;
+import naitsirc98.beryl.meshes.AnimMeshManager;
 import naitsirc98.beryl.meshes.StaticMesh;
 import naitsirc98.beryl.meshes.TerrainMesh;
 import naitsirc98.beryl.meshes.TerrainMeshLoader;
-import naitsirc98.beryl.meshes.models.StaticModel;
-import naitsirc98.beryl.meshes.models.StaticModelLoader;
-import naitsirc98.beryl.meshes.models.StaticVertexHandler;
+import naitsirc98.beryl.meshes.models.*;
+import naitsirc98.beryl.meshes.views.AnimMeshView;
 import naitsirc98.beryl.meshes.views.StaticMeshView;
 import naitsirc98.beryl.meshes.views.WaterMeshView;
 import naitsirc98.beryl.scenes.*;
 import naitsirc98.beryl.scenes.components.audio.AudioPlayer;
 import naitsirc98.beryl.scenes.components.behaviours.UpdateMutableBehaviour;
 import naitsirc98.beryl.scenes.components.math.Transform;
+import naitsirc98.beryl.scenes.components.meshes.AnimMeshInstance;
 import naitsirc98.beryl.scenes.components.meshes.StaticMeshInstance;
 import naitsirc98.beryl.scenes.components.meshes.WaterMeshInstance;
 import naitsirc98.beryl.util.Color;
 import org.joml.Vector3f;
 
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
@@ -88,24 +90,29 @@ public class App1 extends BerylApplication {
 
         TerrainMesh terrainMesh = TerrainMeshLoader.get().load("Terrain", BerylFiles.getString("textures/terrain_heightmap.png"), terrainSize);
 
-        StaticMesh quadMesh = StaticModelLoader.get().load(BerylFiles.getPath("models/quad.obj")).mesh(0);
-
-        StaticMesh cubeMesh = StaticModelLoader.get().load(BerylFiles.getPath("models/cube.obj")).mesh(0);
+        StaticMesh quadMesh = StaticMesh.quad();
 
         StaticMesh grassMesh = StaticModelLoader.get().load(BerylFiles.getPath("models/grass.obj"),
                 new StaticVertexHandler.Builder().normalFunction(n -> n.set(0, 1, 0)).build()).mesh(0);
 
         StaticModel treeModel = StaticModelLoader.get()
-                        .load("C:\\Users\\naits\\Downloads\\uploads_files_1970932_conifer_macedonian_pine(1)\\OBJ format\\conifer_macedonian_pine.obj",
+                        .load(Paths.get("C:\\Users\\naits\\Downloads\\uploads_files_1970932_conifer_macedonian_pine(1)\\OBJ format\\conifer_macedonian_pine.obj"),
                                 new StaticVertexHandler.Builder().positionFunction(p -> p.mul(0.01f)).build());
 
         Log.trace(treeModel);
 
         StaticModel lampModel = StaticModelLoader.get()
-                .load("C:\\Users\\naits\\Downloads\\uploads_files_1923232_2otdoorlightning\\lightning1.fbx",
+                .load(Paths.get("C:\\Users\\naits\\Downloads\\uploads_files_1923232_2otdoorlightning\\lightning1.fbx"),
                         new StaticVertexHandler.Builder().positionFunction(p -> p.mul(0.01f)).build());
 
         Log.trace(lampModel);
+
+        AnimModel birdModel = AnimModelLoader.get().load(Paths.get("C:\\Users\\naits\\Downloads\\low-poly-bird-animated\\source\\Bird_Asset.fbx"));
+
+        Entity bird = scene.newEntity();
+        bird.add(Transform.class).position(terrainSize/2, 0, terrainSize/2).scale(40);
+        bird.add(AnimMeshInstance.class).meshViews(birdModel.meshes().stream()
+                .map(mesh -> new AnimMeshView(mesh, PhongMaterial.getDefault())).collect(Collectors.toList()));
 
         Entity terrain = scene.newEntity();
         terrain.add(Transform.class).position(0, 0, 0).scale(1);

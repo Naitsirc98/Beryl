@@ -6,14 +6,13 @@ import naitsirc98.beryl.graphics.opengl.swapchain.GLFramebuffer;
 import naitsirc98.beryl.graphics.opengl.swapchain.GLRenderbuffer;
 import naitsirc98.beryl.graphics.opengl.textures.GLTexture2DMSAA;
 import naitsirc98.beryl.graphics.rendering.APIRenderSystem;
+import naitsirc98.beryl.graphics.rendering.renderers.AnimMeshRenderer;
 import naitsirc98.beryl.graphics.rendering.renderers.SkyboxRenderer;
 import naitsirc98.beryl.graphics.rendering.renderers.StaticMeshRenderer;
 import naitsirc98.beryl.graphics.rendering.renderers.WaterRenderer;
 import naitsirc98.beryl.graphics.window.Window;
 import naitsirc98.beryl.images.PixelFormat;
-import naitsirc98.beryl.meshes.views.StaticMeshView;
 import naitsirc98.beryl.scenes.Scene;
-import naitsirc98.beryl.scenes.SceneEnhancedWater;
 import naitsirc98.beryl.util.Color;
 import naitsirc98.beryl.util.geometry.Sizec;
 
@@ -22,6 +21,8 @@ import static naitsirc98.beryl.graphics.Graphics.opengl;
 import static org.lwjgl.glfw.GLFW.glfwSwapBuffers;
 import static org.lwjgl.opengl.GL11.glFinish;
 import static org.lwjgl.opengl.GL11.glViewport;
+import static org.lwjgl.opengl.GL11C.GL_COLOR_BUFFER_BIT;
+import static org.lwjgl.opengl.GL11C.GL_DEPTH_BUFFER_BIT;
 import static org.lwjgl.opengl.GL11C.glClearColor;
 import static org.lwjgl.opengl.GL30.*;
 
@@ -34,6 +35,7 @@ public final class GLRenderSystem extends APIRenderSystem {
     private GLFramebuffer mainFramebuffer;
 
     private final GLStaticMeshRenderer staticMeshRenderer;
+    private final GLAnimMeshRenderer animMeshRenderer;
     private final GLSkyboxRenderer skyboxRenderer;
     private final GLWaterRenderer waterRenderer;
 
@@ -41,6 +43,7 @@ public final class GLRenderSystem extends APIRenderSystem {
         glContext = opengl().handle();
         createMainFramebuffer();
         staticMeshRenderer = new GLStaticMeshRenderer();
+        animMeshRenderer = new GLAnimMeshRenderer();
         skyboxRenderer = new GLSkyboxRenderer();
         waterRenderer = new GLWaterRenderer();
         EventManager.addEventCallback(WindowResizedEvent.class, this::recreateFramebuffer);
@@ -62,16 +65,19 @@ public final class GLRenderSystem extends APIRenderSystem {
 
         staticMeshRenderer.prepare(scene);
 
+        animMeshRenderer.prepare(scene);
+
         waterRenderer.bakeWaterTextures(scene, staticMeshRenderer, skyboxRenderer);
     }
 
     @Override
     public void render(Scene scene) {
 
-        final Color color = scene.environment().clearColor();
-        glClearColor(color.red(), color.green(), color.blue(), color.alpha());
-
         mainFramebuffer.bind();
+
+        clear(scene.environment().clearColor());
+
+        animMeshRenderer.render(scene, animMeshRenderer.performCullingPassCPU(scene, false));
 
         staticMeshRenderer.render(scene, staticMeshRenderer.performCullingPassCPU(scene, false));
 
@@ -80,6 +86,11 @@ public final class GLRenderSystem extends APIRenderSystem {
         if(scene.environment().skybox() != null) {
             skyboxRenderer.render(scene);
         }
+    }
+
+    private void clear(Color color) {
+        glClearColor(color.red(), color.green(), color.blue(), color.alpha());
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
     }
 
     @Override
@@ -92,6 +103,11 @@ public final class GLRenderSystem extends APIRenderSystem {
     @Override
     protected StaticMeshRenderer getStaticMeshRenderer() {
         return staticMeshRenderer;
+    }
+
+    @Override
+    protected AnimMeshRenderer getAnimMeshRenderer() {
+        return animMeshRenderer;
     }
 
     @Override

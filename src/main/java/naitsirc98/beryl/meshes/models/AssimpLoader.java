@@ -58,7 +58,7 @@ public abstract class AssimpLoader {
         );
     }
 
-    protected static void processTexCoordsAttribute(AIMesh aiMesh, StaticVertexHandler handler, ByteBuffer vertices) {
+    protected static void processTexCoordsAttribute(AIMesh aiMesh, StaticVertexHandler handler, ByteBuffer vertices, int stride) {
 
         AIVector3D.Buffer textureCoordinates = aiMesh.mTextureCoords(0);
 
@@ -67,7 +67,6 @@ public abstract class AssimpLoader {
             // throw new IllegalStateException("Number of texture coordinates is zero");
         }
 
-        final int stride = StaticMesh.VERTEX_DATA_SIZE;
         int offset = StaticMesh.VERTEX_TEXCOORDS_OFFSET;
 
         Vector2f texCoords = new Vector2f();
@@ -85,7 +84,7 @@ public abstract class AssimpLoader {
 
     }
 
-    protected static void processNormalAttribute(AIMesh aiMesh, StaticVertexHandler handler, ByteBuffer vertices) {
+    protected static void processNormalAttribute(AIMesh aiMesh, StaticVertexHandler handler, ByteBuffer vertices, int stride) {
 
         AIVector3D.Buffer normals = requireNonNull(aiMesh.mNormals());
 
@@ -93,7 +92,6 @@ public abstract class AssimpLoader {
             throw new IllegalStateException("Number of normals is zero");
         }
 
-        final int stride = StaticMesh.VERTEX_DATA_SIZE;
         int offset = Mesh.VERTEX_NORMAL_OFFSET;
 
         Vector3f normal = new Vector3f();
@@ -111,7 +109,7 @@ public abstract class AssimpLoader {
 
     }
 
-    protected static void processPositionAttribute(AIMesh aiMesh, StaticVertexHandler handler, ByteBuffer vertices) {
+    protected static void processPositionAttribute(AIMesh aiMesh, StaticVertexHandler handler, ByteBuffer vertices, int stride) {
 
         if (aiMesh.mNumVertices() == 0) {
             throw new IllegalStateException("Number of positions is zero");
@@ -119,7 +117,6 @@ public abstract class AssimpLoader {
 
         AIVector3D.Buffer positions = aiMesh.mVertices();
 
-        final int stride = StaticMesh.VERTEX_DATA_SIZE;
         int offset = 0;
 
         Vector3f position = new Vector3f();
