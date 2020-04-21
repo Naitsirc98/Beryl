@@ -1,6 +1,7 @@
 package naitsirc98.beryl.scenes;
 
 import naitsirc98.beryl.util.Color;
+import naitsirc98.beryl.util.IColor;
 import naitsirc98.beryl.util.types.ByteSize;
 
 import java.nio.ByteBuffer;
@@ -15,11 +16,11 @@ public final class Fog implements ByteSize {
 
     public static final float DEFAULT_FOG_DENSITY = 0.16f;
 
-    private Color color;
+    private final Color color;
     private float density;
 
     public Fog() {
-        color = Color.WHITE;
+        color = Color.colorWhite();
         density = DEFAULT_FOG_DENSITY;
     }
 
@@ -27,8 +28,8 @@ public final class Fog implements ByteSize {
         return color;
     }
 
-    public Fog color(Color color) {
-        this.color = requireNonNull(color);
+    public Fog color(IColor color) {
+        this.color.set(requireNonNull(color));
         return this;
     }
 

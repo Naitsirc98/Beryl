@@ -8,6 +8,7 @@ import naitsirc98.beryl.lights.PointLight;
 import naitsirc98.beryl.lights.SpotLight;
 import naitsirc98.beryl.resources.Resource;
 import naitsirc98.beryl.util.Color;
+import naitsirc98.beryl.util.IColor;
 import org.lwjgl.system.MemoryStack;
 
 import java.nio.ByteBuffer;
@@ -40,8 +41,8 @@ public final class SceneEnvironment implements Resource {
 
     private final SceneLighting lights;
     private final Fog fog;
-    private Color ambientColor;
-    private Color clearColor;
+    private final Color ambientColor;
+    private final Color clearColor;
     private UniformBuffer lightsBuffer;
     private Skybox skybox;
 
@@ -64,8 +65,8 @@ public final class SceneEnvironment implements Resource {
         return ambientColor;
     }
 
-    public SceneEnvironment ambientColor(Color ambientColor) {
-        this.ambientColor = getOrElse(ambientColor, DEFAULT_AMBIENT_COLOR);
+    public SceneEnvironment ambientColor(IColor ambientColor) {
+        this.ambientColor.set(requireNonNull(ambientColor));
         return this;
     }
 
@@ -78,7 +79,7 @@ public final class SceneEnvironment implements Resource {
     }
 
     public SceneEnvironment clearColor(Color clearColor) {
-        this.clearColor = requireNonNull(clearColor);
+        this.clearColor.set(requireNonNull(clearColor));
         fog.color(clearColor);
         return this;
     }

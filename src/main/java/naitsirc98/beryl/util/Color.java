@@ -3,39 +3,45 @@ package naitsirc98.beryl.util;
 import naitsirc98.beryl.util.types.ByteSize;
 
 import java.nio.ByteBuffer;
-import java.nio.FloatBuffer;
 
-import static naitsirc98.beryl.util.types.DataType.FLOAT32_SIZEOF;
+@ByteSize.Static(IColor.SIZEOF)
+public final class Color implements IColor {
 
-@ByteSize.Static(Color.SIZEOF)
-public final class Color implements Cloneable, ByteSize {
-
-    public static final int SIZEOF = 4 * FLOAT32_SIZEOF;
-
-    public static final Color NONE = new Color(0, 0, 0, 0);
-    public static final Color WHITE = new Color(1, 1, 1);
-    public static final Color BLACK = new Color(0, 0, 0);
-    public static final Color RED = new Color(1, 0, 0);
-    public static final Color GREEN = new Color(0, 1, 0);
-    public static final Color BLUE = new Color(0, 0, 1);
-    public static final Color SKY = new Color(0.133f, 0.502f, 0.698f);
-    public static final Color WATER = new Color(0.0f, 0.3f, 0.5f);
-    // TODO: more...
-
-    private final float red;
-    private final float green;
-    private final float blue;
-    private final float alpha;
-
-    public Color() {
-        this(Color.WHITE);
+    public static Color colorBlack() {
+        return new Color(0.0f, 0.0f, 0.0f);
     }
 
-    public Color(Color other) {
-        this.red = other.red;
-        this.green = other.green;
-        this.blue = other.blue;
-        this.alpha = other.alpha;
+    public static Color colorWhite() {
+        return new Color(1.0f, 1.0f, 1.0f);
+    }
+
+    public static Color colorRed() {
+        return new Color(1.0f, 0.0f, 0.0f);
+    }
+
+    public static Color colorGreen() {
+        return new Color(0.0f, 1.0f, 0.0f);
+    }
+
+    public static Color colorBlue() {
+        return new Color(0.0f, 0.0f, 1.0f);
+    }
+
+
+    private float red;
+    private float green;
+    private float blue;
+    private float alpha;
+
+    public Color() {
+        this(1, 1, 1);
+    }
+
+    public Color(IColor other) {
+        this.red = other.red();
+        this.green = other.green();
+        this.blue = other.blue();
+        this.alpha = other.alpha();
     }
 
     public Color(float rgba) {
@@ -60,60 +66,81 @@ public final class Color implements Cloneable, ByteSize {
         return red;
     }
 
+    public Color red(float red) {
+        this.red = red;
+        return this;
+    }
+
     public float green() {
         return green;
+    }
+
+    public Color green(float green) {
+        this.green = green;
+        return this;
     }
 
     public float blue() {
         return blue;
     }
 
+    public Color blue(float blue) {
+        this.blue = blue;
+        return this;
+    }
+
     public float alpha() {
         return alpha;
     }
 
+    public Color alpha(float alpha) {
+        this.alpha = alpha;
+        return this;
+    }
+
+    public Color set(IColor color) {
+        return set(color.red(), color.green(), color.blue(), color.alpha());
+    }
+
+    public Color set(float rgba) {
+        return set(rgba, rgba, rgba, rgba);
+    }
+
+    public Color set(float rgb, float alpha) {
+        return set(rgb, rgb, rgb, alpha);
+    }
+
+    public Color set(float red, float green, float blue, float alpha) {
+        this.red = red;
+        this.green = green;
+        this.blue = blue;
+        this.alpha = alpha;
+        return this;
+    }
+
     public Color intensify(float factor) {
-        return new Color(red * factor, green * factor, blue * factor, alpha);
+        red *= factor;
+        green *= factor;
+        blue *= factor;
+        return this;
     }
 
     @Override
-    public int sizeof() {
-        return 4 * Float.BYTES;
-    }
-
-    @Override
-    public Color clone() {
-        return new Color(this);
-    }
-
-    public FloatBuffer getRGB(FloatBuffer buffer) {
-        return buffer.put(red).put(green).put(blue);
-    }
-
-    public FloatBuffer getRGB(int pos, FloatBuffer buffer) {
-        return buffer.put(pos, red).put(pos + 1, green).put(pos + 2, blue);
-    }
-
     public ByteBuffer getRGB(ByteBuffer buffer) {
         return buffer.putFloat(red).putFloat(green).putFloat(blue);
     }
 
+    @Override
     public ByteBuffer getRGB(int pos, ByteBuffer buffer) {
         return buffer.putFloat(pos, red).putFloat(pos + 4, green).putFloat(pos + 8, blue);
     }
 
-    public FloatBuffer getRGBA(FloatBuffer buffer) {
-        return buffer.put(red).put(green).put(blue).put(alpha);
-    }
-
-    public FloatBuffer getRGBA(int pos, FloatBuffer buffer) {
-        return buffer.put(pos, red).put(pos + 1, green).put(pos + 2, blue).put(pos + 3, alpha);
-    }
-
+    @Override
     public ByteBuffer getRGBA(ByteBuffer buffer) {
         return buffer.putFloat(red).putFloat(green).putFloat(blue).putFloat(alpha);
     }
 
+    @Override
     public ByteBuffer getRGBA(int pos, ByteBuffer buffer) {
         return buffer.putFloat(pos, red).putFloat(pos + 4, green).putFloat(pos + 8, blue).putFloat(pos + 12, alpha);
     }

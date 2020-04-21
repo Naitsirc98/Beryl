@@ -23,7 +23,7 @@ public final class WaterMeshView extends StaticMeshView {
         this.clipPlane = new Vector4f(0, 1, 0, 0);
         distortionStrength = 0.02f;
         texturesOffset = 0.0f;
-        waterColor = Color.WATER;
+        waterColor = Color.colorWhite();
         waterColorStrength = 0.2f;
         tiling = 1;
     }

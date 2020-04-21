@@ -4,14 +4,16 @@ import naitsirc98.beryl.graphics.GraphicsFactory;
 import naitsirc98.beryl.graphics.textures.Texture2D;
 import naitsirc98.beryl.util.BitFlags;
 import naitsirc98.beryl.util.Color;
+import naitsirc98.beryl.util.IColor;
 import naitsirc98.beryl.util.types.ByteSize;
-import org.joml.Vector2f;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 
 import static naitsirc98.beryl.materials.IMaterial.Type.PHONG_MATERIAL;
+import static naitsirc98.beryl.util.Color.colorBlack;
+import static naitsirc98.beryl.util.Color.colorWhite;
 
 @ByteSize.Static(IMaterial.SIZEOF)
 public interface PhongMaterial extends IMaterial {
@@ -43,16 +45,16 @@ public interface PhongMaterial extends IMaterial {
     }
 
     Color ambientColor();
-    PhongMaterial ambientColor(Color color);
+    PhongMaterial ambientColor(IColor color);
 
     Color diffuseColor();
-    PhongMaterial diffuseColor(Color color);
+    PhongMaterial diffuseColor(IColor color);
 
     Color specularColor();
-    PhongMaterial specularColor(Color color);
+    PhongMaterial specularColor(IColor color);
 
     Color emissiveColor();
-    PhongMaterial emissiveColor(Color color);
+    PhongMaterial emissiveColor(IColor color);
 
     Texture2D ambientMap();
     PhongMaterial ambientMap(Texture2D ambientMap);
@@ -94,10 +96,10 @@ public interface PhongMaterial extends IMaterial {
 
         Map<Byte, Object> properties = new HashMap<>();
 
-        properties.put(AMBIENT_COLOR, Color.WHITE);
-        properties.put(DIFFUSE_COLOR, Color.WHITE);
-        properties.put(SPECULAR_COLOR, Color.BLACK);
-        properties.put(EMISSIVE_COLOR, Color.BLACK);
+        properties.put(AMBIENT_COLOR, colorWhite());
+        properties.put(DIFFUSE_COLOR, colorWhite());
+        properties.put(SPECULAR_COLOR, colorBlack());
+        properties.put(EMISSIVE_COLOR, colorBlack());
 
         properties.put(ALPHA, 1.0f);
         properties.put(SHININESS, 1.0f);

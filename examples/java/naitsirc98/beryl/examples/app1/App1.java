@@ -5,7 +5,6 @@ import naitsirc98.beryl.core.*;
 import naitsirc98.beryl.graphics.GraphicsAPI;
 import naitsirc98.beryl.graphics.GraphicsFactory;
 import naitsirc98.beryl.graphics.textures.Sampler;
-import naitsirc98.beryl.graphics.textures.Texture;
 import naitsirc98.beryl.graphics.textures.Texture.Quality;
 import naitsirc98.beryl.graphics.textures.Texture2D;
 import naitsirc98.beryl.graphics.window.Window;
@@ -119,32 +118,6 @@ public class App1 extends BerylApplication {
         helicopter.add(StaticMeshInstance.class)
                 .meshViews(Arrays.stream(helicopterModel.meshes()).map(m -> new StaticMeshView(m, PhongMaterial.getDefault())).collect(Collectors.toList()));
 
-        /*
-
-        Entity bird = scene.newEntity();
-        float xx = RAND.nextInt((int) terrainSize);
-        float zz = RAND.nextInt((int) terrainSize);
-        float yy = terrainMesh.heightAt(0, 0, xx, zz);
-        bird.add(Transform.class).position(xx, yy, zz).scale(2f).rotateX(radians(-90));
-        bird.add(Animator.class).model(birdModel);
-        bird.add(AnimMeshInstance.class).meshViews(birdModel.meshes().stream()
-                .map(mesh -> new AnimMeshView(mesh, PhongMaterial.get("dwd", material -> {
-
-                    Texture2D texture = GraphicsFactory.get().newTexture2D("C:\\Users\\naits\\Desktop\\milo_raro.jpeg", PixelFormat.RGBA);
-
-                    texture.generateMipmaps();
-                    texture.sampler().wrapMode(Sampler.WrapMode.REPEAT);
-                    texture.sampler().minFilter(Sampler.MinFilter.LINEAR_MIPMAP_LINEAR);
-                    texture.sampler().magFilter(Sampler.MagFilter.LINEAR);
-                    texture.sampler().lodBias(-1);
-
-                    material.ambientMap(texture).diffuseMap(texture);
-
-                }))).collect(Collectors.toList()));
-
-
-        */
-
         Entity terrain = scene.newEntity();
         terrain.add(Transform.class).position(0, 0, 0).scale(1);
         terrain.add(StaticMeshInstance.class).meshView(new StaticMeshView(terrainMesh, getFloorMaterial()));
@@ -223,12 +196,11 @@ public class App1 extends BerylApplication {
         lamp.get(Transform.class).position(473.74f, 0.067f, 376.301f).scale(4);
 
         Camera camera = scene.camera();
-        camera.lookAt(0, 0).position(391, 13.0f, 479);//.position(terrainSize / 2, 5, terrainSize / 2);
-        // camera.farPlane(terrainSize);
+        camera.lookAt(0, 0).position(391, 13.0f, 479);
 
         scene.environment().lights().pointLights().add(new PointLight()
                 .position(471.379f, 4.051f, 375.764f)
-                .color(Color.BLACK)
+                .color(Color.colorBlack())
                 .range(LightRange.MEDIUM));
 
         Entity cameraController = scene.newEntity();
@@ -262,7 +234,7 @@ public class App1 extends BerylApplication {
         skyboxController.add(UpdateMutableBehaviour.class).onUpdate(self -> {
 
             if(!self.exists("offset")) {
-                self.set("offset", Time.minutes() - 0.2f);
+                self.set("offset", Time.minutes());
             }
 
             final float offset = self.get("offset");
@@ -277,25 +249,28 @@ public class App1 extends BerylApplication {
 
             DirectionalLight sun = self.scene().environment().lights().directionalLight();
 
-            sun.color(Color.WHITE.intensify((1.0f - time)));
+            sun.color().set(1.0f - time, 1.0f);
 
             forestAudioPlayer.source().gain(1.0f - time * 2);
             forestNightAudioPlayer.source().gain(time * time);
 
             scene.environment().fog().density(time / 2.5f);
 
-            scene.environment().lights().pointLights().get(0).color(Color.WHITE.intensify(time * 1.25f));
+            scene.environment().lights().pointLights().get(0).color().set(time * 1.25f, 1.0f);
 
-            scene.environment().ambientColor(Color.WHITE.intensify(clamp(0.2f, 0.9f, 1.0f - time)));
+            scene.environment().ambientColor().set(clamp(0.2f, 0.9f, 1.0f - time), 1.0f);
 
             PhongMaterial lampMaterial = (PhongMaterial) lamp.get(StaticMeshInstance.class).meshView().material();
-            lampMaterial.emissiveColor(Color.WHITE.intensify(clamp(0.2f, 2.0f, time * 1.25f)));
+            lampMaterial.emissiveColor().set(clamp(0.2f, 2.0f, time * 1.25f), 1.0f);
+            lampMaterial.modify();
         });
 
         addWaterAudioSource(scene, terrainSize, 50, 445.163f, -5.879f, 319.965f);
 
         environment.skybox(new Skybox(BerylFiles.getString("textures/skybox/day"), BerylFiles.getString("textures/skybox/night")));
-        environment.lights().directionalLight(new DirectionalLight().color(Color.WHITE.intensify(1.2f)).direction(-0.453f, -0.902f, 0.391f));
+        environment.lights().directionalLight(new DirectionalLight());
+        environment.lights().directionalLight().direction(-0.453f, -0.902f, 0.391f);
+        environment.ambientColor(Color.colorWhite());
         environment.fog().density(DEFAULT_FOG_DENSITY);
     }
 
@@ -314,9 +289,11 @@ public class App1 extends BerylApplication {
             Texture2D emissiveMap = GraphicsFactory.get().newTexture2D(dir+"lightning1_Emissive.tga", PixelFormat.RGBA);
             emissiveMap.setQuality(Quality.HIGH);
 
-
-
-            material.ambientMap(colorTexture).diffuseMap(colorTexture).normalMap(normalMap).emissiveMap(emissiveMap).emissiveColor(Color.WHITE);
+            material.ambientMap(colorTexture)
+                    .diffuseMap(colorTexture)
+                    .normalMap(normalMap)
+                    .emissiveMap(emissiveMap)
+                    .emissiveColor(Color.colorWhite());
         });
     }
 

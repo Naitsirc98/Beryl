@@ -3,6 +3,7 @@ package naitsirc98.beryl.materials;
 import naitsirc98.beryl.graphics.textures.Texture2D;
 import naitsirc98.beryl.util.BitFlags;
 import naitsirc98.beryl.util.Color;
+import naitsirc98.beryl.util.IColor;
 import naitsirc98.beryl.util.types.ByteSize;
 import org.joml.Vector2f;
 import org.joml.Vector2fc;
@@ -104,7 +105,7 @@ public class Material implements IMaterial, PhongMaterial, WaterMaterial {
     }
 
     @Override
-    public PhongMaterial ambientColor(Color color) {
+    public PhongMaterial ambientColor(IColor color) {
         properties.put(AMBIENT_COLOR, requireNonNull(color));
         modify();
         return this;
@@ -116,7 +117,7 @@ public class Material implements IMaterial, PhongMaterial, WaterMaterial {
     }
 
     @Override
-    public PhongMaterial diffuseColor(Color color) {
+    public PhongMaterial diffuseColor(IColor color) {
         properties.put(DIFFUSE_COLOR, requireNonNull(color));
         modify();
         return this;
@@ -128,7 +129,7 @@ public class Material implements IMaterial, PhongMaterial, WaterMaterial {
     }
 
     @Override
-    public PhongMaterial specularColor(Color color) {
+    public PhongMaterial specularColor(IColor color) {
         properties.put(SPECULAR_COLOR, requireNonNull(color));
         modify();
         return this;
@@ -140,7 +141,7 @@ public class Material implements IMaterial, PhongMaterial, WaterMaterial {
     }
 
     @Override
-    public PhongMaterial emissiveColor(Color color) {
+    public PhongMaterial emissiveColor(IColor color) {
         properties.put(EMISSIVE_COLOR, requireNonNull(color));
         modify();
         return this;
@@ -307,7 +308,8 @@ public class Material implements IMaterial, PhongMaterial, WaterMaterial {
         return this;
     }
 
-    private void modify() {
+    @Override
+    public void modify() {
         if(!modified) {
             modified = true;
             MaterialManager.get().setModified(this);

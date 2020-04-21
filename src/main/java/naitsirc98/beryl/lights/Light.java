@@ -1,6 +1,7 @@
 package naitsirc98.beryl.lights;
 
 import naitsirc98.beryl.util.Color;
+import naitsirc98.beryl.util.IColor;
 import naitsirc98.beryl.util.types.ByteSize;
 
 import java.nio.ByteBuffer;
@@ -52,20 +53,20 @@ public abstract class Light<SELF extends Light<SELF>> implements ByteSize {
     public static final int FAR_PLANE_OFFSET = 18 * FLOAT32_SIZEOF;
     public static final int TYPE_OFFSET = 19 * FLOAT32_SIZEOF;
 
-    private Color color;
+    private final Color color;
     private float nearPlane;
     private float farPlane;
 
     public Light() {
-        color = Color.WHITE;
+        color = Color.colorWhite();
     }
 
     public Color color() {
         return color;
     }
 
-    public SELF color(Color color) {
-        this.color = requireNonNull(color);
+    public SELF color(IColor color) {
+        this.color.set(requireNonNull(color));
         return self();
     }
 
