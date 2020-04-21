@@ -14,6 +14,7 @@ public final class GLTexture2D extends GLTexture implements Texture2D {
 
     public GLTexture2D() {
         super(GL_TEXTURE_2D);
+        setDefaultSamplerState();
     }
 
     public void allocate(int mipLevels, int width, int height, int internalFormat) {
@@ -74,5 +75,9 @@ public final class GLTexture2D extends GLTexture implements Texture2D {
     public void update(int mipLevel, int xOffset, int yOffset, int width, int height, PixelFormat format, FloatBuffer pixels) {
         glTextureSubImage2D(handle, mipLevel, xOffset, yOffset, width, height, mapper().mapToFormat(format), mapToAPI(format.dataType()), pixels);
         this.imageFormat = format;
+    }
+
+    private void setDefaultSamplerState() {
+        wrapMode(WrapMode.REPEAT).magFilter(MagFilter.LINEAR).minFilter(MinFilter.LINEAR_MIPMAP_LINEAR);
     }
 }

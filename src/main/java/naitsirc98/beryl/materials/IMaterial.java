@@ -30,7 +30,7 @@ public interface IMaterial extends Asset, ByteSize {
     byte SPECULAR_GLOSSINESS_MAP = METALLIC_ROUGHNESS_MAP;
     byte OCCLUSION_MAP = 10;
 
-    byte TEXTURE_COORDS_FACTOR = 11;
+    byte TEXTURE_TILING = 11;
 
     // Float values
     byte ALPHA = 12;
@@ -51,10 +51,12 @@ public interface IMaterial extends Asset, ByteSize {
     int NORMAL_MAP_PRESENT = 0x1;
 
 
-    Vector2fc DEFAULT_TEXTURE_COORDS_FACTOR = new Vector2f(1.0f, 1.0f);
+    Vector2fc DEFAULT_TEXTURE_TILING = new Vector2f(1.0f, 1.0f);
 
 
-    Vector2fc textureCoordsFactor();
+    Vector2fc textureTiling();
+
+    Material textureTiling(float x, float y);
 
     Type type();
 

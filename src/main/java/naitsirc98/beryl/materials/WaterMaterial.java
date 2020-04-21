@@ -10,18 +10,41 @@ import java.util.function.Consumer;
 
 public interface WaterMaterial extends IMaterial {
 
-    static WaterMaterial get(String name, Consumer<Builder> builderConsumer) {
+    static boolean exists(String name) {
+        return MaterialManager.get().exists(name);
+    }
 
-        MaterialManager materialManager = MaterialManager.get();
-
-        if(materialManager.exists(name)) {
-            return materialManager.get(name);
+    static WaterMaterial get(String name) {
+        if(exists(name)) {
+            return MaterialManager.get().get(name);
         }
+        return MaterialManager.get().create(name, Type.WATER_MATERIAL, getDefaultProperties(), getDefaultFlags());
+    }
 
-        Builder builder = new Builder();
-        builderConsumer.accept(builder);
+    static WaterMaterial get(String name, Consumer<WaterMaterial> materialConfigurator) {
+        if(exists(name)) {
+            return get(name);
+        }
+        WaterMaterial material = get(name);
+        materialConfigurator.accept(material);
+        return material;
+    }
 
-        BitFlags flags = new BitFlags();
+
+    Texture2D reflectionMap();
+    WaterMaterial reflectionMap(Texture2D reflectionMap);
+
+    Texture2D refractionMap();
+    WaterMaterial refractionMap(Texture2D refractionMap);
+
+    Texture2D dudvMap();
+    WaterMaterial dudvMap(Texture2D dudvMap);
+
+    Texture2D normalMap();
+    WaterMaterial normalMap(Texture2D normalMap);
+
+
+    private static Map<Byte, Object> getDefaultProperties() {
 
         GraphicsFactory graphicsFactory = GraphicsFactory.get();
 
@@ -29,38 +52,13 @@ public interface WaterMaterial extends IMaterial {
 
         properties.put(REFLECTION_MAP, graphicsFactory.newTexture2D());
         properties.put(REFRACTION_MAP, graphicsFactory.newTexture2D());
-        properties.put(DUDV_MAP, builder.dudvMap);
-        properties.put(NORMAL_MAP, builder.normalMap);
+        properties.put(DUDV_MAP, null);
+        properties.put(NORMAL_MAP, null);
 
-        if(builder.normalMap != null) {
-            flags.enable(NORMAL_MAP_PRESENT);
-        }
-
-        return materialManager.create(name, Type.WATER_MATERIAL, properties, flags);
+        return properties;
     }
 
-    Texture2D reflectionMap();
-    Texture2D refractionMap();
-    Texture2D dudvMap();
-    Texture2D normalMap();
-
-
-    final class Builder {
-
-        private Texture2D dudvMap;
-        private Texture2D normalMap;
-
-        public Builder() {
-        }
-
-        public Builder dudvMap(Texture2D dudvMap) {
-            this.dudvMap = dudvMap;
-            return this;
-        }
-
-        public Builder normalMap(Texture2D normalMap) {
-            this.normalMap = normalMap;
-            return this;
-        }
+    private static BitFlags getDefaultFlags() {
+        return new BitFlags();
     }
 }

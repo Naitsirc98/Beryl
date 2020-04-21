@@ -209,7 +209,7 @@ public final class MaterialManager implements AssetManager<IMaterial> {
         data.putLong(handle(material.occlusionMap()));
         data.putLong(handle(material.normalMap()));
 
-        data.putFloat(material.textureCoordsFactor().x()).putFloat(material.textureCoordsFactor().y());
+        data.putFloat(material.textureTiling().x()).putFloat(material.textureTiling().y());
 
         data.putFloat(material.alpha());
         data.putFloat(material.shininess());
@@ -225,7 +225,7 @@ public final class MaterialManager implements AssetManager<IMaterial> {
 
     private void putDefaults() {
 
-        PhongMaterial.get(PhongMaterial.PHONG_MATERIAL_DEFAULT_NAME, builder -> {});
+        PhongMaterial.get(PhongMaterial.PHONG_MATERIAL_DEFAULT_NAME);
 
         // TODO...
     }

@@ -38,4 +38,11 @@ public class StaticModel {
     public boolean released() {
         return Arrays.stream(meshes).anyMatch(Mesh::released);
     }
+
+    @Override
+    public String toString() {
+        return "StaticModel{" +
+                "path=" + path +
+                ", meshes=" + Arrays.stream(meshes).map(Mesh::name).reduce((s1, s2) -> s1 + ", " + s2).get();
+    }
 }

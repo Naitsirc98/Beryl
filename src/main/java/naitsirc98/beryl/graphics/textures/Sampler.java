@@ -4,19 +4,6 @@ import naitsirc98.beryl.resources.Resource;
 
 public interface Sampler extends Resource {
 
-    default Sampler defaults() {
-        return wrapMode(WrapMode.REPEAT)
-                .magFilter(MagFilter.LINEAR)
-                .minFilter(MinFilter.LINEAR_MIPMAP_LINEAR)
-                .borderColor(BorderColor.BLACK_INT_TRANSPARENT)
-                .compareEnable(false)
-                .compareOperation(CompareOperation.LESS)
-                .lodBias(-4.0f)
-                .minLod(-1000.0f)
-                .maxLod(1000.0f)
-                .maxAnisotropy(1.0f);
-    }
-
     default Sampler wrapMode(WrapMode wrapMode) {
         wrapModeS(wrapMode);
         wrapModeT(wrapMode);

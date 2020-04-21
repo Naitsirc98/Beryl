@@ -9,6 +9,8 @@ import naitsirc98.beryl.input.Input;
 import naitsirc98.beryl.input.Joystick;
 import naitsirc98.beryl.input.Joystick.Axis;
 import naitsirc98.beryl.input.Joystick.AxisDirection;
+import naitsirc98.beryl.lights.LightRange;
+import naitsirc98.beryl.lights.SpotLight;
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.scenes.Camera;
 import naitsirc98.beryl.scenes.components.behaviours.LateBehaviour;
@@ -23,12 +25,15 @@ public class CameraController extends LateBehaviour {
 
     private Camera camera;
     private Vector3f lastPosition;
+    private SpotLight light;
 
     @Override
     protected void onStart() {
         Log.info("Initializing Camera controller...");
         camera = scene().camera();
         lastPosition = new Vector3f();
+        light = new SpotLight();
+        scene().environment().lights().spotLights().add(light);
     }
 
     @Override
@@ -83,6 +88,8 @@ public class CameraController extends LateBehaviour {
         AudioListener.get().velocity(lastPosition.sub(camera.position()).negate());
 
         lastPosition.set(camera.position());
+
+        light.position(camera.position()).direction(new Vector3f(camera.forward()).negate()).range(LightRange.MEDIUM);
      }
 
     private void checkGamepadLookAt() {

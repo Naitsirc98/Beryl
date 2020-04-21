@@ -5,6 +5,8 @@ import naitsirc98.beryl.core.*;
 import naitsirc98.beryl.graphics.GraphicsAPI;
 import naitsirc98.beryl.graphics.GraphicsFactory;
 import naitsirc98.beryl.graphics.textures.Sampler;
+import naitsirc98.beryl.graphics.textures.Texture;
+import naitsirc98.beryl.graphics.textures.Texture.Quality;
 import naitsirc98.beryl.graphics.textures.Texture2D;
 import naitsirc98.beryl.graphics.window.Window;
 import naitsirc98.beryl.images.Image;
@@ -17,20 +19,16 @@ import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.materials.IMaterial;
 import naitsirc98.beryl.materials.PhongMaterial;
 import naitsirc98.beryl.materials.WaterMaterial;
-import naitsirc98.beryl.meshes.AnimMeshManager;
 import naitsirc98.beryl.meshes.StaticMesh;
 import naitsirc98.beryl.meshes.TerrainMesh;
 import naitsirc98.beryl.meshes.TerrainMeshLoader;
 import naitsirc98.beryl.meshes.models.*;
-import naitsirc98.beryl.meshes.views.AnimMeshView;
 import naitsirc98.beryl.meshes.views.StaticMeshView;
 import naitsirc98.beryl.meshes.views.WaterMeshView;
 import naitsirc98.beryl.scenes.*;
-import naitsirc98.beryl.scenes.components.animations.Animator;
 import naitsirc98.beryl.scenes.components.audio.AudioPlayer;
 import naitsirc98.beryl.scenes.components.behaviours.UpdateMutableBehaviour;
 import naitsirc98.beryl.scenes.components.math.Transform;
-import naitsirc98.beryl.scenes.components.meshes.AnimMeshInstance;
 import naitsirc98.beryl.scenes.components.meshes.StaticMeshInstance;
 import naitsirc98.beryl.scenes.components.meshes.WaterMeshInstance;
 import naitsirc98.beryl.util.Color;
@@ -110,18 +108,42 @@ public class App1 extends BerylApplication {
 
         AnimModel birdModel = AnimModelLoader.get().load(Paths.get("C:\\Users\\naits\\Desktop\\model.dae"));
 
-        /*
-
         Log.trace(birdModel);
 
+        StaticModel helicopterModel = StaticModelLoader.get().load(Paths.get("C:\\Users\\naits\\Downloads\\5xulumjp2ohs-SeaHawk\\Seahawk.obj"));
+
+        Log.trace(helicopterModel);
+
+        Entity helicopter = scene.newEntity();
+        helicopter.add(Transform.class).position(terrainSize/2, 30, terrainSize/2);
+        helicopter.add(StaticMeshInstance.class)
+                .meshViews(Arrays.stream(helicopterModel.meshes()).map(m -> new StaticMeshView(m, PhongMaterial.getDefault())).collect(Collectors.toList()));
+
+        /*
+
         Entity bird = scene.newEntity();
-        bird.add(Transform.class).position(terrainSize/2, 0, terrainSize/2).scale(1).rotateX(radians(-90));
+        float xx = RAND.nextInt((int) terrainSize);
+        float zz = RAND.nextInt((int) terrainSize);
+        float yy = terrainMesh.heightAt(0, 0, xx, zz);
+        bird.add(Transform.class).position(xx, yy, zz).scale(2f).rotateX(radians(-90));
         bird.add(Animator.class).model(birdModel);
         bird.add(AnimMeshInstance.class).meshViews(birdModel.meshes().stream()
-                .map(mesh -> new AnimMeshView(mesh, PhongMaterial.getDefault())).collect(Collectors.toList()));
+                .map(mesh -> new AnimMeshView(mesh, PhongMaterial.get("dwd", material -> {
+
+                    Texture2D texture = GraphicsFactory.get().newTexture2D("C:\\Users\\naits\\Desktop\\milo_raro.jpeg", PixelFormat.RGBA);
+
+                    texture.generateMipmaps();
+                    texture.sampler().wrapMode(Sampler.WrapMode.REPEAT);
+                    texture.sampler().minFilter(Sampler.MinFilter.LINEAR_MIPMAP_LINEAR);
+                    texture.sampler().magFilter(Sampler.MagFilter.LINEAR);
+                    texture.sampler().lodBias(-1);
+
+                    material.ambientMap(texture).diffuseMap(texture);
+
+                }))).collect(Collectors.toList()));
 
 
-         */
+        */
 
         Entity terrain = scene.newEntity();
         terrain.add(Transform.class).position(0, 0, 0).scale(1);
@@ -178,19 +200,21 @@ public class App1 extends BerylApplication {
 
             tree.add(Transform.class).position(x, y - 1, z);
 
+            final float rand = RAND.nextFloat();
+
             tree.add(UpdateMutableBehaviour.class).onUpdate(self -> {
-               self.get(Transform.class).rotate(sin(Time.seconds()) / 98, 0, 0, 1);
+               self.get(Transform.class).rotate(sin(Time.seconds() * rand) / 95, 0, 0, 1);
             });
         }
 
         StaticMeshView grassView = new StaticMeshView(grassMesh, getGrassMaterial());
 
-        for(int i = 0;i < 40;i++) {
+        for(int i = 0;i < 100;i++) {
             Entity grass = scene.newEntity();
             float x = RAND.nextInt((int) terrainSize);
             float z = RAND.nextInt((int) terrainSize);
             float y = terrainMesh.heightAt(0, 0, x, z);
-            grass.get(Transform.class).position(x, y, z).scale(20.0f);
+            grass.get(Transform.class).position(x, y, z).scale(10.0f);
             grass.add(StaticMeshInstance.class).meshView(grassView);
         }
 
@@ -238,16 +262,16 @@ public class App1 extends BerylApplication {
         skyboxController.add(UpdateMutableBehaviour.class).onUpdate(self -> {
 
             if(!self.exists("offset")) {
-                self.set("offset", Time.minutes());
+                self.set("offset", Time.minutes() - 0.2f);
             }
 
             final float offset = self.get("offset");
 
+            final float time = Math.abs(sin((Time.minutes() + offset) * 0.9f));
+
             Skybox skybox = self.scene().environment().skybox();
 
-            skybox.rotate(radians(0.0042f));
-
-            final float time = Math.abs(sin((Time.minutes() - offset)*2));
+            skybox.rotate(radians(0.004f));
 
             skybox.textureBlendFactor(time);
 
@@ -268,8 +292,6 @@ public class App1 extends BerylApplication {
             lampMaterial.emissiveColor(Color.WHITE.intensify(clamp(0.2f, 2.0f, time * 1.25f)));
         });
 
-        // AudioSystem.distanceModel(AudioDistanceModel.EXPONENT_DISTANCE);
-
         addWaterAudioSource(scene, terrainSize, 50, 445.163f, -5.879f, 319.965f);
 
         environment.skybox(new Skybox(BerylFiles.getString("textures/skybox/day"), BerylFiles.getString("textures/skybox/night")));
@@ -281,29 +303,20 @@ public class App1 extends BerylApplication {
 
         String dir = "C:\\Users\\naits\\Downloads\\uploads_files_1923232_2otdoorlightning\\textures\\unreal\\lightning1\\";
 
-        return PhongMaterial.get("lamp", builder -> {
+        return PhongMaterial.get("lamp", material -> {
 
             Texture2D colorTexture = GraphicsFactory.get().newTexture2D(dir+"lightning1_BaseColor.tga", PixelFormat.RGBA);
-            colorTexture.generateMipmaps();
-            colorTexture.sampler().wrapMode(Sampler.WrapMode.REPEAT);
-            colorTexture.sampler().minFilter(Sampler.MinFilter.LINEAR_MIPMAP_LINEAR);
-            colorTexture.sampler().magFilter(Sampler.MagFilter.LINEAR);
-            colorTexture.sampler().lodBias(-1);
+            colorTexture.setQuality(Quality.HIGH);
 
             Texture2D normalMap = GraphicsFactory.get().newTexture2D(dir+"lightning1_Normal.tga", PixelFormat.RGBA);
-            normalMap.generateMipmaps();
-            normalMap.sampler().wrapMode(Sampler.WrapMode.REPEAT);
-            normalMap.sampler().minFilter(Sampler.MinFilter.LINEAR_MIPMAP_LINEAR);
-            normalMap.sampler().magFilter(Sampler.MagFilter.LINEAR);
+            normalMap.setQuality(Quality.HIGH);
 
             Texture2D emissiveMap = GraphicsFactory.get().newTexture2D(dir+"lightning1_Emissive.tga", PixelFormat.RGBA);
-            emissiveMap.generateMipmaps();
-            emissiveMap.sampler().wrapMode(Sampler.WrapMode.REPEAT);
-            emissiveMap.sampler().minFilter(Sampler.MinFilter.LINEAR_MIPMAP_LINEAR);
-            emissiveMap.sampler().magFilter(Sampler.MagFilter.LINEAR);
-            emissiveMap.sampler().lodBias(-1);
+            emissiveMap.setQuality(Quality.HIGH);
 
-            builder.ambientMap(colorTexture).diffuseMap(colorTexture).normalMap(normalMap).emissiveMap(emissiveMap).emissiveColor(Color.WHITE);
+
+
+            material.ambientMap(colorTexture).diffuseMap(colorTexture).normalMap(normalMap).emissiveMap(emissiveMap).emissiveColor(Color.WHITE);
         });
     }
 
@@ -325,7 +338,7 @@ public class App1 extends BerylApplication {
     }
 
     private WaterMaterial getWaterMaterial() {
-        return WaterMaterial.get("water", builder -> {
+        return WaterMaterial.get("water", material -> {
 
             Texture2D dudv = GraphicsFactory.get().newTexture2D(BerylFiles.getString("textures/water/dudv.png"), PixelFormat.RGBA);
             Texture2D normalMap = GraphicsFactory.get().newTexture2D(BerylFiles.getString("textures/water/normalMap.png"), PixelFormat.RGBA);
@@ -344,13 +357,13 @@ public class App1 extends BerylApplication {
             normalMap.sampler().maxAnisotropy(4);
             normalMap.sampler().lodBias(0);
 
-            builder.dudvMap(dudv).normalMap(normalMap);
+            material.dudvMap(dudv).normalMap(normalMap);
         });
     }
 
     private IMaterial getGrassMaterial() {
 
-        return PhongMaterial.get("grass", builder -> {
+        return PhongMaterial.get("grass", material -> {
 
             Texture2D colorTexture = GraphicsFactory.get().newTexture2D(BerylFiles.getString("textures/grass.png"), PixelFormat.SRGBA);
 
@@ -359,7 +372,7 @@ public class App1 extends BerylApplication {
             colorTexture.sampler().magFilter(Sampler.MagFilter.LINEAR);
             colorTexture.sampler().lodBias(0);
 
-            builder.ambientMap(colorTexture).diffuseMap(colorTexture);
+            material.ambientMap(colorTexture).diffuseMap(colorTexture);
 
         });
     }
@@ -369,7 +382,7 @@ public class App1 extends BerylApplication {
         switch(meshName) {
 
             case "conifer_macedonian_pine_5":
-                return PhongMaterial.get("trunk", builder -> {
+                return PhongMaterial.get("trunk", material -> {
 
                     try(Image image = ImageFactory
                             .newImage("C:\\Users\\naits\\Downloads\\uploads_files_1970932_conifer_macedonian_pine(1)\\OBJ format\\Bark_Color.png",
@@ -385,13 +398,13 @@ public class App1 extends BerylApplication {
                         colorTexture.sampler().magFilter(Sampler.MagFilter.LINEAR);
                         colorTexture.sampler().lodBias(0.1f);
 
-                        builder.ambientMap(colorTexture).diffuseMap(colorTexture);
+                        material.ambientMap(colorTexture).diffuseMap(colorTexture);
                     }
 
                 });
             case "/Game/Cap_Branch_Mat_Cap_Branch_Mat":
 
-                return PhongMaterial.get("cap", builder -> {
+                return PhongMaterial.get("cap", material -> {
 
                     try(Image image = ImageFactory
                             .newImage("C:\\Users\\naits\\Downloads\\uploads_files_1970932_conifer_macedonian_pine(1)\\OBJ format\\Cap_Color.png",
@@ -407,14 +420,14 @@ public class App1 extends BerylApplication {
                         colorTexture.sampler().magFilter(Sampler.MagFilter.LINEAR);
                         colorTexture.sampler().lodBias(3.0f);
 
-                        builder.ambientMap(colorTexture).diffuseMap(colorTexture);
+                        material.ambientMap(colorTexture).diffuseMap(colorTexture);
                     }
 
                 });
 
             case "/Game/conifer_macedonian_pine_Leaf_Mat_conifer_macedonian_pine_Leaf_Mat":
 
-                return PhongMaterial.get("leaf", builder -> {
+                return PhongMaterial.get("leaf", material -> {
 
                     try(Image image = ImageFactory
                             .newImage("C:\\Users\\naits\\Downloads\\uploads_files_1970932_conifer_macedonian_pine(1)\\OBJ format\\conifer_macedonian_pine_Color.png",
@@ -429,7 +442,7 @@ public class App1 extends BerylApplication {
                         colorTexture.sampler().magFilter(Sampler.MagFilter.LINEAR);
                         colorTexture.sampler().lodBias(-2.0f);
 
-                        builder.ambientMap(colorTexture).diffuseMap(colorTexture);
+                        material.ambientMap(colorTexture).diffuseMap(colorTexture);
                     }
 
                 });
@@ -439,18 +452,17 @@ public class App1 extends BerylApplication {
     }
 
     private PhongMaterial getFloorMaterial() {
-        return PhongMaterial.get("floor", builder -> {
+        return PhongMaterial.get("floor", material -> {
+
             Texture2D colorMap = GraphicsFactory.get()
                     .newTexture2D("C:\\Users\\naits\\Downloads\\TexturesCom_Grass0157_1_seamless_S.jpg", PixelFormat.SRGBA);
-            colorMap.sampler().maxAnisotropy(16);
-            colorMap.generateMipmaps();
-            colorMap.sampler().wrapMode(Sampler.WrapMode.REPEAT);
-            colorMap.sampler().magFilter(Sampler.MagFilter.LINEAR);
-            colorMap.sampler().minFilter(Sampler.MinFilter.LINEAR_MIPMAP_LINEAR);
-            colorMap.sampler().lodBias(-1f);
-            builder.ambientMap(colorMap).diffuseMap(colorMap);
-            builder.shininess(1);
-            builder.textureCoordsFactor(50, 50);
+
+            colorMap.setQuality(Quality.HIGH);
+
+            material.ambientMap(colorMap)
+                    .diffuseMap(colorMap)
+                    .shininess(1)
+                    .textureTiling(50, 50);
         });
     }
 

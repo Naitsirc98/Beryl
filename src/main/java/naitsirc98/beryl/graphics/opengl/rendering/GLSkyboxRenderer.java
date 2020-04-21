@@ -92,6 +92,10 @@ public class GLSkyboxRenderer implements SkyboxRenderer {
         final SceneEnvironment environment = scene.environment();
         final Skybox skybox = environment.skybox();
 
+        if(skybox == null) {
+            return;
+        }
+
         final GLCubemap skyboxTexture1 = skybox.texture1();
         final GLCubemap skyboxTexture2 = skybox.texture2();
         final float textureBlendFactor = skybox.textureBlendFactor();

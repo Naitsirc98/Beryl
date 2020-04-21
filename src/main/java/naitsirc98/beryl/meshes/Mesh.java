@@ -225,4 +225,15 @@ public abstract class Mesh extends ManagedResource implements Asset {
     public void setBaseVertex(int baseVertex) {
         this.baseVertex = baseVertex;
     }
+
+    @Override
+    public String toString() {
+        return "Mesh{" +
+                "handle=" + handle +
+                ", name='" + name + '\'' +
+                ", vertexData=" + vertexData +
+                ", indexData=" + indexData +
+                ", boundingSphere=" + boundingSphere +
+                '}';
+    }
 }

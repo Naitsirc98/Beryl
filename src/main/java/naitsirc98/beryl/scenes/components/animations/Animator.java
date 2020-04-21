@@ -165,7 +165,7 @@ public class Animator extends Component<Animator> {
     }
 
     private void increaseAnimationTime() {
-        animationTime += Time.deltaTime();
+        animationTime += Time.IDEAL_DELTA_TIME;
         if(loop && animationTime > currentAnimation.duration()) {
             animationTime %= currentAnimation.duration();
         }

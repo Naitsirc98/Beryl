@@ -4,9 +4,9 @@ import naitsirc98.beryl.graphics.textures.Texture2D;
 import naitsirc98.beryl.util.BitFlags;
 import naitsirc98.beryl.util.Color;
 import naitsirc98.beryl.util.types.ByteSize;
+import org.joml.Vector2f;
 import org.joml.Vector2fc;
 
-import java.util.Collections;
 import java.util.Map;
 
 import static java.util.Objects.requireNonNull;
@@ -33,8 +33,15 @@ public class Material implements IMaterial, PhongMaterial, WaterMaterial {
     }
 
     @Override
-    public Vector2fc textureCoordsFactor() {
-        return get(TEXTURE_COORDS_FACTOR);
+    public Vector2fc textureTiling() {
+        return get(TEXTURE_TILING);
+    }
+
+    @Override
+    public Material textureTiling(float x, float y) {
+        properties.put(TEXTURE_TILING, new Vector2f(x, y));
+        modify();
+        return this;
     }
 
     @Override
@@ -145,8 +152,22 @@ public class Material implements IMaterial, PhongMaterial, WaterMaterial {
     }
 
     @Override
+    public PhongMaterial alpha(float alpha) {
+        properties.put(ALPHA, alpha);
+        modify();
+        return this;
+    }
+
+    @Override
     public float shininess() {
         return get(SHININESS);
+    }
+
+    @Override
+    public PhongMaterial shininess(float shininess) {
+        properties.put(SHININESS, shininess);
+        modify();
+        return this;
     }
 
     @Override
@@ -155,8 +176,22 @@ public class Material implements IMaterial, PhongMaterial, WaterMaterial {
     }
 
     @Override
+    public PhongMaterial reflectivity(float reflectivity) {
+        properties.put(REFLECTIVITY, reflectivity);
+        modify();
+        return this;
+    }
+
+    @Override
     public float refractiveIndex() {
         return get(REFRACTIVE_INDEX);
+    }
+
+    @Override
+    public PhongMaterial refractiveIndex(float refractiveIndex) {
+        properties.put(REFRACTIVE_INDEX, refractiveIndex);
+        modify();
+        return this;
     }
 
     @Override
@@ -165,8 +200,22 @@ public class Material implements IMaterial, PhongMaterial, WaterMaterial {
     }
 
     @Override
+    public PhongMaterial ambientMap(Texture2D ambientMap) {
+        properties.put(AMBIENT_MAP, ambientMap);
+        modify();
+        return this;
+    }
+
+    @Override
     public Texture2D diffuseMap() {
         return get(DIFFUSE_MAP);
+    }
+
+    @Override
+    public PhongMaterial diffuseMap(Texture2D diffuseMap) {
+        properties.put(DIFFUSE_MAP, diffuseMap);
+        modify();
+        return this;
     }
 
     @Override
@@ -175,8 +224,22 @@ public class Material implements IMaterial, PhongMaterial, WaterMaterial {
     }
 
     @Override
+    public PhongMaterial specularMap(Texture2D specularMap) {
+        properties.put(SPECULAR_MAP, specularMap);
+        modify();
+        return this;
+    }
+
+    @Override
     public Texture2D emissiveMap() {
         return get(EMISSIVE_MAP);
+    }
+
+    @Override
+    public PhongMaterial emissiveMap(Texture2D emissiveMap) {
+        properties.put(EMISSIVE_MAP, emissiveMap);
+        modify();
+        return this;
     }
 
     @Override
@@ -185,8 +248,70 @@ public class Material implements IMaterial, PhongMaterial, WaterMaterial {
     }
 
     @Override
+    public PhongMaterial occlusionMap(Texture2D occlusionMap) {
+        properties.put(OCCLUSION_MAP, occlusionMap);
+        modify();
+        return this;
+    }
+
+    @Override
     public Texture2D normalMap() {
         return get(NORMAL_MAP);
+    }
+
+    @Override
+    public Material normalMap(Texture2D normalMap) {
+        properties.put(NORMAL_MAP, normalMap);
+        if(normalMap == null) {
+            flags.enable(NORMAL_MAP_PRESENT);
+        } else {
+            flags.disable(NORMAL_MAP_PRESENT);
+        }
+        modify();
+        return this;
+    }
+
+    @Override
+    public Texture2D reflectionMap() {
+        return get(REFLECTION_MAP);
+    }
+
+    @Override
+    public WaterMaterial reflectionMap(Texture2D reflectionMap) {
+        properties.put(REFLECTION_MAP, reflectionMap);
+        modify();
+        return this;
+    }
+
+    @Override
+    public Texture2D refractionMap() {
+        return get(REFRACTION_MAP);
+    }
+
+    @Override
+    public WaterMaterial refractionMap(Texture2D refractionMap) {
+        properties.put(REFRACTION_MAP, refractionMap);
+        modify();
+        return this;
+    }
+
+    @Override
+    public Texture2D dudvMap() {
+        return get(DUDV_MAP);
+    }
+
+    @Override
+    public WaterMaterial dudvMap(Texture2D dudvMap) {
+        properties.put(DUDV_MAP, dudvMap);
+        modify();
+        return this;
+    }
+
+    private void modify() {
+        if(!modified) {
+            modified = true;
+            MaterialManager.get().setModified(this);
+        }
     }
 
     @Override
@@ -217,27 +342,5 @@ public class Material implements IMaterial, PhongMaterial, WaterMaterial {
     @SuppressWarnings("unchecked")
     private <T> T get(int propertyID) {
         return (T) properties.get((byte)propertyID);
-    }
-
-    @Override
-    public Texture2D reflectionMap() {
-        return get(REFLECTION_MAP);
-    }
-
-    @Override
-    public Texture2D refractionMap() {
-        return get(REFRACTION_MAP);
-    }
-
-    @Override
-    public Texture2D dudvMap() {
-        return get(DUDV_MAP);
-    }
-
-    private void modify() {
-        if(!modified) {
-            modified = true;
-            MaterialManager.get().setModified(this);
-        }
     }
 }

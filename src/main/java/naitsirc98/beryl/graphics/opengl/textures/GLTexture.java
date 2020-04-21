@@ -50,11 +50,12 @@ public abstract class GLTexture extends ManagedResource implements GLObject, Tex
     private long residentHandle;
     private BorderColor borderColor;
     protected PixelFormat imageFormat;
+    protected int useCount;
 
     public GLTexture(int target) {
         this.target = target;
         this.handle = glCreateTextures(target);
-        // sampler().defaults();
+        useCount = 0;
     }
 
     @Override
@@ -86,19 +87,38 @@ public abstract class GLTexture extends ManagedResource implements GLObject, Tex
     }
 
     @Override
+    public int useCount() {
+        return useCount;
+    }
+
+    @Override
+    public void resetUseCount() {
+        useCount = 0;
+    }
+
+    @Override
     public long residentHandle() {
-        return glGetTextureHandleARB(handle);
+        return residentHandle;
     }
 
     public long makeResident() {
         if(residentHandle == NULL) {
-            residentHandle = residentHandle();
+            residentHandle = glGetTextureHandleARB(handle);
             glMakeTextureHandleResidentARB(residentHandle);
         }
+        ++useCount;
         return residentHandle;
     }
 
     public void makeNonResident() {
+        if(residentHandle != NULL && useCount - 1 == 0) {
+            useCount = 0;
+            glMakeTextureHandleNonResidentARB(residentHandle());
+        }
+    }
+
+    @Override
+    public void forceMakeNonResident() {
         if(residentHandle != NULL) {
             glMakeTextureHandleNonResidentARB(residentHandle());
         }
