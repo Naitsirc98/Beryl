@@ -14,20 +14,20 @@ import naitsirc98.beryl.graphics.window.Window;
 import naitsirc98.beryl.images.PixelFormat;
 import naitsirc98.beryl.materials.WaterMaterial;
 import naitsirc98.beryl.meshes.StaticMesh;
-import naitsirc98.beryl.meshes.models.StaticModelLoader;
 import naitsirc98.beryl.meshes.views.WaterMeshView;
 import naitsirc98.beryl.scenes.Camera;
 import naitsirc98.beryl.scenes.Scene;
 import naitsirc98.beryl.scenes.SceneEnhancedWater;
 import naitsirc98.beryl.scenes.components.meshes.MeshInstanceList;
 import naitsirc98.beryl.scenes.components.meshes.WaterMeshInstance;
-import naitsirc98.beryl.util.geometry.Sizec;
-import org.joml.*;
-import org.lwjgl.opengl.GL11C;
+import org.joml.Vector3fc;
+import org.joml.Vector4f;
+import org.joml.Vector4fc;
 import org.lwjgl.system.MemoryStack;
 
 import java.nio.FloatBuffer;
 
+import static java.lang.StrictMath.max;
 import static naitsirc98.beryl.graphics.ShaderStage.FRAGMENT_STAGE;
 import static naitsirc98.beryl.graphics.ShaderStage.VERTEX_STAGE;
 import static naitsirc98.beryl.meshes.vertices.VertexLayout.VERTEX_LAYOUT_3D;
@@ -91,8 +91,6 @@ public class GLWaterRenderer implements WaterRenderer {
 
         glEnable(GL_CLIP_DISTANCE0);
 
-        final Sizec size = Window.get().size();
-
         final Camera camera = scene.camera();
 
         final MeshInstanceList<WaterMeshInstance> waterInstances = scene.meshInfo().meshViewsOfType(WaterMeshView.class);
@@ -117,7 +115,7 @@ public class GLWaterRenderer implements WaterRenderer {
 
             if(underWater) {
 
-                bakeWaterTexture(scene, enhancedWater, staticMeshRenderer, skyboxRenderer, waterView, clipPlane, size,
+                bakeWaterTexture(scene, enhancedWater, staticMeshRenderer, skyboxRenderer, waterView, clipPlane,
                         (GLTexture2D) waterView.material().refractionMap(), true);
 
                 continue;
@@ -132,7 +130,7 @@ public class GLWaterRenderer implements WaterRenderer {
             clipPlane.set(waterView.clipPlane());
             clipPlane.w *= -1;
 
-            bakeWaterTexture(scene, enhancedWater, staticMeshRenderer, skyboxRenderer, waterView, clipPlane, size,
+            bakeWaterTexture(scene, enhancedWater, staticMeshRenderer, skyboxRenderer, waterView, clipPlane,
                     (GLTexture2D) waterView.material().reflectionMap(), true);
 
             camera.position(cameraPosition.x(), cameraPosition.y() + displacement, cameraPosition.z());
@@ -143,7 +141,7 @@ public class GLWaterRenderer implements WaterRenderer {
 
             clipPlane.y *= -1;
 
-            bakeWaterTexture(scene, enhancedWater, staticMeshRenderer, skyboxRenderer, waterView, clipPlane, size,
+            bakeWaterTexture(scene, enhancedWater, staticMeshRenderer, skyboxRenderer, waterView, clipPlane,
                     (GLTexture2D) waterView.material().refractionMap(), false);
         }
 
@@ -152,9 +150,9 @@ public class GLWaterRenderer implements WaterRenderer {
 
     private void bakeWaterTexture(Scene scene, SceneEnhancedWater enhancedWater,
                                   GLStaticMeshRenderer staticMeshRenderer, GLSkyboxRenderer skyboxRenderer,
-                                  WaterMeshView waterView, Vector4fc clipPlane, Sizec size, GLTexture2D texture, boolean renderSkybox) {
+                                  WaterMeshView waterView, Vector4fc clipPlane, GLTexture2D texture, boolean renderSkybox) {
 
-        prepareFramebuffer(size, texture);
+        prepareFramebuffer(texture);
 
         framebuffer.bind();
 
@@ -175,10 +173,13 @@ public class GLWaterRenderer implements WaterRenderer {
         glFinish();
     }
 
-    private void prepareFramebuffer(Sizec size, GLTexture2D colorTexture) {
+    private void prepareFramebuffer(GLTexture2D colorTexture) {
 
-        if(colorTexture.width() != size.width() || colorTexture.height() != size.height()) {
-            colorTexture.reallocate(1, size.width(), size.height(), PixelFormat.RGBA);
+        final int width = max(Window.get().width(), 1);
+        final int height = max(Window.get().height(), 1);
+
+        if(colorTexture.width() != width || colorTexture.height() != height) {
+            colorTexture.reallocate(1, width, height, PixelFormat.RGBA);
         }
 
         framebuffer.attach(GL_COLOR_ATTACHMENT0, colorTexture, 0);
@@ -294,10 +295,11 @@ public class GLWaterRenderer implements WaterRenderer {
 
         framebuffer = new GLFramebuffer();
 
-        Sizec size = Window.get().size();
+        final int width = max(Window.get().width(), 1);
+        final int height = max(Window.get().height(), 1);
 
         depthTexture = new GLTexture2D();
-        depthTexture.reallocate(1, size.width(), size.height(), GL_DEPTH_COMPONENT24);
+        depthTexture.reallocate(1, width, height, GL_DEPTH_COMPONENT24);
 
         framebuffer.attach(GL_DEPTH_ATTACHMENT, depthTexture, 0);
     }

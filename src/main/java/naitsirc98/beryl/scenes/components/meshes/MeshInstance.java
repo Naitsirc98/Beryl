@@ -64,10 +64,6 @@ public abstract class MeshInstance<T extends MeshView> extends Component<MeshIns
         return requires(Transform.class).modelMatrix();
     }
 
-    public Matrix4fc normalMatrix() {
-        return requires(Transform.class).normalMatrix();
-    }
-
     @Override
     public final Class<? extends Component> type() {
         return MeshInstance.class;

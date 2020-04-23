@@ -57,7 +57,7 @@ public final class SceneEnvironment implements Resource {
         lightsBuffer.mapMemory();
     }
 
-    public SceneLighting lights() {
+    public SceneLighting lighting() {
         return lights;
     }
 

@@ -115,7 +115,7 @@ public class GLFrustumCuller {
 
                                 final int instanceID = baseInstance.getAndIncrement();
 
-                                setInstanceTransform(instanceID, instance.modelMatrix(), instance.normalMatrix());
+                                setInstanceTransform(instanceID, instance.modelMatrix(), null);
 
                                 final int materialIndex = meshView.material().bufferIndex();
 
@@ -150,7 +150,7 @@ public class GLFrustumCuller {
         try(MemoryStack stack = stackPush()) {
             ByteBuffer buffer = stack.malloc(MATRIX4_SIZEOF * 2);
             modelMatrix.get(TRANSFORMS_BUFFER_MODEL_MATRIX_OFFSET, buffer);
-            normalMatrix.get(TRANSFORMS_BUFFER_NORMAL_MATRIX_OFFSET, buffer);
+            // normalMatrix.get(TRANSFORMS_BUFFER_NORMAL_MATRIX_OFFSET, buffer);
             transformsBuffer.copy(objectIndex * TRANSFORMS_BUFFER_MIN_SIZE, buffer);
         }
     }

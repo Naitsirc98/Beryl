@@ -85,8 +85,12 @@ public class GLBuffer implements GLObject, MappedGraphicsBuffer, VertexBuffer, I
     @Override
     public void reallocate(long newSize) {
         if(size != newSize) {
+            final boolean wasMapped = mapped();
             recreate();
             allocate(newSize);
+            if(wasMapped) {
+                mapMemory();
+            }
         }
     }
 
@@ -97,6 +101,10 @@ public class GLBuffer implements GLObject, MappedGraphicsBuffer, VertexBuffer, I
             return;
         }
 
+        final boolean wasMapped = mapped();
+
+        unmapMemory();
+
         final int srcBuffer = handle;
         final long oldSize = size;
 
@@ -104,10 +112,16 @@ public class GLBuffer implements GLObject, MappedGraphicsBuffer, VertexBuffer, I
 
         glCopyNamedBufferSubData(srcBuffer, destBuffer, 0, 0, min(newSize, oldSize));
 
+        glFinish();
+
         release();
 
         handle = destBuffer;
         size = newSize;
+
+        if(wasMapped) {
+            mapMemory();
+        }
     }
 
     @Override
@@ -172,7 +186,7 @@ public class GLBuffer implements GLObject, MappedGraphicsBuffer, VertexBuffer, I
             return;
         }
         if(mapped()) {
-            Log.fatal("Buffer " + this + " is already mapped");
+            Log.warning("Buffer " + this + " is already mapped");
             return;
         }
 
@@ -203,6 +217,7 @@ public class GLBuffer implements GLObject, MappedGraphicsBuffer, VertexBuffer, I
     public void unmapMemory() {
         if(mapped()) {
            glUnmapNamedBuffer(handle);
+           memoryPtr = NULL;
         }
     }
 

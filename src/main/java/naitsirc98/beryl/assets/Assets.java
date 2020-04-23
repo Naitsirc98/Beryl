@@ -14,28 +14,28 @@ public class Assets extends BerylSystem {
     @Singleton
     private static Assets instance;
 
-    private final MeshManager meshManager;
     private final MaterialManager materialManager;
+    private final MeshManager meshManager;
     private final AudioClipManager audioClipManager;
 
     public Assets() {
-        meshManager = newAssetManager(MeshManager.class);
         materialManager = newAssetManager(MaterialManager.class);
+        meshManager = newAssetManager(MeshManager.class);
         audioClipManager = newAssetManager(AudioClipManager.class);
     }
 
     @Override
     protected void init() {
-        meshManager.init();
         materialManager.init();
+        meshManager.init();
         audioClipManager.init();
     }
 
     @Override
     protected void terminate() {
         audioClipManager.terminate();
-        materialManager.terminate();
         meshManager.terminate();
+        materialManager.terminate();
     }
 
     private <T extends AssetManager> T newAssetManager(Class<T> clazz) {

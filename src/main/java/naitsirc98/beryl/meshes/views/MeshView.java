@@ -37,4 +37,12 @@ public abstract class MeshView<T extends Mesh> {
     public int hashCode() {
         return Objects.hash(mesh, material);
     }
+
+    @Override
+    public String toString() {
+        return "MeshView{" +
+                "mesh=" + mesh.name() +
+                ", material=" + material.name() +
+                '}';
+    }
 }

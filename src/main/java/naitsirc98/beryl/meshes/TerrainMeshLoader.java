@@ -51,7 +51,11 @@ public final class TerrainMeshLoader {
 
         try(Image heightMapImage = ImageFactory.newImage(heightMapPath, PixelFormat.RGBA)) {
 
-            return generateTerrain(name, size, minY, maxY, heightMapImage.width(), heightMapImage.height(), heightMapImage.pixels());
+            TerrainMesh mesh = generateTerrain(name, size, minY, maxY, heightMapImage.width(), heightMapImage.height(), heightMapImage.pixels());
+
+            cache.put(name, mesh);
+
+            return mesh;
         }
     }
 

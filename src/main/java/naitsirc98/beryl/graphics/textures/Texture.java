@@ -44,7 +44,7 @@ public interface Texture extends Resource {
 
     void generateMipmaps();
 
-    default void setQuality(Quality quality) {
+    default Texture setQuality(Quality quality) {
 
         switch(quality) {
             case LOW:
@@ -60,6 +60,8 @@ public interface Texture extends Resource {
                 setTextureVeryHighQuality();
                 break;
         }
+
+        return this;
     }
 
     private void setTextureVeryHighQuality() {

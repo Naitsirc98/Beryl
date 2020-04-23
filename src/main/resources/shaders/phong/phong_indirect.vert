@@ -45,7 +45,7 @@ void main() {
     gl_ClipDistance[0] = dot(position, u_ClipPlane);
 
     vertexData.position = position.xyz;
-    vertexData.normal = normalize(mat3(transform.normalMatrix) * in_Normal);
+    vertexData.normal = normalize(transform.modelMatrix * vec4(in_Normal, 0.0)).xyz;
     vertexData.texCoords = in_TexCoords;
     vertexData.materialIndex = in_MaterialIndex;
 

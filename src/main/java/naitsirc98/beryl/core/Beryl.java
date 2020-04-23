@@ -2,6 +2,7 @@ package naitsirc98.beryl.core;
 
 import naitsirc98.beryl.audio.AudioSystem;
 import naitsirc98.beryl.events.EventManager;
+import naitsirc98.beryl.events.window.WindowResizedEvent;
 import naitsirc98.beryl.graphics.GraphicsAPI;
 import naitsirc98.beryl.graphics.rendering.APIRenderSystem;
 import naitsirc98.beryl.graphics.rendering.RenderSystem;
@@ -82,6 +83,7 @@ public final class Beryl {
     private final BerylSystemManager systems;
     private APIRenderSystem renderSystem;
     private AudioSystem audioSystem;
+    private Window window;
     private float updateDelay;
     private int updatesPerSecond;
     private int framesPerSecond;
@@ -113,6 +115,7 @@ public final class Beryl {
 
         renderSystem = systems.renderSystem.apiRenderSystem();
         audioSystem = systems.audioSystem;
+        window = Window.get();
 
         setup();
 
@@ -147,10 +150,13 @@ public final class Beryl {
     }
 
     private void setup() {
+
         if(BerylConfiguration.WINDOW_VISIBLE.get(true)) {
             Window.get().show();
         }
+
         update(IDEAL_FRAME_DELAY);
+
         render();
     }
 
@@ -195,15 +201,18 @@ public final class Beryl {
 
     private void render() {
 
-        renderSystem.begin();
+        if(window.visible()) {
 
-        application.onRenderBegin();
+            renderSystem.begin();
 
-        systems.sceneManager.render();
+            application.onRenderBegin();
 
-        application.onRenderEnd();
+            systems.sceneManager.render();
 
-        renderSystem.end();
+            application.onRenderEnd();
+
+            renderSystem.end();
+        }
     }
 
     private void error(Throwable error) {

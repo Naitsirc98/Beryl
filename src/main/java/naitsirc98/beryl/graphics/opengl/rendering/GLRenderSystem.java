@@ -16,6 +16,7 @@ import naitsirc98.beryl.scenes.Scene;
 import naitsirc98.beryl.util.Color;
 import naitsirc98.beryl.util.geometry.Sizec;
 
+import static java.lang.StrictMath.max;
 import static naitsirc98.beryl.core.BerylConfiguration.MSAA_SAMPLES;
 import static naitsirc98.beryl.graphics.Graphics.opengl;
 import static org.lwjgl.glfw.GLFW.glfwSwapBuffers;
@@ -38,12 +39,16 @@ public final class GLRenderSystem extends APIRenderSystem {
     private final GLWaterRenderer waterRenderer;
 
     private GLRenderSystem() {
+
         glContext = opengl().handle();
+
         createMainFramebuffer();
+
         staticMeshRenderer = new GLStaticMeshRenderer();
         animMeshRenderer = new GLAnimMeshRenderer();
         skyboxRenderer = new GLSkyboxRenderer();
         waterRenderer = new GLWaterRenderer();
+
         EventManager.addEventCallback(WindowResizedEvent.class, this::recreateFramebuffer);
     }
 
@@ -61,6 +66,10 @@ public final class GLRenderSystem extends APIRenderSystem {
     @Override
     public void prepare(Scene scene) {
 
+        if(mainFramebuffer == null) {
+            return;
+        }
+
         staticMeshRenderer.prepare(scene);
 
         animMeshRenderer.prepare(scene);
@@ -70,6 +79,10 @@ public final class GLRenderSystem extends APIRenderSystem {
 
     @Override
     public void render(Scene scene) {
+
+        if(mainFramebuffer == null) {
+            return;
+        }
 
         mainFramebuffer.bind();
 
@@ -88,8 +101,15 @@ public final class GLRenderSystem extends APIRenderSystem {
 
     @Override
     public void end() {
+
+        if(mainFramebuffer == null) {
+            return;
+        }
+
         glFinish();
+
         copyFramebufferToScreen();
+
         glfwSwapBuffers(glContext);
     }
 
@@ -125,13 +145,16 @@ public final class GLRenderSystem extends APIRenderSystem {
 
     private void createMainFramebuffer() {
 
+        final int width = max(Window.get().width(), 1);
+        final int height = max(Window.get().height(), 1);
+
         mainFramebuffer = new GLFramebuffer();
 
         GLTexture2DMSAA colorBuffer = new GLTexture2DMSAA();
-        colorBuffer.allocate(MSAA_SAMPLES.get(), Window.get().width(), Window.get().height(), PixelFormat.RGBA);
+        colorBuffer.allocate(MSAA_SAMPLES.get(), width, height, PixelFormat.RGBA);
 
         GLRenderbuffer depthStencilBuffer = new GLRenderbuffer();
-        depthStencilBuffer.storageMultisample(Window.get().width(), Window.get().height(), GL_DEPTH24_STENCIL8, MSAA_SAMPLES.get());
+        depthStencilBuffer.storageMultisample(width, height, GL_DEPTH24_STENCIL8, MSAA_SAMPLES.get());
 
         mainFramebuffer.attach(GL_COLOR_ATTACHMENT0, colorBuffer, 0);
         mainFramebuffer.attach(GL_DEPTH_STENCIL_ATTACHMENT, depthStencilBuffer);

@@ -428,7 +428,7 @@ public final class Window implements LongHandle {
      *
      * */
     public boolean visible() {
-        return glfwGetWindowAttrib(handle, GLFW_VISIBLE) == GLFW_TRUE;
+        return glfwGetWindowAttrib(handle, GLFW_VISIBLE) == GLFW_TRUE && width() >= 1 && height() >= 1;
     }
 
     /**

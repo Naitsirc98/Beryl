@@ -50,6 +50,14 @@ public interface PhongMaterial extends IMaterial {
     Color diffuseColor();
     PhongMaterial diffuseColor(IColor color);
 
+    default PhongMaterial color(IColor color) {
+        return ambientColor(color).diffuseColor(color);
+    }
+
+    default PhongMaterial colorMap(Texture2D map) {
+        return ambientMap(map).diffuseMap(map);
+    }
+
     Color specularColor();
     PhongMaterial specularColor(IColor color);
 

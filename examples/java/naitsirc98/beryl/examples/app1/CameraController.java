@@ -33,7 +33,7 @@ public class CameraController extends LateBehaviour {
         camera = scene().camera();
         lastPosition = new Vector3f();
         light = new SpotLight();
-        scene().environment().lights().spotLights().add(light);
+        scene().environment().lighting().spotLights().add(light);
     }
 
     @Override

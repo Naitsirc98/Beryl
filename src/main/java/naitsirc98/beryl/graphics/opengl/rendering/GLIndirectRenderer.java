@@ -15,7 +15,7 @@ import naitsirc98.beryl.scenes.Scene;
 import naitsirc98.beryl.scenes.components.meshes.MeshInstanceList;
 import org.lwjgl.system.MemoryStack;
 
-import static naitsirc98.beryl.graphics.ShaderStage.*;
+import static naitsirc98.beryl.graphics.ShaderStage.COMPUTE_STAGE;
 import static naitsirc98.beryl.util.types.DataType.*;
 import static org.lwjgl.opengl.ARBIndirectParameters.GL_PARAMETER_BUFFER_ARB;
 import static org.lwjgl.opengl.ARBIndirectParameters.glMultiDrawElementsIndirectCountARB;
@@ -58,8 +58,6 @@ public abstract class GLIndirectRenderer implements Renderer {
     @Override
     public void init() {
 
-        instanceBuffer = new GLBuffer();
-
         initVertexArray();
 
         initRenderShader();
@@ -69,6 +67,7 @@ public abstract class GLIndirectRenderer implements Renderer {
                 .link();
 
         transformsBuffer = new GLBuffer("TRANSFORMS_STORAGE_BUFFER");
+
         meshIndicesBuffer = new GLBuffer("MESH_INDICES_STORAGE_BUFFER");
 
         instanceCommandBuffer = new GLBuffer("INSTANCE_COMMAND_BUFFER");
@@ -207,7 +206,7 @@ public abstract class GLIndirectRenderer implements Renderer {
             reallocateBuffer(instanceCommandBuffer, instanceCommandsMinSize);
         }
 
-        // clearCommandBuffer();
+        clearCommandBuffer();
 
         final int instancesMinSize = numObjects * INSTANCE_BUFFER_MIN_SIZE;
 
@@ -216,46 +215,11 @@ public abstract class GLIndirectRenderer implements Renderer {
             vertexArray.setVertexBuffer(INSTANCE_BUFFER_BINDING, instanceBuffer, INSTANCE_BUFFER_MIN_SIZE);
         }
 
-        /*
-
-        final long meshIDsMinSize = numObjects * UINT32_SIZEOF;
-
-        if (meshIndicesBuffer.size() < meshIDsMinSize) {
-            reallocateBuffer(meshIndicesBuffer, meshIDsMinSize);
-        }
-
-         */
-
         final int transformsMinSize = numObjects * TRANSFORMS_BUFFER_MIN_SIZE;
 
         if (transformsBuffer.size() < transformsMinSize) {
             reallocateBuffer(transformsBuffer, transformsMinSize);
         }
-
-        /*
-
-        int objectIndex = 0;
-
-        for(MeshInstance<?> instance : instances) {
-
-            for(MeshView<?> meshView : instance) {
-
-                final int meshIndex = meshView.mesh().index();
-
-                setInstanceTransform(objectIndex, instance.modelMatrix(), instance.normalMatrix());
-
-                setInstanceMeshIndex(objectIndex, meshIndex);
-
-                final int materialIndex = meshView.material().bufferIndex();
-
-                setInstanceData(objectIndex, objectIndex, materialIndex);
-
-                ++objectIndex;
-            }
-
-        }
-
-         */
     }
 
     public void clearCommandBuffer() {
@@ -272,7 +236,9 @@ public abstract class GLIndirectRenderer implements Renderer {
     protected void reallocateBuffer(MappedGraphicsBuffer buffer, long size) {
         buffer.unmapMemory();
         buffer.reallocate(size);
-        buffer.mapMemory();
+        if(!buffer.mapped()) {
+            buffer.mapMemory();
+        }
     }
 
     protected abstract void initVertexArray();

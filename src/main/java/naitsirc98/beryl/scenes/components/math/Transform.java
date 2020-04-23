@@ -8,17 +8,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
+import static naitsirc98.beryl.util.Maths.radians;
+
 /**
  * A Transform contains the position, scale and rotation of a {@link naitsirc98.beryl.scenes.SceneObject}.
- * 
+ *
  * A Transform may have children, which will be updated when the parent Transform changes.
- * 
+ *
  */
 public final class Transform extends Component<Transform> {
 
     private Vector3f position;
-    private Quaternionf rotation;
-    private AxisAngle4f rotationAxis;
+    private Matrix4f rotation;
     private Vector3f scale;
     private Matrix4f modelMatrix;
     private Matrix4f normalMatrix; // Use Matrix4f to avoid alignment issues in shaders
@@ -34,8 +35,7 @@ public final class Transform extends Component<Transform> {
     protected void init() {
         super.init();
         position = new Vector3f();
-        rotation = new Quaternionf();
-        rotationAxis = rotation.get(new AxisAngle4f());
+        rotation = new Matrix4f();
         scale = new Vector3f(1.0f);
         modelMatrix = new Matrix4f();
         normalMatrix = new Matrix4f();
@@ -54,13 +54,13 @@ public final class Transform extends Component<Transform> {
         updateChildrenPosition(0, 0, 0);
         updateChildrenScale(1, 1, 1);
         updateChildrenRotation(0, 0, 0, 0);
-        position.set(0.0f);
-        rotation.identity();
-        rotation.get(rotationAxis);
-        scale.set(1.0f);
+
         modelMatrix.identity();
         normalMatrix.identity();
+        rotation.identity();
+
         modify();
+
         return this;
     }
 
@@ -226,13 +226,23 @@ public final class Transform extends Component<Transform> {
     }
 
     /**
+     * Returns the euler angles of the rotation matrix
+     *
+     * @return the rotation euler angles zyx
+     */
+    public Vector3f euler() {
+        assertNotDeleted();
+        return rotation.getEulerAnglesZYX(new Vector3f());
+    }
+
+    /**
      * Returns the rotation of this transform.
      *
      * @return the rotation
      */
-    public Quaternionfc rotation() {
+    public Quaternionf rotation() {
         assertNotDeleted();
-        return rotation;
+        return rotation.getNormalizedRotation(new Quaternionf());
     }
 
     /**
@@ -242,17 +252,20 @@ public final class Transform extends Component<Transform> {
      */
     public float angle() {
         assertNotDeleted();
-        return rotation.angle();
+        return rotation().angle();
     }
 
-    /**
-     * Returns the rotation axis of this transform.
-     *
-     * @return the rotation axis
-     */
-    public AxisAngle4f rotationAxis() {
+    public Transform resetRotation() {
         assertNotDeleted();
-        return rotationAxis;
+
+        if(enabled()) {
+
+            rotation.identity();
+
+            modify();
+        }
+
+        return this;
     }
 
     /**
@@ -268,8 +281,7 @@ public final class Transform extends Component<Transform> {
         assertNotDeleted();
         if(enabled()) {
             updateChildrenRotation(radians, x, y, z);
-            rotationAxis.set(radians, x, y, z);
-            rotation.set(rotationAxis);
+            rotation.rotation(radians, x, y, z);
             modify();
         }
         return this;
@@ -319,7 +331,7 @@ public final class Transform extends Component<Transform> {
         assertNotDeleted();
         if(enabled()) {
             updateChildrenRotation(radians, 1, 0, 0);
-            rotation.rotateX(radians);
+            rotation.rotationX(radians);
             modify();
         }
         return this;
@@ -335,7 +347,7 @@ public final class Transform extends Component<Transform> {
         assertNotDeleted();
         if(enabled()) {
             updateChildrenRotation(radians, 0, 1, 0);
-            rotation.rotateY(radians);
+            rotation.rotationY(radians);
             modify();
         }
         return this;
@@ -351,12 +363,76 @@ public final class Transform extends Component<Transform> {
         assertNotDeleted();
         if(enabled()) {
             updateChildrenRotation(radians, 0, 0, 1);
-            rotation.rotateZ(radians);
+            rotation.rotationZ(radians);
             modify();
         }
         return this;
     }
 
+
+    /**
+     * Rotates this transform around the origin point (x0, y0, z0) and on the given axis (rx, ry, rz).
+     *
+     * @param radians the radians
+     * @param rx      the rotation x axis
+     * @param ry      the rotation y axis
+     * @param rz      the rotation z axis
+     * @param x0      the origin x coordinate
+     * @param y0      the origin y coordinate
+     * @param z0      the origin z coordinate
+     * @return this transform
+     */
+    public Transform rotateAround(float radians, float rx, float ry, float rz, float x0, float y0, float z0) {
+
+        final float x = (x0 - position.x) * scale.x;
+        final float y = (y0 - position.y) * scale.y;
+        final float z = (z0 - position.z) * scale.z;
+
+        rotation.translate(x, y, z).rotate(radians, rx, ry, rz).translate(-x, -y, -z);
+
+        modify();
+
+        return this;
+    }
+
+    /**
+     * Rotates this transform around the origin point (x0, y0, z0) on the X axis.
+     *
+     * @param radians the radians
+     * @param x0      the origin x coordinate
+     * @param y0      the origin y coordinate
+     * @param z0      the origin z coordinate
+     * @return this transform
+     */
+    public Transform rotateAroundX(float radians, float x0, float y0, float z0) {
+        return rotateAround(radians, 1, 0, 0, x0, y0, z0);
+    }
+
+    /**
+     * Rotates this transform around the origin point (x0, y0, z0) on the Y axis.
+     *
+     * @param radians the radians
+     * @param x0      the origin x coordinate
+     * @param y0      the origin y coordinate
+     * @param z0      the origin z coordinate
+     * @return this transform
+     */
+    public Transform rotateAroundY(float radians, float x0, float y0, float z0) {
+        return rotateAround(radians, 0, 1, 0, x0, y0, z0);
+    }
+
+    /**
+     * Rotates this transform around the origin point (x0, y0, z0) on the Z axis.
+     *
+     * @param radians the radians
+     * @param x0      the origin x coordinate
+     * @param y0      the origin y coordinate
+     * @param z0      the origin z coordinate
+     * @return this transform
+     */
+    public Transform rotateAroundZ(float radians, float x0, float y0, float z0) {
+        return rotateAround(radians, 0, 0, 1, x0, y0, z0);
+    }
 
     /**
      * Apply the given transformations to this transform.
@@ -373,6 +449,14 @@ public final class Transform extends Component<Transform> {
         scale(vector);
         transformation.getUnnormalizedRotation(quaternion);
         rotate(quaternion);
+        return this;
+    }
+
+    public Transform lookAt(float x, float y, float z) {
+        assertNotDeleted();
+
+        rotation.setLookAt(position.x, position.y, position.z, x, y, z, 0, 1, 0);
+
         return this;
     }
 
@@ -542,7 +626,6 @@ public final class Transform extends Component<Transform> {
         scale = null;
         modelMatrix = null;
         normalMatrix = null;
-        rotationAxis = null;
     }
 
     @Override
@@ -554,10 +637,12 @@ public final class Transform extends Component<Transform> {
      * Updates this transform's matrices
      */
     void update() {
-        modelMatrix.translation(position).rotate(rotation).scale(scale);
+
+        modelMatrix.translation(position).mulAffine(rotation).scale(scale);
+
         // normalMatrix = transpose(inverse(mat3(model)))
-        normalMatrix.set(modelMatrix).invert().transpose();
-        normalMatrix._m30(0.0f)._m31(0.0f)._m32(0.0f);
+        // normalMatrix.set(modelMatrix).invert().transpose();
+        // normalMatrix._m30(0.0f)._m31(0.0f)._m32(0.0f);
         modified = false;
     }
 

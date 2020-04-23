@@ -110,7 +110,8 @@ public final class ImageFactory {
             ByteBuffer pixels = readPixelsFromFile(filename, width, height, channels, desiredChannels, pixelFormat, false);
 
             if(pixels == null) {
-                throw new RuntimeException();
+                Log.error("Failed to load image " + filename + ": " + stbi_failure_reason());
+                return null;
             }
 
             if(pixelFormat == null) {
@@ -120,7 +121,7 @@ public final class ImageFactory {
             return new STBImage(width.get(0), height.get(0), pixelFormat, pixels);
 
         } catch(Throwable e) {
-            Log.error("Cannot load image " + filename + ": " + stbi_failure_reason(), e);
+            Log.error("Failed to load image " + filename + ": " + stbi_failure_reason(), e);
         }
         return null;
     }

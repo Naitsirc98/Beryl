@@ -1,5 +1,6 @@
 package naitsirc98.beryl.graphics.textures;
 
+import naitsirc98.beryl.graphics.GraphicsFactory;
 import naitsirc98.beryl.images.Image;
 import naitsirc98.beryl.images.PixelFormat;
 
@@ -7,6 +8,10 @@ import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 
 public interface Texture2D extends Texture {
+
+    static Texture2D whiteTexture() {
+        return GraphicsFactory.get().blankTexture2D();
+    }
 
     int width();
 
@@ -43,4 +48,10 @@ public interface Texture2D extends Texture {
     void update(int mipLevel, int xOffset, int yOffset, int width, int height, PixelFormat format, ByteBuffer pixels);
 
     void update(int mipLevel, int xOffset, int yOffset, int width, int height, PixelFormat format, FloatBuffer pixels);
+
+    @Override
+    default Texture2D setQuality(Quality quality) {
+        Texture.super.setQuality(quality);
+        return this;
+    }
 }
