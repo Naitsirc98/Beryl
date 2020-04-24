@@ -27,6 +27,7 @@ import org.joml.Vector4f;
 import org.lwjgl.system.MemoryStack;
 
 import java.nio.FloatBuffer;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 import static java.lang.StrictMath.max;
@@ -41,13 +42,16 @@ import static org.lwjgl.system.MemoryStack.stackPush;
 
 public class GLWaterRenderer implements WaterRenderer {
 
+    public static final int QUAD_INDEX_COUNT = 6;
     private GLShaderProgram waterShader;
 
     private GLVertexArray vertexArray;
     private GLBuffer vertexBuffer;
     private GLBuffer indexBuffer;
 
-    private GLFramebuffer framebuffer;
+    private GLFramebuffer reflectionFramebuffer;
+    private GLFramebuffer refractionFramebuffer;
+
     private GLTexture2D depthTexture;
 
     private StaticMesh quadMesh;
@@ -81,9 +85,9 @@ public class GLWaterRenderer implements WaterRenderer {
         vertexArray.addVertexBuffer(0, VERTEX_LAYOUT_3D.attributeList(0), vertexBuffer);
         vertexArray.setIndexBuffer(indexBuffer);
 
-        createFramebuffer();
+        createFramebuffers();
 
-        EventManager.addEventCallback(WindowResizedEvent.class, this::recreateFramebuffer);
+        EventManager.addEventCallback(WindowResizedEvent.class, this::recreateFramebuffers);
     }
 
     @Override
@@ -92,129 +96,10 @@ public class GLWaterRenderer implements WaterRenderer {
         vertexArray.release();
         vertexBuffer.release();
         indexBuffer.release();
-        framebuffer.release();
+        reflectionFramebuffer.release();
+        refractionFramebuffer.release();
         depthTexture.release();
         quadMesh = null;
-    }
-
-    public void bakeWaterTextures(Scene scene) {
-
-        glEnable(GL_CLIP_DISTANCE0);
-
-        final Camera camera = scene.camera();
-
-        final MeshInstanceList<WaterMeshInstance> waterInstances = scene.meshInfo().meshViewsOfType(WaterMeshView.class);
-
-        if(waterInstances == null) {
-            return;
-        }
-
-        final SceneEnhancedWater enhancedWater = scene.enhancedWater();
-
-        final Vector3fc cameraPosition = camera.position();
-
-        final float pitch = camera.pitch();
-
-        for(WaterMeshInstance instance : waterInstances) {
-
-            final boolean underWater = camera.position().y() - instance.transform().position().y() < 0.0f;
-
-            if(underWater) {
-                bakeWaterTexturesUnderWater(scene, enhancedWater, instance);
-            } else {
-                bakeWaterTexturesNormally(scene, camera, enhancedWater, cameraPosition, pitch, instance);
-            }
-        }
-
-        glDisable(GL_CLIP_DISTANCE0);
-    }
-
-    private void bakeWaterTexturesUnderWater(Scene scene, SceneEnhancedWater enhancedWater, WaterMeshInstance instance) {
-
-        WaterMeshView waterView = instance.meshView();
-
-        bakeWaterTexture(scene, enhancedWater, instance.meshView(), waterView.material().refractionMap(), true);
-    }
-
-    private void bakeWaterTexturesNormally(Scene scene, Camera camera, SceneEnhancedWater enhancedWater,
-                                           Vector3fc cameraPosition, float pitch, WaterMeshInstance instance) {
-
-        WaterMeshView waterView = instance.meshView();
-
-        final float displacement = 2 * (cameraPosition.y() - instance.transform().position().y());
-
-        camera.position(cameraPosition.x(), cameraPosition.y() - displacement, cameraPosition.z());
-        camera.pitch(-pitch);
-        camera.update();
-
-        clipPlane.set(waterView.clipPlane());
-        clipPlane.w *= -1;
-
-        bakeWaterTexture(scene, enhancedWater, waterView, waterView.material().reflectionMap(), true);
-
-        camera.position(cameraPosition.x(), cameraPosition.y() + displacement, cameraPosition.z());
-        camera.pitch(pitch);
-        camera.update();
-
-        clipPlane.set(waterView.clipPlane());
-
-        clipPlane.y *= -1;
-
-        bakeWaterTexture(scene, enhancedWater, waterView, waterView.material().refractionMap(), false);
-    }
-
-    private void bakeWaterTexture(Scene scene, SceneEnhancedWater enhancedWater, WaterMeshView waterView, Texture2D texture, boolean renderSkybox) {
-
-        prepareFramebuffer((GLTexture2D) texture);
-
-        framebuffer.bind();
-
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        if(enhancedWater.isEnhanced(waterView)) {
-            renderStaticMeshes(scene);
-            renderAnimMeshes(scene);
-        }
-
-        if(renderSkybox) {
-            renderSkybox(scene);
-        }
-
-        glFinish();
-    }
-
-    private void renderStaticMeshes(Scene scene) {
-        renderMeshes(scene, (GLIndirectRenderer) APIRenderSystem.get().getStaticMeshRenderer());
-    }
-
-    private void renderAnimMeshes(Scene scene) {
-        renderMeshes(scene, (GLIndirectRenderer) APIRenderSystem.get().getAnimMeshRenderer());
-    }
-
-    private void renderMeshes(Scene scene, GLIndirectRenderer renderer) {
-        renderer.addDynamicShaderState(setClipPlaneUniform);
-        renderer.render(scene);
-    }
-
-    private void renderSkybox(Scene scene) {
-
-        final GLSkyboxRenderer skyboxRenderer = (GLSkyboxRenderer) APIRenderSystem.get().getSkyboxRenderer();
-
-        skyboxRenderer.render(scene);
-    }
-
-    private void prepareFramebuffer(GLTexture2D colorTexture) {
-
-        final int width = max(Window.get().width(), 1);
-        final int height = max(Window.get().height(), 1);
-
-        if(colorTexture.width() != width || colorTexture.height() != height) {
-            colorTexture.reallocate(1, width, height, PixelFormat.RGBA);
-        }
-
-        framebuffer.attach(GL_COLOR_ATTACHMENT0, colorTexture, 0);
-
-        framebuffer.ensureComplete();
     }
 
     @Override
@@ -226,26 +111,9 @@ public class GLWaterRenderer implements WaterRenderer {
             return;
         }
 
-        final GLShaderProgram waterShader = this.waterShader;
-        final int indexCount = quadMesh.indexCount();
-        final Camera camera = scene.camera();
-        final GLBuffer cameraBuffer = scene.cameraInfo().cameraBuffer();
-        final GLBuffer lightsBuffer = scene.environment().buffer();
-
-        glEnable(GL_DEPTH_TEST);
-        glDisable(GL_CULL_FACE);
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
         waterShader.bind();
 
-        cameraBuffer.bind(GL_UNIFORM_BUFFER, 0);
-
-        lightsBuffer.bind(GL_UNIFORM_BUFFER, 1);
-
-        waterShader.uniformSampler("u_DepthTexture", depthTexture, 0);
-        waterShader.uniformFloat("u_NearPlane", camera.nearPlane());
-        waterShader.uniformFloat("u_FarPlane", camera.farPlane());
+        setOpenGLState(scene);
 
         vertexArray.bind();
 
@@ -255,26 +123,51 @@ public class GLWaterRenderer implements WaterRenderer {
 
             for(WaterMeshInstance instance : waterInstances) {
 
-                final WaterMeshView view = instance.meshView();
-                final WaterMaterial material = view.material();
-
-                waterShader.uniformMatrix4f("u_ModelMatrix", false, instance.modelMatrix().get(modelMatrixBuffer));
-
-                waterShader.uniformFloat("u_DistortionStrength", view.distortionStrength());
-                waterShader.uniformFloat("u_TextureCoordsOffset", view.texturesOffset());
-                waterShader.uniformColorRGBA("u_WaterColor", view.waterColor());
-                waterShader.uniformFloat("u_WaterColorStrength", view.waterColorStrength());
-                waterShader.uniformFloat("u_Tiling", view.tiling());
-
-                bindTextures(material);
-
-                glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, NULL);
-
-                unbindTextures(material);
+                renderWater(modelMatrixBuffer, instance);
             }
         }
 
         glDisable(GL_BLEND);
+    }
+
+    private void setOpenGLState(Scene scene) {
+
+        final Camera camera = scene.camera();
+        final GLBuffer cameraBuffer = scene.cameraInfo().cameraBuffer();
+        final GLBuffer lightsBuffer = scene.environment().buffer();
+
+        glEnable(GL_DEPTH_TEST);
+        glDisable(GL_CULL_FACE);
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+        cameraBuffer.bind(GL_UNIFORM_BUFFER, 0);
+
+        lightsBuffer.bind(GL_UNIFORM_BUFFER, 1);
+
+        waterShader.uniformSampler("u_DepthTexture", depthTexture, 0);
+        waterShader.uniformFloat("u_NearPlane", camera.nearPlane());
+        waterShader.uniformFloat("u_FarPlane", camera.farPlane());
+    }
+
+    private void renderWater(FloatBuffer modelMatrixBuffer, WaterMeshInstance instance) {
+
+        final WaterMeshView view = instance.meshView();
+        final WaterMaterial material = view.material();
+
+        waterShader.uniformMatrix4f("u_ModelMatrix", false, instance.modelMatrix().get(modelMatrixBuffer));
+
+        waterShader.uniformFloat("u_DistortionStrength", view.distortionStrength());
+        waterShader.uniformFloat("u_TextureCoordsOffset", view.texturesOffset());
+        waterShader.uniformColorRGBA("u_WaterColor", view.waterColor());
+        waterShader.uniformFloat("u_WaterColorStrength", view.waterColorStrength());
+        waterShader.uniformFloat("u_Tiling", view.tiling());
+
+        bindTextures(material);
+
+        glDrawElements(GL_TRIANGLES, QUAD_INDEX_COUNT, GL_UNSIGNED_INT, NULL);
+
+        unbindTextures(material);
     }
 
     private void unbindTextures(WaterMaterial material) {
@@ -321,24 +214,180 @@ public class GLWaterRenderer implements WaterRenderer {
         }
     }
 
-    private void createFramebuffer() {
+    public void bakeWaterTextures(Scene scene) {
 
-        framebuffer = new GLFramebuffer();
+        glEnable(GL_CLIP_DISTANCE0);
+
+        final Camera camera = scene.camera();
+
+        final MeshInstanceList<WaterMeshInstance> waterInstances = scene.meshInfo().meshViewsOfType(WaterMeshView.class);
+
+        if(waterInstances == null) {
+            return;
+        }
+
+        final SceneEnhancedWater enhancedWater = scene.enhancedWater();
+
+        for(WaterMeshInstance instance : waterInstances) {
+
+            final boolean underWater = camera.position().y() - instance.transform().position().y() < 0.0f;
+
+            if(underWater) {
+                bakeWaterTexturesUnderWater(scene, enhancedWater, instance);
+            } else {
+                bakeWaterTexturesNormally(scene, camera, enhancedWater, instance);
+            }
+        }
+
+        glDisable(GL_CLIP_DISTANCE0);
+    }
+
+    private void bakeWaterTexturesUnderWater(Scene scene, SceneEnhancedWater enhancedWater, WaterMeshInstance instance) {
+
+        WaterMeshView waterView = instance.meshView();
+
+        bakeWaterTexture(scene, enhancedWater, instance.meshView(), reflectionFramebuffer, waterView.material().refractionMap(), true);
+    }
+
+    private void bakeWaterTexturesNormally(Scene scene, Camera camera, SceneEnhancedWater enhancedWater, WaterMeshInstance instance) {
+
+        WaterMeshView waterView = instance.meshView();
+
+        final float displacement = 2 * (camera.position().y() - instance.transform().position().y());
+
+        bakeReflectionTexture(scene, camera, enhancedWater, waterView, displacement);
+
+        bakeRefractionTexture(scene, camera, enhancedWater, waterView, displacement);
+    }
+
+    private void bakeReflectionTexture(Scene scene, Camera camera, SceneEnhancedWater enhancedWater, WaterMeshView waterView, float displacement) {
+        prepareCameraToRenderWithReflectionPerspective(camera, waterView, displacement);
+        bakeWaterTexture(scene, enhancedWater, waterView, reflectionFramebuffer, waterView.material().reflectionMap(), true);
+    }
+
+    private void bakeRefractionTexture(Scene scene, Camera camera, SceneEnhancedWater enhancedWater, WaterMeshView waterView, float displacement) {
+        prepareCameraToRenderWithRefractionPerspective(camera, waterView, displacement);
+        bakeWaterTexture(scene, enhancedWater, waterView, refractionFramebuffer, waterView.material().refractionMap(), false);
+    }
+
+    private void prepareCameraToRenderWithReflectionPerspective(Camera camera, WaterMeshView waterView, float displacement) {
+
+        Vector3fc position = camera.position();
+
+        camera.position(position.x(), position.y() - displacement, position.z());
+
+        camera.pitch(-camera.pitch());
+
+        camera.updateMatrices();
+
+        clipPlane.set(waterView.clipPlane());
+        clipPlane.w *= -1;
+    }
+
+    private void prepareCameraToRenderWithRefractionPerspective(Camera camera, WaterMeshView waterView, float displacement) {
+
+        Vector3fc position = camera.position();
+
+        camera.position(position.x(), position.y() + displacement, position.z());
+
+        camera.pitch(-camera.pitch());
+
+        camera.updateMatrices();
+
+        clipPlane.set(waterView.clipPlane());
+        clipPlane.y *= -1;
+    }
+
+    private void bakeWaterTexture(Scene scene, SceneEnhancedWater enhancedWater, WaterMeshView waterView,
+                                  GLFramebuffer framebuffer, Texture2D texture, boolean renderSkybox) {
+
+        prepareFramebuffer(framebuffer, (GLTexture2D) texture);
+
+        framebuffer.bind();
+
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        if(enhancedWater.isEnhanced(waterView)) {
+            renderStaticMeshes(scene);
+            renderAnimMeshes(scene);
+        }
+
+        if(renderSkybox) {
+            renderSkybox(scene);
+        }
+
+        glFinish();
+    }
+
+    private void renderStaticMeshes(Scene scene) {
+        renderMeshes(scene, (GLIndirectRenderer) APIRenderSystem.get().getStaticMeshRenderer());
+    }
+
+    private void renderAnimMeshes(Scene scene) {
+        renderMeshes(scene, (GLIndirectRenderer) APIRenderSystem.get().getAnimMeshRenderer());
+    }
+
+    private void renderMeshes(Scene scene, GLIndirectRenderer renderer) {
+        renderer.addDynamicShaderState(setClipPlaneUniform);
+        renderer.render(scene);
+    }
+
+    private void renderSkybox(Scene scene) {
+
+        final GLSkyboxRenderer skyboxRenderer = (GLSkyboxRenderer) APIRenderSystem.get().getSkyboxRenderer();
+
+        skyboxRenderer.render(scene);
+    }
+
+    private void prepareFramebuffer(GLFramebuffer framebuffer, GLTexture2D colorTexture) {
 
         final int width = max(Window.get().width(), 1);
         final int height = max(Window.get().height(), 1);
 
-        depthTexture = new GLTexture2D();
-        depthTexture.reallocate(1, width, height, GL_DEPTH_COMPONENT24);
+        if(colorTexture.width() != width || colorTexture.height() != height) {
+            colorTexture.reallocate(1, width, height, PixelFormat.RGBA);
+        }
 
-        framebuffer.attach(GL_DEPTH_ATTACHMENT, depthTexture, 0);
+        if(!Objects.equals(framebuffer.get(GL_COLOR_ATTACHMENT0), colorTexture)) {
+            framebuffer.attach(GL_COLOR_ATTACHMENT0, colorTexture, 0);
+            framebuffer.ensureComplete();
+        }
     }
 
-    private void recreateFramebuffer(WindowResizedEvent e) {
-        if(framebuffer != null) {
+    private void recreateFramebuffers(WindowResizedEvent e) {
+
+        if(depthTexture != null) {
+
             depthTexture.release();
-            framebuffer.release();
-            createFramebuffer();
+            reflectionFramebuffer.release();
+            refractionFramebuffer.release();
+
+            createFramebuffers();
         }
+    }
+
+    private void createFramebuffers() {
+
+        final int width = max(Window.get().width(), 1);
+        final int height = max(Window.get().height(), 1);
+
+        createDepthTexture(width, height);
+
+        reflectionFramebuffer = createFramebuffer();
+        refractionFramebuffer = createFramebuffer();
+    }
+
+    private void createDepthTexture(int width, int height) {
+        depthTexture = new GLTexture2D();
+        depthTexture.reallocate(1, width, height, GL_DEPTH_COMPONENT24);
+    }
+
+    private GLFramebuffer createFramebuffer() {
+
+        GLFramebuffer framebuffer = new GLFramebuffer();
+
+        framebuffer.attach(GL_DEPTH_ATTACHMENT, depthTexture, 0);
+
+        return framebuffer;
     }
 }

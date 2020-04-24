@@ -393,7 +393,7 @@ public final class Camera {
 		return frustumPlanes[index];
 	}
 
-	public void update() {
+	public void updateMatrices() {
 		updateCameraVectors();
 		getViewMatrix(viewMatrix);
 		getProjectionMatrix(projectionMatrix, projectionType);

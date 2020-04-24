@@ -1,7 +1,6 @@
 package naitsirc98.beryl.scenes;
 
 import naitsirc98.beryl.graphics.rendering.RenderSystem;
-import naitsirc98.beryl.graphics.window.Window;
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.scenes.components.animations.Animator;
 import naitsirc98.beryl.scenes.components.animations.AnimatorManager;
@@ -123,7 +122,7 @@ public final class Scene {
     void endUpdate() {
 
         if(camera.modified()) {
-            camera.update();
+            camera.updateMatrices();
         }
 
         transforms.update();
