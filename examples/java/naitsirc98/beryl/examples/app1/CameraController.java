@@ -65,7 +65,7 @@ public class CameraController extends LateBehaviour {
         if(isKeyTyped(KEY_F1)) {
             Window.get().fullscreen();
         } else if(isKeyTyped(KEY_F2)) {
-            Window.get().maximized();
+            Window.get().maximize();
         } else if(isKeyTyped(KEY_F3)) {
             Window.get().windowed();
         } else if(isKeyTyped(KEY_F4)) {

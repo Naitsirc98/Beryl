@@ -5,6 +5,7 @@ import naitsirc98.beryl.graphics.opengl.rendering.GLRenderSystem;
 import naitsirc98.beryl.scenes.Scene;
 import naitsirc98.beryl.util.types.Singleton;
 
+import static naitsirc98.beryl.util.types.TypeUtils.initSingleton;
 import static naitsirc98.beryl.util.types.TypeUtils.newInstance;
 
 public final class RenderSystem extends BerylSystem {
@@ -33,9 +34,10 @@ public final class RenderSystem extends BerylSystem {
     @Override
     protected void init() {
         // Only supporting OPENGL for now
-        Class<? extends APIRenderSystem> rendererClass = GLRenderSystem.class;
-        apiRenderSystem = newInstance(rendererClass);
+        Class<? extends APIRenderSystem> apiRenderSystemClass = GLRenderSystem.class;
+        apiRenderSystem = newInstance(apiRenderSystemClass);
         apiRenderSystem.init();
+        initSingleton(APIRenderSystem.class, apiRenderSystem);
     }
 
     @Override

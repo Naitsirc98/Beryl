@@ -6,10 +6,6 @@ import naitsirc98.beryl.graphics.opengl.swapchain.GLFramebuffer;
 import naitsirc98.beryl.graphics.opengl.swapchain.GLRenderbuffer;
 import naitsirc98.beryl.graphics.opengl.textures.GLTexture2DMSAA;
 import naitsirc98.beryl.graphics.rendering.APIRenderSystem;
-import naitsirc98.beryl.graphics.rendering.renderers.AnimMeshRenderer;
-import naitsirc98.beryl.graphics.rendering.renderers.SkyboxRenderer;
-import naitsirc98.beryl.graphics.rendering.renderers.StaticMeshRenderer;
-import naitsirc98.beryl.graphics.rendering.renderers.WaterRenderer;
 import naitsirc98.beryl.graphics.window.Window;
 import naitsirc98.beryl.images.PixelFormat;
 import naitsirc98.beryl.scenes.Scene;
@@ -74,7 +70,7 @@ public final class GLRenderSystem extends APIRenderSystem {
 
         animMeshRenderer.prepare(scene);
 
-        waterRenderer.bakeWaterTextures(scene, staticMeshRenderer, skyboxRenderer);
+        waterRenderer.bakeWaterTextures(scene);
     }
 
     @Override
@@ -88,9 +84,9 @@ public final class GLRenderSystem extends APIRenderSystem {
 
         clear(scene.environment().clearColor());
 
-        animMeshRenderer.render(scene, animMeshRenderer.performCullingPassCPU(scene, false));
+        animMeshRenderer.render(scene);
 
-        staticMeshRenderer.render(scene, staticMeshRenderer.performCullingPassCPU(scene, false));
+        staticMeshRenderer.render(scene);
 
         waterRenderer.render(scene);
 
@@ -119,22 +115,22 @@ public final class GLRenderSystem extends APIRenderSystem {
     }
 
     @Override
-    protected StaticMeshRenderer getStaticMeshRenderer() {
+    public GLStaticMeshRenderer getStaticMeshRenderer() {
         return staticMeshRenderer;
     }
 
     @Override
-    protected AnimMeshRenderer getAnimMeshRenderer() {
+    public GLAnimMeshRenderer getAnimMeshRenderer() {
         return animMeshRenderer;
     }
 
     @Override
-    protected SkyboxRenderer getSkyboxRenderer() {
+    public GLSkyboxRenderer getSkyboxRenderer() {
         return skyboxRenderer;
     }
 
     @Override
-    protected WaterRenderer getWaterRenderer() {
+    public GLWaterRenderer getWaterRenderer() {
         return waterRenderer;
     }
 

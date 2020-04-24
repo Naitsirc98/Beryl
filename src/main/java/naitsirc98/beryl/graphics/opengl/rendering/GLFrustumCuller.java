@@ -1,7 +1,10 @@
 package naitsirc98.beryl.graphics.opengl.rendering;
 
+import naitsirc98.beryl.core.BerylFiles;
 import naitsirc98.beryl.graphics.opengl.buffers.GLBuffer;
 import naitsirc98.beryl.graphics.opengl.commands.GLDrawElementsCommand;
+import naitsirc98.beryl.graphics.opengl.shaders.GLShader;
+import naitsirc98.beryl.graphics.opengl.shaders.GLShaderProgram;
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.meshes.Mesh;
 import naitsirc98.beryl.meshes.views.MeshView;
@@ -26,8 +29,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static java.lang.Math.min;
 import static java.util.stream.IntStream.range;
-import static naitsirc98.beryl.util.types.DataType.INT32_SIZEOF;
-import static naitsirc98.beryl.util.types.DataType.MATRIX4_SIZEOF;
+import static naitsirc98.beryl.graphics.ShaderStage.COMPUTE_STAGE;
+import static naitsirc98.beryl.util.Asserts.assertThat;
+import static naitsirc98.beryl.util.Asserts.assertTrue;
+import static naitsirc98.beryl.util.types.DataType.*;
+import static org.lwjgl.opengl.GL31.GL_UNIFORM_BUFFER;
+import static org.lwjgl.opengl.GL42.*;
+import static org.lwjgl.opengl.GL43.GL_SHADER_STORAGE_BUFFER;
+import static org.lwjgl.opengl.GL43.glDispatchCompute;
 import static org.lwjgl.system.MemoryStack.stackPush;
 
 public class GLFrustumCuller {
@@ -44,7 +53,10 @@ public class GLFrustumCuller {
     private final AtomicInteger baseInstance;
     private final GLBuffer commandBuffer;
     private final GLBuffer transformsBuffer;
+    protected GLBuffer meshIndicesBuffer;
     private final GLBuffer instanceBuffer;
+    private final GLShaderProgram cullingShader;
+    private final GLBuffer atomicCounterBuffer;
 
     public GLFrustumCuller(GLBuffer commandBuffer, GLBuffer transformsBuffer, GLBuffer instanceBuffer) {
         this.commandBuffer = commandBuffer;
@@ -52,110 +64,121 @@ public class GLFrustumCuller {
         this.instanceBuffer = instanceBuffer;
         this.executor = Executors.newFixedThreadPool(THREAD_COUNT);
         baseInstance = new AtomicInteger();
-    }
-
-    public void terminate() {
-        executor.shutdown();
-        try {
-            executor.awaitTermination(1000, TimeUnit.MILLISECONDS);
-        } catch (InterruptedException e) {
-            Log.error("Timeout error", e);
-        }
+        meshIndicesBuffer = new GLBuffer("MESH_INDICES_STORAGE_BUFFER");
+        cullingShader = createCullingShader();
+        atomicCounterBuffer = createAtomicCounterBuffer();
     }
 
     public int performCullingCPU(Scene scene, MeshInstanceList<?> instances, boolean alwaysPass) {
 
-        if(instances == null) {
+        if(instances == null || instances.size() == 0) {
             return 0;
         }
 
         final int batchSize = (int) Math.ceil((float) instances.size() / (float) THREAD_COUNT);
 
-        if(batchSize == 0) {
-            return 0;
-        }
-
-        final GLBuffer commandBuffer = this.commandBuffer;
-
         final FrustumIntersection frustum = scene.camera().frustum();
 
         final CountDownLatch countDownLatch = new CountDownLatch(THREAD_COUNT);
 
-        range(0, THREAD_COUNT).parallel().unordered().forEach(i -> {
+        for(int i = 0;i < THREAD_COUNT;i++) {
 
             final int batchBegin = i * batchSize;
             final int batchEnd = min(batchBegin + batchSize, instances.size());
 
-            executor.submit(() -> {
-
-                try(MemoryStack stack = stackPush()) {
-
-                    Vector4f center = new Vector4f();
-
-                    GLDrawElementsCommand command = GLDrawElementsCommand.callocStack(stack);
-
-                    for(int j = batchBegin;j < batchEnd;j++) {
-
-                        MeshInstance<?> instance = instances.get(j);
-
-                        final Vector3fc scale = instance.transform().scale();
-                        final float maxScale = scale.get(scale.maxComponent());
-                        final Matrix4fc modelMatrix = instance.modelMatrix();
-
-                        for (MeshView<?> meshView : instance) {
-
-                            final Mesh mesh = meshView.mesh();
-                            final ISphere sphere = mesh.boundingSphere();
-
-                            center.set(sphere.center(), 1.0f).mul(modelMatrix);
-
-                            final float radius = sphere.radius() * maxScale;
-
-                            if(alwaysPass || frustum.testSphere(center.x, center.y, center.z, radius)) {
-
-                                final int instanceID = baseInstance.getAndIncrement();
-
-                                setInstanceTransform(instanceID, instance.modelMatrix(), null);
-
-                                final int materialIndex = meshView.material().bufferIndex();
-
-                                setInstanceData(instanceID, instanceID, materialIndex);
-
-                                command.count(mesh.indexCount())
-                                        .primCount(1)
-                                        .firstIndex(mesh.firstIndex())
-                                        .baseVertex(mesh.baseVertex())
-                                        .baseInstance(instanceID);
-
-                                commandBuffer.copy(instanceID * GLDrawElementsCommand.SIZEOF, command.buffer());
-                            }
-                        }
-                    }
-                }
-
-                countDownLatch.countDown();
-            });
-        });
-
-        try {
-            countDownLatch.await(100, TimeUnit.MILLISECONDS);
-        } catch (InterruptedException e) {
-            Log.error("Timeout error", e);
+            performCullingBatch(instances, alwaysPass, frustum, countDownLatch, batchBegin, batchEnd);
         }
+
+        waitForFrustumCulling(countDownLatch);
 
         return baseInstance.getAndSet(0);
     }
 
-    protected void setInstanceTransform(int objectIndex, Matrix4fc modelMatrix, Matrix4fc normalMatrix) {
+    public void performCullingPassGPU(Scene scene, int totalObjects, GLBuffer meshCommandBuffer, GLBuffer boundingSpheresBuffer, boolean alwaysPass) {
+
+        GLBuffer frustumBuffer = scene.cameraInfo().frustumBuffer();
+
+        cullingShader.bind();
+
+        meshCommandBuffer.bind(GL_SHADER_STORAGE_BUFFER, 0);
+        commandBuffer.bind(GL_SHADER_STORAGE_BUFFER, 1);
+        boundingSpheresBuffer.bind(GL_SHADER_STORAGE_BUFFER, 2);
+        transformsBuffer.bind(GL_SHADER_STORAGE_BUFFER, 3);
+        meshIndicesBuffer.bind(GL_SHADER_STORAGE_BUFFER, 4);
+        frustumBuffer.bind(GL_UNIFORM_BUFFER, 5);
+        atomicCounterBuffer.bind(GL_ATOMIC_COUNTER_BUFFER, 6);
+        cullingShader.uniformBool("u_AlwaysPass", alwaysPass);
+
+        glDispatchCompute(totalObjects, 1, 1);
+
+        glMemoryBarrier(GL_COMMAND_BARRIER_BIT | GL_SHADER_STORAGE_BUFFER | GL_ATOMIC_COUNTER_BARRIER_BIT);
+    }
+
+    public GLBuffer atomicCounter() {
+        return atomicCounterBuffer;
+    }
+
+    private void performCullingBatch(MeshInstanceList<?> instances, boolean alwaysPass, FrustumIntersection frustum,
+                                     CountDownLatch countDownLatch, int batchBegin, int batchEnd) {
+
+        try(MemoryStack stack = stackPush()) {
+
+            Vector4f center = new Vector4f();
+
+            GLDrawElementsCommand command = GLDrawElementsCommand.callocStack(stack);
+
+            for(int i = batchBegin;i < batchEnd;i++) {
+
+                MeshInstance<?> instance = instances.get(i);
+
+                final Vector3fc scale = instance.transform().scale();
+                final float maxScale = scale.get(scale.maxComponent());
+                final Matrix4fc modelMatrix = instance.modelMatrix();
+
+                setInstanceTransform(i, modelMatrix, instance.transform().normalMatrix());
+
+                for (MeshView<?> meshView : instance) {
+
+                    final Mesh mesh = meshView.mesh();
+                    final ISphere sphere = mesh.boundingSphere();
+
+                    center.set(sphere.center(), 1.0f).mul(modelMatrix);
+
+                    final float radius = sphere.radius() * maxScale;
+
+                    if(alwaysPass || frustum.testSphere(center.x, center.y, center.z, radius)) {
+
+                        final int instanceID = baseInstance.getAndIncrement();
+
+                        final int materialIndex = meshView.material().bufferIndex();
+
+                        setInstanceData(instanceID, i, materialIndex);
+
+                        command.count(mesh.indexCount())
+                                .primCount(1)
+                                .firstIndex(mesh.firstIndex())
+                                .baseVertex(mesh.baseVertex())
+                                .baseInstance(instanceID);
+
+                        commandBuffer.copy(instanceID * GLDrawElementsCommand.SIZEOF, command.buffer());
+                    }
+                }
+            }
+        }
+
+        countDownLatch.countDown();
+    }
+
+    private void setInstanceTransform(int objectIndex, Matrix4fc modelMatrix, Matrix4fc normalMatrix) {
         try(MemoryStack stack = stackPush()) {
             ByteBuffer buffer = stack.malloc(MATRIX4_SIZEOF * 2);
             modelMatrix.get(TRANSFORMS_BUFFER_MODEL_MATRIX_OFFSET, buffer);
-            // normalMatrix.get(TRANSFORMS_BUFFER_NORMAL_MATRIX_OFFSET, buffer);
+            normalMatrix.get(TRANSFORMS_BUFFER_NORMAL_MATRIX_OFFSET, buffer);
             transformsBuffer.copy(objectIndex * TRANSFORMS_BUFFER_MIN_SIZE, buffer);
         }
     }
 
-    protected void setInstanceData(int instanceID, int matrixIndex, int materialIndex) {
+    private void setInstanceData(int instanceID, int matrixIndex, int materialIndex) {
 
         try (MemoryStack stack = stackPush()) {
 
@@ -164,6 +187,53 @@ public class GLFrustumCuller {
             buffer.put(0, matrixIndex).put(1, materialIndex);
 
             instanceBuffer.copy(instanceID * INSTANCE_BUFFER_MIN_SIZE, buffer);
+        }
+    }
+
+    private void setInstanceMeshIndex(int objectIndex, int meshIndex) {
+        try (MemoryStack stack = stackPush()) {
+            meshIndicesBuffer.copy(objectIndex * UINT32_SIZEOF, stack.ints(meshIndex));
+        }
+    }
+
+    private void waitForFrustumCulling(CountDownLatch countDownLatch) {
+        try {
+            countDownLatch.await(1000, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException e) {
+            Log.error("Timeout error while waiting for frustum culling", e);
+        }
+    }
+
+    private GLShaderProgram createCullingShader() {
+        return new GLShaderProgram()
+                .attach(new GLShader(COMPUTE_STAGE).source(BerylFiles.getPath("shaders/compute/culling.comp")))
+                .link();
+    }
+
+    private GLBuffer createAtomicCounterBuffer() {
+        GLBuffer atomicCounterBuffer = new GLBuffer("ATOMIC_COUNTER_BUFFER");
+        atomicCounterBuffer.allocate(UINT32_SIZEOF);
+        atomicCounterBuffer.clear();
+        return atomicCounterBuffer;
+    }
+
+    void terminate() {
+
+        meshIndicesBuffer.release();
+
+        atomicCounterBuffer.release();
+
+        cullingShader.release();
+
+        shutdown();
+    }
+
+    private void shutdown() {
+        executor.shutdown();
+        try {
+            executor.awaitTermination(1000, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException e) {
+            Log.error("Timeout error", e);
         }
     }
 

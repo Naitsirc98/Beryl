@@ -3,6 +3,8 @@ package naitsirc98.beryl.scenes.components.animations;
 import naitsirc98.beryl.scenes.Scene;
 import naitsirc98.beryl.scenes.components.AbstractComponentManager;
 
+import java.util.List;
+
 public class AnimatorManager extends AbstractComponentManager<Animator> {
 
     protected AnimatorManager(Scene scene) {
@@ -13,4 +15,7 @@ public class AnimatorManager extends AbstractComponentManager<Animator> {
         components.enabled().parallelStream().forEach(Animator::update);
     }
 
+    public List<Animator> list() {
+        return components.enabled();
+    }
 }

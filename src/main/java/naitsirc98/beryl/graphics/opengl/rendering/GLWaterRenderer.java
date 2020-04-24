@@ -9,7 +9,9 @@ import naitsirc98.beryl.graphics.opengl.shaders.GLShaderProgram;
 import naitsirc98.beryl.graphics.opengl.swapchain.GLFramebuffer;
 import naitsirc98.beryl.graphics.opengl.textures.GLTexture2D;
 import naitsirc98.beryl.graphics.opengl.vertex.GLVertexArray;
+import naitsirc98.beryl.graphics.rendering.APIRenderSystem;
 import naitsirc98.beryl.graphics.rendering.renderers.WaterRenderer;
+import naitsirc98.beryl.graphics.textures.Texture2D;
 import naitsirc98.beryl.graphics.window.Window;
 import naitsirc98.beryl.images.PixelFormat;
 import naitsirc98.beryl.materials.WaterMaterial;
@@ -22,10 +24,10 @@ import naitsirc98.beryl.scenes.components.meshes.MeshInstanceList;
 import naitsirc98.beryl.scenes.components.meshes.WaterMeshInstance;
 import org.joml.Vector3fc;
 import org.joml.Vector4f;
-import org.joml.Vector4fc;
 import org.lwjgl.system.MemoryStack;
 
 import java.nio.FloatBuffer;
+import java.util.function.Consumer;
 
 import static java.lang.StrictMath.max;
 import static naitsirc98.beryl.graphics.ShaderStage.FRAGMENT_STAGE;
@@ -50,8 +52,16 @@ public class GLWaterRenderer implements WaterRenderer {
 
     private StaticMesh quadMesh;
 
+    private Vector4f clipPlane;
+
+    private Consumer<GLShaderProgram> setClipPlaneUniform;
+
     @Override
     public void init() {
+
+        clipPlane = new Vector4f();
+
+        setClipPlaneUniform = shader -> shader.uniformVector4f("u_ClipPlane", clipPlane);
 
         waterShader = new GLShaderProgram()
                 .attach(new GLShader(VERTEX_STAGE).source(BerylFiles.getPath("shaders/water/water.vert")))
@@ -87,7 +97,7 @@ public class GLWaterRenderer implements WaterRenderer {
         quadMesh = null;
     }
 
-    public void bakeWaterTextures(Scene scene, GLStaticMeshRenderer staticMeshRenderer, GLSkyboxRenderer skyboxRenderer) {
+    public void bakeWaterTextures(Scene scene) {
 
         glEnable(GL_CLIP_DISTANCE0);
 
@@ -103,74 +113,94 @@ public class GLWaterRenderer implements WaterRenderer {
 
         final Vector3fc cameraPosition = camera.position();
 
-        Vector4f clipPlane = new Vector4f();
-
         final float pitch = camera.pitch();
 
         for(WaterMeshInstance instance : waterInstances) {
 
-            WaterMeshView waterView = instance.meshView();
-
             final boolean underWater = camera.position().y() - instance.transform().position().y() < 0.0f;
 
             if(underWater) {
-
-                bakeWaterTexture(scene, enhancedWater, staticMeshRenderer, skyboxRenderer, waterView, clipPlane,
-                        (GLTexture2D) waterView.material().refractionMap(), true);
-
-                continue;
+                bakeWaterTexturesUnderWater(scene, enhancedWater, instance);
+            } else {
+                bakeWaterTexturesNormally(scene, camera, enhancedWater, cameraPosition, pitch, instance);
             }
-
-            final float displacement = 2 * (cameraPosition.y() - instance.transform().position().y());
-
-            camera.position(cameraPosition.x(), cameraPosition.y() - displacement, cameraPosition.z());
-            camera.pitch(-pitch);
-            camera.update();
-
-            clipPlane.set(waterView.clipPlane());
-            clipPlane.w *= -1;
-
-            bakeWaterTexture(scene, enhancedWater, staticMeshRenderer, skyboxRenderer, waterView, clipPlane,
-                    (GLTexture2D) waterView.material().reflectionMap(), true);
-
-            camera.position(cameraPosition.x(), cameraPosition.y() + displacement, cameraPosition.z());
-            camera.pitch(pitch);
-            camera.update();
-
-            clipPlane.set(waterView.clipPlane());
-
-            clipPlane.y *= -1;
-
-            bakeWaterTexture(scene, enhancedWater, staticMeshRenderer, skyboxRenderer, waterView, clipPlane,
-                    (GLTexture2D) waterView.material().refractionMap(), false);
         }
 
         glDisable(GL_CLIP_DISTANCE0);
     }
 
-    private void bakeWaterTexture(Scene scene, SceneEnhancedWater enhancedWater,
-                                  GLStaticMeshRenderer staticMeshRenderer, GLSkyboxRenderer skyboxRenderer,
-                                  WaterMeshView waterView, Vector4fc clipPlane, GLTexture2D texture, boolean renderSkybox) {
+    private void bakeWaterTexturesUnderWater(Scene scene, SceneEnhancedWater enhancedWater, WaterMeshInstance instance) {
 
-        prepareFramebuffer(texture);
+        WaterMeshView waterView = instance.meshView();
+
+        bakeWaterTexture(scene, enhancedWater, instance.meshView(), waterView.material().refractionMap(), true);
+    }
+
+    private void bakeWaterTexturesNormally(Scene scene, Camera camera, SceneEnhancedWater enhancedWater,
+                                           Vector3fc cameraPosition, float pitch, WaterMeshInstance instance) {
+
+        WaterMeshView waterView = instance.meshView();
+
+        final float displacement = 2 * (cameraPosition.y() - instance.transform().position().y());
+
+        camera.position(cameraPosition.x(), cameraPosition.y() - displacement, cameraPosition.z());
+        camera.pitch(-pitch);
+        camera.update();
+
+        clipPlane.set(waterView.clipPlane());
+        clipPlane.w *= -1;
+
+        bakeWaterTexture(scene, enhancedWater, waterView, waterView.material().reflectionMap(), true);
+
+        camera.position(cameraPosition.x(), cameraPosition.y() + displacement, cameraPosition.z());
+        camera.pitch(pitch);
+        camera.update();
+
+        clipPlane.set(waterView.clipPlane());
+
+        clipPlane.y *= -1;
+
+        bakeWaterTexture(scene, enhancedWater, waterView, waterView.material().refractionMap(), false);
+    }
+
+    private void bakeWaterTexture(Scene scene, SceneEnhancedWater enhancedWater, WaterMeshView waterView, Texture2D texture, boolean renderSkybox) {
+
+        prepareFramebuffer((GLTexture2D) texture);
 
         framebuffer.bind();
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         if(enhancedWater.isEnhanced(waterView)) {
-            int drawCount = staticMeshRenderer.performCullingPassCPU(scene, false);
-            staticMeshRenderer.renderShader.bind();
-            staticMeshRenderer.renderShader.uniformVector4f("u_ClipPlane", clipPlane);
-            staticMeshRenderer.render(scene, drawCount);
-            staticMeshRenderer.renderShader.uniformVector4f("u_ClipPlane", 0, 0, 0, 0);
+            renderStaticMeshes(scene);
+            renderAnimMeshes(scene);
         }
 
         if(renderSkybox) {
-            skyboxRenderer.render(scene);
+            renderSkybox(scene);
         }
 
         glFinish();
+    }
+
+    private void renderStaticMeshes(Scene scene) {
+        renderMeshes(scene, (GLIndirectRenderer) APIRenderSystem.get().getStaticMeshRenderer());
+    }
+
+    private void renderAnimMeshes(Scene scene) {
+        renderMeshes(scene, (GLIndirectRenderer) APIRenderSystem.get().getAnimMeshRenderer());
+    }
+
+    private void renderMeshes(Scene scene, GLIndirectRenderer renderer) {
+        renderer.addDynamicShaderState(setClipPlaneUniform);
+        renderer.render(scene);
+    }
+
+    private void renderSkybox(Scene scene) {
+
+        final GLSkyboxRenderer skyboxRenderer = (GLSkyboxRenderer) APIRenderSystem.get().getSkyboxRenderer();
+
+        skyboxRenderer.render(scene);
     }
 
     private void prepareFramebuffer(GLTexture2D colorTexture) {

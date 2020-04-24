@@ -1,5 +1,6 @@
 package naitsirc98.beryl.graphics.window;
 
+import naitsirc98.beryl.graphics.Graphics;
 import naitsirc98.beryl.images.Image;
 import naitsirc98.beryl.images.PixelFormat;
 import naitsirc98.beryl.util.geometry.Rect;
@@ -357,7 +358,7 @@ public final class Window implements LongHandle {
             case FULLSCREEN:
                 return fullscreen();
             case MAXIMIZED:
-                return maximized();
+                return maximize();
             case WINDOWED:
                 return windowed();
         }
@@ -387,7 +388,7 @@ public final class Window implements LongHandle {
      *
      * @return this window
      */
-    public Window maximized() {
+    public Window maximize() {
 
         restore();
 
@@ -512,7 +513,7 @@ public final class Window implements LongHandle {
     }
 
     private Window changeDisplayMode(long monitor, int refreshRate, int x, int y, int width, int height) {
-        restore();
+
         glfwSetWindowMonitor(
                 handle,
                 monitor,
@@ -521,6 +522,9 @@ public final class Window implements LongHandle {
                 width,
                 height,
                 refreshRate);
+
+        Graphics.get().vsync(Graphics.get().vsync());
+
         return this;
     }
 

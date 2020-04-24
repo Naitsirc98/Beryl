@@ -15,10 +15,7 @@ import naitsirc98.beryl.scenes.components.meshes.MeshInstance;
 import naitsirc98.beryl.scenes.components.meshes.MeshInstanceManager;
 import naitsirc98.beryl.scenes.components.meshes.SceneMeshInfo;
 
-import java.util.ArrayDeque;
-import java.util.Deque;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Stream;
 
 import static java.util.Objects.requireNonNull;
@@ -98,6 +95,10 @@ public final class Scene {
 
     public SceneCameraInfo cameraInfo() {
         return cameraInfo;
+    }
+
+    public List<Animator> animators() {
+        return animators.list();
     }
 
     void start() {

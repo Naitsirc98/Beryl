@@ -1,29 +1,23 @@
 package naitsirc98.beryl.graphics.opengl.rendering;
 
-import naitsirc98.beryl.core.BerylFiles;
 import naitsirc98.beryl.graphics.buffers.MappedGraphicsBuffer;
 import naitsirc98.beryl.graphics.opengl.buffers.GLBuffer;
 import naitsirc98.beryl.graphics.opengl.commands.GLDrawElementsCommand;
-import naitsirc98.beryl.graphics.opengl.shaders.GLShader;
 import naitsirc98.beryl.graphics.opengl.shaders.GLShaderProgram;
 import naitsirc98.beryl.graphics.opengl.vertex.GLVertexArray;
 import naitsirc98.beryl.graphics.rendering.Renderer;
 import naitsirc98.beryl.materials.MaterialManager;
-import naitsirc98.beryl.meshes.MeshManager;
-import naitsirc98.beryl.meshes.StaticMeshManager;
 import naitsirc98.beryl.scenes.Scene;
 import naitsirc98.beryl.scenes.components.meshes.MeshInstanceList;
-import org.lwjgl.system.MemoryStack;
 
-import static naitsirc98.beryl.graphics.ShaderStage.COMPUTE_STAGE;
-import static naitsirc98.beryl.util.types.DataType.*;
-import static org.lwjgl.opengl.ARBIndirectParameters.GL_PARAMETER_BUFFER_ARB;
-import static org.lwjgl.opengl.ARBIndirectParameters.glMultiDrawElementsIndirectCountARB;
+import java.util.ArrayDeque;
+import java.util.Queue;
+import java.util.function.Consumer;
+
+import static naitsirc98.beryl.util.types.DataType.INT32_SIZEOF;
+import static naitsirc98.beryl.util.types.DataType.MATRIX4_SIZEOF;
 import static org.lwjgl.opengl.GL11.GL_TRIANGLES;
-import static org.lwjgl.opengl.GL42.GL_COMMAND_BARRIER_BIT;
-import static org.lwjgl.opengl.GL42.glMemoryBarrier;
 import static org.lwjgl.opengl.GL45.*;
-import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
 public abstract class GLIndirectRenderer implements Renderer {
@@ -37,19 +31,18 @@ public abstract class GLIndirectRenderer implements Renderer {
     private static final int VERTEX_BUFFER_BINDING = 0;
     private static final int INSTANCE_BUFFER_BINDING = 1;
 
-    protected GLShaderProgram cullingShader;
     protected GLShaderProgram renderShader;
 
     protected GLVertexArray vertexArray;
     protected GLBuffer instanceBuffer; // model matrix + material + bounding sphere indices
 
     protected GLBuffer transformsBuffer;
-    protected GLBuffer meshIndicesBuffer;
 
-    protected GLBuffer instanceCommandBuffer;
-    protected GLBuffer atomicCounterBuffer;
+    protected GLBuffer commandBuffer;
 
     protected GLFrustumCuller frustumCuller;
+
+    private Queue<Consumer<GLShaderProgram>> dynamicShaderState;
 
     protected GLIndirectRenderer() {
 
@@ -62,21 +55,13 @@ public abstract class GLIndirectRenderer implements Renderer {
 
         initRenderShader();
 
-        cullingShader = new GLShaderProgram()
-                .attach(new GLShader(COMPUTE_STAGE).source(BerylFiles.getPath("shaders/compute/culling.comp")))
-                .link();
-
         transformsBuffer = new GLBuffer("TRANSFORMS_STORAGE_BUFFER");
 
-        meshIndicesBuffer = new GLBuffer("MESH_INDICES_STORAGE_BUFFER");
+        commandBuffer = new GLBuffer("INSTANCE_COMMAND_BUFFER");
 
-        instanceCommandBuffer = new GLBuffer("INSTANCE_COMMAND_BUFFER");
+        frustumCuller = new GLFrustumCuller(commandBuffer, transformsBuffer, instanceBuffer);
 
-        atomicCounterBuffer = new GLBuffer("ATOMIC_COUNTER_BUFFER");
-        atomicCounterBuffer.allocate(UINT32_SIZEOF);
-        atomicCounterBuffer.clear();
-
-        frustumCuller = new GLFrustumCuller(instanceCommandBuffer, transformsBuffer, instanceBuffer);
+        dynamicShaderState = new ArrayDeque<>();
     }
 
     @Override
@@ -84,17 +69,32 @@ public abstract class GLIndirectRenderer implements Renderer {
 
         frustumCuller.terminate();
 
-        cullingShader.release();
         renderShader.release();
 
         vertexArray.release();
         instanceBuffer.release();
 
         transformsBuffer.release();
-        meshIndicesBuffer.release();
 
-        instanceCommandBuffer.release();
+        commandBuffer.release();
     }
+
+    public void prepare(Scene scene) {
+        updateVertexArrayVertexBuffer();
+        prepareInstanceBuffer(scene, getInstances(scene));
+    }
+
+    @Override
+    public void render(Scene scene) {
+        final int drawCount = frustumCuller.performCullingCPU(scene, getInstances(scene), false);
+        renderScene(scene, drawCount);
+    }
+
+    public void addDynamicShaderState(Consumer<GLShaderProgram> state) {
+        dynamicShaderState.add(state);
+    }
+
+    protected abstract void updateVertexArrayVertexBuffer();
 
     protected void setOpenGLState(Scene scene) {
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -103,38 +103,9 @@ public abstract class GLIndirectRenderer implements Renderer {
         glEnable(GL_CULL_FACE);
     }
 
-    protected void performCullingPass(Scene scene, MeshInstanceList<?> instances, boolean alwaysPass) {
+    protected abstract MeshInstanceList<?> getInstances(Scene scene);
 
-        final int numObjects = instances.numMeshViews();
-
-        StaticMeshManager staticMeshManager = MeshManager.get().staticMeshManager();
-
-        GLBuffer meshCommandBuffer = staticMeshManager.commandBuffer();
-        GLBuffer boundingSpheresBuffer = staticMeshManager.boundingSpheresBuffer();
-        GLBuffer frustumBuffer = scene.cameraInfo().frustumBuffer();
-
-        cullingShader.bind();
-
-        meshCommandBuffer.bind(GL_SHADER_STORAGE_BUFFER, 0);
-        instanceCommandBuffer.bind(GL_SHADER_STORAGE_BUFFER, 1);
-        boundingSpheresBuffer.bind(GL_SHADER_STORAGE_BUFFER, 2);
-        transformsBuffer.bind(GL_SHADER_STORAGE_BUFFER, 3);
-        meshIndicesBuffer.bind(GL_SHADER_STORAGE_BUFFER, 4);
-        frustumBuffer.bind(GL_UNIFORM_BUFFER, 5);
-        atomicCounterBuffer.bind(GL_ATOMIC_COUNTER_BUFFER, 6);
-        cullingShader.uniformBool("u_AlwaysPass", alwaysPass);
-
-        glDispatchCompute(numObjects, 1, 1);
-
-        glMemoryBarrier(GL_COMMAND_BARRIER_BIT | GL_SHADER_STORAGE_BUFFER | GL_ATOMIC_COUNTER_BARRIER_BIT);
-    }
-
-    protected int performCullingPassCPU(Scene scene, MeshInstanceList<?> instances, GLVertexArray vertexArray, boolean alwaysPass) {
-
-        prepareInstanceBuffer(scene, instances, vertexArray);
-
-        return frustumCuller.performCullingCPU(scene, instances, alwaysPass);
-    }
+    /*
 
     protected void renderScene(Scene scene, MeshInstanceList<?> instances, GLVertexArray vertexArray, GLShaderProgram shader) {
 
@@ -163,15 +134,33 @@ public abstract class GLIndirectRenderer implements Renderer {
         glMultiDrawElementsIndirectCountARB(GL_TRIANGLES, GL_UNSIGNED_INT, NULL, 0, instances.numMeshViews(), 0);
     }
 
-    protected void renderScene(Scene scene, int drawCount, GLVertexArray vertexArray, GLShaderProgram shader) {
+    */
+
+    protected void renderScene(Scene scene, int drawCount) {
+
+        if(drawCount <= 0) {
+            dynamicShaderState.clear();
+            return;
+        }
+
+        renderShader.bind();
+
+        setOpenGLState(scene);
+
+        bindShaderBuffers(scene);
+
+        setDynamicShaderState();
+
+        vertexArray.bind();
+
+        glMultiDrawElementsIndirect(GL_TRIANGLES, GL_UNSIGNED_INT, NULL, drawCount, 0);
+    }
+
+    protected void bindShaderBuffers(Scene scene) {
 
         final GLBuffer lightsUniformBuffer = scene.environment().buffer();
         final GLBuffer materialsBuffer = MaterialManager.get().buffer();
         final GLBuffer cameraUniformBuffer = scene.cameraInfo().cameraBuffer();
-
-        setOpenGLState(scene);
-
-        shader.bind();
 
         cameraUniformBuffer.bind(GL_UNIFORM_BUFFER, 0);
 
@@ -181,39 +170,37 @@ public abstract class GLIndirectRenderer implements Renderer {
 
         materialsBuffer.bind(GL_SHADER_STORAGE_BUFFER, 3);
 
-        instanceCommandBuffer.bind(GL_DRAW_INDIRECT_BUFFER);
-
-        vertexArray.bind();
-
-        glMultiDrawElementsIndirect(GL_TRIANGLES, GL_UNSIGNED_INT, NULL, drawCount, 0);
+        commandBuffer.bind(GL_DRAW_INDIRECT_BUFFER);
     }
 
-    protected void prepareInstanceBuffer(Scene scene, MeshInstanceList<?> instances, GLVertexArray vertexArray) {
-
-        if(instances == null) {
-            return;
+    protected void setDynamicShaderState() {
+        while(!dynamicShaderState.isEmpty()) {
+            dynamicShaderState.poll().accept(renderShader);
         }
+    }
 
-        final int numObjects = instances.numMeshViews();
+    protected abstract void initVertexArray();
+
+    protected abstract void initRenderShader();
+
+    protected boolean prepareInstanceBuffer(Scene scene, MeshInstanceList<?> instances) {
+
+        final int numObjects = instances == null ? 0 : instances.numMeshViews();
 
         if(numObjects == 0) {
-            return;
+            return false;
         }
 
-        final int instanceCommandsMinSize = numObjects * GLDrawElementsCommand.SIZEOF;
+        checkCommandBuffer(numObjects);
 
-        if (instanceCommandBuffer.size() < instanceCommandsMinSize) {
-            reallocateBuffer(instanceCommandBuffer, instanceCommandsMinSize);
-        }
+        checkPerInstanceDataBuffer(numObjects);
 
-        clearCommandBuffer();
+        checkTransformsBuffer(numObjects);
 
-        final int instancesMinSize = numObjects * INSTANCE_BUFFER_MIN_SIZE;
+        return true;
+    }
 
-        if (instanceBuffer.size() < instancesMinSize) {
-            reallocateBuffer(instanceBuffer, instancesMinSize);
-            vertexArray.setVertexBuffer(INSTANCE_BUFFER_BINDING, instanceBuffer, INSTANCE_BUFFER_MIN_SIZE);
-        }
+    private void checkTransformsBuffer(int numObjects) {
 
         final int transformsMinSize = numObjects * TRANSFORMS_BUFFER_MIN_SIZE;
 
@@ -222,26 +209,33 @@ public abstract class GLIndirectRenderer implements Renderer {
         }
     }
 
-    public void clearCommandBuffer() {
-        instanceCommandBuffer.clear();
-    }
+    private void checkPerInstanceDataBuffer(int numObjects) {
 
-    protected void setInstanceMeshIndex(int objectIndex, int meshIndex) {
-        try (MemoryStack stack = stackPush()) {
-            meshIndicesBuffer.copy(objectIndex * UINT32_SIZEOF, stack.ints(meshIndex));
+        final int instancesMinSize = numObjects * INSTANCE_BUFFER_MIN_SIZE;
+
+        if (instanceBuffer.size() < instancesMinSize) {
+            reallocateBuffer(instanceBuffer, instancesMinSize);
+            vertexArray.setVertexBuffer(INSTANCE_BUFFER_BINDING, instanceBuffer, INSTANCE_BUFFER_MIN_SIZE);
         }
     }
 
+    private void checkCommandBuffer(int numObjects) {
 
-    protected void reallocateBuffer(MappedGraphicsBuffer buffer, long size) {
+        final int commandBufferMinSize = numObjects * GLDrawElementsCommand.SIZEOF;
+
+        if(commandBuffer.size() < commandBufferMinSize) {
+            reallocateBuffer(commandBuffer, commandBufferMinSize);
+        }
+    }
+
+    private void reallocateBuffer(MappedGraphicsBuffer buffer, long size) {
+
         buffer.unmapMemory();
+
         buffer.reallocate(size);
+
         if(!buffer.mapped()) {
             buffer.mapMemory();
         }
     }
-
-    protected abstract void initVertexArray();
-
-    protected abstract void initRenderShader();
 }

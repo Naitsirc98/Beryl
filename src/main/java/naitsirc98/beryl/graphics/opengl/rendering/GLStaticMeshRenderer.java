@@ -31,36 +31,8 @@ public final class GLStaticMeshRenderer extends GLIndirectRenderer implements St
         super.terminate();
     }
 
-    GLShaderProgram renderShader() {
-        return renderShader;
-    }
-
-    public void prepare(Scene scene) {
-        updateVertexArrayVertexBuffer();
-    }
-
     @Override
-    public void render(Scene scene) {
-        renderScene(scene, getStaticInstances(scene), vertexArray, renderShader);
-    }
-
-    public void render(Scene scene, GLShaderProgram shader) {
-        renderScene(scene, getStaticInstances(scene), vertexArray, shader);
-    }
-
-    public void render(Scene scene, int drawCount) {
-        renderScene(scene, drawCount, vertexArray, renderShader);
-    }
-
-    public void render(Scene scene, GLShaderProgram shader, int drawCount) {
-        renderScene(scene, drawCount, vertexArray, shader);
-    }
-
-    public int performCullingPassCPU(Scene scene, boolean alwaysPass) {
-        return performCullingPassCPU(scene, getStaticInstances(scene), vertexArray, alwaysPass);
-    }
-
-    private void updateVertexArrayVertexBuffer() {
+    protected void updateVertexArrayVertexBuffer() {
 
         StaticMeshManager staticMeshManager = MeshManager.get().staticMeshManager();
 
@@ -71,7 +43,8 @@ public final class GLStaticMeshRenderer extends GLIndirectRenderer implements St
         vertexArray.setIndexBuffer(indexBuffer);
     }
 
-    public MeshInstanceList<StaticMeshInstance> getStaticInstances(Scene scene) {
+    @Override
+    public MeshInstanceList<StaticMeshInstance> getInstances(Scene scene) {
         return scene.meshInfo().meshViewsOfType(StaticMeshView.class);
     }
 

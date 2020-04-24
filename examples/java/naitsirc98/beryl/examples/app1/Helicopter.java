@@ -27,6 +27,7 @@ import static naitsirc98.beryl.util.Maths.radians;
 public class Helicopter {
 
     public static final String HELICOPTER_NAME = "Helicopter";
+
     private static StaticModel helicopterModel;
 
     public static StaticModel getHelicopterModel() {

@@ -2,12 +2,10 @@ package naitsirc98.beryl.graphics.opengl.rendering;
 
 import naitsirc98.beryl.core.BerylFiles;
 import naitsirc98.beryl.graphics.opengl.buffers.GLBuffer;
-import naitsirc98.beryl.graphics.opengl.commands.GLDrawElementsCommand;
 import naitsirc98.beryl.graphics.opengl.shaders.GLShader;
 import naitsirc98.beryl.graphics.opengl.shaders.GLShaderProgram;
 import naitsirc98.beryl.graphics.opengl.vertex.GLVertexArray;
 import naitsirc98.beryl.graphics.rendering.renderers.AnimMeshRenderer;
-import naitsirc98.beryl.materials.MaterialManager;
 import naitsirc98.beryl.meshes.AnimMesh;
 import naitsirc98.beryl.meshes.AnimMeshManager;
 import naitsirc98.beryl.meshes.Bone;
@@ -16,10 +14,8 @@ import naitsirc98.beryl.meshes.vertices.VertexLayout;
 import naitsirc98.beryl.meshes.views.AnimMeshView;
 import naitsirc98.beryl.scenes.Scene;
 import naitsirc98.beryl.scenes.components.animations.Animator;
-import naitsirc98.beryl.scenes.components.meshes.AnimMeshInstance;
 import naitsirc98.beryl.scenes.components.meshes.MeshInstanceList;
 import org.joml.Matrix4f;
-import org.joml.Matrix4fc;
 import org.lwjgl.system.MemoryStack;
 
 import java.nio.ByteBuffer;
@@ -28,15 +24,8 @@ import java.util.Map;
 import static naitsirc98.beryl.graphics.ShaderStage.FRAGMENT_STAGE;
 import static naitsirc98.beryl.graphics.ShaderStage.VERTEX_STAGE;
 import static naitsirc98.beryl.meshes.vertices.VertexAttribute.*;
-import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL11C.GL_COLOR_BUFFER_BIT;
-import static org.lwjgl.opengl.GL11C.GL_DEPTH_BUFFER_BIT;
-import static org.lwjgl.opengl.GL31.GL_UNIFORM_BUFFER;
-import static org.lwjgl.opengl.GL40.GL_DRAW_INDIRECT_BUFFER;
 import static org.lwjgl.opengl.GL43.GL_SHADER_STORAGE_BUFFER;
-import static org.lwjgl.opengl.GL43.glMultiDrawElementsIndirect;
 import static org.lwjgl.system.MemoryStack.stackPush;
-import static org.lwjgl.system.MemoryUtil.NULL;
 
 public final class GLAnimMeshRenderer extends GLIndirectRenderer implements AnimMeshRenderer {
 
@@ -54,36 +43,13 @@ public final class GLAnimMeshRenderer extends GLIndirectRenderer implements Anim
         super.terminate();
     }
 
-    GLShaderProgram renderShader() {
-        return renderShader;
-    }
-
-    public void prepare(Scene scene) {
-        updateVertexArrayVertexBuffer();
+    @Override
+    protected MeshInstanceList<?> getInstances(Scene scene) {
+        return scene.meshInfo().meshViewsOfType(AnimMeshView.class);
     }
 
     @Override
-    public void render(Scene scene) {
-        renderScene(scene, getAnimMeshInstances(scene), vertexArray, renderShader);
-    }
-
-    public void render(Scene scene, GLShaderProgram shader) {
-        renderScene(scene, getAnimMeshInstances(scene), vertexArray, shader);
-    }
-
-    public void render(Scene scene, int drawCount) {
-        renderScene(scene, drawCount, vertexArray, renderShader);
-    }
-
-    public void render(Scene scene, GLShaderProgram shader, int drawCount) {
-        renderScene(scene, drawCount, vertexArray, shader);
-    }
-
-    public int performCullingPassCPU(Scene scene, boolean alwaysPass) {
-        return performCullingPassCPU(scene, getAnimMeshInstances(scene), vertexArray, alwaysPass);
-    }
-
-    private void updateVertexArrayVertexBuffer() {
+    protected void updateVertexArrayVertexBuffer() {
 
         AnimMeshManager animMeshManager = MeshManager.get().animMeshManager();
 
@@ -92,10 +58,6 @@ public final class GLAnimMeshRenderer extends GLIndirectRenderer implements Anim
 
         vertexArray.setVertexBuffer(0, vertexBuffer, AnimMesh.VERTEX_DATA_SIZE);
         vertexArray.setIndexBuffer(indexBuffer);
-    }
-
-    public MeshInstanceList<AnimMeshInstance> getAnimMeshInstances(Scene scene) {
-        return scene.meshInfo().meshViewsOfType(AnimMeshView.class);
     }
 
     @Override
@@ -123,49 +85,32 @@ public final class GLAnimMeshRenderer extends GLIndirectRenderer implements Anim
                 .link();
     }
 
-    protected void renderScene(Scene scene, int drawCount, GLVertexArray vertexArray, GLShaderProgram shader) {
-
-        final GLBuffer lightsUniformBuffer = scene.environment().buffer();
-        final GLBuffer materialsBuffer = MaterialManager.get().buffer();
-        final GLBuffer cameraUniformBuffer = scene.cameraInfo().cameraBuffer();
-
-        setOpenGLState(scene);
-
-        shader.bind();
-
-        cameraUniformBuffer.bind(GL_UNIFORM_BUFFER, 0);
-
-        lightsUniformBuffer.bind(GL_UNIFORM_BUFFER, 1);
-
-        transformsBuffer.bind(GL_SHADER_STORAGE_BUFFER, 2);
-
-        materialsBuffer.bind(GL_SHADER_STORAGE_BUFFER, 3);
-
+    @Override
+    protected void bindShaderBuffers(Scene scene) {
+        super.bindShaderBuffers(scene);
         bonesBuffer.bind(GL_SHADER_STORAGE_BUFFER, 4);
-
-        instanceCommandBuffer.bind(GL_DRAW_INDIRECT_BUFFER);
-
-        vertexArray.bind();
-
-        glMultiDrawElementsIndirect(GL_TRIANGLES, GL_UNSIGNED_INT, NULL, drawCount, 0);
     }
 
-    protected void prepareInstanceBuffer(Scene scene, MeshInstanceList<?> instances, GLVertexArray vertexArray) {
+    @Override
+    protected boolean prepareInstanceBuffer(Scene scene, MeshInstanceList<?> instances) {
 
-        super.prepareInstanceBuffer(scene, instances, vertexArray);
-
-        if(instances == null || instances.size() == 0) {
-            return;
+        if(!super.prepareInstanceBuffer(scene, instances)) {
+            return false;
         }
 
-        final int bonesBufferMinSize = MeshManager.get().animMeshManager().bonesCount() * Bone.SIZEOF;
+        setBonesData(scene);
 
-        if(bonesBuffer.size() < bonesBufferMinSize) {
-            bonesBuffer.reallocate(bonesBufferMinSize);
-            bonesBuffer.mapMemory();
-        }
+        return true;
+    }
 
-        Animator animator = (Animator) instances.get(0).get(Animator.class);
+    private void setBonesData(Scene scene) {
+
+        checkBonesBuffer();
+
+        scene.animators().parallelStream().unordered().forEach(this::setAnimationData);
+    }
+
+    private void setAnimationData(Animator animator) {
 
         Map<Integer, Matrix4f> boneTransformations = animator.currentBoneTransformations();
 
@@ -179,6 +124,16 @@ public final class GLAnimMeshRenderer extends GLIndirectRenderer implements Anim
 
                 bonesBuffer.copy(boneID * Bone.SIZEOF, buffer);
             });
+        }
+    }
+
+    private void checkBonesBuffer() {
+
+        final int bonesBufferMinSize = MeshManager.get().animMeshManager().bonesCount() * Bone.SIZEOF;
+
+        if(bonesBuffer.size() < bonesBufferMinSize) {
+            bonesBuffer.reallocate(bonesBufferMinSize);
+            bonesBuffer.mapMemory();
         }
     }
 }

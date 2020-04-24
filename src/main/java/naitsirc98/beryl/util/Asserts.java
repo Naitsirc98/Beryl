@@ -70,7 +70,7 @@ public final class Asserts {
     public static <T> T assertThat(T object, boolean condition) {
         if(ASSERTS_ENABLED) {
             if(!condition) {
-                throw new AssertionException();
+                throw new AssertionException("The given object " + object + " does not pass the condition");
             }
             return object;
         }

@@ -5,15 +5,23 @@ import naitsirc98.beryl.graphics.rendering.renderers.SkyboxRenderer;
 import naitsirc98.beryl.graphics.rendering.renderers.StaticMeshRenderer;
 import naitsirc98.beryl.graphics.rendering.renderers.WaterRenderer;
 import naitsirc98.beryl.scenes.Scene;
+import naitsirc98.beryl.util.types.Singleton;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 public abstract class APIRenderSystem {
 
+    @Singleton
+    private static APIRenderSystem instance;
+
+    public static APIRenderSystem get() {
+        return instance;
+    }
+
     private final Map<Class<? extends Renderer>, Renderer> renderers;
 
-    public APIRenderSystem() {
+    protected APIRenderSystem() {
         this.renderers = new LinkedHashMap<>();
     }
 
@@ -30,10 +38,6 @@ public abstract class APIRenderSystem {
         renderers.values().forEach(Renderer::terminate);
     }
 
-    public final <T extends Renderer> T renderer(Class<T> rendererClass) {
-        return rendererClass.cast(renderers.get(rendererClass));
-    }
-
     public abstract void begin();
 
     public abstract void prepare(Scene scene);
@@ -43,9 +47,9 @@ public abstract class APIRenderSystem {
     public abstract void end();
 
     // Renderers
-    protected abstract StaticMeshRenderer getStaticMeshRenderer();
-    protected abstract AnimMeshRenderer getAnimMeshRenderer();
-    protected abstract SkyboxRenderer getSkyboxRenderer();
-    protected abstract WaterRenderer getWaterRenderer();
+    public abstract StaticMeshRenderer getStaticMeshRenderer();
+    public abstract AnimMeshRenderer getAnimMeshRenderer();
+    public abstract SkyboxRenderer getSkyboxRenderer();
+    public abstract WaterRenderer getWaterRenderer();
     // TODO...
 }
