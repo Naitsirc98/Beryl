@@ -77,7 +77,7 @@ public class ForestGame extends BerylApplication {
 
         Tree.createRandomForest(scene, Terrain.getTerrainMesh(), (int) TERRAIN_SIZE, -4.0f, 800);
 
-        // Grass.placeGrassAtRandomPositions(scene, Terrain.getTerrainMesh(), (int) TERRAIN_SIZE, 8.0f, 100);
+        Grass.placeGrassAtRandomPositions(scene, Terrain.getTerrainMesh(), (int) TERRAIN_SIZE, 8.0f, 100);
 
         Lamp.create(scene, 473.74f, 0.067f, 376.301f, 4.0f);
 

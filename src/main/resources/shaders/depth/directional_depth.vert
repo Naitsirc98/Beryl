@@ -1,16 +1,6 @@
-@beryl
-
-#ifdef OPENGL
+#version 450 core
 
 uniform mat4 u_DepthMVP;
-
-#else // VULKAN
-
-layout(push_constant) uniform PushConstant {
-    mat4 u_DepthMVP;
-};
-
-#endif
 
 layout(location = 0) in vec3 in_Position;
 layout(location = 1) in vec3 in_Normal;
