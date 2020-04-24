@@ -43,8 +43,8 @@ public class ForestGame extends BerylApplication {
         BerylConfiguration.INTERNAL_DEBUG.set(true);
         BerylConfiguration.SHOW_DEBUG_INFO.set(true);
         BerylConfiguration.GRAPHICS_API.set(GraphicsAPI.OPENGL);
-        BerylConfiguration.WINDOW_DISPLAY_MODE.set(DisplayMode.FULLSCREEN);
-        BerylConfiguration.VSYNC.set(true);
+        BerylConfiguration.WINDOW_DISPLAY_MODE.set(DisplayMode.WINDOWED);
+        BerylConfiguration.VSYNC.set(false);
     }
 
     private ForestGame() {

@@ -171,8 +171,8 @@ public class Helicopter {
 
                 float distance = helicopterPosition.distance(treePosition);
 
-                tree.setBouncingSpeed(150.0f / distance);
-                tree.setBouncingLimit(distance / 120);
+                tree.setBouncingSpeed(200.0f / distance);
+                tree.setBouncingLimit(distance / 160);
 
             });
 

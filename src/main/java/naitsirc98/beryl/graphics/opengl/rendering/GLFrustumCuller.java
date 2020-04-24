@@ -28,10 +28,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static java.lang.Math.min;
-import static java.util.stream.IntStream.range;
 import static naitsirc98.beryl.graphics.ShaderStage.COMPUTE_STAGE;
-import static naitsirc98.beryl.util.Asserts.assertThat;
-import static naitsirc98.beryl.util.Asserts.assertTrue;
 import static naitsirc98.beryl.util.types.DataType.*;
 import static org.lwjgl.opengl.GL31.GL_UNIFORM_BUFFER;
 import static org.lwjgl.opengl.GL42.*;
@@ -111,7 +108,7 @@ public class GLFrustumCuller {
 
         glDispatchCompute(totalObjects, 1, 1);
 
-        glMemoryBarrier(GL_COMMAND_BARRIER_BIT | GL_SHADER_STORAGE_BUFFER | GL_ATOMIC_COUNTER_BARRIER_BIT);
+        glMemoryBarrier(GL_ALL_BARRIER_BITS);
     }
 
     public GLBuffer atomicCounter() {
@@ -123,50 +120,59 @@ public class GLFrustumCuller {
 
         try(MemoryStack stack = stackPush()) {
 
-            Vector4f center = new Vector4f();
+            Vector4f sphereCenter = new Vector4f();
 
             GLDrawElementsCommand command = GLDrawElementsCommand.callocStack(stack);
 
-            for(int i = batchBegin;i < batchEnd;i++) {
+            for(int index = batchBegin;index < batchEnd;index++) {
 
-                MeshInstance<?> instance = instances.get(i);
+                MeshInstance<?> instance = instances.get(index);
 
                 final Vector3fc scale = instance.transform().scale();
                 final float maxScale = scale.get(scale.maxComponent());
                 final Matrix4fc modelMatrix = instance.modelMatrix();
 
-                setInstanceTransform(i, modelMatrix, instance.transform().normalMatrix());
+                setInstanceTransform(index, modelMatrix, instance.transform().normalMatrix());
 
-                for (MeshView<?> meshView : instance) {
-
-                    final Mesh mesh = meshView.mesh();
-                    final ISphere sphere = mesh.boundingSphere();
-
-                    center.set(sphere.center(), 1.0f).mul(modelMatrix);
-
-                    final float radius = sphere.radius() * maxScale;
-
-                    if(alwaysPass || frustum.testSphere(center.x, center.y, center.z, radius)) {
-
-                        final int instanceID = baseInstance.getAndIncrement();
-
-                        final int materialIndex = meshView.material().bufferIndex();
-
-                        setInstanceData(instanceID, i, materialIndex);
-
-                        command.count(mesh.indexCount())
-                                .primCount(1)
-                                .firstIndex(mesh.firstIndex())
-                                .baseVertex(mesh.baseVertex())
-                                .baseInstance(instanceID);
-
-                        commandBuffer.copy(instanceID * GLDrawElementsCommand.SIZEOF, command.buffer());
-                    }
-                }
+                performFrustumCullingCPU(instance, command, frustum, sphereCenter, modelMatrix, index, maxScale, alwaysPass);
             }
         }
 
         countDownLatch.countDown();
+    }
+
+    private void performFrustumCullingCPU(MeshInstance<?> instance, GLDrawElementsCommand command, FrustumIntersection frustum,
+                                          Vector4f sphereCenter, Matrix4fc modelMatrix, int matricesIndex,
+                                          float maxScale, boolean alwaysPass) {
+
+        for(MeshView<?> meshView : instance) {
+
+            final Mesh mesh = meshView.mesh();
+            final ISphere sphere = mesh.boundingSphere();
+
+            if(!alwaysPass) {
+                sphereCenter.set(sphere.center(), 1.0f).mul(modelMatrix);
+            }
+
+            final float radius = sphere.radius() * maxScale;
+
+            if(alwaysPass || frustum.testSphere(sphereCenter.x, sphereCenter.y, sphereCenter.z, radius)) {
+
+                final int baseInstance = this.baseInstance.getAndIncrement();
+
+                final int materialIndex = meshView.material().bufferIndex();
+
+                setInstanceData(baseInstance, matricesIndex, materialIndex);
+
+                command.count(mesh.indexCount())
+                        .primCount(1)
+                        .firstIndex(mesh.firstIndex())
+                        .baseVertex(mesh.baseVertex())
+                        .baseInstance(baseInstance);
+
+                commandBuffer.copy(baseInstance * GLDrawElementsCommand.SIZEOF, command.buffer());
+            }
+        }
     }
 
     private void setInstanceTransform(int objectIndex, Matrix4fc modelMatrix, Matrix4fc normalMatrix) {

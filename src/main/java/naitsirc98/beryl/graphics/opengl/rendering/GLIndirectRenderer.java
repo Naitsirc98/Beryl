@@ -16,6 +16,8 @@ import java.util.function.Consumer;
 
 import static naitsirc98.beryl.util.types.DataType.INT32_SIZEOF;
 import static naitsirc98.beryl.util.types.DataType.MATRIX4_SIZEOF;
+import static org.lwjgl.opengl.ARBIndirectParameters.GL_PARAMETER_BUFFER_ARB;
+import static org.lwjgl.opengl.ARBIndirectParameters.glMultiDrawElementsIndirectCountARB;
 import static org.lwjgl.opengl.GL11.GL_TRIANGLES;
 import static org.lwjgl.opengl.GL45.*;
 import static org.lwjgl.system.MemoryUtil.NULL;
@@ -105,37 +107,6 @@ public abstract class GLIndirectRenderer implements Renderer {
 
     protected abstract MeshInstanceList<?> getInstances(Scene scene);
 
-    /*
-
-    protected void renderScene(Scene scene, MeshInstanceList<?> instances, GLVertexArray vertexArray, GLShaderProgram shader) {
-
-        final GLBuffer lightsUniformBuffer = scene.environment().buffer();
-        final GLBuffer materialsBuffer = MaterialManager.get().buffer();
-        final GLBuffer cameraUniformBuffer = scene.cameraInfo().cameraBuffer();
-
-        setOpenGLState(scene);
-
-        shader.bind();
-
-        cameraUniformBuffer.bind(GL_UNIFORM_BUFFER, 0);
-
-        lightsUniformBuffer.bind(GL_UNIFORM_BUFFER, 1);
-
-        transformsBuffer.bind(GL_SHADER_STORAGE_BUFFER, 2);
-
-        materialsBuffer.bind(GL_SHADER_STORAGE_BUFFER, 3);
-
-        instanceCommandBuffer.bind(GL_DRAW_INDIRECT_BUFFER);
-
-        atomicCounterBuffer.bind(GL_PARAMETER_BUFFER_ARB);
-
-        vertexArray.bind();
-
-        glMultiDrawElementsIndirectCountARB(GL_TRIANGLES, GL_UNSIGNED_INT, NULL, 0, instances.numMeshViews(), 0);
-    }
-
-    */
-
     protected void renderScene(Scene scene, int drawCount) {
 
         if(drawCount <= 0) {
@@ -154,6 +125,23 @@ public abstract class GLIndirectRenderer implements Renderer {
         vertexArray.bind();
 
         glMultiDrawElementsIndirect(GL_TRIANGLES, GL_UNSIGNED_INT, NULL, drawCount, 0);
+    }
+
+    protected void renderSceneWithGPUGeneratedCommands(Scene scene, int maxDrawCount) {
+
+        renderShader.bind();
+
+        setOpenGLState(scene);
+
+        bindShaderBuffers(scene);
+
+        setDynamicShaderState();
+
+        frustumCuller.atomicCounter().bind(GL_PARAMETER_BUFFER_ARB);
+
+        vertexArray.bind();
+
+        glMultiDrawElementsIndirectCountARB(GL_TRIANGLES, GL_UNSIGNED_INT, NULL, 0, maxDrawCount, 0);
     }
 
     protected void bindShaderBuffers(Scene scene) {
