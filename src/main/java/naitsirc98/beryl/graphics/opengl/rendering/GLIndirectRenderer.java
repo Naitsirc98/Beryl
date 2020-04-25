@@ -3,12 +3,16 @@ package naitsirc98.beryl.graphics.opengl.rendering;
 import naitsirc98.beryl.graphics.buffers.MappedGraphicsBuffer;
 import naitsirc98.beryl.graphics.opengl.buffers.GLBuffer;
 import naitsirc98.beryl.graphics.opengl.commands.GLDrawElementsCommand;
+import naitsirc98.beryl.graphics.opengl.rendering.shadows.GLDirectionalShadowRenderer;
+import naitsirc98.beryl.graphics.opengl.rendering.shadows.GLShadowsInfo;
 import naitsirc98.beryl.graphics.opengl.shaders.GLShaderProgram;
+import naitsirc98.beryl.graphics.opengl.textures.GLTexture2D;
 import naitsirc98.beryl.graphics.opengl.vertex.GLVertexArray;
 import naitsirc98.beryl.graphics.rendering.Renderer;
 import naitsirc98.beryl.materials.MaterialManager;
 import naitsirc98.beryl.scenes.Scene;
 import naitsirc98.beryl.scenes.components.meshes.MeshInstanceList;
+import org.joml.FrustumIntersection;
 
 import java.util.ArrayDeque;
 import java.util.Queue;
@@ -33,21 +37,24 @@ public abstract class GLIndirectRenderer implements Renderer {
     private static final int VERTEX_BUFFER_BINDING = 0;
     private static final int INSTANCE_BUFFER_BINDING = 1;
 
-    protected GLShaderProgram renderShader;
+    protected GLShaderProgram shader;
 
     protected GLVertexArray vertexArray;
+
     protected GLBuffer instanceBuffer; // model matrix + material + bounding sphere indices
-
     protected GLBuffer transformsBuffer;
-
     protected GLBuffer commandBuffer;
 
     protected GLFrustumCuller frustumCuller;
 
-    private Queue<Consumer<GLShaderProgram>> dynamicShaderState;
+    private Queue<Consumer<GLShaderProgram>> dynamicState;
 
-    protected GLIndirectRenderer() {
+    private final GLShadowsInfo shadowsInfo;
 
+    private int visibleObjects;
+
+    protected GLIndirectRenderer(GLShadowsInfo shadowsInfo) {
+        this.shadowsInfo = shadowsInfo;
     }
 
     @Override
@@ -63,7 +70,7 @@ public abstract class GLIndirectRenderer implements Renderer {
 
         frustumCuller = new GLFrustumCuller(commandBuffer, transformsBuffer, instanceBuffer);
 
-        dynamicShaderState = new ArrayDeque<>();
+        dynamicState = new ArrayDeque<>();
     }
 
     @Override
@@ -71,7 +78,7 @@ public abstract class GLIndirectRenderer implements Renderer {
 
         frustumCuller.terminate();
 
-        renderShader.release();
+        shader.release();
 
         vertexArray.release();
         instanceBuffer.release();
@@ -81,19 +88,27 @@ public abstract class GLIndirectRenderer implements Renderer {
         commandBuffer.release();
     }
 
+    public GLFrustumCuller frustumCuller() {
+        return frustumCuller;
+    }
+
     public void prepare(Scene scene) {
         updateVertexArrayVertexBuffer();
         prepareInstanceBuffer(scene, getInstances(scene));
     }
 
+    public void preComputeFrustumCulling(Scene scene) {
+        visibleObjects = performFrustumCullingCPU(scene);
+    }
+
     @Override
     public void render(Scene scene) {
-        final int drawCount = frustumCuller.performCullingCPU(scene, getInstances(scene), false);
+        final int drawCount = performFrustumCullingCPU(scene);
         renderScene(scene, drawCount);
     }
 
-    public void addDynamicShaderState(Consumer<GLShaderProgram> state) {
-        dynamicShaderState.add(state);
+    public void addDynamicState(Consumer<GLShaderProgram> state) {
+        dynamicState.add(state);
     }
 
     protected abstract void updateVertexArrayVertexBuffer();
@@ -102,25 +117,35 @@ public abstract class GLIndirectRenderer implements Renderer {
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         glEnable(GL_DEPTH_TEST);
         glDepthMask(true);
-        glEnable(GL_CULL_FACE);
+        // glEnable(GL_CULL_FACE);
     }
 
-    protected abstract MeshInstanceList<?> getInstances(Scene scene);
+    public abstract MeshInstanceList<?> getInstances(Scene scene);
 
-    protected void renderScene(Scene scene, int drawCount) {
+    public void renderPreComputedVisibleObjects(Scene scene) {
+        renderScene(scene, visibleObjects, shader);
+    }
+
+    public void renderScene(Scene scene, int drawCount) {
+        renderScene(scene, drawCount, shader);
+    }
+
+    public void renderScene(Scene scene, int drawCount, GLShaderProgram shader) {
 
         if(drawCount <= 0) {
-            dynamicShaderState.clear();
+            dynamicState.clear();
             return;
         }
 
-        renderShader.bind();
+        shader.bind();
 
         setOpenGLState(scene);
 
         bindShaderBuffers(scene);
 
-        setDynamicShaderState();
+        bindShadowTextures(shader);
+
+        setDynamicState(shader);
 
         vertexArray.bind();
 
@@ -129,19 +154,29 @@ public abstract class GLIndirectRenderer implements Renderer {
 
     protected void renderSceneWithGPUGeneratedCommands(Scene scene, int maxDrawCount) {
 
-        renderShader.bind();
+        shader.bind();
 
         setOpenGLState(scene);
 
         bindShaderBuffers(scene);
 
-        setDynamicShaderState();
+        setDynamicState(shader);
 
         frustumCuller.atomicCounter().bind(GL_PARAMETER_BUFFER_ARB);
 
         vertexArray.bind();
 
         glMultiDrawElementsIndirectCountARB(GL_TRIANGLES, GL_UNSIGNED_INT, NULL, 0, maxDrawCount, 0);
+    }
+
+    private void bindShadowTextures(GLShaderProgram shader) {
+
+        GLTexture2D[] dirShadowMaps = shadowsInfo.dirShadowMaps();
+
+        for(int i = 0;i < dirShadowMaps.length;i++) {
+            shader.uniformSampler("u_DirShadowMaps["+i+"]", dirShadowMaps[i], i + 5);
+        }
+
     }
 
     protected void bindShaderBuffers(Scene scene) {
@@ -158,12 +193,14 @@ public abstract class GLIndirectRenderer implements Renderer {
 
         materialsBuffer.bind(GL_SHADER_STORAGE_BUFFER, 3);
 
+        shadowsInfo.buffer().bind(GL_UNIFORM_BUFFER, 5);
+
         commandBuffer.bind(GL_DRAW_INDIRECT_BUFFER);
     }
 
-    protected void setDynamicShaderState() {
-        while(!dynamicShaderState.isEmpty()) {
-            dynamicShaderState.poll().accept(renderShader);
+    protected void setDynamicState(GLShaderProgram shader) {
+        while(!dynamicState.isEmpty()) {
+            dynamicState.poll().accept(shader);
         }
     }
 
@@ -186,6 +223,11 @@ public abstract class GLIndirectRenderer implements Renderer {
         checkTransformsBuffer(numObjects);
 
         return true;
+    }
+
+    private int performFrustumCullingCPU(Scene scene) {
+        final FrustumIntersection frustum = scene.camera().frustum();
+        return frustumCuller.performCullingCPU(frustum, getInstances(scene));
     }
 
     private void checkTransformsBuffer(int numObjects) {

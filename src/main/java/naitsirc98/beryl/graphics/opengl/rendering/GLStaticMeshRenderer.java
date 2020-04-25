@@ -2,6 +2,7 @@ package naitsirc98.beryl.graphics.opengl.rendering;
 
 import naitsirc98.beryl.core.BerylFiles;
 import naitsirc98.beryl.graphics.opengl.buffers.GLBuffer;
+import naitsirc98.beryl.graphics.opengl.rendering.shadows.GLShadowsInfo;
 import naitsirc98.beryl.graphics.opengl.shaders.GLShader;
 import naitsirc98.beryl.graphics.opengl.shaders.GLShaderProgram;
 import naitsirc98.beryl.graphics.opengl.vertex.GLVertexArray;
@@ -21,6 +22,10 @@ import static naitsirc98.beryl.meshes.vertices.VertexAttribute.*;
 
 public final class GLStaticMeshRenderer extends GLIndirectRenderer implements StaticMeshRenderer {
 
+    public GLStaticMeshRenderer(GLShadowsInfo shadowsInfo) {
+        super(shadowsInfo);
+    }
+
     @Override
     public void init() {
         super.init();
@@ -29,6 +34,11 @@ public final class GLStaticMeshRenderer extends GLIndirectRenderer implements St
     @Override
     public void terminate() {
         super.terminate();
+    }
+
+    @Override
+    public MeshInstanceList<StaticMeshInstance> getInstances(Scene scene) {
+        return scene.meshInfo().meshViewsOfType(StaticMeshView.class);
     }
 
     @Override
@@ -41,11 +51,6 @@ public final class GLStaticMeshRenderer extends GLIndirectRenderer implements St
 
         vertexArray.setVertexBuffer(0, vertexBuffer, StaticMesh.VERTEX_DATA_SIZE);
         vertexArray.setIndexBuffer(indexBuffer);
-    }
-
-    @Override
-    public MeshInstanceList<StaticMeshInstance> getInstances(Scene scene) {
-        return scene.meshInfo().meshViewsOfType(StaticMeshView.class);
     }
 
     @Override
@@ -67,7 +72,7 @@ public final class GLStaticMeshRenderer extends GLIndirectRenderer implements St
 
     @Override
     protected void initRenderShader() {
-        renderShader = new GLShaderProgram()
+        shader = new GLShaderProgram()
                 .attach(new GLShader(VERTEX_STAGE).source(BerylFiles.getPath("shaders/phong/phong_indirect.vert")))
                 .attach(new GLShader(FRAGMENT_STAGE).source(BerylFiles.getPath("shaders/phong/phong_indirect.frag")))
                 .link();

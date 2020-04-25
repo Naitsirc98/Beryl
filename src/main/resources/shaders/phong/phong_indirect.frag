@@ -3,14 +3,14 @@
 #extension GL_KHR_vulkan_glsl: require
 #extension GL_ARB_bindless_texture: require
 
+
 @include "structs/lights.glsl"
 @include "structs/material.glsl"
 @include "structs/fog.glsl"
 
+#define MAX_SHADOW_CASCADES_COUNT 3
 #define MAX_POINT_LIGHTS 10
 #define MAX_SPOT_LIGHTS 10
-
-layout(bindless_sampler) uniform;
 
 layout(std140, binding = 0) uniform Camera {
     mat4 projectionViewMatrix;
@@ -28,17 +28,23 @@ layout(std140, binding = 1) uniform Lights {
     int u_SpotLightsCount;
 };
 
-
 layout(std430, binding = 3) readonly buffer Materials {
     PhongMaterial u_Materials[];
 };
 
+layout(std140, binding = 5) uniform ShadowsInfo {
+    mat4 u_DirLightMatrices[MAX_SHADOW_CASCADES_COUNT];
+    float u_CascadeFarPlanes[MAX_SHADOW_CASCADES_COUNT]; 
+};
+
+uniform sampler2D u_DirShadowMaps[MAX_SHADOW_CASCADES_COUNT];
 
 layout(location = 0) in VertexData {
     vec3 position;
     vec3 normal;
     vec2 texCoords;
     flat int materialIndex;
+    vec4 positionDirLightSpace[MAX_SHADOW_CASCADES_COUNT];
 } vertexData;
 
 
@@ -59,6 +65,8 @@ vec4 computeLighting();
 vec4 computeDirectionalLighting(Light light);
 vec4 computePointLighting(Light light);
 vec4 computeSpotLighting(Light light);
+
+float computeDirShadows();
 
 vec4 applyFogEffect(vec4 fragmentColor);
 
@@ -102,6 +110,24 @@ void main() {
         fragmentColor = applyFogEffect(fragmentColor);
     }
 
+/*
+
+    int depthMapIndex = 0;
+
+    // Select the correct cascade shadow map for this fragment
+    for(int i = 0; i < MAX_SHADOW_CASCADES_COUNT; i++) {
+        if(distance(u_Camera.position.xyz, vertexData.position) < u_CascadeFarPlanes[i]) {
+            depthMapIndex = i;
+            break;
+        }
+    }
+
+    vec4 color = vec4(0, 0, 0, 1);
+
+    color[depthMapIndex] = 1;
+
+  */  
+
     out_FragmentColor = fragmentColor;
 }
 
@@ -126,6 +152,58 @@ vec4 applyFogEffect(vec4 fragmentColor) {
     return vec4(finalColor, fragmentColor.a);
 }
 
+float computeDirShadows() {
+
+    int depthMapIndex = 0;
+
+    float fragmentDepth = distance(u_Camera.position.xyz, vertexData.position);
+
+    // Select the correct cascade shadow map for this fragment
+    for(int i = 0; i < MAX_SHADOW_CASCADES_COUNT; i++) {
+        if(fragmentDepth < u_CascadeFarPlanes[i]) {
+            depthMapIndex = i;
+            break;
+        }
+    }
+
+    // Transform from screen coordinates to texture coordinates
+    vec4 positionDirLightSpace = vertexData.positionDirLightSpace[depthMapIndex];
+
+    vec3 projCoords = positionDirLightSpace.xyz;
+
+    projCoords = projCoords * 0.5 + 0.5;
+
+    if(projCoords.z > 1.0) {
+        return 0.0;
+    }
+
+    float bias = 0.005;
+
+    float shadow = 0.0;
+
+    int numberOfSamples = 9;
+
+    sampler2D depthMap = u_DirShadowMaps[depthMapIndex];
+
+    vec2 inc = 1.0 / textureSize(depthMap, 0);
+
+    for(int row = -1; row <= 1; ++row) {
+
+        for(int col = -1; col <= 1; ++col) {
+
+            vec2 shadowSampleCoords = projCoords.xy + vec2(row, col) * inc;
+
+            float textDepth = texture(depthMap, shadowSampleCoords).r;
+
+            shadow += projCoords.z - bias > textDepth ? 1.0 : 0.0;
+        }
+    }
+
+    shadow /= numberOfSamples;
+
+    return shadow;
+}
+
 vec4 computeLighting() {
 
     vec4 ambientColor = u_AmbientColor * materialAmbientColor;
@@ -144,7 +222,9 @@ vec4 computeLighting() {
         diffuseSpecularColor += computeSpotLighting(u_SpotLights[i]);
     }
 
-    vec4 color = ambientColor + diffuseSpecularColor;
+    float shadows = computeDirShadows();
+
+    vec4 color = ambientColor + diffuseSpecularColor * (1.0 - shadows);
 
     return color;
 }

@@ -78,7 +78,13 @@ public final class GLShaderProgram implements GLObject {
         int location = uniformLocations.getOrDefault(name, Integer.MIN_VALUE);
 
         if(location == Integer.MIN_VALUE) {
+
             location = glGetUniformLocation(handle, name);
+
+            if(location == -1) {
+                Log.warning("Uniform " + name + " does not exists or is not used in shader " + this);
+            }
+
             uniformLocations.put(name, location);
         }
 

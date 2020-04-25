@@ -2,6 +2,7 @@ package naitsirc98.beryl.graphics.opengl.rendering;
 
 import naitsirc98.beryl.events.EventManager;
 import naitsirc98.beryl.events.window.WindowResizedEvent;
+import naitsirc98.beryl.graphics.opengl.rendering.shadows.GLShadowRenderer;
 import naitsirc98.beryl.graphics.opengl.swapchain.GLFramebuffer;
 import naitsirc98.beryl.graphics.opengl.swapchain.GLRenderbuffer;
 import naitsirc98.beryl.graphics.opengl.textures.GLTexture2DMSAA;
@@ -29,10 +30,10 @@ public final class GLRenderSystem extends APIRenderSystem {
 
     private GLFramebuffer mainFramebuffer;
 
-    private final GLStaticMeshRenderer staticMeshRenderer;
-    private final GLAnimMeshRenderer animMeshRenderer;
+    private final GLMeshRenderer meshRenderer;
     private final GLSkyboxRenderer skyboxRenderer;
     private final GLWaterRenderer waterRenderer;
+    private final GLShadowRenderer shadowRenderer;
 
     private GLRenderSystem() {
 
@@ -40,10 +41,10 @@ public final class GLRenderSystem extends APIRenderSystem {
 
         createMainFramebuffer();
 
-        staticMeshRenderer = new GLStaticMeshRenderer();
-        animMeshRenderer = new GLAnimMeshRenderer();
         skyboxRenderer = new GLSkyboxRenderer();
         waterRenderer = new GLWaterRenderer();
+        shadowRenderer = new GLShadowRenderer();
+        meshRenderer = new GLMeshRenderer(shadowRenderer);
 
         EventManager.addEventCallback(WindowResizedEvent.class, this::recreateFramebuffer);
     }
@@ -62,31 +63,23 @@ public final class GLRenderSystem extends APIRenderSystem {
     @Override
     public void prepare(Scene scene) {
 
-        if(mainFramebuffer == null) {
-            return;
-        }
+        meshRenderer.prepare(scene);
 
-        staticMeshRenderer.prepare(scene);
-
-        animMeshRenderer.prepare(scene);
+        shadowRenderer.render(scene);
 
         waterRenderer.bakeWaterTextures(scene);
+
+        meshRenderer.preComputeFrustumCulling(scene);
     }
 
     @Override
     public void render(Scene scene) {
 
-        if(mainFramebuffer == null) {
-            return;
-        }
-
         mainFramebuffer.bind();
 
         clear(scene.environment().clearColor());
 
-        animMeshRenderer.render(scene);
-
-        staticMeshRenderer.render(scene);
+        meshRenderer.renderPreComputedVisibleObjects(scene);
 
         waterRenderer.render(scene);
 
@@ -97,10 +90,6 @@ public final class GLRenderSystem extends APIRenderSystem {
 
     @Override
     public void end() {
-
-        if(mainFramebuffer == null) {
-            return;
-        }
 
         glFinish();
 
@@ -116,12 +105,12 @@ public final class GLRenderSystem extends APIRenderSystem {
 
     @Override
     public GLStaticMeshRenderer getStaticMeshRenderer() {
-        return staticMeshRenderer;
+        return meshRenderer.staticMeshRenderer();
     }
 
     @Override
     public GLAnimMeshRenderer getAnimMeshRenderer() {
-        return animMeshRenderer;
+        return meshRenderer.animMeshRenderer();
     }
 
     @Override
@@ -132,6 +121,11 @@ public final class GLRenderSystem extends APIRenderSystem {
     @Override
     public GLWaterRenderer getWaterRenderer() {
         return waterRenderer;
+    }
+
+    @Override
+    public GLShadowRenderer getShadowRenderer() {
+        return shadowRenderer;
     }
 
     private void copyFramebufferToScreen() {

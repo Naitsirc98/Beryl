@@ -26,6 +26,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Predicate;
 
 import static java.lang.Math.min;
 import static naitsirc98.beryl.graphics.ShaderStage.COMPUTE_STAGE;
@@ -66,15 +67,17 @@ public class GLFrustumCuller {
         atomicCounterBuffer = createAtomicCounterBuffer();
     }
 
-    public int performCullingCPU(Scene scene, MeshInstanceList<?> instances, boolean alwaysPass) {
+    public int performCullingCPU(FrustumIntersection frustum, MeshInstanceList<?> instances) {
+        return performCullingCPU(frustum, instances, PreCondition.NO_PRECONDITION);
+    }
+
+    public int performCullingCPU(FrustumIntersection frustum, MeshInstanceList<?> instances, PreCondition preCondition) {
 
         if(instances == null || instances.size() == 0) {
             return 0;
         }
 
         final int batchSize = (int) Math.ceil((float) instances.size() / (float) THREAD_COUNT);
-
-        final FrustumIntersection frustum = scene.camera().frustum();
 
         final CountDownLatch countDownLatch = new CountDownLatch(THREAD_COUNT);
 
@@ -83,7 +86,7 @@ public class GLFrustumCuller {
             final int batchBegin = i * batchSize;
             final int batchEnd = min(batchBegin + batchSize, instances.size());
 
-            performCullingBatch(instances, alwaysPass, frustum, countDownLatch, batchBegin, batchEnd);
+            performCullingBatch(instances, preCondition, frustum, countDownLatch, batchBegin, batchEnd);
         }
 
         waitForFrustumCulling(countDownLatch);
@@ -115,7 +118,7 @@ public class GLFrustumCuller {
         return atomicCounterBuffer;
     }
 
-    private void performCullingBatch(MeshInstanceList<?> instances, boolean alwaysPass, FrustumIntersection frustum,
+    private void performCullingBatch(MeshInstanceList<?> instances, PreCondition preCondition, FrustumIntersection frustum,
                                      CountDownLatch countDownLatch, int batchBegin, int batchEnd) {
 
         try(MemoryStack stack = stackPush()) {
@@ -134,7 +137,7 @@ public class GLFrustumCuller {
 
                 setInstanceTransform(index, modelMatrix, instance.transform().normalMatrix());
 
-                performFrustumCullingCPU(instance, command, frustum, sphereCenter, modelMatrix, index, maxScale, alwaysPass);
+                performFrustumCullingCPU(instance, command, frustum, sphereCenter, modelMatrix, index, maxScale, preCondition);
             }
         }
 
@@ -143,20 +146,28 @@ public class GLFrustumCuller {
 
     private void performFrustumCullingCPU(MeshInstance<?> instance, GLDrawElementsCommand command, FrustumIntersection frustum,
                                           Vector4f sphereCenter, Matrix4fc modelMatrix, int matricesIndex,
-                                          float maxScale, boolean alwaysPass) {
+                                          float maxScale, PreCondition preCondition) {
 
         for(MeshView<?> meshView : instance) {
 
             final Mesh mesh = meshView.mesh();
             final ISphere sphere = mesh.boundingSphere();
 
-            if(!alwaysPass) {
+            final PreConditionState preConditionState = preCondition.getPrecondition(instance, meshView);
+
+            if(preConditionState == PreConditionState.DISCARD) {
+                continue;
+            }
+
+            if(preConditionState == PreConditionState.CONTINUE) {
                 sphereCenter.set(sphere.center(), 1.0f).mul(modelMatrix);
             }
 
             final float radius = sphere.radius() * maxScale;
 
-            if(alwaysPass || frustum.testSphere(sphereCenter.x, sphereCenter.y, sphereCenter.z, radius)) {
+            final boolean passFrustumCulling = frustum.testSphere(sphereCenter.x, sphereCenter.y, sphereCenter.z, radius);
+
+            if(preConditionState == PreConditionState.PASS || passFrustumCulling) {
 
                 final int baseInstance = this.baseInstance.getAndIncrement();
 
@@ -241,6 +252,21 @@ public class GLFrustumCuller {
         } catch (InterruptedException e) {
             Log.error("Timeout error", e);
         }
+    }
+
+    public enum PreConditionState {
+        CONTINUE,
+        DISCARD,
+        PASS
+    }
+
+    public interface PreCondition {
+
+        PreCondition NO_PRECONDITION = ((instance, meshView) -> PreConditionState.CONTINUE);
+        PreCondition NEVER_PASS = ((instance, meshView) -> PreConditionState.DISCARD);
+        PreCondition ALWAYS_PASS = ((instance, meshView) -> PreConditionState.PASS);
+
+        PreConditionState getPrecondition(MeshInstance<?> instance, MeshView<?> meshView);
     }
 
 }

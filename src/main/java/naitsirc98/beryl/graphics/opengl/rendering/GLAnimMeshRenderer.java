@@ -2,6 +2,7 @@ package naitsirc98.beryl.graphics.opengl.rendering;
 
 import naitsirc98.beryl.core.BerylFiles;
 import naitsirc98.beryl.graphics.opengl.buffers.GLBuffer;
+import naitsirc98.beryl.graphics.opengl.rendering.shadows.GLShadowsInfo;
 import naitsirc98.beryl.graphics.opengl.shaders.GLShader;
 import naitsirc98.beryl.graphics.opengl.shaders.GLShaderProgram;
 import naitsirc98.beryl.graphics.opengl.vertex.GLVertexArray;
@@ -31,6 +32,10 @@ public final class GLAnimMeshRenderer extends GLIndirectRenderer implements Anim
 
     private GLBuffer bonesBuffer;
 
+    public GLAnimMeshRenderer(GLShadowsInfo shadowsInfo) {
+        super(shadowsInfo);
+    }
+
     @Override
     public void init() {
         super.init();
@@ -44,7 +49,7 @@ public final class GLAnimMeshRenderer extends GLIndirectRenderer implements Anim
     }
 
     @Override
-    protected MeshInstanceList<?> getInstances(Scene scene) {
+    public MeshInstanceList<?> getInstances(Scene scene) {
         return scene.meshInfo().meshViewsOfType(AnimMeshView.class);
     }
 
@@ -79,7 +84,7 @@ public final class GLAnimMeshRenderer extends GLIndirectRenderer implements Anim
 
     @Override
     protected void initRenderShader() {
-        renderShader = new GLShaderProgram()
+        shader = new GLShaderProgram()
                 .attach(new GLShader(VERTEX_STAGE).source(BerylFiles.getPath("shaders/phong/phong_indirect_anim.vert")))
                 .attach(new GLShader(FRAGMENT_STAGE).source(BerylFiles.getPath("shaders/phong/phong_indirect.frag")))
                 .link();

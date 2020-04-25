@@ -84,7 +84,8 @@ public class Tree {
         capMaterial.colorMap(g.newTexture2D(texturesDir + "Cap_Color.png", PixelFormat.SRGBA).setQuality(Texture.Quality.HIGH));
 
         PhongMaterial leafMaterial = (PhongMaterial) treeModel.meshView("/Game/conifer_macedonian_pine_Leaf_Mat_conifer_macedonian_pine_Leaf_Mat").material();
-        leafMaterial.colorMap(g.newTexture2D(texturesDir + "conifer_macedonian_pine_Color.png", PixelFormat.SRGBA).setQuality(Texture.Quality.VERY_HIGH));
+        leafMaterial.colorMap(g.newTexture2D(texturesDir + "conifer_macedonian_pine_Color.png", PixelFormat.SRGBA).setQuality(Texture.Quality.HIGH));
+        leafMaterial.diffuseMap().sampler().lodBias(-1.4f);
     }
 
     public static class TreeRandomBouncing extends UpdateBehaviour {

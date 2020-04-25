@@ -1,4 +1,4 @@
-package naitsirc98.beryl.graphics.opengl.rendering;
+package naitsirc98.beryl.graphics.rendering.renderers;
 
 import naitsirc98.beryl.graphics.window.Window;
 import naitsirc98.beryl.lights.DirectionalLight;
@@ -7,10 +7,9 @@ import org.joml.*;
 
 import java.lang.Math;
 
-import static java.lang.Math.max;
-import static java.lang.Math.min;
+import static java.lang.Math.*;
 import static java.util.stream.IntStream.range;
-import static naitsirc98.beryl.util.Maths.radians;
+import static naitsirc98.beryl.util.Maths.*;
 
 public class ShadowCascade {
 
@@ -19,15 +18,17 @@ public class ShadowCascade {
     private final Matrix4f lightViewMatrix;
     private final Matrix4f lightProjectionMatrix;
     private final Matrix4f lightProjectionViewMatrix;
+    private final FrustumIntersection lightFrustum;
     private final Vector3f[] frustumCorners;
     private final Vector3f frustumCenter;
-
+    private float farPlane;
 
     public ShadowCascade() {
         lightViewMatrix = new Matrix4f();
         lightProjectionMatrix = new Matrix4f();
         lightProjectionViewMatrix = new Matrix4f();
         frustumCorners = new Vector3f[FRUSTUM_CORNERS_COUNT];
+        lightFrustum = new FrustumIntersection();
         range(0, FRUSTUM_CORNERS_COUNT).forEach(i -> frustumCorners[i] = new Vector3f());
         frustumCenter = new Vector3f();
     }
@@ -44,6 +45,10 @@ public class ShadowCascade {
         return lightProjectionViewMatrix;
     }
 
+    public FrustumIntersection lightFrustum() {
+        return lightFrustum;
+    }
+
     public Vector3fc[] frustumCorners() {
         return frustumCorners;
     }
@@ -52,14 +57,22 @@ public class ShadowCascade {
         return frustumCenter;
     }
 
+    public float farPlane() {
+        return farPlane;
+    }
+
     public void update(Camera camera, float zNear, float zFar, DirectionalLight light) {
 
+        farPlane = zFar;
+
         Matrix4f cameraProjectionViewMatrix = new Matrix4f();
-        cameraProjectionViewMatrix.setPerspective(radians(45), Window.get().aspect(), zNear, zFar);
+        cameraProjectionViewMatrix.setPerspective(camera.fov(), Window.get().aspect(), zNear, zFar);
         cameraProjectionViewMatrix.mul(camera.viewMatrix());
 
-        float maxZ = -Float.MAX_VALUE;
+        float maxZ = Float.MIN_VALUE;
         float minZ = Float.MAX_VALUE;
+
+        frustumCenter.set(0, 0, 0);
 
         for(int i = 0;i < FRUSTUM_CORNERS_COUNT;i++) {
 
@@ -77,22 +90,25 @@ public class ShadowCascade {
         Vector3f lightPosInc = new Vector3f(light.direction()).mul(distance);
         Vector3f lightPosition = new Vector3f().set(frustumCenter).add(lightPosInc);
 
-        updateLightViewMatrix(light.direction(), lightPosition);
+        updateLightViewMatrix(camera, light.direction(), lightPosition);
 
         updateLightProjectionMatrix();
 
         lightProjectionMatrix.mul(lightViewMatrix, lightProjectionViewMatrix);
+
+        lightFrustum.set(lightProjectionViewMatrix);
     }
 
-    private void updateLightViewMatrix(Vector3fc lightDirection, Vector3f lightPosition) {
+    private void updateLightViewMatrix(Camera camera, Vector3fc lightDirection, Vector3f lightPosition) {
 
         // lightViewMatrix.setLookAt(lightDirection, lightPosition, new Vector3f(0, 1, 0));
-        // float lightAngleX = (float) Math.toDegrees(Math.acos(lightDirection.z()));
-        // float lightAngleY = (float) Math.toDegrees(Math.asin(lightDirection.x()));
+        final float lightAngleX = (float) Math.toDegrees(Math.acos(-lightDirection.z()));
+        final float lightAngleY = (float) Math.toDegrees(Math.asin(lightDirection.x()));
 
-        lightViewMatrix.setLookAt(lightPosition.negate(), lightDirection, new Vector3f(0, 1, 0));
+        // lightViewMatrix.setLookAt(lightPosition.negate(new Vector3f()), lightDirection.normalize(new Vector3f()), camera.up());
+        // lightViewMatrix.setLookAt(lightPosition, lightDirection, camera.up());
 
-        // lightViewMatrix.rotationX(-radians(lightAngleX)).rotateY(-radians(lightAngleY)).translate(lightPosition);
+        lightViewMatrix.rotationX(radians(lightAngleX)).rotateY(radians(lightAngleY)).translate(lightPosition);
     }
 
     private void updateLightProjectionMatrix() {
@@ -105,16 +121,18 @@ public class ShadowCascade {
         float minZ =  Float.MAX_VALUE;
         float maxZ = -Float.MIN_VALUE;
 
+        Vector4f lightSpaceCorner = new Vector4f();
+
         for(int i = 0;i < FRUSTUM_CORNERS_COUNT;i++) {
 
-            Vector4f lightSpaceCorner = new Vector4f(frustumCorners[i], 1.0f).mul(lightViewMatrix);
+            lightSpaceCorner.set(frustumCorners[i], 1.0f).mul(lightViewMatrix);
 
-            minX = Math.min(lightSpaceCorner.x, minX);
-            maxX = Math.max(lightSpaceCorner.x, maxX);
-            minY = Math.min(lightSpaceCorner.y, minY);
-            maxY = Math.max(lightSpaceCorner.y, maxY);
-            minZ = Math.min(lightSpaceCorner.z, minZ);
-            maxZ = Math.max(lightSpaceCorner.z, maxZ);
+            minX = min(lightSpaceCorner.x, minX);
+            maxX = max(lightSpaceCorner.x, maxX);
+            minY = min(lightSpaceCorner.y, minY);
+            maxY = max(lightSpaceCorner.y, maxY);
+            minZ = min(lightSpaceCorner.z, minZ);
+            maxZ = max(lightSpaceCorner.z, maxZ);
         }
 
         float distanceZ = maxZ - minZ;

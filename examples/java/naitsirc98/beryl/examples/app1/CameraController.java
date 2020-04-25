@@ -32,8 +32,8 @@ public class CameraController extends LateBehaviour {
         Log.info("Initializing Camera controller...");
         camera = scene().camera();
         lastPosition = new Vector3f();
-        light = new SpotLight();
-        scene().environment().lighting().spotLights().add(light);
+        // light = new SpotLight();
+        // scene().environment().lighting().spotLights().add(light);
     }
 
     @Override
@@ -89,7 +89,8 @@ public class CameraController extends LateBehaviour {
 
         lastPosition.set(camera.position());
 
-        light.position(camera.position()).direction(new Vector3f(camera.forward()).negate()).range(LightRange.MEDIUM);
+        // scene().environment().lighting().directionalLight().direction(camera.forward());
+        // light.position(camera.position()).direction(new Vector3f(camera.forward()).negate()).range(LightRange.MEDIUM);
      }
 
     private void checkGamepadLookAt() {

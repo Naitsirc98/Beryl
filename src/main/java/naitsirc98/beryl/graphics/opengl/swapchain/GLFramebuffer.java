@@ -8,6 +8,7 @@ import java.nio.IntBuffer;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.lwjgl.opengl.GL11C.GL_NONE;
 import static org.lwjgl.opengl.GL45.*;
 
 public class GLFramebuffer implements GLObject {
@@ -94,6 +95,11 @@ public class GLFramebuffer implements GLObject {
     @Override
     public int handle() {
         return handle;
+    }
+
+    public void setAsDepthOnlyFramebuffer() {
+        readBuffer(GL_NONE);
+        drawBuffers(GL_NONE);
     }
 
     @Override

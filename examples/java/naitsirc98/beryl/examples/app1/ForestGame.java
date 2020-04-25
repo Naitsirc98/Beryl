@@ -75,7 +75,7 @@ public class ForestGame extends BerylApplication {
 
         Water.create(scene, TERRAIN_SIZE / 2, -5.0f, TERRAIN_SIZE / 2, TERRAIN_SIZE / 2);
 
-        Tree.createRandomForest(scene, Terrain.getTerrainMesh(), (int) TERRAIN_SIZE, -4.0f, 800);
+        Tree.createRandomForest(scene, Terrain.getTerrainMesh(), (int) TERRAIN_SIZE, -4.0f, 600);
 
         Grass.placeGrassAtRandomPositions(scene, Terrain.getTerrainMesh(), (int) TERRAIN_SIZE, 8.0f, 100);
 
@@ -93,7 +93,7 @@ public class ForestGame extends BerylApplication {
         forestAudioPlayer.source()
                 .minGain(0)
                 .maxGain(1)
-                .gain(0.8f)
+                .gain(0.4f)
                 .rollOff(1)
                 .position(new Vector3f(TERRAIN_SIZE/2, 0, TERRAIN_SIZE/2))
                 .looping(true);
@@ -116,7 +116,7 @@ public class ForestGame extends BerylApplication {
     private void initSceneCamera(Scene scene) {
 
         Camera camera = scene.camera();
-        camera.lookAt(0, 0).position(391, 13.0f, 479).farPlane(10000);
+        camera.lookAt(0, 0).position(391, 13.0f, 479);
 
         Entity cameraController = scene.newEntity();
         cameraController.add(CameraController.class);
@@ -137,7 +137,9 @@ public class ForestGame extends BerylApplication {
 
         SceneLighting lighting = scene.environment().lighting();
 
-        lighting.directionalLight(new DirectionalLight());
+        DirectionalLight sun = new DirectionalLight().direction(0, 0, 1);
+
+        lighting.directionalLight(sun);
         lighting.directionalLight().direction(-0.453f, -0.902f, 0.391f);
 
         lighting.pointLights().add(new PointLight()

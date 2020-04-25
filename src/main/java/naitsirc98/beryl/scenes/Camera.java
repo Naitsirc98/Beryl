@@ -22,7 +22,7 @@ public final class Camera {
 	public static final float DEFAULT_YAW = -90.0f;
 
 	public static final float DEFAULT_NEAR_PLANE = 0.1f;
-	public static final float DEFAULT_FAR_PLANE = 1024.0f;
+	public static final float DEFAULT_FAR_PLANE = 2048.0f;
 
 	public static final float DEFAULT_SENSITIVITY = 0.1f;
 
