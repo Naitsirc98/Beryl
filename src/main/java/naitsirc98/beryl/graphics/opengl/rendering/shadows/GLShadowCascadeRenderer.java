@@ -7,7 +7,6 @@ import naitsirc98.beryl.graphics.opengl.swapchain.GLFramebuffer;
 import naitsirc98.beryl.graphics.opengl.textures.GLTexture2D;
 import naitsirc98.beryl.graphics.rendering.APIRenderSystem;
 import naitsirc98.beryl.graphics.rendering.renderers.ShadowCascade;
-import naitsirc98.beryl.graphics.textures.Sampler;
 import naitsirc98.beryl.lights.DirectionalLight;
 import naitsirc98.beryl.meshes.TerrainMesh;
 import naitsirc98.beryl.meshes.views.MeshView;
@@ -18,14 +17,13 @@ import org.lwjgl.system.MemoryStack;
 
 import java.nio.FloatBuffer;
 
-import static naitsirc98.beryl.graphics.textures.Sampler.WrapMode.CLAMP_TO_EDGE;
 import static org.lwjgl.opengl.GL11C.*;
+import static org.lwjgl.opengl.GL14C.GL_DEPTH_COMPONENT32;
 import static org.lwjgl.opengl.GL30C.GL_DEPTH_ATTACHMENT;
-import static org.lwjgl.opengl.GL30C.GL_DEPTH_COMPONENT32F;
 
 public class GLShadowCascadeRenderer {
 
-    private static final int DEPTH_TEXTURE_SIZE = 1024;
+    public static final int DEPTH_MAP_SIZE = 2048;
 
     private final GLTexture2D depthTexture;
     private final GLFramebuffer framebuffer;
@@ -53,7 +51,7 @@ public class GLShadowCascadeRenderer {
 
         framebuffer.bind();
 
-        glViewport(0, 0, DEPTH_TEXTURE_SIZE, DEPTH_TEXTURE_SIZE);
+        glViewport(0, 0, DEPTH_MAP_SIZE, DEPTH_MAP_SIZE);
         glClearColor(0, 0, 0, 0);
         glClear(GL_DEPTH_BUFFER_BIT);
 
@@ -75,7 +73,7 @@ public class GLShadowCascadeRenderer {
     }
 
     private PreConditionState discardTerrain(MeshInstance<?> instance, MeshView<?> meshView) {
-        return meshView.mesh().getClass() == TerrainMesh.class ? PreConditionState.DISCARD : PreConditionState.CONTINUE;
+        return meshView.mesh().getClass() == TerrainMesh.class ? PreConditionState.CONTINUE : PreConditionState.CONTINUE;
     }
 
     private void setOpenGLStateAndUniforms(GLShaderProgram shader) {
@@ -89,12 +87,7 @@ public class GLShadowCascadeRenderer {
 
         GLTexture2D depthTexture = new GLTexture2D();
 
-        depthTexture.allocate(1, DEPTH_TEXTURE_SIZE, DEPTH_TEXTURE_SIZE, GL_DEPTH_COMPONENT32F);
-
-        depthTexture.sampler()
-                .wrapMode(CLAMP_TO_EDGE)
-                .minFilter(Sampler.MinFilter.NEAREST_MIPMAP_NEAREST)
-                    .magFilter(Sampler.MagFilter.NEAREST);
+        depthTexture.allocate(1, DEPTH_MAP_SIZE, DEPTH_MAP_SIZE, GL_DEPTH_COMPONENT32);
 
         return depthTexture;
     }

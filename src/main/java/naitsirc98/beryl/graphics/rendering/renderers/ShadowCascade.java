@@ -7,7 +7,8 @@ import org.joml.*;
 
 import java.lang.Math;
 
-import static java.lang.Math.*;
+import static java.lang.Math.max;
+import static java.lang.Math.min;
 import static java.util.stream.IntStream.range;
 import static naitsirc98.beryl.util.Maths.*;
 
@@ -20,7 +21,7 @@ public class ShadowCascade {
     private final Matrix4f lightProjectionViewMatrix;
     private final FrustumIntersection lightFrustum;
     private final Vector3f[] frustumCorners;
-    private final Vector3f frustumCenter;
+    private final Vector3f centroid;
     private float farPlane;
 
     public ShadowCascade() {
@@ -30,7 +31,7 @@ public class ShadowCascade {
         frustumCorners = new Vector3f[FRUSTUM_CORNERS_COUNT];
         lightFrustum = new FrustumIntersection();
         range(0, FRUSTUM_CORNERS_COUNT).forEach(i -> frustumCorners[i] = new Vector3f());
-        frustumCenter = new Vector3f();
+        centroid = new Vector3f();
     }
 
     public Matrix4fc lightViewMatrix() {
@@ -54,7 +55,7 @@ public class ShadowCascade {
     }
 
     public Vector3fc frustumCenter() {
-        return frustumCenter;
+        return centroid;
     }
 
     public float farPlane() {
@@ -66,31 +67,39 @@ public class ShadowCascade {
         farPlane = zFar;
 
         Matrix4f cameraProjectionViewMatrix = new Matrix4f();
-        cameraProjectionViewMatrix.setPerspective(camera.fov(), Window.get().aspect(), zNear, zFar);
+        cameraProjectionViewMatrix.setPerspective(camera.fov(), camera.viewport().aspect(), zNear, zFar);
         cameraProjectionViewMatrix.mul(camera.viewMatrix());
 
         float maxZ = Float.MIN_VALUE;
         float minZ = Float.MAX_VALUE;
 
-        frustumCenter.set(0, 0, 0);
+        centroid.set(0, 0, 0);
 
         for(int i = 0;i < FRUSTUM_CORNERS_COUNT;i++) {
 
-            Vector3f corner = frustumCorners[i];
+            Vector3f corner = frustumCorners[i].set(0, 0, 0);
 
             cameraProjectionViewMatrix.frustumCorner(i, corner);
 
-            frustumCenter.add(corner).div(FRUSTUM_CORNERS_COUNT);
+            centroid.add(corner).div(FRUSTUM_CORNERS_COUNT);
 
             minZ = min(minZ, corner.z);
             maxZ = max(maxZ, corner.z);
         }
 
-        float distance = maxZ - minZ;
-        Vector3f lightPosInc = new Vector3f(light.direction()).mul(distance);
-        Vector3f lightPosition = new Vector3f().set(frustumCenter).add(lightPosInc);
+        // Go back from the centroid up to max.z - min.z in the direction of light
+        Vector3fc lightDirection = new Vector3f(light.direction()).negate().normalize();
 
-        updateLightViewMatrix(camera, light.direction(), lightPosition);
+        Vector3f lightPosInc = new Vector3f().set(lightDirection);
+
+        float distance = maxZ - minZ;
+
+        lightPosInc.mul(distance);
+
+        Vector3f lightPosition = new Vector3f();
+        lightPosition.set(centroid).add(lightPosInc);
+
+        updateLightViewMatrix(camera, lightDirection, lightPosition);
 
         updateLightProjectionMatrix();
 
@@ -102,23 +111,24 @@ public class ShadowCascade {
     private void updateLightViewMatrix(Camera camera, Vector3fc lightDirection, Vector3f lightPosition) {
 
         // lightViewMatrix.setLookAt(lightDirection, lightPosition, new Vector3f(0, 1, 0));
-        final float lightAngleX = (float) Math.toDegrees(Math.acos(-lightDirection.z()));
-        final float lightAngleY = (float) Math.toDegrees(Math.asin(lightDirection.x()));
+        final float lightAngleX = acos(lightDirection.z());
+        final float lightAngleY = asin(lightDirection.x());
 
-        // lightViewMatrix.setLookAt(lightPosition.negate(new Vector3f()), lightDirection.normalize(new Vector3f()), camera.up());
-        // lightViewMatrix.setLookAt(lightPosition, lightDirection, camera.up());
+        // lightViewMatrix.setLookAt(lightPosition.x, lightPosition.y, lightPosition.z, -lightDirection.x(), -lightDirection.y(), -lightDirection.z(), 0, 1, 0);
 
-        lightViewMatrix.rotationX(radians(lightAngleX)).rotateY(radians(lightAngleY)).translate(lightPosition);
+        // lightViewMatrix.setLookAt(lightPosition.negate(), lightDirection, camera.up());
+
+        lightViewMatrix.rotationX(lightAngleX).rotateY(lightAngleY).translate(lightPosition.negate());
     }
 
     private void updateLightProjectionMatrix() {
 
         // Now calculate frustum dimensions in light space
-        float minX =  Float.MAX_VALUE;
+        float minX = Float.MAX_VALUE;
         float maxX = -Float.MIN_VALUE;
-        float minY =  Float.MAX_VALUE;
+        float minY = Float.MAX_VALUE;
         float maxY = -Float.MIN_VALUE;
-        float minZ =  Float.MAX_VALUE;
+        float minZ = Float.MAX_VALUE;
         float maxZ = -Float.MIN_VALUE;
 
         Vector4f lightSpaceCorner = new Vector4f();

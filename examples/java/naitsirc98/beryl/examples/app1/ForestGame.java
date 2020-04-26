@@ -140,7 +140,7 @@ public class ForestGame extends BerylApplication {
         DirectionalLight sun = new DirectionalLight().direction(0, 0, 1);
 
         lighting.directionalLight(sun);
-        lighting.directionalLight().direction(-0.453f, -0.902f, 0.391f);
+        lighting.directionalLight().direction(-0.365f, -0.808f, 0.462f);
 
         lighting.pointLights().add(new PointLight()
                 .position(471.379f, 4.051f, 375.764f)

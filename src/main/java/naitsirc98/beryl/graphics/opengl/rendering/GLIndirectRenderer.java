@@ -150,6 +150,10 @@ public abstract class GLIndirectRenderer implements Renderer {
         vertexArray.bind();
 
         glMultiDrawElementsIndirect(GL_TRIANGLES, GL_UNSIGNED_INT, NULL, drawCount, 0);
+
+        unbindShadowTextures(shader);
+
+        glFinish();
     }
 
     protected void renderSceneWithGPUGeneratedCommands(Scene scene, int maxDrawCount) {
@@ -175,6 +179,16 @@ public abstract class GLIndirectRenderer implements Renderer {
 
         for(int i = 0;i < dirShadowMaps.length;i++) {
             shader.uniformSampler("u_DirShadowMaps["+i+"]", dirShadowMaps[i], i + 5);
+        }
+
+    }
+
+    private void unbindShadowTextures(GLShaderProgram shader) {
+
+        GLTexture2D[] dirShadowMaps = shadowsInfo.dirShadowMaps();
+
+        for(int i = 0;i < dirShadowMaps.length;i++) {
+            dirShadowMaps[i].unbind(i + 5);
         }
 
     }

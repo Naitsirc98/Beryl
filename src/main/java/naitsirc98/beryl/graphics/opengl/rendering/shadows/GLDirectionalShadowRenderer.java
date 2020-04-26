@@ -11,11 +11,16 @@ import naitsirc98.beryl.scenes.Scene;
 
 import java.util.Arrays;
 
+import static java.lang.Math.min;
+import static java.lang.Math.pow;
 import static naitsirc98.beryl.graphics.ShaderStage.FRAGMENT_STAGE;
 import static naitsirc98.beryl.graphics.ShaderStage.VERTEX_STAGE;
 import static naitsirc98.beryl.graphics.opengl.rendering.shadows.GLShadowsInfo.MAX_SHADOW_CASCADES_COUNT;
+import static naitsirc98.beryl.util.Maths.lerp;
 
 public class GLDirectionalShadowRenderer {
+
+    private static final float SHADOWS_MAX_DISTANCE = 2048;
 
     private final GLShaderProgram shader;
     private final GLShadowCascadeRenderer[] shadowCascadeRenderers;
@@ -66,19 +71,43 @@ public class GLDirectionalShadowRenderer {
             return;
         }
 
-        final float[] cascadeRanges = {
-                camera.nearPlane(),
-                camera.farPlane() / 20.0f,
-                camera.farPlane() / 10.0f,
-                camera.farPlane()
-        };
+        final float[] cascadeRanges = calculateCascadeRanges(camera);
 
         for(int i = 0;i < MAX_SHADOW_CASCADES_COUNT;i++) {
 
             GLShadowCascadeRenderer shadowCascadeRenderer = shadowCascadeRenderers[i];
 
-            shadowCascadeRenderer.render(scene, light, camera.nearPlane(), cascadeRanges[i+1]);
+            shadowCascadeRenderer.render(scene, light, cascadeRanges[i], cascadeRanges[i + 1]);
         }
+    }
+
+    private float[] calculateCascadeRanges(Camera camera) {
+
+        final float nearPlane = camera.nearPlane();
+        final float farPlane = min(camera.farPlane(), SHADOWS_MAX_DISTANCE);
+
+        float[] ranges = new float[MAX_SHADOW_CASCADES_COUNT + 1];
+
+        float splitFactor = 0.75f;
+
+        for(int i = 1; i < MAX_SHADOW_CASCADES_COUNT; i++) {
+
+            float inv = (float) i / (float) MAX_SHADOW_CASCADES_COUNT;
+
+            float a = nearPlane + (inv * (farPlane - nearPlane));
+
+            float b = (float) (nearPlane * pow(farPlane / nearPlane, inv));
+
+            float zFar = lerp(a, b, splitFactor);
+
+            ranges[i] = zFar;
+        }
+
+        ranges[0] = nearPlane;
+
+        ranges[MAX_SHADOW_CASCADES_COUNT] = farPlane;
+
+        return ranges;
     }
 
     private GLShadowCascadeRenderer[] createShadowCascadeRenderers() {

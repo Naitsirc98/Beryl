@@ -110,13 +110,15 @@ void main() {
         fragmentColor = applyFogEffect(fragmentColor);
     }
 
-/*
 
-    int depthMapIndex = 0;
+
+    int depthMapIndex;
+
+    float fragmentDepth = distance(u_Camera.position.xyz, vertexData.position);
 
     // Select the correct cascade shadow map for this fragment
     for(int i = 0; i < MAX_SHADOW_CASCADES_COUNT; i++) {
-        if(distance(u_Camera.position.xyz, vertexData.position) < u_CascadeFarPlanes[i]) {
+        if(fragmentDepth < u_CascadeFarPlanes[i]) {
             depthMapIndex = i;
             break;
         }
@@ -126,8 +128,7 @@ void main() {
 
     color[depthMapIndex] = 1;
 
-  */  
-
+  
     out_FragmentColor = fragmentColor;
 }
 
@@ -156,7 +157,7 @@ float computeDirShadows() {
 
     int depthMapIndex = 0;
 
-    float fragmentDepth = distance(u_Camera.position.xyz, vertexData.position);
+    float fragmentDepth = (u_Camera.projectionViewMatrix * vec4(vertexData.position, 1.0)).z;// vertexData.position.z;//distance(u_Camera.position.xyz, vertexData.position);
 
     // Select the correct cascade shadow map for this fragment
     for(int i = 0; i < MAX_SHADOW_CASCADES_COUNT; i++) {
@@ -169,7 +170,7 @@ float computeDirShadows() {
     // Transform from screen coordinates to texture coordinates
     vec4 positionDirLightSpace = vertexData.positionDirLightSpace[depthMapIndex];
 
-    vec3 projCoords = positionDirLightSpace.xyz;
+    vec3 projCoords = positionDirLightSpace.xyz;// / positionDirLightSpace.w;
 
     projCoords = projCoords * 0.5 + 0.5;
 
@@ -177,11 +178,11 @@ float computeDirShadows() {
         return 0.0;
     }
 
-    float bias = 0.005;
+    float bias = 0.005;//max(0.05 * (1.0 - dot(fragmentNormal, u_DirectionalLight.direction.xyz)), 0.005);
 
     float shadow = 0.0;
 
-    int numberOfSamples = 9;
+    float numberOfSamples = 9.0;
 
     sampler2D depthMap = u_DirShadowMaps[depthMapIndex];
 

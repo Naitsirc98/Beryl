@@ -165,9 +165,7 @@ public class GLFrustumCuller {
 
             final float radius = sphere.radius() * maxScale;
 
-            final boolean passFrustumCulling = frustum.testSphere(sphereCenter.x, sphereCenter.y, sphereCenter.z, radius);
-
-            if(preConditionState == PreConditionState.PASS || passFrustumCulling) {
+            if(preConditionState == PreConditionState.PASS || frustum.testSphere(sphereCenter.x, sphereCenter.y, sphereCenter.z, radius)) {
 
                 final int baseInstance = this.baseInstance.getAndIncrement();
 
