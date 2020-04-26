@@ -93,7 +93,7 @@ public class ForestGame extends BerylApplication {
         forestAudioPlayer.source()
                 .minGain(0)
                 .maxGain(1)
-                .gain(0.4f)
+                .gain(0.1f)
                 .rollOff(1)
                 .position(new Vector3f(TERRAIN_SIZE/2, 0, TERRAIN_SIZE/2))
                 .looping(true);
@@ -127,7 +127,7 @@ public class ForestGame extends BerylApplication {
         SceneEnvironment environment = scene.environment();
 
         environment.skybox(new Skybox(BerylFiles.getString("textures/skybox/day"), BerylFiles.getString("textures/skybox/night")));
-        environment.ambientColor(Color.colorWhite());
+        environment.ambientColor(new Color(0.8f));
         environment.fog().density(DEFAULT_FOG_DENSITY);
 
         setSceneLights(scene);

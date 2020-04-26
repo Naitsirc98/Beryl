@@ -11,6 +11,7 @@ import naitsirc98.beryl.scenes.Skybox;
 import naitsirc98.beryl.scenes.components.audio.AudioPlayer;
 import naitsirc98.beryl.scenes.components.behaviours.UpdateBehaviour;
 import naitsirc98.beryl.scenes.components.meshes.StaticMeshInstance;
+import org.joml.Vector3f;
 
 import static naitsirc98.beryl.examples.app1.ForestGame.FOREST_DAY_SOUND;
 import static naitsirc98.beryl.examples.app1.ForestGame.FOREST_NIGHT_SOUND;
@@ -53,10 +54,12 @@ public class GameController extends UpdateBehaviour {
 
         DirectionalLight sun = scene().environment().lighting().directionalLight();
 
-        sun.color().set(1.0f - time, 1.0f);
+        // sun.color().set(1.0f - time, 1.0f);
 
-        scene().entity(FOREST_DAY_SOUND).get(AudioPlayer.class).source().gain(1.0f - time * 2);
-        scene().entity(FOREST_NIGHT_SOUND).get(AudioPlayer.class).source().gain(time * time);
+        // sun.direction(new Vector3f(-0.365f, -0.808f, 0.462f).rotateX(time * 10));
+
+        // scene().entity(FOREST_DAY_SOUND).get(AudioPlayer.class).source().gain(1.0f - time * 2);
+        // scene().entity(FOREST_NIGHT_SOUND).get(AudioPlayer.class).source().gain(time * time);
 
         scene().environment().fog().density(time / 2.0f);
 

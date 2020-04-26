@@ -78,19 +78,19 @@ public class Tree {
         GraphicsFactory g = GraphicsFactory.get();
 
         PhongMaterial trunkMaterial = (PhongMaterial) treeModel.meshView("conifer_macedonian_pine_5").material();
-        trunkMaterial.colorMap(g.newTexture2D(texturesDir + "Bark_Color.png", PixelFormat.SRGBA).setQuality(Texture.Quality.HIGH));
+        trunkMaterial.colorMap(g.newTexture2D(texturesDir + "Bark_Color.png", PixelFormat.SRGBA).setQuality(Texture.Quality.MEDIUM));
 
         PhongMaterial capMaterial = (PhongMaterial) treeModel.meshView("/Game/Cap_Branch_Mat_Cap_Branch_Mat").material();
-        capMaterial.colorMap(g.newTexture2D(texturesDir + "Cap_Color.png", PixelFormat.SRGBA).setQuality(Texture.Quality.HIGH));
+        capMaterial.colorMap(g.newTexture2D(texturesDir + "Cap_Color.png", PixelFormat.SRGBA).setQuality(Texture.Quality.LOW));
 
         PhongMaterial leafMaterial = (PhongMaterial) treeModel.meshView("/Game/conifer_macedonian_pine_Leaf_Mat_conifer_macedonian_pine_Leaf_Mat").material();
         leafMaterial.colorMap(g.newTexture2D(texturesDir + "conifer_macedonian_pine_Color.png", PixelFormat.SRGBA).setQuality(Texture.Quality.HIGH));
-        leafMaterial.diffuseMap().sampler().lodBias(-1.4f);
+        leafMaterial.diffuseMap().sampler().lodBias(-1.0f);
     }
 
     public static class TreeRandomBouncing extends UpdateBehaviour {
 
-        private static final float BOUNCING_LIMIT = 95.0f;
+        private static final float BOUNCING_LIMIT = 92.0f;
 
         private float bouncingLimit;
         private float normalBouncingLimit;
@@ -99,7 +99,7 @@ public class Tree {
 
         @Override
         protected void onInit() {
-            normalBouncingSpeed = bouncingSpeed = clamp(0.2f, 0.9f, (float) Math.random());
+            normalBouncingSpeed = bouncingSpeed = clamp(0.3f, 1.2f, (float) Math.random());
             normalBouncingLimit = bouncingLimit = 90 + new Random().nextInt(11);
         }
 

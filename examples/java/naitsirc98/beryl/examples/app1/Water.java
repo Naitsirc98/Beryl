@@ -53,7 +53,7 @@ public class Water {
 
         AudioPlayer waterAudioPlayer = waterSound.add(AudioPlayer.class);
         waterAudioPlayer.source()
-                .gain(1.0f)
+                .gain(0.7f)
                 .position(new Vector3f(x, y, z))
                 .referenceDistance(1.4f)
                 .maxDistance(maxDistance)
