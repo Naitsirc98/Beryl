@@ -98,7 +98,7 @@ public class ForestGame extends BerylApplication {
                 .position(new Vector3f(TERRAIN_SIZE/2, 0, TERRAIN_SIZE/2))
                 .looping(true);
 
-        forestAudioPlayer.source().buffer(AudioClip.get("forest", params -> params.audioFile("G:\\__inglesjavi\\forest2.ogg")).buffer());
+        forestAudioPlayer.clip(AudioClip.get("forest", params -> params.audioFile(BerylFiles.getString("audio/forest.ogg"))));
 
         Entity forestNightSound = scene.newEntity(FOREST_NIGHT_SOUND);
         AudioPlayer forestNightAudioPlayer = forestNightSound.add(AudioPlayer.class);
@@ -110,7 +110,7 @@ public class ForestGame extends BerylApplication {
                 .position(new Vector3f(TERRAIN_SIZE/2, 0, TERRAIN_SIZE/2))
                 .looping(true);
 
-        forestNightAudioPlayer.source().buffer(AudioClip.get("forestNight", params -> params.audioFile("G:\\__inglesjavi\\forest_night.ogg")).buffer());
+        forestNightAudioPlayer.clip(AudioClip.get("forestNight", params -> params.audioFile(BerylFiles.getString("audio/forest_night.ogg"))));
     }
 
     private void initSceneCamera(Scene scene) {

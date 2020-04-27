@@ -14,7 +14,6 @@ import naitsirc98.beryl.scenes.Entity;
 import naitsirc98.beryl.scenes.Scene;
 import naitsirc98.beryl.scenes.components.audio.AudioPlayer;
 import naitsirc98.beryl.scenes.components.behaviours.UpdateBehaviour;
-import naitsirc98.beryl.scenes.components.behaviours.UpdateMutableBehaviour;
 import naitsirc98.beryl.scenes.components.math.Transform;
 import naitsirc98.beryl.scenes.components.meshes.WaterMeshInstance;
 import org.joml.Vector3f;
@@ -33,8 +32,7 @@ public class Water {
         WaterMeshView waterMeshView = new WaterMeshView(StaticMesh.quad(), getWaterMaterial())
                 .tiling(20)
                 .waterColorStrength(0.03f)
-                .distortionStrength(0.02f);
-                //.distortionStrength(0.05f);
+                .distortionStrength(0.025f);
 
         waterMeshView.clipPlane(0, 1, 0, water.get(Transform.class).position().y() + 0.1f);
         water.add(WaterMeshInstance.class).meshView(waterMeshView);
@@ -60,7 +58,7 @@ public class Water {
                 .rollOff(0.5f)
                 .looping(true);
         waterAudioPlayer.play(AudioClip.get("water", audioClipParams -> {
-            audioClipParams.audioFile("G:\\__inglesjavi\\waterm.ogg");
+            audioClipParams.audioFile(BerylFiles.getString("audio/water.ogg"));
         }));
     }
 

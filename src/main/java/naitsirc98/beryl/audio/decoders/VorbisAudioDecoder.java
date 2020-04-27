@@ -8,6 +8,7 @@ import org.lwjgl.system.MemoryStack;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
 
+import static naitsirc98.beryl.util.handles.LongHandle.NULL;
 import static naitsirc98.beryl.util.types.DataType.INT16_SIZEOF;
 import static org.lwjgl.stb.STBVorbis.*;
 import static org.lwjgl.system.MemoryStack.stackPush;
@@ -25,9 +26,12 @@ public final class VorbisAudioDecoder implements AudioDecoder {
             IntBuffer channels = stack.ints(0);
             IntBuffer frequency = stack.ints(0);
 
-            long decoder = stb_vorbis_open_filename(audioFile, error, null);
+            final long decoder = stb_vorbis_open_filename(audioFile, error, null);
 
-            System.out.println(error.get(0));
+            if(decoder == NULL) {
+                Log.error("Failed to open .ogg audio file: " + audioFile + ". Error " + error.get(0));
+                return null;
+            }
 
             ShortBuffer data = stb_vorbis_decode_filename(audioFile, channels, frequency);
 
@@ -39,6 +43,7 @@ public final class VorbisAudioDecoder implements AudioDecoder {
             AudioFormat format = AudioFormat.fromChannels(channels.get(0), INT16_SIZEOF);
 
             AudioBuffer buffer = new AudioBuffer();
+
             buffer.data(memAddress(data), data.capacity() * INT16_SIZEOF, format, frequency.get(0));
 
             free(data);
