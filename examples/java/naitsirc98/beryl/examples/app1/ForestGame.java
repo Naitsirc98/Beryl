@@ -73,11 +73,13 @@ public class ForestGame extends BerylApplication {
 
         Terrain.create(scene);
 
-        Water.create(scene, TERRAIN_SIZE / 2, -5.0f, TERRAIN_SIZE / 2, TERRAIN_SIZE / 2);
+        final float waterSurfaceY = -5.0f;
+
+        Water.create(scene, TERRAIN_SIZE / 2, waterSurfaceY, TERRAIN_SIZE / 2, TERRAIN_SIZE / 2);
 
         Tree.createRandomForest(scene, Terrain.getTerrainMesh(), (int) TERRAIN_SIZE, -4.0f, 600);
 
-        // Grass.placeGrassAtRandomPositions(scene, Terrain.getTerrainMesh(), (int) TERRAIN_SIZE, 8.0f, 100);
+        Grass.placeGrassUnderWater(scene, Terrain.getTerrainMesh(), (int) TERRAIN_SIZE, 8.0f, waterSurfaceY, 100);
 
         Lamp.create(scene, 473.74f, 0.067f, 376.301f, 4.0f);
 

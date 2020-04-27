@@ -46,7 +46,7 @@ public class Grass {
         return grass;
     }
 
-    public static void placeGrassAtRandomPositions(Scene scene, TerrainMesh terrain, int terrainSize, float scale, int grassCount) {
+    public static void placeGrassUnderWater(Scene scene, TerrainMesh terrain, int terrainSize, float scale, float waterSurfaceY, int grassCount) {
 
         Random random = new Random();
 
@@ -54,9 +54,17 @@ public class Grass {
 
             Entity grass = create(scene, scale);
 
-            final float x = random.nextInt(terrainSize);
-            final float z = random.nextInt(terrainSize);
-            final float y = terrain.heightMap().heightAt(0, 0, x, z);
+            float x;
+            float z;
+            float y;
+
+            do {
+
+                x = random.nextInt(terrainSize);
+                z = random.nextInt(terrainSize);
+                y = terrain.heightMap().heightAt(0, 0, x, z);
+
+            } while(y >= waterSurfaceY);
 
             grass.get(Transform.class).position(x, y, z);
         }
