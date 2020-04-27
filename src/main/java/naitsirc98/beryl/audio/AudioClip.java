@@ -7,6 +7,17 @@ import java.util.function.Consumer;
 
 public class AudioClip extends ManagedResource implements Asset {
 
+    public static AudioClip get(String name) {
+
+        AudioClipManager manager = AudioClipManager.get();
+
+        if(manager.exists(name)) {
+            return manager.get(name);
+        }
+
+        return null;
+    }
+
     public static AudioClip get(String name, Consumer<AudioClipParams> audioClipParamsConsumer) {
 
         AudioClipManager manager = AudioClipManager.get();

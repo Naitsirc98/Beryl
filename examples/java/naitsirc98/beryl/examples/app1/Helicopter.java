@@ -1,6 +1,7 @@
 package naitsirc98.beryl.examples.app1;
 
 import naitsirc98.beryl.audio.AudioClip;
+import naitsirc98.beryl.core.BerylFiles;
 import naitsirc98.beryl.core.Time;
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.materials.PhongMaterial;
@@ -18,7 +19,7 @@ import naitsirc98.beryl.util.Color;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
 
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -34,7 +35,9 @@ public class Helicopter {
 
         if(helicopterModel == null) {
 
-            helicopterModel = StaticModelLoader.get().load(Paths.get("C:\\Users\\naits\\Downloads\\5xulumjp2ohs-SeaHawk\\Seahawk.obj"), false);
+            Path modelPath = BerylFiles.getPath("models/helicopter.obj");
+
+            helicopterModel = StaticModelLoader.get().load(modelPath, false);
 
             Log.trace(helicopterModel);
 
@@ -52,8 +55,7 @@ public class Helicopter {
         helicopter.add(StaticMeshInstance.class).meshViews(getHelicopterBodyMeshViews());
         AudioPlayer audio = helicopter.add(AudioPlayer.class);
 
-        audio.source().buffer(AudioClip.get("helicopter",
-                audioClipParams -> audioClipParams.audioFile("G:\\__inglesjavi\\helicopter.ogg")).buffer());
+        audio.clip(AudioClip.get("helicopter", params -> params.audioFile(BerylFiles.getString("audio/helicopter.ogg"))));
 
         audio.source()
                 .position(transform.position())
