@@ -30,8 +30,7 @@ public class AnimMesh extends Mesh {
         return manager.createAnimMesh(name, data.vertices(), data.indices());
     }
 
-
-    public AnimMesh(int handle, String name, ByteBuffer vertexData, ByteBuffer indexData) {
+    protected AnimMesh(int handle, String name, ByteBuffer vertexData, ByteBuffer indexData) {
         super(handle, name, vertexData, indexData, VERTEX_DATA_SIZE);
     }
 

@@ -1,14 +1,10 @@
 package naitsirc98.beryl.graphics.opengl.rendering;
 
-import naitsirc98.beryl.core.BerylFiles;
 import naitsirc98.beryl.graphics.opengl.buffers.GLBuffer;
 import naitsirc98.beryl.graphics.opengl.commands.GLDrawElementsCommand;
-import naitsirc98.beryl.graphics.opengl.shaders.GLShader;
-import naitsirc98.beryl.graphics.opengl.shaders.GLShaderProgram;
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.meshes.Mesh;
 import naitsirc98.beryl.meshes.views.MeshView;
-import naitsirc98.beryl.scenes.Scene;
 import naitsirc98.beryl.scenes.components.meshes.MeshInstance;
 import naitsirc98.beryl.scenes.components.meshes.MeshInstanceList;
 import naitsirc98.beryl.util.SystemInfo;
@@ -26,15 +22,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Predicate;
 
 import static java.lang.Math.min;
-import static naitsirc98.beryl.graphics.ShaderStage.COMPUTE_STAGE;
-import static naitsirc98.beryl.util.types.DataType.*;
-import static org.lwjgl.opengl.GL31.GL_UNIFORM_BUFFER;
-import static org.lwjgl.opengl.GL42.*;
-import static org.lwjgl.opengl.GL43.GL_SHADER_STORAGE_BUFFER;
-import static org.lwjgl.opengl.GL43.glDispatchCompute;
+import static naitsirc98.beryl.util.types.DataType.INT32_SIZEOF;
+import static naitsirc98.beryl.util.types.DataType.MATRIX4_SIZEOF;
 import static org.lwjgl.system.MemoryStack.stackPush;
 
 public class GLFrustumCuller {
@@ -51,10 +42,7 @@ public class GLFrustumCuller {
     private final AtomicInteger baseInstance;
     private final GLBuffer commandBuffer;
     private final GLBuffer transformsBuffer;
-    protected GLBuffer meshIndicesBuffer;
     private final GLBuffer instanceBuffer;
-    private final GLShaderProgram cullingShader;
-    private final GLBuffer atomicCounterBuffer;
 
     public GLFrustumCuller(GLBuffer commandBuffer, GLBuffer transformsBuffer, GLBuffer instanceBuffer) {
         this.commandBuffer = commandBuffer;
@@ -62,9 +50,6 @@ public class GLFrustumCuller {
         this.instanceBuffer = instanceBuffer;
         this.executor = Executors.newFixedThreadPool(THREAD_COUNT);
         baseInstance = new AtomicInteger();
-        meshIndicesBuffer = new GLBuffer("MESH_INDICES_STORAGE_BUFFER");
-        cullingShader = createCullingShader();
-        atomicCounterBuffer = createAtomicCounterBuffer();
     }
 
     public int performCullingCPU(FrustumIntersection frustum, MeshInstanceList<?> instances) {
@@ -92,30 +77,6 @@ public class GLFrustumCuller {
         waitForFrustumCulling(countDownLatch);
 
         return baseInstance.getAndSet(0);
-    }
-
-    public void performCullingPassGPU(Scene scene, int totalObjects, GLBuffer meshCommandBuffer, GLBuffer boundingSpheresBuffer, boolean alwaysPass) {
-
-        GLBuffer frustumBuffer = scene.cameraInfo().frustumBuffer();
-
-        cullingShader.bind();
-
-        meshCommandBuffer.bind(GL_SHADER_STORAGE_BUFFER, 0);
-        commandBuffer.bind(GL_SHADER_STORAGE_BUFFER, 1);
-        boundingSpheresBuffer.bind(GL_SHADER_STORAGE_BUFFER, 2);
-        transformsBuffer.bind(GL_SHADER_STORAGE_BUFFER, 3);
-        meshIndicesBuffer.bind(GL_SHADER_STORAGE_BUFFER, 4);
-        frustumBuffer.bind(GL_UNIFORM_BUFFER, 5);
-        atomicCounterBuffer.bind(GL_ATOMIC_COUNTER_BUFFER, 6);
-        cullingShader.uniformBool("u_AlwaysPass", alwaysPass);
-
-        glDispatchCompute(totalObjects, 1, 1);
-
-        glMemoryBarrier(GL_ALL_BARRIER_BITS);
-    }
-
-    public GLBuffer atomicCounter() {
-        return atomicCounterBuffer;
     }
 
     private void performCullingBatch(MeshInstanceList<?> instances, PreCondition preCondition, FrustumIntersection frustum,
@@ -175,8 +136,8 @@ public class GLFrustumCuller {
 
                 command.count(mesh.indexCount())
                         .primCount(1)
-                        .firstIndex(mesh.firstIndex())
-                        .baseVertex(mesh.baseVertex())
+                        .firstIndex(mesh.storageInfo().firstIndex())
+                        .baseVertex(mesh.storageInfo().baseVertex())
                         .baseInstance(baseInstance);
 
                 commandBuffer.copy(baseInstance * GLDrawElementsCommand.SIZEOF, command.buffer());
@@ -205,12 +166,6 @@ public class GLFrustumCuller {
         }
     }
 
-    private void setInstanceMeshIndex(int objectIndex, int meshIndex) {
-        try (MemoryStack stack = stackPush()) {
-            meshIndicesBuffer.copy(objectIndex * UINT32_SIZEOF, stack.ints(meshIndex));
-        }
-    }
-
     private void waitForFrustumCulling(CountDownLatch countDownLatch) {
         try {
             countDownLatch.await(1000, TimeUnit.MILLISECONDS);
@@ -219,31 +174,7 @@ public class GLFrustumCuller {
         }
     }
 
-    private GLShaderProgram createCullingShader() {
-        return new GLShaderProgram()
-                .attach(new GLShader(COMPUTE_STAGE).source(BerylFiles.getPath("shaders/compute/culling.comp")))
-                .link();
-    }
-
-    private GLBuffer createAtomicCounterBuffer() {
-        GLBuffer atomicCounterBuffer = new GLBuffer("ATOMIC_COUNTER_BUFFER");
-        atomicCounterBuffer.allocate(UINT32_SIZEOF);
-        atomicCounterBuffer.clear();
-        return atomicCounterBuffer;
-    }
-
     void terminate() {
-
-        meshIndicesBuffer.release();
-
-        atomicCounterBuffer.release();
-
-        cullingShader.release();
-
-        shutdown();
-    }
-
-    private void shutdown() {
         executor.shutdown();
         try {
             executor.awaitTermination(1000, TimeUnit.MILLISECONDS);

@@ -77,7 +77,7 @@ public class ForestGame extends BerylApplication {
 
         Tree.createRandomForest(scene, Terrain.getTerrainMesh(), (int) TERRAIN_SIZE, -4.0f, 600);
 
-        Grass.placeGrassAtRandomPositions(scene, Terrain.getTerrainMesh(), (int) TERRAIN_SIZE, 8.0f, 100);
+        // Grass.placeGrassAtRandomPositions(scene, Terrain.getTerrainMesh(), (int) TERRAIN_SIZE, 8.0f, 100);
 
         Lamp.create(scene, 473.74f, 0.067f, 376.301f, 4.0f);
 
@@ -93,7 +93,7 @@ public class ForestGame extends BerylApplication {
         forestAudioPlayer.source()
                 .minGain(0)
                 .maxGain(1)
-                .gain(0.1f)
+                .gain(0.55f)
                 .rollOff(1)
                 .position(new Vector3f(TERRAIN_SIZE/2, 0, TERRAIN_SIZE/2))
                 .looping(true);

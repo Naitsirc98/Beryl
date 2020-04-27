@@ -35,13 +35,8 @@ public abstract class Mesh extends ManagedResource implements Asset {
     protected final ByteBuffer indexData;
     protected final AABB boundingBox;
     protected final Sphere boundingSphere;
+    private final MeshStorageInfo storageInfo;
     protected final int stride;
-    private int index;
-    private long vertexBufferOffset;
-    private long indexBufferOffset;
-    private long boundingSphereOffset;
-    private int firstIndex;
-    private int baseVertex;
 
     public Mesh(int handle, String name, ByteBuffer vertexData, ByteBuffer indexData, int stride) {
         this.handle = handle;
@@ -51,6 +46,7 @@ public abstract class Mesh extends ManagedResource implements Asset {
         this.stride = stride;
         boundingBox = calculateBounds();
         boundingSphere = calculateBoundingSphere(boundingBox);
+        storageInfo = new MeshStorageInfo();
     }
 
     public abstract Class<? extends Mesh> type();
@@ -65,24 +61,8 @@ public abstract class Mesh extends ManagedResource implements Asset {
         return handle;
     }
 
-    public long vertexBufferOffset() {
-        return vertexBufferOffset;
-    }
-
-    public long indexBufferOffset() {
-        return indexBufferOffset;
-    }
-
-    public long boundingSphereOffset() {
-        return boundingSphereOffset;
-    }
-
-    public int index() {
-        return index;
-    }
-
-    public int boundingSphereIndex() {
-        return (int) (boundingSphereOffset / ISphere.SIZEOF);
+    public MeshStorageInfo storageInfo() {
+        return storageInfo;
     }
 
     public int vertexCount() {
@@ -95,14 +75,6 @@ public abstract class Mesh extends ManagedResource implements Asset {
 
     public int indexCount() {
         return indexed() ? indexData.capacity() / UINT32_SIZEOF : 0;
-    }
-
-    public int firstIndex() {
-        return firstIndex;
-    }
-
-    public int baseVertex() {
-        return baseVertex;
     }
 
     public IAABB bounds() {
@@ -200,30 +172,6 @@ public abstract class Mesh extends ManagedResource implements Asset {
     @Override
     public int hashCode() {
         return handle;
-    }
-
-    public void setIndex(int index) {
-        this.index = index;
-    }
-
-    public void setVertexBufferOffset(long vertexBufferOffset) {
-        this.vertexBufferOffset = vertexBufferOffset;
-    }
-
-    public void setIndexBufferOffset(long indexBufferOffset) {
-        this.indexBufferOffset = indexBufferOffset;
-    }
-
-    public void setBoundingSphereOffset(long boundingSphereOffset) {
-        this.boundingSphereOffset = boundingSphereOffset;
-    }
-
-    public void setFirstIndex(int firstIndex) {
-        this.firstIndex = firstIndex;
-    }
-
-    public void setBaseVertex(int baseVertex) {
-        this.baseVertex = baseVertex;
     }
 
     @Override

@@ -61,7 +61,7 @@ public final class TerrainMeshLoader {
 
     private TerrainMesh generateTerrain(String name, float size, float minY, float maxY, int width, int height, ByteBuffer pixels) {
 
-        float[][] heightMap = new float[height][width];
+        float[][] heights = new float[height][width];
 
         final float incX = size / (width - 1);
         final float incZ = size / (height - 1);
@@ -78,7 +78,7 @@ public final class TerrainMeshLoader {
             for(int column = 0; column < width; column++) {
 
                 final float currentHeight = getHeightAt(minY, maxY, column, row, width, pixels);
-                heightMap[column][row] = currentHeight;
+                heights[column][row] = currentHeight;
 
                 // Position
                 setPosition(vertices, positionsOffset, currentHeight, row, column, incX, incZ);
@@ -102,7 +102,9 @@ public final class TerrainMeshLoader {
         vertices.rewind();
         indices.rewind();
 
-        return MeshManager.get().createTerrainMesh(name, vertices, indices, size, heightMap, minY, maxY);
+        final HeightMap heightMap = new HeightMap(size, heights, minY, maxY);
+
+        return MeshManager.get().createTerrainMesh(name, vertices, indices, heightMap);
     }
 
     private void setNormal(ByteBuffer vertices, int offset,

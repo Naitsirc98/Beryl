@@ -21,8 +21,6 @@ import static naitsirc98.beryl.util.types.DataType.INT32_SIZEOF;
 
 public final class MaterialManager implements AssetManager<IMaterial> {
 
-    // TODO: handle resizing and concurrent access
-
     private static final int BUFFER_INITIAL_CAPACITY = 1000 * IMaterial.SIZEOF;
 
     @Singleton

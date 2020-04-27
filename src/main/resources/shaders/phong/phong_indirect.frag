@@ -110,25 +110,6 @@ void main() {
         fragmentColor = applyFogEffect(fragmentColor);
     }
 
-
-
-    int depthMapIndex;
-
-    float fragmentDepth = distance(u_Camera.position.xyz, vertexData.position);
-
-    // Select the correct cascade shadow map for this fragment
-    for(int i = 0; i < MAX_SHADOW_CASCADES_COUNT; i++) {
-        if(fragmentDepth < u_CascadeFarPlanes[i]) {
-            depthMapIndex = i;
-            break;
-        }
-    }
-
-    vec4 color = vec4(0, 0, 0, 1);
-
-    color[depthMapIndex] = 1;
-
-  
     out_FragmentColor = fragmentColor;
 }
 

@@ -64,7 +64,7 @@ public class Tree {
             do {
                 x = random.nextInt(terrainSize);
                 z = random.nextInt(terrainSize);
-                y = terrainMesh.heightAt(0, 0, x, z);
+                y = terrainMesh.heightMap().heightAt(0, 0, x, z);
             } while(y <= minY);
 
             tree.get(Transform.class).position(x, y - 1, z);
@@ -85,7 +85,7 @@ public class Tree {
 
         PhongMaterial leafMaterial = (PhongMaterial) treeModel.meshView("/Game/conifer_macedonian_pine_Leaf_Mat_conifer_macedonian_pine_Leaf_Mat").material();
         leafMaterial.colorMap(g.newTexture2D(texturesDir + "conifer_macedonian_pine_Color.png", PixelFormat.SRGBA).setQuality(Texture.Quality.HIGH));
-        leafMaterial.diffuseMap().sampler().lodBias(-1.0f);
+        leafMaterial.diffuseMap().sampler().lodBias(-1.5f);
     }
 
     public static class TreeRandomBouncing extends UpdateBehaviour {
@@ -99,8 +99,8 @@ public class Tree {
 
         @Override
         protected void onInit() {
-            normalBouncingSpeed = bouncingSpeed = clamp(0.3f, 1.2f, (float) Math.random());
-            normalBouncingLimit = bouncingLimit = 90 + new Random().nextInt(11);
+            normalBouncingSpeed = bouncingSpeed = clamp(0.35f, 1.2f, (float) Math.random());
+            normalBouncingLimit = bouncingLimit = 89 + new Random().nextInt(11);
         }
 
         public void setBouncingSpeed(float bouncingSpeed) {
@@ -108,7 +108,7 @@ public class Tree {
         }
 
         public void setBouncingLimit(float bouncingLimit) {
-            this.bouncingLimit = clamp(88, normalBouncingLimit, bouncingLimit);
+            this.bouncingLimit = clamp(86, normalBouncingLimit, bouncingLimit);
         }
 
         @Override

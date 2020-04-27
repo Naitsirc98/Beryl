@@ -6,15 +6,12 @@ import naitsirc98.beryl.graphics.rendering.renderers.ShadowCascade;
 import naitsirc98.beryl.graphics.rendering.renderers.ShadowRenderer;
 import naitsirc98.beryl.scenes.Scene;
 import org.joml.Matrix4fc;
-import org.lwjgl.BufferUtils;
 import org.lwjgl.system.MemoryStack;
 
 import java.nio.ByteBuffer;
 
 import static naitsirc98.beryl.util.types.DataType.MATRIX4_SIZEOF;
 import static naitsirc98.beryl.util.types.DataType.VECTOR4_SIZEOF;
-import static org.lwjgl.opengl.ARBDirectStateAccess.glGetNamedBufferSubData;
-import static org.lwjgl.opengl.GL11C.glFinish;
 
 public class GLShadowRenderer implements ShadowRenderer, GLShadowsInfo {
 

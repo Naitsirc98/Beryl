@@ -23,7 +23,7 @@ import static org.lwjgl.opengl.GL30C.GL_DEPTH_ATTACHMENT;
 
 public class GLShadowCascadeRenderer {
 
-    public static final int DEPTH_MAP_SIZE = 2048;
+    public static final int DEPTH_MAP_SIZE = 1024;
 
     private final GLTexture2D depthTexture;
     private final GLFramebuffer framebuffer;
@@ -73,7 +73,7 @@ public class GLShadowCascadeRenderer {
     }
 
     private PreConditionState discardTerrain(MeshInstance<?> instance, MeshView<?> meshView) {
-        return meshView.mesh().getClass() == TerrainMesh.class ? PreConditionState.CONTINUE : PreConditionState.CONTINUE;
+        return meshView.mesh().getClass() == TerrainMesh.class ? PreConditionState.DISCARD : PreConditionState.CONTINUE;
     }
 
     private void setOpenGLStateAndUniforms(GLShaderProgram shader) {

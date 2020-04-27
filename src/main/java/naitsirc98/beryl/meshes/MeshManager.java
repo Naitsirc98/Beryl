@@ -7,6 +7,7 @@ import naitsirc98.beryl.meshes.models.StaticModelLoader;
 import naitsirc98.beryl.util.types.Singleton;
 
 import java.nio.ByteBuffer;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -22,62 +23,62 @@ public final class MeshManager implements AssetManager<Mesh> {
 
     private AtomicInteger meshHandleProvider;
     private Map<String, Mesh> meshNames;
-    private StaticMeshManager staticMeshManager;
-    private AnimMeshManager animMeshManager;
+    private Map<Class<? extends Mesh>, MeshStorageHandler<? extends Mesh>> meshStorageHandlers;
 
     @Override
     public void init() {
         meshHandleProvider = new AtomicInteger(0);
         meshNames = new ConcurrentHashMap<>();
-        staticMeshManager = new StaticMeshManager();
-        animMeshManager = new AnimMeshManager();
+        meshStorageHandlers = createMeshStorageHandlers();
         loadBasicMeshes();
     }
 
-    synchronized StaticMesh createStaticMesh(String name, ByteBuffer vertices, ByteBuffer indices) {
+    @SuppressWarnings("unchecked")
+    public <T extends Mesh, U extends MeshStorageHandler<T>> U storageHandler(Class<T> meshType) {
+        return (U) meshStorageHandlers.get(meshType);
+    }
+
+    protected synchronized StaticMesh createStaticMesh(String name, ByteBuffer vertices, ByteBuffer indices) {
 
         if(invalidMeshData(name, vertices, indices)) {
             return null;
         }
 
-        StaticMesh mesh = new StaticMesh(meshHandleProvider.getAndIncrement(), name, vertices, indices);
+        final int meshHandle = meshHandleProvider.getAndIncrement();
 
-        staticMeshManager.setStaticMeshInfo(mesh);
+        StaticMesh mesh = new StaticMesh(meshHandle, name, vertices, indices);
 
-        meshNames.put(name, mesh);
+        allocate(mesh);
 
         return mesh;
     }
 
-    synchronized AnimMesh createAnimMesh(String name, ByteBuffer vertices, ByteBuffer indices) {
+    protected synchronized AnimMesh createAnimMesh(String name, ByteBuffer vertices, ByteBuffer indices) {
 
         if(invalidMeshData(name, vertices, indices)) {
             return null;
         }
 
-        AnimMesh mesh = new AnimMesh(meshHandleProvider.getAndIncrement(), name, vertices, indices);
+        final int meshHandle = meshHandleProvider.getAndIncrement();
 
-        animMeshManager.setAnimMeshInfo(mesh);
+        AnimMesh mesh = new AnimMesh(meshHandle, name, vertices, indices);
 
-        meshNames.put(name, mesh);
+        allocate(mesh);
 
         return mesh;
     }
 
-    synchronized TerrainMesh createTerrainMesh(String name, ByteBuffer vertices, ByteBuffer indices,
-                                               float size, float[][] heightMap, float minY, float maxY) {
+    protected synchronized TerrainMesh createTerrainMesh(String name, ByteBuffer vertices, ByteBuffer indices, HeightMap heightMap) {
 
         if(invalidMeshData(name, vertices, indices)) {
             return null;
         }
 
-        TerrainMesh mesh = new TerrainMesh(meshHandleProvider.getAndIncrement(), name, vertices, indices, size, heightMap, minY, maxY);
+        final int meshHandle = meshHandleProvider.getAndIncrement();
 
-        staticMeshManager.setStaticMeshInfo(mesh);
+        TerrainMesh mesh = new TerrainMesh(meshHandle, name, vertices, indices, heightMap);
 
-        staticMeshManager.setStaticMeshInfo(mesh);
-
-        meshNames.put(name, mesh);
+        allocate(mesh);
 
         return mesh;
     }
@@ -99,11 +100,12 @@ public final class MeshManager implements AssetManager<Mesh> {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public void destroy(Mesh mesh) {
 
-        if(mesh instanceof StaticMesh) {
-            staticMeshManager.destroy((StaticMesh) mesh);
-        }
+        MeshStorageHandler handler = storageHandler(mesh.type());
+
+        handler.free(mesh);
 
         meshNames.remove(mesh.name());
 
@@ -112,32 +114,25 @@ public final class MeshManager implements AssetManager<Mesh> {
 
     @Override
     public void destroyAll() {
-        meshNames.values().forEach(mesh -> {
-
-            if(mesh instanceof StaticMesh) {
-                staticMeshManager.destroy((StaticMesh) mesh);
-            }
-
-            mesh.release();
-        });
-
+        meshStorageHandlers.values().forEach(MeshStorageHandler::clear);
+        meshNames.values().forEach(Mesh::release);
         meshNames.clear();
-
-        staticMeshManager.clear();
     }
 
     @Override
     public void terminate() {
-        destroyAll();
-        staticMeshManager.terminate();
+        meshStorageHandlers.values().forEach(MeshStorageHandler::terminate);
+        meshNames.values().forEach(Mesh::release);
     }
 
-    public StaticMeshManager staticMeshManager() {
-        return staticMeshManager;
-    }
+    @SuppressWarnings("unchecked")
+    private void allocate(Mesh mesh) {
 
-    public AnimMeshManager animMeshManager() {
-        return animMeshManager;
+        MeshStorageHandler handler = storageHandler(mesh.type());
+
+        handler.allocate(mesh);
+
+        meshNames.put(mesh.name(), mesh);
     }
 
     private boolean invalidMeshData(String name, ByteBuffer vertices, ByteBuffer indices) {
@@ -172,6 +167,16 @@ public final class MeshManager implements AssetManager<Mesh> {
         loader.load(BerylFiles.getPath("models/cube.obj"), false, name -> "CUBE");
         loader.load(BerylFiles.getPath("models/quad.obj"), false, name -> "QUAD");
         loader.load(BerylFiles.getPath("models/sphere.obj"), false, name -> "SPHERE");
+    }
+
+    private Map<Class<? extends Mesh>, MeshStorageHandler<? extends Mesh>> createMeshStorageHandlers() {
+
+        Map<Class<? extends Mesh>, MeshStorageHandler<? extends Mesh>> handlers = new HashMap<>();
+
+        handlers.put(StaticMesh.class, new StaticMeshStorageHandler());
+        handlers.put(AnimMesh.class, new AnimMeshStorageHandler());
+
+        return handlers;
     }
 
 }

@@ -60,8 +60,8 @@ public class Helicopter {
                 .referenceDistance(10)
                 .rollOff(1.0f)
                 .minGain(0.0f)
-                .gain(20)
-                .maxGain(20)
+                .gain(25)
+                .maxGain(25)
                 .looping(true);
 
         createMainRotor(scene, transform);

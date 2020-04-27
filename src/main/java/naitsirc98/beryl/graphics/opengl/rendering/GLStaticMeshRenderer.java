@@ -9,7 +9,6 @@ import naitsirc98.beryl.graphics.opengl.vertex.GLVertexArray;
 import naitsirc98.beryl.graphics.rendering.renderers.StaticMeshRenderer;
 import naitsirc98.beryl.meshes.MeshManager;
 import naitsirc98.beryl.meshes.StaticMesh;
-import naitsirc98.beryl.meshes.StaticMeshManager;
 import naitsirc98.beryl.meshes.vertices.VertexLayout;
 import naitsirc98.beryl.meshes.views.StaticMeshView;
 import naitsirc98.beryl.scenes.Scene;
@@ -42,15 +41,18 @@ public final class GLStaticMeshRenderer extends GLIndirectRenderer implements St
     }
 
     @Override
-    protected void updateVertexArrayVertexBuffer() {
+    protected GLBuffer getVertexBuffer() {
+        return MeshManager.get().storageHandler(StaticMesh.class).vertexBuffer();
+    }
 
-        StaticMeshManager staticMeshManager = MeshManager.get().staticMeshManager();
+    @Override
+    protected GLBuffer getIndexBuffer() {
+        return MeshManager.get().storageHandler(StaticMesh.class).indexBuffer();
+    }
 
-        GLBuffer vertexBuffer = staticMeshManager.vertexBuffer();
-        GLBuffer indexBuffer = staticMeshManager.indexBuffer();
-
-        vertexArray.setVertexBuffer(0, vertexBuffer, StaticMesh.VERTEX_DATA_SIZE);
-        vertexArray.setIndexBuffer(indexBuffer);
+    @Override
+    protected int getStride() {
+        return StaticMesh.VERTEX_DATA_SIZE;
     }
 
     @Override

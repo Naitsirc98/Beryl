@@ -56,7 +56,7 @@ public class Grass {
 
             final float x = random.nextInt(terrainSize);
             final float z = random.nextInt(terrainSize);
-            final float y = terrain.heightAt(0, 0, x, z);
+            final float y = terrain.heightMap().heightAt(0, 0, x, z);
 
             grass.get(Transform.class).position(x, y, z);
         }

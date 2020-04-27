@@ -7,10 +7,7 @@ import naitsirc98.beryl.graphics.opengl.shaders.GLShader;
 import naitsirc98.beryl.graphics.opengl.shaders.GLShaderProgram;
 import naitsirc98.beryl.graphics.opengl.vertex.GLVertexArray;
 import naitsirc98.beryl.graphics.rendering.renderers.AnimMeshRenderer;
-import naitsirc98.beryl.meshes.AnimMesh;
-import naitsirc98.beryl.meshes.AnimMeshManager;
-import naitsirc98.beryl.meshes.Bone;
-import naitsirc98.beryl.meshes.MeshManager;
+import naitsirc98.beryl.meshes.*;
 import naitsirc98.beryl.meshes.vertices.VertexLayout;
 import naitsirc98.beryl.meshes.views.AnimMeshView;
 import naitsirc98.beryl.scenes.Scene;
@@ -49,20 +46,23 @@ public final class GLAnimMeshRenderer extends GLIndirectRenderer implements Anim
     }
 
     @Override
-    public MeshInstanceList<?> getInstances(Scene scene) {
-        return scene.meshInfo().meshViewsOfType(AnimMeshView.class);
+    protected GLBuffer getVertexBuffer() {
+        return MeshManager.get().storageHandler(AnimMesh.class).vertexBuffer();
     }
 
     @Override
-    protected void updateVertexArrayVertexBuffer() {
+    protected GLBuffer getIndexBuffer() {
+        return MeshManager.get().storageHandler(AnimMesh.class).indexBuffer();
+    }
 
-        AnimMeshManager animMeshManager = MeshManager.get().animMeshManager();
+    @Override
+    protected int getStride() {
+        return AnimMesh.VERTEX_DATA_SIZE;
+    }
 
-        GLBuffer vertexBuffer = animMeshManager.vertexBuffer();
-        GLBuffer indexBuffer = animMeshManager.indexBuffer();
-
-        vertexArray.setVertexBuffer(0, vertexBuffer, AnimMesh.VERTEX_DATA_SIZE);
-        vertexArray.setIndexBuffer(indexBuffer);
+    @Override
+    public MeshInstanceList<?> getInstances(Scene scene) {
+        return scene.meshInfo().meshViewsOfType(AnimMeshView.class);
     }
 
     @Override
@@ -134,7 +134,7 @@ public final class GLAnimMeshRenderer extends GLIndirectRenderer implements Anim
 
     private void checkBonesBuffer() {
 
-        final int bonesBufferMinSize = MeshManager.get().animMeshManager().bonesCount() * Bone.SIZEOF;
+        final int bonesBufferMinSize = BoneStorageHandler.get().count() * Bone.SIZEOF;
 
         if(bonesBuffer.size() < bonesBufferMinSize) {
             bonesBuffer.reallocate(bonesBufferMinSize);

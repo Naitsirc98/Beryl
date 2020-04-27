@@ -10,26 +10,27 @@ public final class Bone {
 
     public static Bone get(String name, Matrix4fc transformation) {
 
-        AnimMeshManager meshManager = MeshManager.get().animMeshManager();
+        BoneStorageHandler boneStorageHandler = BoneStorageHandler.get();
 
-        Bone bone = meshManager.bone(name);
+        Bone bone = boneStorageHandler.bone(name);
 
         if(bone == null) {
-            bone = new Bone(name, transformation);
-            bone.id = meshManager.setBoneData(bone);
+            bone = boneStorageHandler.allocate(name, transformation);
         }
 
         return bone;
     }
 
-
-    private int id;
+    private final int id;
     private final String name;
     private final Matrix4fc transformation;
+    private final BoneStorageInfo storageInfo;
 
-    private Bone(String name, Matrix4fc transformation) {
+    Bone(int id, String name, Matrix4fc transformation) {
+        this.id = id;
         this.name = name;
         this.transformation = transformation;
+        storageInfo = new BoneStorageInfo();
     }
 
     public int id() {
@@ -42,5 +43,9 @@ public final class Bone {
 
     public Matrix4fc transformation() {
         return transformation;
+    }
+
+    public BoneStorageInfo storageInfo() {
+        return storageInfo;
     }
 }
