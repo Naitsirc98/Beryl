@@ -1,4 +1,4 @@
-package naitsirc98.beryl.examples.app1;
+package naitsirc98.beryl.examples.forest;
 
 
 import naitsirc98.beryl.audio.AudioListener;
@@ -9,11 +9,9 @@ import naitsirc98.beryl.input.Input;
 import naitsirc98.beryl.input.Joystick;
 import naitsirc98.beryl.input.Joystick.Axis;
 import naitsirc98.beryl.input.Joystick.AxisDirection;
-import naitsirc98.beryl.lights.LightRange;
 import naitsirc98.beryl.lights.SpotLight;
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.scenes.Camera;
-import naitsirc98.beryl.scenes.components.audio.AudioPlayer;
 import naitsirc98.beryl.scenes.components.behaviours.LateBehaviour;
 import org.joml.Vector3f;
 
@@ -21,7 +19,6 @@ import static naitsirc98.beryl.graphics.window.CursorType.DISABLED;
 import static naitsirc98.beryl.graphics.window.CursorType.NORMAL;
 import static naitsirc98.beryl.input.Input.*;
 import static naitsirc98.beryl.input.Key.*;
-import static org.lwjgl.openal.AL10.*;
 
 public class CameraController extends LateBehaviour {
 
@@ -89,11 +86,15 @@ public class CameraController extends LateBehaviour {
         AudioListener.get().orientation(camera.forward(), camera.up());
         AudioListener.get().velocity(lastPosition.sub(camera.position()).negate());
 
+        /*
+
         if(camera.position().y() < -4.0f) {
             scene().entity(ForestGame.FOREST_DAY_SOUND).get(AudioPlayer.class).source().pitch(0.5f);
         } else {
             scene().entity(ForestGame.FOREST_DAY_SOUND).get(AudioPlayer.class).source().pitch(1.0f);
         }
+
+         */
 
         lastPosition.set(camera.position());
 

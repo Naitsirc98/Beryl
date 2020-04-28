@@ -20,8 +20,6 @@ import static naitsirc98.beryl.util.Maths.lerp;
 
 public class GLDirectionalShadowRenderer {
 
-    private static final float SHADOWS_MAX_DISTANCE = 2048;
-
     private final GLShaderProgram shader;
     private final GLShadowCascadeRenderer[] shadowCascadeRenderers;
     // TODO
@@ -71,7 +69,7 @@ public class GLDirectionalShadowRenderer {
             return;
         }
 
-        final float[] cascadeRanges = calculateCascadeRanges(camera);
+        final float[] cascadeRanges = calculateCascadeRanges(scene, camera);
 
         for(int i = 0;i < MAX_SHADOW_CASCADES_COUNT;i++) {
 
@@ -81,10 +79,12 @@ public class GLDirectionalShadowRenderer {
         }
     }
 
-    private float[] calculateCascadeRanges(Camera camera) {
+    private float[] calculateCascadeRanges(Scene scene, Camera camera) {
 
+
+        final float maxDistance = scene.environment().lighting().shadowsMaxDistance();
         final float nearPlane = camera.nearPlane();
-        final float farPlane = min(camera.farPlane(), SHADOWS_MAX_DISTANCE);
+        final float farPlane = min(camera.farPlane(), maxDistance);
 
         float[] ranges = new float[MAX_SHADOW_CASCADES_COUNT + 1];
 

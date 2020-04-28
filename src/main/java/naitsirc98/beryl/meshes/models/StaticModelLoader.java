@@ -33,19 +33,13 @@ public final class StaticModelLoader extends AssimpLoader {
                              | aiProcess_FixInfacingNormals;
 
 
-    private static final StaticModelLoader INSTANCE = new StaticModelLoader();
-
     private static final StaticVertexHandler DEFAULT_HANDLER = new StaticVertexHandler();
-
     private static final NameMapper DEFAULT_NAME_MAPPER = name -> name;
 
-    public static StaticModelLoader get() {
-        return INSTANCE;
-    }
 
     private final Map<Path, StaticModel> cache;
 
-    private StaticModelLoader() {
+    public StaticModelLoader() {
         cache = new HashMap<>();
     }
 

@@ -25,7 +25,8 @@ import static naitsirc98.beryl.util.types.TypeUtils.initSingleton;
 public final class Beryl {
 
     static {
-        final Runnable setConfigurationMethod = BerylConfiguration.SET_CONFIGURATION_METHOD.get();
+
+        final Runnable setConfigurationMethod = BerylConfiguration.SET_CONFIGURATION_METHOD.get(() -> {});
 
         if(setConfigurationMethod != null) {
             setConfigurationMethod.run();

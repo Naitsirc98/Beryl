@@ -1,4 +1,4 @@
-package naitsirc98.beryl.examples.app1;
+package naitsirc98.beryl.examples.forest;
 
 import naitsirc98.beryl.core.BerylFiles;
 import naitsirc98.beryl.graphics.GraphicsFactory;

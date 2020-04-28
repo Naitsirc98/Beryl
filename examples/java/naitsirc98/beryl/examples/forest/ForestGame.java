@@ -1,4 +1,4 @@
-package naitsirc98.beryl.examples.app1;
+package naitsirc98.beryl.examples.forest;
 
 import naitsirc98.beryl.audio.AudioClip;
 import naitsirc98.beryl.audio.AudioDistanceModel;
@@ -20,7 +20,7 @@ import org.joml.Vector3f;
 
 import java.util.Random;
 
-import static naitsirc98.beryl.examples.app1.Terrain.TERRAIN_SIZE;
+import static naitsirc98.beryl.examples.forest.Terrain.TERRAIN_SIZE;
 import static naitsirc98.beryl.scenes.Fog.DEFAULT_FOG_DENSITY;
 import static naitsirc98.beryl.scenes.SceneManager.newScene;
 

@@ -1,5 +1,6 @@
-package naitsirc98.beryl.examples.app1;
+package naitsirc98.beryl.examples.forest;
 
+import naitsirc98.beryl.core.BerylFiles;
 import naitsirc98.beryl.graphics.GraphicsFactory;
 import naitsirc98.beryl.graphics.textures.Texture;
 import naitsirc98.beryl.graphics.textures.Texture2D;
@@ -27,8 +28,9 @@ public class Lamp {
 
         if(lampModel == null) {
 
-            lampModel = StaticModelLoader.get()
-                    .load(Paths.get("C:\\Users\\naits\\Downloads\\uploads_files_1923232_2otdoorlightning\\lightning1.fbx"),
+            StaticModelLoader loader = new StaticModelLoader();
+
+            lampModel = loader.load(BerylFiles.getPath("models/lamp.fbx"),
                             false, new StaticVertexHandler.Builder().positionFunction(p -> p.mul(0.01f)).build());
 
             setLampMaterial(lampModel.meshView(0));
@@ -49,23 +51,25 @@ public class Lamp {
 
     private static void setLampMaterial(StaticMeshView meshView) {
 
-        String dir = "C:\\Users\\naits\\Downloads\\uploads_files_1923232_2otdoorlightning\\textures\\unreal\\";
-
         PhongMaterial material = (PhongMaterial) meshView.material();
 
-        Texture2D colorTexture = GraphicsFactory.get().newTexture2D(dir+"lightning1_lightoff_BaseColor.tga", PixelFormat.SRGBA);
+        Texture2D colorTexture = GraphicsFactory.get().newTexture2D(getTexturePath("lightning1_lightoff_BaseColor.tga"), PixelFormat.SRGBA);
         colorTexture.setQuality(Texture.Quality.HIGH);
 
-        Texture2D normalMap = GraphicsFactory.get().newTexture2D(dir+"lightning1_Normal.tga", PixelFormat.RGBA);
+        Texture2D normalMap = GraphicsFactory.get().newTexture2D(getTexturePath("lightning1_Normal.tga"), PixelFormat.RGBA);
         normalMap.setQuality(Texture.Quality.HIGH);
 
-        Texture2D emissiveMap = GraphicsFactory.get().newTexture2D(dir+"lightning1_Emissive.tga", PixelFormat.RGBA);
+        Texture2D emissiveMap = GraphicsFactory.get().newTexture2D(getTexturePath("lightning1_Emissive.tga"), PixelFormat.RGBA);
         emissiveMap.setQuality(Texture.Quality.HIGH);
 
         material.colorMap(colorTexture)
                 .normalMap(normalMap)
                 .emissiveMap(emissiveMap)
                 .emissiveColor(Color.colorWhite());
+    }
+
+    private static String getTexturePath(String name) {
+        return BerylFiles.getString("textures/lamp/"+name);
     }
 
 }

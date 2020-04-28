@@ -162,7 +162,7 @@ public final class MeshManager implements AssetManager<Mesh> {
 
     private void loadBasicMeshes() {
 
-        StaticModelLoader loader = StaticModelLoader.get();
+        StaticModelLoader loader = new StaticModelLoader();
 
         loader.load(BerylFiles.getPath("models/cube.obj"), false, name -> "CUBE");
         loader.load(BerylFiles.getPath("models/quad.obj"), false, name -> "QUAD");

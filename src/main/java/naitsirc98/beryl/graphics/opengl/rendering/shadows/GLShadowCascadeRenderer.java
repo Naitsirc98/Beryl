@@ -17,13 +17,12 @@ import org.lwjgl.system.MemoryStack;
 
 import java.nio.FloatBuffer;
 
+import static java.lang.Math.max;
 import static org.lwjgl.opengl.GL11C.*;
 import static org.lwjgl.opengl.GL14C.GL_DEPTH_COMPONENT32;
 import static org.lwjgl.opengl.GL30C.GL_DEPTH_ATTACHMENT;
 
 public class GLShadowCascadeRenderer {
-
-    public static final int DEPTH_MAP_SIZE = 1024;
 
     private final GLTexture2D depthTexture;
     private final GLFramebuffer framebuffer;
@@ -32,8 +31,9 @@ public class GLShadowCascadeRenderer {
 
     GLShadowCascadeRenderer(GLShaderProgram depthShader) {
         this.depthShader = depthShader;
-        depthTexture = createDepthTexture();
-        framebuffer = createFramebuffer();
+        depthTexture = new GLTexture2D();
+        framebuffer = new GLFramebuffer();
+        framebuffer.setAsDepthOnlyFramebuffer();
         shadowCascade = new ShadowCascade();
     }
 
@@ -49,11 +49,7 @@ public class GLShadowCascadeRenderer {
 
         shadowCascade.update(scene.camera(), nearPlane, farPlane, light);
 
-        framebuffer.bind();
-
-        glViewport(0, 0, DEPTH_MAP_SIZE, DEPTH_MAP_SIZE);
-        glClearColor(0, 0, 0, 0);
-        glClear(GL_DEPTH_BUFFER_BIT);
+        prepareFramebuffer(scene);
 
         renderMeshShadows(scene, (GLIndirectRenderer) APIRenderSystem.get().getStaticMeshRenderer());
         renderMeshShadows(scene, (GLIndirectRenderer) APIRenderSystem.get().getAnimMeshRenderer());
@@ -83,26 +79,25 @@ public class GLShadowCascadeRenderer {
         }
     }
 
-    private GLTexture2D createDepthTexture() {
+    private void prepareFramebuffer(Scene scene) {
 
-        GLTexture2D depthTexture = new GLTexture2D();
+        final int shadowMapSize = max(scene.environment().lighting().shadowMapSize(), 1);
 
-        depthTexture.allocate(1, DEPTH_MAP_SIZE, DEPTH_MAP_SIZE, GL_DEPTH_COMPONENT32);
+        if(depthTexture.width() != shadowMapSize) {
+            setupFramebuffer(shadowMapSize);
+        }
 
-        return depthTexture;
+        framebuffer.bind();
+
+        glViewport(0, 0, shadowMapSize, shadowMapSize);
+        glClearColor(0, 0, 0, 0);
+        glClear(GL_DEPTH_BUFFER_BIT);
     }
 
-    private GLFramebuffer createFramebuffer() {
-
-        GLFramebuffer framebuffer = new GLFramebuffer();
-
+    private void setupFramebuffer(int shadowMapSize) {
+        depthTexture.reallocate(1, shadowMapSize, shadowMapSize, GL_DEPTH_COMPONENT32);
         framebuffer.attach(GL_DEPTH_ATTACHMENT, depthTexture, 0);
-
-        framebuffer.setAsDepthOnlyFramebuffer();
-
         framebuffer.ensureComplete();
-
-        return framebuffer;
     }
 
     public void terminate() {

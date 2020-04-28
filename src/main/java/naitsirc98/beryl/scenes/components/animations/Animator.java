@@ -103,7 +103,6 @@ public class Animator extends Component<Animator> {
 
         increaseAnimationTime();
 
-
         computeCurrentAnimationPose();
     }
 
@@ -144,8 +143,8 @@ public class Animator extends Component<Animator> {
 
         final Vector3f previousPosition = previous.getTranslation(new Vector3f());
         final Vector3f nextPosition = next.getTranslation(new Vector3f());
-        final Quaternionf previousRotation = previous.getUnnormalizedRotation(new Quaternionf());
-        final Quaternionf nextRotation = next.getUnnormalizedRotation(new Quaternionf());
+        final Quaternionf previousRotation = previous.getNormalizedRotation(new Quaternionf());
+        final Quaternionf nextRotation = next.getNormalizedRotation(new Quaternionf());
 
         assertNotEquals(previousPosition, nextPosition);
 
@@ -165,7 +164,7 @@ public class Animator extends Component<Animator> {
     }
 
     private void increaseAnimationTime() {
-        animationTime += Time.IDEAL_DELTA_TIME;
+        animationTime += 1;// Time.IDEAL_DELTA_TIME;
         if(loop && animationTime > currentAnimation.duration()) {
             animationTime %= currentAnimation.duration();
         }

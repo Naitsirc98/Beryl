@@ -2,7 +2,6 @@ package naitsirc98.beryl.meshes.models;
 
 import naitsirc98.beryl.animations.Animation;
 import naitsirc98.beryl.animations.KeyFrame;
-import naitsirc98.beryl.core.Time;
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.meshes.AnimMesh;
 import naitsirc98.beryl.meshes.Bone;
@@ -39,19 +38,13 @@ public class AnimModelLoader extends AssimpLoader {
             | aiProcess_FixInfacingNormals;
 
 
-    private static final AnimModelLoader INSTANCE = new AnimModelLoader();
-
     private static final StaticVertexHandler DEFAULT_HANDLER = new StaticVertexHandler();
-
     private static final NameMapper DEFAULT_NAME_MAPPER = name -> name;
 
-    public static AnimModelLoader get() {
-        return INSTANCE;
-    }
 
     private final Map<Path, AnimModel> cache;
 
-    private AnimModelLoader() {
+    public AnimModelLoader() {
         cache = new HashMap<>();
     }
 
@@ -305,7 +298,7 @@ public class AnimModelLoader extends AssimpLoader {
 
         Quaternionf rotation = new Quaternionf();
 
-        for (int i = 0; i < numFrames; i++) {
+        for(int i = 0; i < numFrames; i++) {
 
             AIVector3D translation = positionKeys.get(i).mValue();
 
