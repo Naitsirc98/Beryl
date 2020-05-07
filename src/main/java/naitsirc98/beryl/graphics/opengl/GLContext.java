@@ -4,7 +4,6 @@ import naitsirc98.beryl.core.Beryl;
 import naitsirc98.beryl.core.BerylConfiguration;
 import naitsirc98.beryl.graphics.GraphicsContext;
 import naitsirc98.beryl.graphics.GraphicsFactory;
-import naitsirc98.beryl.graphics.window.DisplayMode;
 import naitsirc98.beryl.graphics.window.Window;
 import naitsirc98.beryl.graphics.window.WindowFactory;
 import naitsirc98.beryl.util.handles.LongHandle;
@@ -12,7 +11,8 @@ import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GLCapabilities;
 
 import static naitsirc98.beryl.graphics.opengl.GLDebugMessenger.newGLDebugMessenger;
-import static org.lwjgl.glfw.GLFW.*;
+import static org.lwjgl.glfw.GLFW.glfwMakeContextCurrent;
+import static org.lwjgl.glfw.GLFW.glfwSwapInterval;
 import static org.lwjgl.opengl.GL11.glDisable;
 import static org.lwjgl.opengl.GL11.glEnable;
 import static org.lwjgl.opengl.GL13.GL_MULTISAMPLE;

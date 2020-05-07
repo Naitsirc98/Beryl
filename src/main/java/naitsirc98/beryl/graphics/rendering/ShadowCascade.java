@@ -1,16 +1,14 @@
-package naitsirc98.beryl.graphics.rendering.renderers;
+package naitsirc98.beryl.graphics.rendering;
 
-import naitsirc98.beryl.graphics.window.Window;
 import naitsirc98.beryl.lights.DirectionalLight;
 import naitsirc98.beryl.scenes.Camera;
 import org.joml.*;
 
-import java.lang.Math;
-
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 import static java.util.stream.IntStream.range;
-import static naitsirc98.beryl.util.Maths.*;
+import static naitsirc98.beryl.util.Maths.acos;
+import static naitsirc98.beryl.util.Maths.asin;
 
 public class ShadowCascade {
 

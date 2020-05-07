@@ -8,6 +8,7 @@ import naitsirc98.beryl.core.BerylApplication;
 import naitsirc98.beryl.core.BerylConfiguration;
 import naitsirc98.beryl.core.BerylFiles;
 import naitsirc98.beryl.graphics.GraphicsAPI;
+import naitsirc98.beryl.graphics.rendering.RenderSystem;
 import naitsirc98.beryl.graphics.window.DisplayMode;
 import naitsirc98.beryl.graphics.window.Window;
 import naitsirc98.beryl.lights.DirectionalLight;

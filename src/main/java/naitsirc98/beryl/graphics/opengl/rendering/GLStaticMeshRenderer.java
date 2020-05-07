@@ -6,7 +6,7 @@ import naitsirc98.beryl.graphics.opengl.rendering.shadows.GLShadowsInfo;
 import naitsirc98.beryl.graphics.opengl.shaders.GLShader;
 import naitsirc98.beryl.graphics.opengl.shaders.GLShaderProgram;
 import naitsirc98.beryl.graphics.opengl.vertex.GLVertexArray;
-import naitsirc98.beryl.graphics.rendering.renderers.StaticMeshRenderer;
+import naitsirc98.beryl.graphics.rendering.Renderer;
 import naitsirc98.beryl.meshes.MeshManager;
 import naitsirc98.beryl.meshes.StaticMesh;
 import naitsirc98.beryl.meshes.vertices.VertexLayout;
@@ -19,7 +19,7 @@ import static naitsirc98.beryl.graphics.ShaderStage.FRAGMENT_STAGE;
 import static naitsirc98.beryl.graphics.ShaderStage.VERTEX_STAGE;
 import static naitsirc98.beryl.meshes.vertices.VertexAttribute.*;
 
-public final class GLStaticMeshRenderer extends GLIndirectRenderer implements StaticMeshRenderer {
+public final class GLStaticMeshRenderer extends GLIndirectRenderer implements Renderer {
 
     public GLStaticMeshRenderer(GLShadowsInfo shadowsInfo) {
         super(shadowsInfo);

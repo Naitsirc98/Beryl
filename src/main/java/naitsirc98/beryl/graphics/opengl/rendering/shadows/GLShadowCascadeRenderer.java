@@ -2,11 +2,11 @@ package naitsirc98.beryl.graphics.opengl.rendering.shadows;
 
 import naitsirc98.beryl.graphics.opengl.rendering.GLFrustumCuller.PreConditionState;
 import naitsirc98.beryl.graphics.opengl.rendering.GLIndirectRenderer;
+import naitsirc98.beryl.graphics.opengl.rendering.GLMeshRenderer;
 import naitsirc98.beryl.graphics.opengl.shaders.GLShaderProgram;
 import naitsirc98.beryl.graphics.opengl.swapchain.GLFramebuffer;
 import naitsirc98.beryl.graphics.opengl.textures.GLTexture2D;
-import naitsirc98.beryl.graphics.rendering.APIRenderSystem;
-import naitsirc98.beryl.graphics.rendering.renderers.ShadowCascade;
+import naitsirc98.beryl.graphics.rendering.ShadowCascade;
 import naitsirc98.beryl.lights.DirectionalLight;
 import naitsirc98.beryl.meshes.TerrainMesh;
 import naitsirc98.beryl.meshes.views.MeshView;
@@ -45,14 +45,13 @@ public class GLShadowCascadeRenderer {
         return depthTexture;
     }
 
-    public void render(Scene scene, DirectionalLight light, float nearPlane, float farPlane) {
+    public void render(Scene scene, GLMeshRenderer meshRenderer, DirectionalLight light, float nearPlane, float farPlane) {
 
         shadowCascade.update(scene.camera(), nearPlane, farPlane, light);
 
         prepareFramebuffer(scene);
 
-        renderMeshShadows(scene, (GLIndirectRenderer) APIRenderSystem.get().getStaticMeshRenderer());
-        renderMeshShadows(scene, (GLIndirectRenderer) APIRenderSystem.get().getAnimMeshRenderer());
+        renderMeshShadows(scene, meshRenderer.staticMeshRenderer());
 
         glFinish();
     }
@@ -65,7 +64,7 @@ public class GLShadowCascadeRenderer {
 
         renderer.addDynamicState(this::setOpenGLStateAndUniforms);
 
-        renderer.renderScene(scene, drawCount, depthShader);
+        renderer.render(scene, drawCount, false, depthShader);
     }
 
     private PreConditionState discardTerrain(MeshInstance<?> instance, MeshView<?> meshView) {

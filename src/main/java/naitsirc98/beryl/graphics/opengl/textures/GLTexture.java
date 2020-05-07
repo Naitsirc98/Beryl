@@ -92,6 +92,16 @@ public abstract class GLTexture extends ManagedResource implements GLObject, Tex
     }
 
     @Override
+    public void incrementUseCount() {
+        ++useCount;
+    }
+
+    @Override
+    public void decrementUseCount() {
+        --useCount;
+    }
+
+    @Override
     public void resetUseCount() {
         useCount = 0;
     }
@@ -106,14 +116,15 @@ public abstract class GLTexture extends ManagedResource implements GLObject, Tex
             residentHandle = glGetTextureHandleARB(handle);
             glMakeTextureHandleResidentARB(residentHandle);
         }
-        ++useCount;
         return residentHandle;
     }
 
     public void makeNonResident() {
-        if(residentHandle != NULL && useCount - 1 == 0) {
-            useCount = 0;
+        if(residentHandle != NULL && useCount == 1) {
+            resetUseCount();
             glMakeTextureHandleNonResidentARB(residentHandle());
+        } else {
+            Log.warning("Tried to make texture " + this + " non resident, but it is used by multiple owners.");
         }
     }
 
@@ -288,7 +299,8 @@ public abstract class GLTexture extends ManagedResource implements GLObject, Tex
     @Override
     protected void free() {
 
-        makeNonResident();
+        forceMakeNonResident();
+
         glDeleteTextures(handle);
 
         allocated = false;

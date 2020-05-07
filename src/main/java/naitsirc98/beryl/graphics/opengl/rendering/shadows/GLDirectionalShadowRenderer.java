@@ -1,10 +1,11 @@
 package naitsirc98.beryl.graphics.opengl.rendering.shadows;
 
 import naitsirc98.beryl.core.BerylFiles;
+import naitsirc98.beryl.graphics.opengl.rendering.GLMeshRenderer;
 import naitsirc98.beryl.graphics.opengl.shaders.GLShader;
 import naitsirc98.beryl.graphics.opengl.shaders.GLShaderProgram;
 import naitsirc98.beryl.graphics.opengl.textures.GLTexture2D;
-import naitsirc98.beryl.graphics.rendering.renderers.ShadowCascade;
+import naitsirc98.beryl.graphics.rendering.ShadowCascade;
 import naitsirc98.beryl.lights.DirectionalLight;
 import naitsirc98.beryl.scenes.Camera;
 import naitsirc98.beryl.scenes.Scene;
@@ -22,7 +23,6 @@ public class GLDirectionalShadowRenderer {
 
     private final GLShaderProgram shader;
     private final GLShadowCascadeRenderer[] shadowCascadeRenderers;
-    // TODO
     private GLTexture2D[] directionalDepthTextures;
     private ShadowCascade[] shadowCascades;
 
@@ -59,7 +59,7 @@ public class GLDirectionalShadowRenderer {
         return shadowCascades;
     }
 
-    public void bakeDirectionalShadows(Scene scene) {
+    public void bakeDirectionalShadows(Scene scene, GLMeshRenderer meshRenderer) {
 
         DirectionalLight light = scene.environment().lighting().directionalLight();
 
@@ -75,12 +75,11 @@ public class GLDirectionalShadowRenderer {
 
             GLShadowCascadeRenderer shadowCascadeRenderer = shadowCascadeRenderers[i];
 
-            shadowCascadeRenderer.render(scene, light, cascadeRanges[i], cascadeRanges[i + 1]);
+            shadowCascadeRenderer.render(scene, meshRenderer, light, cascadeRanges[i], cascadeRanges[i + 1]);
         }
     }
 
     private float[] calculateCascadeRanges(Scene scene, Camera camera) {
-
 
         final float maxDistance = scene.environment().lighting().shadowsMaxDistance();
         final float nearPlane = camera.nearPlane();

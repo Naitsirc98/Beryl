@@ -9,8 +9,7 @@ import naitsirc98.beryl.graphics.opengl.shaders.GLShaderProgram;
 import naitsirc98.beryl.graphics.opengl.swapchain.GLFramebuffer;
 import naitsirc98.beryl.graphics.opengl.textures.GLTexture2D;
 import naitsirc98.beryl.graphics.opengl.vertex.GLVertexArray;
-import naitsirc98.beryl.graphics.rendering.APIRenderSystem;
-import naitsirc98.beryl.graphics.rendering.renderers.WaterRenderer;
+import naitsirc98.beryl.graphics.rendering.Renderer;
 import naitsirc98.beryl.graphics.textures.Texture2D;
 import naitsirc98.beryl.graphics.window.Window;
 import naitsirc98.beryl.images.PixelFormat;
@@ -40,9 +39,11 @@ import static org.lwjgl.opengl.GL30.*;
 import static org.lwjgl.opengl.GL31C.GL_UNIFORM_BUFFER;
 import static org.lwjgl.system.MemoryStack.stackPush;
 
-public class GLWaterRenderer implements WaterRenderer {
+public class GLWaterRenderer implements Renderer {
 
     public static final int QUAD_INDEX_COUNT = 6;
+
+
     private GLShaderProgram waterShader;
 
     private GLVertexArray vertexArray;
@@ -53,12 +54,17 @@ public class GLWaterRenderer implements WaterRenderer {
     private GLFramebuffer refractionFramebuffer;
 
     private GLTexture2D depthTexture;
-
     private StaticMesh quadMesh;
-
     private Vector4f clipPlane;
-
     private Consumer<GLShaderProgram> setClipPlaneUniform;
+
+    private final GLMeshRenderer meshRenderer;
+    private final GLSkyboxRenderer skyboxRenderer;
+
+    GLWaterRenderer(GLMeshRenderer meshRenderer, GLSkyboxRenderer skyboxRenderer) {
+        this.meshRenderer = meshRenderer;
+        this.skyboxRenderer = skyboxRenderer;
+    }
 
     @Override
     public void init() {
@@ -102,7 +108,6 @@ public class GLWaterRenderer implements WaterRenderer {
         quadMesh = null;
     }
 
-    @Override
     public void render(Scene scene) {
 
         final MeshInstanceList<WaterMeshInstance> waterInstances = scene.meshInfo().meshViewsOfType(WaterMeshView.class);
@@ -128,26 +133,6 @@ public class GLWaterRenderer implements WaterRenderer {
         }
 
         glDisable(GL_BLEND);
-    }
-
-    private void setOpenGLState(Scene scene) {
-
-        final Camera camera = scene.camera();
-        final GLBuffer cameraBuffer = scene.cameraInfo().cameraBuffer();
-        final GLBuffer lightsBuffer = scene.environment().buffer();
-
-        glEnable(GL_DEPTH_TEST);
-        glDisable(GL_CULL_FACE);
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-        cameraBuffer.bind(GL_UNIFORM_BUFFER, 0);
-
-        lightsBuffer.bind(GL_UNIFORM_BUFFER, 1);
-
-        waterShader.uniformSampler("u_DepthTexture", depthTexture, 0);
-        waterShader.uniformFloat("u_NearPlane", camera.nearPlane());
-        waterShader.uniformFloat("u_FarPlane", camera.farPlane());
     }
 
     private void renderWater(FloatBuffer modelMatrixBuffer, WaterMeshInstance instance) {
@@ -212,6 +197,26 @@ public class GLWaterRenderer implements WaterRenderer {
         } else {
             waterShader.uniformBool("u_NormalMapPresent", false);
         }
+    }
+
+    private void setOpenGLState(Scene scene) {
+
+        final Camera camera = scene.camera();
+        final GLBuffer cameraBuffer = scene.cameraInfo().cameraBuffer();
+        final GLBuffer lightsBuffer = scene.environment().buffer();
+
+        glEnable(GL_DEPTH_TEST);
+        glDisable(GL_CULL_FACE);
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+        cameraBuffer.bind(GL_UNIFORM_BUFFER, 0);
+
+        lightsBuffer.bind(GL_UNIFORM_BUFFER, 1);
+
+        waterShader.uniformSampler("u_DepthTexture", depthTexture, 0);
+        waterShader.uniformFloat("u_NearPlane", camera.nearPlane());
+        waterShader.uniformFloat("u_FarPlane", camera.farPlane());
     }
 
     public void bakeWaterTextures(Scene scene) {
@@ -306,8 +311,7 @@ public class GLWaterRenderer implements WaterRenderer {
         prepareFramebuffer(framebuffer, (GLTexture2D) texture);
 
         if(enhancedWater.isEnhanced(waterView)) {
-            renderStaticMeshes(scene);
-            renderAnimMeshes(scene);
+            renderMeshes(scene, meshRenderer.staticMeshRenderer());
         }
 
         if(renderSkybox) {
@@ -317,23 +321,12 @@ public class GLWaterRenderer implements WaterRenderer {
         glFinish();
     }
 
-    private void renderStaticMeshes(Scene scene) {
-        renderMeshes(scene, (GLIndirectRenderer) APIRenderSystem.get().getStaticMeshRenderer());
-    }
-
-    private void renderAnimMeshes(Scene scene) {
-        renderMeshes(scene, (GLIndirectRenderer) APIRenderSystem.get().getAnimMeshRenderer());
-    }
-
     private void renderMeshes(Scene scene, GLIndirectRenderer renderer) {
         renderer.addDynamicState(setClipPlaneUniform);
-        renderer.render(scene);
+        renderer.render(scene, false);
     }
 
     private void renderSkybox(Scene scene) {
-
-        final GLSkyboxRenderer skyboxRenderer = (GLSkyboxRenderer) APIRenderSystem.get().getSkyboxRenderer();
-
         skyboxRenderer.render(scene);
     }
 

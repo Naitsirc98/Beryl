@@ -37,6 +37,8 @@ layout(std140, binding = 5) uniform ShadowsInfo {
     float u_CascadeFarPlanes[MAX_SHADOW_CASCADES_COUNT]; 
 };
 
+uniform bool u_ShadowsEnabled;
+
 uniform sampler2D u_DirShadowMaps[MAX_SHADOW_CASCADES_COUNT];
 
 layout(location = 0) in VertexData {
@@ -204,7 +206,7 @@ vec4 computeLighting() {
         diffuseSpecularColor += computeSpotLighting(u_SpotLights[i]);
     }
 
-    float shadows = computeDirShadows();
+    float shadows = u_ShadowsEnabled ? computeDirShadows() : 0.0;
 
     vec4 color = ambientColor + diffuseSpecularColor * (1.0 - shadows);
 

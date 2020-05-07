@@ -202,6 +202,7 @@ public class Material implements IMaterial, PhongMaterial, WaterMaterial {
 
     @Override
     public PhongMaterial ambientMap(Texture2D ambientMap) {
+        updateTexturesUseCount(AMBIENT_MAP, ambientMap);
         properties.put(AMBIENT_MAP, ambientMap);
         modify();
         return this;
@@ -214,6 +215,7 @@ public class Material implements IMaterial, PhongMaterial, WaterMaterial {
 
     @Override
     public PhongMaterial diffuseMap(Texture2D diffuseMap) {
+        updateTexturesUseCount(DIFFUSE_MAP, diffuseMap);
         properties.put(DIFFUSE_MAP, diffuseMap);
         modify();
         return this;
@@ -226,6 +228,7 @@ public class Material implements IMaterial, PhongMaterial, WaterMaterial {
 
     @Override
     public PhongMaterial specularMap(Texture2D specularMap) {
+        updateTexturesUseCount(SPECULAR_MAP, specularMap);
         properties.put(SPECULAR_MAP, specularMap);
         modify();
         return this;
@@ -238,6 +241,7 @@ public class Material implements IMaterial, PhongMaterial, WaterMaterial {
 
     @Override
     public PhongMaterial emissiveMap(Texture2D emissiveMap) {
+        updateTexturesUseCount(EMISSIVE_MAP, emissiveMap);
         properties.put(EMISSIVE_MAP, emissiveMap);
         modify();
         return this;
@@ -250,6 +254,7 @@ public class Material implements IMaterial, PhongMaterial, WaterMaterial {
 
     @Override
     public PhongMaterial occlusionMap(Texture2D occlusionMap) {
+        updateTexturesUseCount(OCCLUSION_MAP, occlusionMap);
         properties.put(OCCLUSION_MAP, occlusionMap);
         modify();
         return this;
@@ -262,6 +267,7 @@ public class Material implements IMaterial, PhongMaterial, WaterMaterial {
 
     @Override
     public Material normalMap(Texture2D normalMap) {
+        updateTexturesUseCount(NORMAL_MAP, normalMap);
         properties.put(NORMAL_MAP, normalMap);
         if(normalMap == null) {
             flags.enable(NORMAL_MAP_PRESENT);
@@ -279,6 +285,7 @@ public class Material implements IMaterial, PhongMaterial, WaterMaterial {
 
     @Override
     public WaterMaterial reflectionMap(Texture2D reflectionMap) {
+        updateTexturesUseCount(REFLECTION_MAP, reflectionMap);
         properties.put(REFLECTION_MAP, reflectionMap);
         modify();
         return this;
@@ -291,6 +298,7 @@ public class Material implements IMaterial, PhongMaterial, WaterMaterial {
 
     @Override
     public WaterMaterial refractionMap(Texture2D refractionMap) {
+        updateTexturesUseCount(REFRACTION_MAP, refractionMap);
         properties.put(REFRACTION_MAP, refractionMap);
         modify();
         return this;
@@ -303,6 +311,7 @@ public class Material implements IMaterial, PhongMaterial, WaterMaterial {
 
     @Override
     public WaterMaterial dudvMap(Texture2D dudvMap) {
+        updateTexturesUseCount(DUDV_MAP, dudvMap);
         properties.put(DUDV_MAP, dudvMap);
         modify();
         return this;
@@ -344,5 +353,18 @@ public class Material implements IMaterial, PhongMaterial, WaterMaterial {
     @SuppressWarnings("unchecked")
     private <T> T get(int propertyID) {
         return (T) properties.get((byte)propertyID);
+    }
+
+    private void updateTexturesUseCount(byte textureKey, Texture2D newTexture) {
+
+        Texture2D oldTexture = get(textureKey);
+
+        if(oldTexture != null) {
+            oldTexture.decrementUseCount();
+        }
+
+        if(newTexture != null) {
+            newTexture.incrementUseCount();
+        }
     }
 }

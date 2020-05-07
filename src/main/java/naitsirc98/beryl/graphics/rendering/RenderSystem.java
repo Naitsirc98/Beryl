@@ -15,6 +15,14 @@ public final class RenderSystem extends BerylSystem {
 
     private static APIRenderSystem apiRenderSystem;
 
+    public static boolean shadowsEnabled() {
+        return apiRenderSystem.shadowsEnabled();
+    }
+
+    public static void shadowsEnabled(boolean shadowsEnabled) {
+        apiRenderSystem.shadowsEnabled(shadowsEnabled);
+    }
+
     public static void prepare(Scene scene) {
         apiRenderSystem.prepare(scene);
     }
@@ -37,7 +45,6 @@ public final class RenderSystem extends BerylSystem {
         Class<? extends APIRenderSystem> apiRenderSystemClass = GLRenderSystem.class;
         apiRenderSystem = newInstance(apiRenderSystemClass);
         apiRenderSystem.init();
-        initSingleton(APIRenderSystem.class, apiRenderSystem);
     }
 
     @Override

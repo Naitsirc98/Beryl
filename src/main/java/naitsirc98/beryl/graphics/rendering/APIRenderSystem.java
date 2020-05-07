@@ -1,54 +1,22 @@
 package naitsirc98.beryl.graphics.rendering;
 
-import naitsirc98.beryl.graphics.rendering.renderers.*;
 import naitsirc98.beryl.scenes.Scene;
-import naitsirc98.beryl.util.types.Singleton;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
+public interface APIRenderSystem {
 
-public abstract class APIRenderSystem {
+    void init();
 
-    @Singleton
-    private static APIRenderSystem instance;
+    void terminate();
 
-    public static APIRenderSystem get() {
-        return instance;
-    }
+    boolean shadowsEnabled();
 
-    private final Map<Class<? extends Renderer>, Renderer> renderers;
+    void shadowsEnabled(boolean shadowsEnabled);
 
-    protected APIRenderSystem() {
-        this.renderers = new LinkedHashMap<>();
-    }
+    void begin();
 
-    final void init() {
-        renderers.put(StaticMeshRenderer.class, getStaticMeshRenderer());
-        renderers.put(AnimMeshRenderer.class, getAnimMeshRenderer());
-        renderers.put(SkyboxRenderer.class, getSkyboxRenderer());
-        renderers.put(WaterRenderer.class, getWaterRenderer());
-        renderers.put(ShadowRenderer.class, getShadowRenderer());
-        // TODO...
-        renderers.values().forEach(Renderer::init);
-    }
+    void prepare(Scene scene);
 
-    final void terminate() {
-        renderers.values().forEach(Renderer::terminate);
-    }
+    void render(Scene scene);
 
-    public abstract void begin();
-
-    public abstract void prepare(Scene scene);
-
-    public abstract void render(Scene scene);
-
-    public abstract void end();
-
-    // Renderers
-    public abstract StaticMeshRenderer getStaticMeshRenderer();
-    public abstract AnimMeshRenderer getAnimMeshRenderer();
-    public abstract SkyboxRenderer getSkyboxRenderer();
-    public abstract WaterRenderer getWaterRenderer();
-    public abstract ShadowRenderer getShadowRenderer();
-    // TODO...
+    void end();
 }

@@ -30,7 +30,7 @@ public final class MeshManager implements AssetManager<Mesh> {
         meshHandleProvider = new AtomicInteger(0);
         meshNames = new ConcurrentHashMap<>();
         meshStorageHandlers = createMeshStorageHandlers();
-        loadBasicMeshes();
+        loadPrimitiveMeshes();
     }
 
     @SuppressWarnings("unchecked")
@@ -47,21 +47,6 @@ public final class MeshManager implements AssetManager<Mesh> {
         final int meshHandle = meshHandleProvider.getAndIncrement();
 
         StaticMesh mesh = new StaticMesh(meshHandle, name, vertices, indices);
-
-        allocate(mesh);
-
-        return mesh;
-    }
-
-    protected synchronized AnimMesh createAnimMesh(String name, ByteBuffer vertices, ByteBuffer indices) {
-
-        if(invalidMeshData(name, vertices, indices)) {
-            return null;
-        }
-
-        final int meshHandle = meshHandleProvider.getAndIncrement();
-
-        AnimMesh mesh = new AnimMesh(meshHandle, name, vertices, indices);
 
         allocate(mesh);
 
@@ -160,13 +145,13 @@ public final class MeshManager implements AssetManager<Mesh> {
         return false;
     }
 
-    private void loadBasicMeshes() {
+    private void loadPrimitiveMeshes() {
 
         StaticModelLoader loader = new StaticModelLoader();
 
-        loader.load(BerylFiles.getPath("models/cube.obj"), false, name -> "CUBE");
-        loader.load(BerylFiles.getPath("models/quad.obj"), false, name -> "QUAD");
-        loader.load(BerylFiles.getPath("models/sphere.obj"), false, name -> "SPHERE");
+        loader.load(BerylFiles.getPath("models/cube.obj"), false, name -> PrimitiveMeshNames.CUBE_MESH_NAME);
+        loader.load(BerylFiles.getPath("models/quad.obj"), false, name -> PrimitiveMeshNames.QUAD_MESH_NAME);
+        loader.load(BerylFiles.getPath("models/sphere.obj"), false, name -> PrimitiveMeshNames.SPHERE_MESH_NAME);
     }
 
     private Map<Class<? extends Mesh>, MeshStorageHandler<? extends Mesh>> createMeshStorageHandlers() {
@@ -174,7 +159,6 @@ public final class MeshManager implements AssetManager<Mesh> {
         Map<Class<? extends Mesh>, MeshStorageHandler<? extends Mesh>> handlers = new HashMap<>();
 
         handlers.put(StaticMesh.class, new StaticMeshStorageHandler());
-        handlers.put(AnimMesh.class, new AnimMeshStorageHandler());
 
         return handlers;
     }

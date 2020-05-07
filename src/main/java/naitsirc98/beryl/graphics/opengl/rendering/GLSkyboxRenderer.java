@@ -6,10 +6,9 @@ import naitsirc98.beryl.graphics.opengl.shaders.GLShader;
 import naitsirc98.beryl.graphics.opengl.shaders.GLShaderProgram;
 import naitsirc98.beryl.graphics.opengl.textures.GLCubemap;
 import naitsirc98.beryl.graphics.opengl.vertex.GLVertexArray;
-import naitsirc98.beryl.graphics.rendering.renderers.SkyboxRenderer;
+import naitsirc98.beryl.graphics.rendering.Renderer;
 import naitsirc98.beryl.meshes.Mesh;
 import naitsirc98.beryl.meshes.StaticMesh;
-import naitsirc98.beryl.meshes.models.StaticModelLoader;
 import naitsirc98.beryl.meshes.vertices.VertexLayout;
 import naitsirc98.beryl.scenes.Scene;
 import naitsirc98.beryl.scenes.SceneEnvironment;
@@ -28,7 +27,7 @@ import static org.lwjgl.opengl.GL31C.GL_UNIFORM_BUFFER;
 import static org.lwjgl.opengl.GL32.GL_TEXTURE_CUBE_MAP_SEAMLESS;
 import static org.lwjgl.system.MemoryStack.stackPush;
 
-public class GLSkyboxRenderer implements SkyboxRenderer {
+public class GLSkyboxRenderer implements Renderer {
 
     private static final int MATRICES_BUFFER_SIZE = MATRIX4_SIZEOF * 2;
     private static final int PROJECTION_MATRIX_OFFSET = 0;
@@ -86,7 +85,6 @@ public class GLSkyboxRenderer implements SkyboxRenderer {
         return shader;
     }
 
-    @Override
     public void render(Scene scene) {
 
         final SceneEnvironment environment = scene.environment();

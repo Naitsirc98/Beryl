@@ -1,9 +1,10 @@
 package naitsirc98.beryl.graphics.opengl.rendering.shadows;
 
 import naitsirc98.beryl.graphics.opengl.buffers.GLBuffer;
+import naitsirc98.beryl.graphics.opengl.rendering.GLMeshRenderer;
 import naitsirc98.beryl.graphics.opengl.textures.GLTexture2D;
-import naitsirc98.beryl.graphics.rendering.renderers.ShadowCascade;
-import naitsirc98.beryl.graphics.rendering.renderers.ShadowRenderer;
+import naitsirc98.beryl.graphics.rendering.Renderer;
+import naitsirc98.beryl.graphics.rendering.ShadowCascade;
 import naitsirc98.beryl.scenes.Scene;
 import org.joml.Matrix4fc;
 import org.lwjgl.system.MemoryStack;
@@ -13,7 +14,7 @@ import java.nio.ByteBuffer;
 import static naitsirc98.beryl.util.types.DataType.MATRIX4_SIZEOF;
 import static naitsirc98.beryl.util.types.DataType.VECTOR4_SIZEOF;
 
-public class GLShadowRenderer implements ShadowRenderer, GLShadowsInfo {
+public class GLShadowRenderer implements GLShadowsInfo, Renderer {
 
     private GLDirectionalShadowRenderer directionalShadowRenderer;
     private GLBuffer shadowsBuffer;
@@ -29,9 +30,8 @@ public class GLShadowRenderer implements ShadowRenderer, GLShadowsInfo {
         shadowsBuffer.mapMemory();
     }
 
-    @Override
-    public void render(Scene scene) {
-        directionalShadowRenderer.bakeDirectionalShadows(scene);
+    public void render(Scene scene, GLMeshRenderer meshRenderer) {
+        directionalShadowRenderer.bakeDirectionalShadows(scene, meshRenderer);
         updateShadowsBuffer();
     }
 

@@ -26,6 +26,10 @@ public interface Texture extends Resource {
 
     int useCount();
 
+    void incrementUseCount();
+
+    void decrementUseCount();
+
     void resetUseCount();
 
     long residentHandle();

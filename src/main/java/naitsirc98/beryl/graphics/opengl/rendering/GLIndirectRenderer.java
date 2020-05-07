@@ -9,7 +9,6 @@ import naitsirc98.beryl.graphics.opengl.textures.GLTexture2D;
 import naitsirc98.beryl.graphics.opengl.vertex.GLVertexArray;
 import naitsirc98.beryl.graphics.rendering.Renderer;
 import naitsirc98.beryl.materials.MaterialManager;
-import naitsirc98.beryl.meshes.AnimMesh;
 import naitsirc98.beryl.scenes.Scene;
 import naitsirc98.beryl.scenes.components.meshes.MeshInstanceList;
 import org.joml.FrustumIntersection;
@@ -95,19 +94,64 @@ public abstract class GLIndirectRenderer implements Renderer {
         prepareInstanceBuffer(scene, getInstances(scene));
     }
 
+    public void addDynamicState(Consumer<GLShaderProgram> state) {
+        dynamicState.add(state);
+    }
+
     public void preComputeFrustumCulling(Scene scene) {
         visibleObjects = performFrustumCullingCPU(scene);
     }
 
-    @Override
-    public void render(Scene scene) {
-        final int drawCount = performFrustumCullingCPU(scene);
-        renderScene(scene, drawCount);
+    protected void setOpenGLState(Scene scene) {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        glEnable(GL_DEPTH_TEST);
+        glDepthMask(true);
+        glEnable(GL_CULL_FACE);
+        glCullFace(GL_BACK);
     }
 
-    public void addDynamicState(Consumer<GLShaderProgram> state) {
-        dynamicState.add(state);
+    public void render(Scene scene, boolean shadowsEnabled) {
+        final int drawCount = performFrustumCullingCPU(scene);
+        render(scene, drawCount, shadowsEnabled, shader);
     }
+
+    public void renderPreComputedVisibleObjects(Scene scene, boolean shadowsEnabled) {
+        render(scene, visibleObjects, shadowsEnabled, shader);
+    }
+
+    public void render(Scene scene, int drawCount, boolean shadowsEnabled) {
+        render(scene, drawCount, shadowsEnabled, shader);
+    }
+
+    public void render(Scene scene, int drawCount, boolean shadowsEnabled, GLShaderProgram shader) {
+
+        if(drawCount <= 0) {
+            dynamicState.clear();
+            return;
+        }
+
+        shader.bind();
+
+        setOpenGLState(scene);
+
+        bindShaderUniformsAndBuffers(scene, shader, shadowsEnabled);
+
+        if(shadowsEnabled) {
+            bindShadowTextures(shader);
+        }
+
+        setDynamicState(shader);
+
+        vertexArray.bind();
+
+        glMultiDrawElementsIndirect(GL_TRIANGLES, GL_UNSIGNED_INT, NULL, drawCount, 0);
+
+        if(shadowsEnabled) {
+            unbindShadowTextures(shader);
+        }
+    }
+
+    public abstract MeshInstanceList<?> getInstances(Scene scene);
 
     protected void updateVertexArrayVertexBuffer() {
 
@@ -124,48 +168,6 @@ public abstract class GLIndirectRenderer implements Renderer {
     protected abstract GLBuffer getIndexBuffer();
 
     protected abstract int getStride();
-
-    protected void setOpenGLState(Scene scene) {
-        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-        glEnable(GL_DEPTH_TEST);
-        glDepthMask(true);
-        glEnable(GL_CULL_FACE);
-        glCullFace(GL_BACK);
-    }
-
-    public abstract MeshInstanceList<?> getInstances(Scene scene);
-
-    public void renderPreComputedVisibleObjects(Scene scene) {
-        renderScene(scene, visibleObjects, shader);
-    }
-
-    public void renderScene(Scene scene, int drawCount) {
-        renderScene(scene, drawCount, shader);
-    }
-
-    public void renderScene(Scene scene, int drawCount, GLShaderProgram shader) {
-
-        if(drawCount <= 0) {
-            dynamicState.clear();
-            return;
-        }
-
-        shader.bind();
-
-        setOpenGLState(scene);
-
-        bindShaderBuffers(scene);
-
-        bindShadowTextures(shader);
-
-        setDynamicState(shader);
-
-        vertexArray.bind();
-
-        glMultiDrawElementsIndirect(GL_TRIANGLES, GL_UNSIGNED_INT, NULL, drawCount, 0);
-
-        unbindShadowTextures(shader);
-    }
 
     private void bindShadowTextures(GLShaderProgram shader) {
 
@@ -187,11 +189,13 @@ public abstract class GLIndirectRenderer implements Renderer {
 
     }
 
-    protected void bindShaderBuffers(Scene scene) {
+    protected void bindShaderUniformsAndBuffers(Scene scene, GLShaderProgram shader, boolean shadowsEnabled) {
 
         final GLBuffer lightsUniformBuffer = scene.environment().buffer();
         final GLBuffer materialsBuffer = MaterialManager.get().buffer();
         final GLBuffer cameraUniformBuffer = scene.cameraInfo().cameraBuffer();
+
+        shader.uniformBool("u_ShadowsEnabled", shadowsEnabled);
 
         cameraUniformBuffer.bind(GL_UNIFORM_BUFFER, 0);
 

@@ -22,7 +22,7 @@ import static org.lwjgl.opengl.GL11.glViewport;
 import static org.lwjgl.opengl.GL11C.GL_COLOR_BUFFER_BIT;
 import static org.lwjgl.opengl.GL30.*;
 
-public final class GLRenderSystem extends APIRenderSystem {
+public final class GLRenderSystem implements APIRenderSystem {
 
     private static final int DEFAULT_FRAMEBUFFER = 0;
 
@@ -30,10 +30,12 @@ public final class GLRenderSystem extends APIRenderSystem {
 
     private GLFramebuffer mainFramebuffer;
 
-    private final GLMeshRenderer meshRenderer;
     private final GLSkyboxRenderer skyboxRenderer;
-    private final GLWaterRenderer waterRenderer;
     private final GLShadowRenderer shadowRenderer;
+    private final GLMeshRenderer meshRenderer;
+    private final GLWaterRenderer waterRenderer;
+
+    private boolean shadowsEnabled;
 
     private GLRenderSystem() {
 
@@ -42,11 +44,39 @@ public final class GLRenderSystem extends APIRenderSystem {
         createMainFramebuffer();
 
         skyboxRenderer = new GLSkyboxRenderer();
-        waterRenderer = new GLWaterRenderer();
         shadowRenderer = new GLShadowRenderer();
         meshRenderer = new GLMeshRenderer(shadowRenderer);
+        waterRenderer = new GLWaterRenderer(meshRenderer, skyboxRenderer);
+
+        shadowsEnabled = true;
 
         EventManager.addEventCallback(WindowResizedEvent.class, this::recreateFramebuffer);
+    }
+
+    @Override
+    public void init() {
+        meshRenderer.init();
+        skyboxRenderer.init();
+        waterRenderer.init();
+        shadowRenderer.init();
+    }
+
+    @Override
+    public void terminate() {
+        shadowRenderer.terminate();
+        waterRenderer.terminate();
+        skyboxRenderer.terminate();
+        meshRenderer.terminate();
+    }
+
+    @Override
+    public boolean shadowsEnabled() {
+        return shadowsEnabled;
+    }
+
+    @Override
+    public void shadowsEnabled(boolean shadowsEnabled) {
+        this.shadowsEnabled = shadowsEnabled;
     }
 
     public GLFramebuffer mainFramebuffer() {
@@ -65,7 +95,9 @@ public final class GLRenderSystem extends APIRenderSystem {
 
         meshRenderer.prepare(scene);
 
-        shadowRenderer.render(scene);
+        if(shadowsEnabled) {
+            shadowRenderer.render(scene, meshRenderer);
+        }
 
         waterRenderer.bakeWaterTextures(scene);
 
@@ -79,7 +111,7 @@ public final class GLRenderSystem extends APIRenderSystem {
 
         clear(scene.environment().clearColor());
 
-        meshRenderer.renderPreComputedVisibleObjects(scene);
+        meshRenderer.renderPreComputedVisibleObjects(scene, shadowsEnabled);
 
         waterRenderer.render(scene);
 
@@ -101,31 +133,6 @@ public final class GLRenderSystem extends APIRenderSystem {
     private void clear(Color color) {
         glClearColor(color.red(), color.green(), color.blue(), color.alpha());
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    }
-
-    @Override
-    public GLStaticMeshRenderer getStaticMeshRenderer() {
-        return meshRenderer.staticMeshRenderer();
-    }
-
-    @Override
-    public GLAnimMeshRenderer getAnimMeshRenderer() {
-        return meshRenderer.animMeshRenderer();
-    }
-
-    @Override
-    public GLSkyboxRenderer getSkyboxRenderer() {
-        return skyboxRenderer;
-    }
-
-    @Override
-    public GLWaterRenderer getWaterRenderer() {
-        return waterRenderer;
-    }
-
-    @Override
-    public GLShadowRenderer getShadowRenderer() {
-        return shadowRenderer;
     }
 
     private void copyFramebufferToScreen() {

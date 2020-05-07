@@ -12,15 +12,15 @@ public class StaticMesh extends Mesh implements Asset {
     public static final int VERTEX_DATA_SIZE = (3 + 3 + 2) * FLOAT32_SIZEOF;
 
     public static StaticMesh cube() {
-        return MeshManager.get().get("CUBE");
+        return MeshManager.get().get(PrimitiveMeshNames.CUBE_MESH_NAME);
     }
 
     public static StaticMesh quad() {
-        return MeshManager.get().get("QUAD");
+        return MeshManager.get().get(PrimitiveMeshNames.QUAD_MESH_NAME);
     }
 
     public static StaticMesh sphere() {
-        return MeshManager.get().get("SPHERE");
+        return MeshManager.get().get(PrimitiveMeshNames.SPHERE_MESH_NAME);
     }
 
     public static StaticMesh get(String name, Consumer<MeshData> meshData) {
