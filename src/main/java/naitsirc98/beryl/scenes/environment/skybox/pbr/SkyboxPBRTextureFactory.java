@@ -2,6 +2,7 @@ package naitsirc98.beryl.scenes.environment.skybox.pbr;
 
 import naitsirc98.beryl.graphics.GraphicsAPI;
 import naitsirc98.beryl.graphics.opengl.skyboxpbr.GLSkyboxPBRTextureFactory;
+import naitsirc98.beryl.graphics.textures.Cubemap;
 import naitsirc98.beryl.graphics.textures.Texture2D;
 
 public interface SkyboxPBRTextureFactory {
@@ -19,4 +20,7 @@ public interface SkyboxPBRTextureFactory {
 
     Texture2D createBRDFTexture(int size);
 
+    Cubemap createIrradianceMap(Cubemap environmentMap, int size);
+
+    Texture2D createPrefilterMap(Cubemap environmentMap, int size);
 }

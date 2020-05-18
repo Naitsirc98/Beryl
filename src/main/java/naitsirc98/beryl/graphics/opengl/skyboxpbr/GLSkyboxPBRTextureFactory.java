@@ -8,13 +8,14 @@ import naitsirc98.beryl.graphics.opengl.swapchain.GLFramebuffer;
 import naitsirc98.beryl.graphics.opengl.swapchain.GLRenderbuffer;
 import naitsirc98.beryl.graphics.opengl.textures.GLTexture2D;
 import naitsirc98.beryl.graphics.opengl.vertex.GLVertexArray;
-import naitsirc98.beryl.graphics.textures.Sampler;
+import naitsirc98.beryl.graphics.textures.Cubemap;
 import naitsirc98.beryl.graphics.textures.Texture2D;
 import naitsirc98.beryl.meshes.Mesh;
 import naitsirc98.beryl.meshes.MeshManager;
 import naitsirc98.beryl.meshes.vertices.VertexLayouts;
 import naitsirc98.beryl.resources.ManagedResource;
 import naitsirc98.beryl.resources.Resource;
+import naitsirc98.beryl.scenes.environment.skybox.SkyboxHelper;
 import naitsirc98.beryl.scenes.environment.skybox.pbr.SkyboxPBRTextureFactory;
 
 import java.nio.file.Path;
@@ -65,6 +66,16 @@ public class GLSkyboxPBRTextureFactory extends ManagedResource implements Skybox
         return brdf;
     }
 
+    @Override
+    public Cubemap createIrradianceMap(Cubemap environmentMap, int size) {
+        return null;
+    }
+
+    @Override
+    public Texture2D createPrefilterMap(Cubemap environmentMap, int size) {
+        return null;
+    }
+
     private void bakeBRDFTexture(GLTexture2D brdfTexture, int size) {
 
         prepareFramebufferForBRDF(brdfTexture);
@@ -99,10 +110,7 @@ public class GLSkyboxPBRTextureFactory extends ManagedResource implements Skybox
 
         brdf.allocate(1, size, size, GL_RG16F);
 
-        brdf.sampler()
-                .wrapMode(Sampler.WrapMode.CLAMP_TO_EDGE)
-                .magFilter(Sampler.MagFilter.LINEAR)
-                .minFilter(Sampler.MinFilter.LINEAR_MIPMAP_LINEAR);
+        SkyboxHelper.setSkyboxTextureSamplerParameters(brdf);
 
         return brdf;
     }
