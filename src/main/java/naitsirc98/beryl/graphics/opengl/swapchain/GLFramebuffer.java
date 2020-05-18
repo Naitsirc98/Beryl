@@ -2,12 +2,15 @@ package naitsirc98.beryl.graphics.opengl.swapchain;
 
 import naitsirc98.beryl.graphics.opengl.GLDebugMessenger;
 import naitsirc98.beryl.graphics.opengl.GLObject;
+import naitsirc98.beryl.graphics.opengl.textures.GLCubemap;
 import naitsirc98.beryl.graphics.opengl.textures.GLTexture;
+import naitsirc98.beryl.graphics.textures.Cubemap;
 
 import java.nio.IntBuffer;
 import java.util.HashMap;
 import java.util.Map;
 
+import static naitsirc98.beryl.graphics.Graphics.opengl;
 import static org.lwjgl.opengl.GL11C.GL_NONE;
 import static org.lwjgl.opengl.GL45.*;
 
@@ -69,6 +72,12 @@ public class GLFramebuffer implements GLObject {
     public void attach(int attachment, GLTexture texture, int level) {
         glNamedFramebufferTexture(handle, attachment, texture.handle(), level);
         attachments.put(attachment, texture);
+    }
+
+    public void attach(int attachment, GLCubemap cubemap, Cubemap.Face face, int level) {
+        final int layer = face.ordinal() % 6;
+        glNamedFramebufferTextureLayer(handle, attachment, cubemap.handle(), level, layer);
+        attachments.put(attachment, cubemap);
     }
 
     public void detach(int attachment) {

@@ -2,7 +2,6 @@ package naitsirc98.beryl.graphics.opengl.shaders;
 
 import naitsirc98.beryl.graphics.opengl.GLObject;
 import naitsirc98.beryl.graphics.opengl.textures.GLTexture;
-import naitsirc98.beryl.graphics.opengl.textures.GLTexture2D;
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.util.Color;
 import org.joml.Matrix4fc;
@@ -11,10 +10,8 @@ import org.joml.Vector4fc;
 import org.lwjgl.system.MemoryStack;
 
 import java.nio.FloatBuffer;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.WeakHashMap;
+import java.util.*;
+import java.util.Map.Entry;
 
 import static naitsirc98.beryl.core.Beryl.DEBUG;
 import static org.lwjgl.opengl.GL20.*;
@@ -25,11 +22,13 @@ public final class GLShaderProgram implements GLObject {
     private final int handle;
     private Set<GLShader> shaders;
     private Map<String, Integer> uniformLocations;
+    private Map<Integer, GLTexture> boundTextures;
 
     public GLShaderProgram() {
         handle = glCreateProgram();
         shaders = new HashSet<>();
         uniformLocations = new WeakHashMap<>();
+        boundTextures = new HashMap<>();
     }
 
     @Override
@@ -90,6 +89,12 @@ public final class GLShaderProgram implements GLObject {
         }
 
         return location;
+    }
+
+    public void uniformMatrix4f(String name, boolean transpose, Matrix4fc matrix) {
+        try(MemoryStack stack = stackPush()) {
+            uniformMatrix4f(name, true, matrix.get(stack.mallocFloat(16)));
+        }
     }
 
     public void uniformMatrix4f(String name, boolean transpose, FloatBuffer value) {
@@ -177,6 +182,7 @@ public final class GLShaderProgram implements GLObject {
             if(location >= 0) {
                 glUniform1i(location, unit);
                 texture.bind(unit);
+                boundTextures.put(unit, texture);
             }
         }
     }
@@ -207,6 +213,21 @@ public final class GLShaderProgram implements GLObject {
 
     public void uniformBool(String name, boolean value) {
         uniformInt(name, value ? 1 : 0);
+    }
+
+    public void unbindTextures() {
+
+        Iterator<Entry<Integer, GLTexture>> iterator = boundTextures.entrySet().iterator();
+
+        while(iterator.hasNext()) {
+
+            Entry<Integer, GLTexture> textureUnit = iterator.next();
+
+            textureUnit.getValue().unbind(textureUnit.getKey());
+
+            iterator.remove();
+        }
+
     }
 
     @Override

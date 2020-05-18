@@ -1,6 +1,6 @@
 #version 410 core
 
-uniform sampler2D u_EquirectangularTexture;
+uniform sampler2D u_EnvironmentMap;
 
 
 layout(location = 0) in vec3 frag_WorldPosition;
@@ -21,7 +21,7 @@ void main() {
 
     vec2 uv = sampleSphericalMap(normalize(frag_WorldPosition));
     
-    vec3 color = texture(u_EquirectangularTexture, uv).rgb;
+    vec3 color = texture(u_EnvironmentMap, uv).rgb;
 
     out_FinalColor = vec4(color, 1.0);
 }
