@@ -1,7 +1,7 @@
 package naitsirc98.beryl.graphics.opengl;
 
 import naitsirc98.beryl.graphics.GraphicsMapper;
-import naitsirc98.beryl.graphics.rendering.PrimitiveTopology;
+import naitsirc98.beryl.graphics.rendering.common.PrimitiveTopology;
 import naitsirc98.beryl.graphics.textures.Cubemap;
 import naitsirc98.beryl.graphics.textures.Sampler.CompareOperation;
 import naitsirc98.beryl.graphics.textures.Sampler.MagFilter;

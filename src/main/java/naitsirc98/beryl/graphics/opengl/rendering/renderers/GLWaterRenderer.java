@@ -1,4 +1,4 @@
-package naitsirc98.beryl.graphics.opengl.rendering;
+package naitsirc98.beryl.graphics.opengl.rendering.renderers;
 
 import naitsirc98.beryl.core.BerylFiles;
 import naitsirc98.beryl.events.EventManager;
@@ -61,7 +61,7 @@ public class GLWaterRenderer implements Renderer {
     private final GLMeshRenderer meshRenderer;
     private final GLSkyboxRenderer skyboxRenderer;
 
-    GLWaterRenderer(GLMeshRenderer meshRenderer, GLSkyboxRenderer skyboxRenderer) {
+    public GLWaterRenderer(GLMeshRenderer meshRenderer, GLSkyboxRenderer skyboxRenderer) {
         this.meshRenderer = meshRenderer;
         this.skyboxRenderer = skyboxRenderer;
     }

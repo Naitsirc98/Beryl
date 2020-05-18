@@ -1,4 +1,4 @@
-package naitsirc98.beryl.graphics.rendering;
+package naitsirc98.beryl.graphics.rendering.common;
 
 public enum PrimitiveTopology {
 

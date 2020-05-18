@@ -1,12 +1,12 @@
 package naitsirc98.beryl.graphics.opengl.rendering.shadows;
 
-import naitsirc98.beryl.graphics.opengl.rendering.GLFrustumCuller.PreConditionState;
-import naitsirc98.beryl.graphics.opengl.rendering.GLIndirectRenderer;
-import naitsirc98.beryl.graphics.opengl.rendering.GLMeshRenderer;
+import naitsirc98.beryl.graphics.rendering.culling.FrustumCullingPreConditionState;
+import naitsirc98.beryl.graphics.opengl.rendering.renderers.GLIndirectRenderer;
+import naitsirc98.beryl.graphics.opengl.rendering.renderers.GLMeshRenderer;
 import naitsirc98.beryl.graphics.opengl.shaders.GLShaderProgram;
 import naitsirc98.beryl.graphics.opengl.swapchain.GLFramebuffer;
 import naitsirc98.beryl.graphics.opengl.textures.GLTexture2D;
-import naitsirc98.beryl.graphics.rendering.ShadowCascade;
+import naitsirc98.beryl.graphics.rendering.shadows.ShadowCascade;
 import naitsirc98.beryl.lights.DirectionalLight;
 import naitsirc98.beryl.meshes.TerrainMesh;
 import naitsirc98.beryl.meshes.views.MeshView;
@@ -67,8 +67,8 @@ public class GLShadowCascadeRenderer {
         renderer.render(scene, drawCount, false, depthShader);
     }
 
-    private PreConditionState discardTerrain(MeshInstance<?> instance, MeshView<?> meshView) {
-        return meshView.mesh().getClass() == TerrainMesh.class ? PreConditionState.DISCARD : PreConditionState.CONTINUE;
+    private FrustumCullingPreConditionState discardTerrain(MeshInstance<?> instance, MeshView<?> meshView) {
+        return meshView.mesh().getClass() == TerrainMesh.class ? FrustumCullingPreConditionState.DISCARD : FrustumCullingPreConditionState.CONTINUE;
     }
 
     private void setOpenGLStateAndUniforms(GLShaderProgram shader) {

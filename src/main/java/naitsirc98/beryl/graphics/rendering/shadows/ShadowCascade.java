@@ -1,4 +1,4 @@
-package naitsirc98.beryl.graphics.rendering;
+package naitsirc98.beryl.graphics.rendering.shadows;
 
 import naitsirc98.beryl.lights.DirectionalLight;
 import naitsirc98.beryl.scenes.Camera;

@@ -1,4 +1,4 @@
-package naitsirc98.beryl.graphics.opengl.rendering;
+package naitsirc98.beryl.graphics.opengl.rendering.renderers;
 
 import naitsirc98.beryl.core.BerylFiles;
 import naitsirc98.beryl.graphics.opengl.buffers.GLBuffer;
@@ -17,7 +17,6 @@ import naitsirc98.beryl.scenes.components.meshes.StaticMeshInstance;
 
 import static naitsirc98.beryl.graphics.ShaderStage.FRAGMENT_STAGE;
 import static naitsirc98.beryl.graphics.ShaderStage.VERTEX_STAGE;
-import static naitsirc98.beryl.meshes.vertices.VertexAttribute.*;
 import static naitsirc98.beryl.meshes.vertices.VertexLayouts.VERTEX_LAYOUT_3D_INDIRECT;
 
 public final class GLStaticMeshRenderer extends GLIndirectRenderer implements Renderer {

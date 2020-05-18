@@ -1,8 +1,10 @@
-package naitsirc98.beryl.graphics.opengl.rendering;
+package naitsirc98.beryl.graphics.opengl.rendering.renderers;
 
 import naitsirc98.beryl.graphics.buffers.MappedGraphicsBuffer;
 import naitsirc98.beryl.graphics.opengl.buffers.GLBuffer;
 import naitsirc98.beryl.graphics.opengl.commands.GLDrawElementsCommand;
+import naitsirc98.beryl.graphics.rendering.culling.FrustumCuller;
+import naitsirc98.beryl.graphics.opengl.rendering.culling.GLFrustumCuller;
 import naitsirc98.beryl.graphics.opengl.rendering.shadows.GLShadowsInfo;
 import naitsirc98.beryl.graphics.opengl.shaders.GLShaderProgram;
 import naitsirc98.beryl.graphics.opengl.textures.GLTexture2D;
@@ -40,12 +42,12 @@ public abstract class GLIndirectRenderer implements Renderer {
     protected GLBuffer transformsBuffer;
     protected GLBuffer commandBuffer;
     protected GLBuffer meshIndicesBuffer;
-    protected GLFrustumCuller frustumCuller;
+    protected FrustumCuller frustumCuller;
     private Queue<Consumer<GLShaderProgram>> dynamicState;
     private final GLShadowsInfo shadowsInfo;
     private int visibleObjects;
 
-    protected GLIndirectRenderer(GLShadowsInfo shadowsInfo) {
+    public GLIndirectRenderer(GLShadowsInfo shadowsInfo) {
         this.shadowsInfo = shadowsInfo;
     }
 
@@ -85,7 +87,7 @@ public abstract class GLIndirectRenderer implements Renderer {
         meshIndicesBuffer.release();
     }
 
-    public GLFrustumCuller frustumCuller() {
+    public FrustumCuller frustumCuller() {
         return frustumCuller;
     }
 

@@ -1,10 +1,10 @@
 package naitsirc98.beryl.graphics.opengl.rendering.shadows;
 
 import naitsirc98.beryl.graphics.opengl.buffers.GLBuffer;
-import naitsirc98.beryl.graphics.opengl.rendering.GLMeshRenderer;
+import naitsirc98.beryl.graphics.opengl.rendering.renderers.GLMeshRenderer;
 import naitsirc98.beryl.graphics.opengl.textures.GLTexture2D;
 import naitsirc98.beryl.graphics.rendering.Renderer;
-import naitsirc98.beryl.graphics.rendering.ShadowCascade;
+import naitsirc98.beryl.graphics.rendering.shadows.ShadowCascade;
 import naitsirc98.beryl.scenes.Scene;
 import org.joml.Matrix4fc;
 import org.lwjgl.system.MemoryStack;

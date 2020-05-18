@@ -2,6 +2,9 @@ package naitsirc98.beryl.graphics.opengl.rendering;
 
 import naitsirc98.beryl.events.EventManager;
 import naitsirc98.beryl.events.window.WindowResizedEvent;
+import naitsirc98.beryl.graphics.opengl.rendering.renderers.GLMeshRenderer;
+import naitsirc98.beryl.graphics.opengl.rendering.renderers.GLSkyboxRenderer;
+import naitsirc98.beryl.graphics.opengl.rendering.renderers.GLWaterRenderer;
 import naitsirc98.beryl.graphics.opengl.rendering.shadows.GLShadowRenderer;
 import naitsirc98.beryl.graphics.opengl.swapchain.GLFramebuffer;
 import naitsirc98.beryl.graphics.opengl.swapchain.GLRenderbuffer;

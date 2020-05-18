@@ -1,11 +1,11 @@
 package naitsirc98.beryl.graphics.opengl.rendering.shadows;
 
 import naitsirc98.beryl.core.BerylFiles;
-import naitsirc98.beryl.graphics.opengl.rendering.GLMeshRenderer;
+import naitsirc98.beryl.graphics.opengl.rendering.renderers.GLMeshRenderer;
 import naitsirc98.beryl.graphics.opengl.shaders.GLShader;
 import naitsirc98.beryl.graphics.opengl.shaders.GLShaderProgram;
 import naitsirc98.beryl.graphics.opengl.textures.GLTexture2D;
-import naitsirc98.beryl.graphics.rendering.ShadowCascade;
+import naitsirc98.beryl.graphics.rendering.shadows.ShadowCascade;
 import naitsirc98.beryl.lights.DirectionalLight;
 import naitsirc98.beryl.scenes.Camera;
 import naitsirc98.beryl.scenes.Scene;

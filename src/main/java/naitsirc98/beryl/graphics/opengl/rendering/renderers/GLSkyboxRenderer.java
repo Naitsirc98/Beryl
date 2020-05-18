@@ -1,4 +1,4 @@
-package naitsirc98.beryl.graphics.opengl.rendering;
+package naitsirc98.beryl.graphics.opengl.rendering.renderers;
 
 import naitsirc98.beryl.core.BerylFiles;
 import naitsirc98.beryl.graphics.opengl.buffers.GLBuffer;
@@ -44,6 +44,9 @@ public class GLSkyboxRenderer implements Renderer {
     private GLBuffer matricesUniformBuffer;
 
     private Matrix4f viewMatrix;
+
+    public GLSkyboxRenderer() {
+    }
 
     @Override
     public void init() {

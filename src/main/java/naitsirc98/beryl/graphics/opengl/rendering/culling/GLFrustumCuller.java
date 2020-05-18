@@ -1,7 +1,10 @@
-package naitsirc98.beryl.graphics.opengl.rendering;
+package naitsirc98.beryl.graphics.opengl.rendering.culling;
 
 import naitsirc98.beryl.graphics.opengl.buffers.GLBuffer;
 import naitsirc98.beryl.graphics.opengl.commands.GLDrawElementsCommand;
+import naitsirc98.beryl.graphics.rendering.culling.FrustumCuller;
+import naitsirc98.beryl.graphics.rendering.culling.FrustumCullingPreCondition;
+import naitsirc98.beryl.graphics.rendering.culling.FrustumCullingPreConditionState;
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.meshes.Mesh;
 import naitsirc98.beryl.meshes.views.MeshView;
@@ -28,7 +31,7 @@ import static naitsirc98.beryl.util.types.DataType.INT32_SIZEOF;
 import static naitsirc98.beryl.util.types.DataType.MATRIX4_SIZEOF;
 import static org.lwjgl.system.MemoryStack.stackPush;
 
-public class GLFrustumCuller {
+public class GLFrustumCuller implements FrustumCuller {
 
     private static final int THREAD_COUNT = SystemInfo.processorCount();
 
@@ -52,11 +55,28 @@ public class GLFrustumCuller {
         baseInstance = new AtomicInteger();
     }
 
-    public int performCullingCPU(FrustumIntersection frustum, MeshInstanceList<?> instances) {
-        return performCullingCPU(frustum, instances, PreCondition.NO_PRECONDITION);
+    @Override
+    public void init() {
+
     }
 
-    public int performCullingCPU(FrustumIntersection frustum, MeshInstanceList<?> instances, PreCondition preCondition) {
+    @Override
+    public void terminate() {
+        executor.shutdown();
+        try {
+            executor.awaitTermination(1000, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException e) {
+            Log.error("Timeout error", e);
+        }
+    }
+
+    @Override
+    public int performCullingCPU(FrustumIntersection frustum, MeshInstanceList<?> instances) {
+        return performCullingCPU(frustum, instances, FrustumCullingPreCondition.NO_PRECONDITION);
+    }
+
+    @Override
+    public int performCullingCPU(FrustumIntersection frustum, MeshInstanceList<?> instances, FrustumCullingPreCondition preCondition) {
 
         if(instances == null || instances.size() == 0) {
             return 0;
@@ -79,7 +99,7 @@ public class GLFrustumCuller {
         return baseInstance.getAndSet(0);
     }
 
-    private void performCullingBatch(MeshInstanceList<?> instances, PreCondition preCondition, FrustumIntersection frustum,
+    private void performCullingBatch(MeshInstanceList<?> instances, FrustumCullingPreCondition preCondition, FrustumIntersection frustum,
                                      CountDownLatch countDownLatch, int batchBegin, int batchEnd) {
 
         try(MemoryStack stack = stackPush()) {
@@ -107,26 +127,26 @@ public class GLFrustumCuller {
 
     private void performFrustumCullingCPU(MeshInstance<?> instance, GLDrawElementsCommand command, FrustumIntersection frustum,
                                           Vector4f sphereCenter, Matrix4fc modelMatrix, int matricesIndex,
-                                          float maxScale, PreCondition preCondition) {
+                                          float maxScale, FrustumCullingPreCondition preCondition) {
 
         for(MeshView<?> meshView : instance) {
 
             final Mesh mesh = meshView.mesh();
             final ISphere sphere = mesh.boundingSphere();
 
-            final PreConditionState preConditionState = preCondition.getPrecondition(instance, meshView);
+            final FrustumCullingPreConditionState preConditionState = preCondition.getPrecondition(instance, meshView);
 
-            if(preConditionState == PreConditionState.DISCARD) {
+            if(preConditionState == FrustumCullingPreConditionState.DISCARD) {
                 continue;
             }
 
-            if(preConditionState == PreConditionState.CONTINUE) {
+            if(preConditionState == FrustumCullingPreConditionState.CONTINUE) {
                 sphereCenter.set(sphere.center(), 1.0f).mul(modelMatrix);
             }
 
             final float radius = sphere.radius() * maxScale;
 
-            if(preConditionState == PreConditionState.PASS || frustum.testSphere(sphereCenter.x, sphereCenter.y, sphereCenter.z, radius)) {
+            if(preConditionState == FrustumCullingPreConditionState.PASS || frustum.testSphere(sphereCenter.x, sphereCenter.y, sphereCenter.z, radius)) {
 
                 final int baseInstance = this.baseInstance.getAndIncrement();
 
@@ -172,30 +192,6 @@ public class GLFrustumCuller {
         } catch (InterruptedException e) {
             Log.error("Timeout error while waiting for frustum culling", e);
         }
-    }
-
-    void terminate() {
-        executor.shutdown();
-        try {
-            executor.awaitTermination(1000, TimeUnit.MILLISECONDS);
-        } catch (InterruptedException e) {
-            Log.error("Timeout error", e);
-        }
-    }
-
-    public enum PreConditionState {
-        CONTINUE,
-        DISCARD,
-        PASS
-    }
-
-    public interface PreCondition {
-
-        PreCondition NO_PRECONDITION = ((instance, meshView) -> PreConditionState.CONTINUE);
-        PreCondition NEVER_PASS = ((instance, meshView) -> PreConditionState.DISCARD);
-        PreCondition ALWAYS_PASS = ((instance, meshView) -> PreConditionState.PASS);
-
-        PreConditionState getPrecondition(MeshInstance<?> instance, MeshView<?> meshView);
     }
 
 }
