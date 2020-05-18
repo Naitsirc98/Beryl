@@ -2,14 +2,11 @@ package naitsirc98.beryl.core;
 
 import naitsirc98.beryl.audio.AudioSystem;
 import naitsirc98.beryl.events.EventManager;
-import naitsirc98.beryl.events.window.WindowResizedEvent;
 import naitsirc98.beryl.graphics.GraphicsAPI;
 import naitsirc98.beryl.graphics.rendering.APIRenderSystem;
-import naitsirc98.beryl.graphics.rendering.RenderSystem;
 import naitsirc98.beryl.graphics.window.Window;
 import naitsirc98.beryl.input.Input;
 import naitsirc98.beryl.logging.Log;
-import naitsirc98.beryl.materials.Material;
 import naitsirc98.beryl.materials.MaterialManager;
 import naitsirc98.beryl.scenes.SceneManager;
 import naitsirc98.beryl.util.Version;
@@ -50,6 +47,8 @@ public final class Beryl {
 
     private static final int UPDATES_PER_SECOND = 60;
     private static final float IDEAL_FRAME_DELAY = 1.0f / UPDATES_PER_SECOND;
+
+    public static final String GRAPHICS_THREAD_NAME = Thread.currentThread().getName();
 
     static {
         setLWJGLConfiguration();

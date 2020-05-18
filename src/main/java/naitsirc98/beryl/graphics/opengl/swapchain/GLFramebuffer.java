@@ -71,6 +71,10 @@ public class GLFramebuffer implements GLObject {
         attachments.put(attachment, texture);
     }
 
+    public void detach(int attachment) {
+        attachments.remove(attachment);
+    }
+
     public void drawBuffer(int drawBuffer) {
         glNamedFramebufferDrawBuffer(handle, drawBuffer);
     }

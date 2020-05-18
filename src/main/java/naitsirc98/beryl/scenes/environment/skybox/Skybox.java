@@ -1,13 +1,14 @@
 package naitsirc98.beryl.scenes.environment.skybox;
 
 import naitsirc98.beryl.graphics.textures.Cubemap;
+import naitsirc98.beryl.scenes.environment.skybox.pbr.SkyboxPBRTextures;
 
 public class Skybox {
 
     private static final float DEFAULT_TEXTURE_BLEND_FACTOR = 0.5f;
     private static final float DEFAULT_ROTATION_ANGLE = 0.0f;
 
-
+    private final SkyboxPBRTextures pbrTextures;
     private Cubemap texture1;
     private Cubemap texture2;
     private float textureBlendFactor = DEFAULT_TEXTURE_BLEND_FACTOR;
@@ -16,6 +17,11 @@ public class Skybox {
     Skybox(Cubemap texture1, Cubemap texture2) {
         this.texture1 = SkyboxHelper.setSkyboxTextureSamplerParameters(texture1);
         this.texture2 = SkyboxHelper.setSkyboxTextureSamplerParameters(texture2);
+        pbrTextures = new SkyboxPBRTextures();
+    }
+
+    public SkyboxPBRTextures pbrTextures() {
+        return pbrTextures;
     }
 
     @SuppressWarnings("unchecked")

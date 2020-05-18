@@ -9,9 +9,9 @@ https://learnopengl.com/PBR/Theory
 
 #version 410 core
 
-layout(location = 0) in frag_TextureCoords;
+layout(location = 0) in vec2 frag_TextureCoords;
 
-layout(location = 0) out out_FinalColor;
+layout(location = 0) out vec2 out_FinalColor;
 
 
 @include "pbr/functions.glsl"

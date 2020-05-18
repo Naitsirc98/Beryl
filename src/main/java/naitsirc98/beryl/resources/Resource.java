@@ -2,6 +2,12 @@ package naitsirc98.beryl.resources;
 
 public interface Resource extends AutoCloseable {
 
+    static void release(Resource resource) {
+        if(resource != null && !resource.released()) {
+            resource.release();
+        }
+    }
+
     default String name() {
         return "UNNAMED";
     }

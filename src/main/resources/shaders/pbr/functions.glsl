@@ -2,6 +2,8 @@
 Functions for PBR calculations.
 */
 
+#define PI 3.1415926536
+
 // http://holger.dammertz.org/stuff/notes_hammersleyOnHemisphere.html
 // Efficient VanDerCorpus calculation.
 // Van Der Corpus sequence mirrors a decimal binary representation

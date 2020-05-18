@@ -8,6 +8,7 @@ import naitsirc98.beryl.core.BerylApplication;
 import naitsirc98.beryl.core.BerylConfiguration;
 import naitsirc98.beryl.core.BerylFiles;
 import naitsirc98.beryl.graphics.GraphicsAPI;
+import naitsirc98.beryl.graphics.textures.Texture2D;
 import naitsirc98.beryl.graphics.window.DisplayMode;
 import naitsirc98.beryl.graphics.window.Window;
 import naitsirc98.beryl.lights.DirectionalLight;
@@ -133,6 +134,10 @@ public class ForestGame extends BerylApplication {
         SceneEnvironment environment = scene.environment();
 
         Skybox skybox = SkyboxFactory.newSkybox(BerylFiles.getString("textures/skybox/day"), BerylFiles.getString("textures/skybox/night"));
+
+        Texture2D brdf = skybox.pbrTextures().brdfTexture();
+
+        System.out.println(brdf);
 
         environment.skybox(skybox);
         environment.ambientColor(new Color(0.8f));
