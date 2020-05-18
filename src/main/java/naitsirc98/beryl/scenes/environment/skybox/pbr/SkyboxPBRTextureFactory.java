@@ -22,5 +22,5 @@ public interface SkyboxPBRTextureFactory {
 
     Cubemap createIrradianceMap(Cubemap environmentMap, int size);
 
-    Texture2D createPrefilterMap(Cubemap environmentMap, int size);
+    Cubemap createPrefilterMap(Cubemap environmentMap, int size);
 }

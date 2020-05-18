@@ -1,7 +1,6 @@
 package naitsirc98.beryl.scenes.environment.skybox;
 
 import naitsirc98.beryl.graphics.textures.Cubemap;
-import naitsirc98.beryl.graphics.textures.Texture2D;
 import naitsirc98.beryl.resources.Resource;
 import naitsirc98.beryl.scenes.environment.skybox.pbr.SkyboxPBRTextureFactory;
 
@@ -16,7 +15,7 @@ public class SkyboxTexture implements Resource {
     private final SkyboxPBRTextureFactory pbrTextureFactory;
     private Cubemap environmentMap;
     private Cubemap irradianceMap;
-    private Texture2D prefilterMap;
+    private Cubemap prefilterMap;
     private int irradianceMapSize = DEFAULT_IRRADIANCE_MAP_SIZE;
     private int prefilterMapSize = DEFAULT_PREFILTER_MAP_SIZE;
 
@@ -50,7 +49,7 @@ public class SkyboxTexture implements Resource {
     }
 
     @SuppressWarnings("unchecked")
-    public <T extends Texture2D> T prefilterMap() {
+    public <T extends Cubemap> T prefilterMap() {
         if(prefilterMap == null && environmentMap != null) {
             prefilterMap = pbrTextureFactory.createPrefilterMap(environmentMap, prefilterMapSize);
         }

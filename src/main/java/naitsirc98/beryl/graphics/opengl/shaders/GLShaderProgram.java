@@ -55,6 +55,7 @@ public final class GLShaderProgram implements GLObject {
     }
 
     public void unbind() {
+        unbindTextures();
         glUseProgram(0);
     }
 

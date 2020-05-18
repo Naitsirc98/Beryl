@@ -7,9 +7,11 @@ import naitsirc98.beryl.graphics.opengl.shaders.GLShaderProgram;
 import naitsirc98.beryl.graphics.opengl.swapchain.GLFramebuffer;
 import naitsirc98.beryl.graphics.opengl.swapchain.GLRenderbuffer;
 import naitsirc98.beryl.graphics.opengl.textures.GLCubemap;
+import naitsirc98.beryl.graphics.opengl.textures.GLTexture;
 import naitsirc98.beryl.graphics.opengl.textures.GLTexture2D;
 import naitsirc98.beryl.graphics.opengl.vertex.GLVertexArray;
 import naitsirc98.beryl.graphics.textures.Cubemap;
+import naitsirc98.beryl.graphics.textures.Texture;
 import naitsirc98.beryl.graphics.textures.Texture2D;
 import naitsirc98.beryl.meshes.Mesh;
 import naitsirc98.beryl.meshes.MeshManager;
@@ -22,6 +24,7 @@ import org.joml.Matrix4fc;
 
 import java.nio.file.Path;
 
+import static java.lang.Math.pow;
 import static naitsirc98.beryl.graphics.ShaderStage.FRAGMENT_STAGE;
 import static naitsirc98.beryl.graphics.ShaderStage.VERTEX_STAGE;
 import static naitsirc98.beryl.meshes.PrimitiveMeshNames.CUBE_MESH_NAME;
@@ -38,6 +41,9 @@ public class GLSkyboxPBRTextureFactory extends ManagedResource implements Skybox
     private static final Path IRRADIANCE_VERTEX_SHADER_PATH = BerylFiles.getPath("shaders/skybox/irradiance_map.vert");
     private static final Path IRRADIANCE_FRAGMENT_SHADER_PATH = BerylFiles.getPath("shaders/skybox/irradiance_map.frag");
 
+    private static final Path PREFILTER_VERTEX_SHADER_PATH = BerylFiles.getPath("shaders/skybox/prefilter_map.vert");
+    private static final Path PREFILTER_FRAGMENT_SHADER_PATH = BerylFiles.getPath("shaders/skybox/prefilter_map.frag");
+
     private static final int QUAD_INDEX_COUNT = 6;
     private static final int CUBE_INDEX_COUNT = 36;
 
@@ -47,6 +53,7 @@ public class GLSkyboxPBRTextureFactory extends ManagedResource implements Skybox
     // Shaders
     private GLShaderProgram brdfShader;
     private GLShaderProgram irradianceShader;
+    private GLShaderProgram prefilterShader;
     // Vertex data
     private GLVertexArray quadVAO;
     private GLBuffer quadVertexBuffer;
@@ -94,8 +101,56 @@ public class GLSkyboxPBRTextureFactory extends ManagedResource implements Skybox
     }
 
     @Override
-    public Texture2D createPrefilterMap(Cubemap environmentMap, int size) {
-        return null;
+    public Cubemap createPrefilterMap(Cubemap environmentMap, int size) {
+
+        Cubemap prefilterTexture = createNewPrefilterTexture(size);
+
+        // Run a quasi monte-carlo simulation on the environment lighting to create a prefilter (cube)map.
+        bakePrefilterMap(environmentMap, prefilterTexture, size);
+
+        return prefilterTexture;
+    }
+
+    private void bakePrefilterMap(Cubemap environmentMap, Cubemap prefilterTexture, int size) {
+
+        framebuffer().bind();
+
+        GLShaderProgram shader = prefilterShader();
+
+        GLVertexArray cubeVAO = cubeVAO();
+
+        shader.bind();
+        cubeVAO.bind();
+
+        shader.uniformSampler("u_EnvironmentMap", (GLTexture) environmentMap, 0);
+
+        final int minMipLevel = Texture.calculateMipLevels(size, size); // Size should be multiple of 2
+
+        for(int mipLevel = 0;mipLevel < minMipLevel;mipLevel++) {
+
+            final int mipLevelSize = (int)(size * pow(0.5f, mipLevel));
+
+            final float roughness = (float)mipLevel / (float)minMipLevel;
+            shader.uniformFloat("u_Roughness", roughness);
+
+            renderCubemap((GLCubemap) prefilterTexture, shader, mipLevelSize, mipLevel);
+        }
+
+        cubeVAO.unbind();
+        shader.unbind();
+    }
+
+    private Cubemap createNewPrefilterTexture(int size) {
+
+        GLCubemap prefilterTexture = new GLCubemap();
+
+        prefilterTexture.allocate(1, size, size, GL_RGB16F);
+
+        SkyboxHelper.setSkyboxTextureSamplerParameters(prefilterTexture);
+
+        prefilterTexture.generateMipmaps();
+
+        return prefilterTexture;
     }
 
     private void bakeIrradianceMap(GLCubemap environmentMap, GLCubemap irradianceTexture, int size) {
@@ -140,7 +195,7 @@ public class GLSkyboxPBRTextureFactory extends ManagedResource implements Skybox
             framebuffer().drawBuffer(GL_COLOR_ATTACHMENT0);
             framebuffer().ensureComplete();
 
-            glEnable(GL_DEPTH_TEST);
+            glDisable(GL_DEPTH_TEST);
             glViewport(0, 0, size, size);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -216,6 +271,20 @@ public class GLSkyboxPBRTextureFactory extends ManagedResource implements Skybox
         SkyboxHelper.setSkyboxTextureSamplerParameters(brdf);
 
         return brdf;
+    }
+
+    private GLShaderProgram prefilterShader() {
+        if(prefilterShader == null) {
+            prefilterShader = createPrefilterShader();
+        }
+        return prefilterShader;
+    }
+
+    private GLShaderProgram createPrefilterShader() {
+        return new GLShaderProgram()
+                .attach(new GLShader(VERTEX_STAGE).source(PREFILTER_FRAGMENT_SHADER_PATH))
+                .attach(new GLShader(FRAGMENT_STAGE).source(PREFILTER_FRAGMENT_SHADER_PATH))
+                .link();
     }
 
     private GLShaderProgram irradianceShader() {
