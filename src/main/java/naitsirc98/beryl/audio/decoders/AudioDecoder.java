@@ -8,16 +8,13 @@ public interface AudioDecoder {
 
     static AudioBuffer decode(String audioFile, AudioDataFormat dataFormat) {
 
-        switch(dataFormat) {
-            case WAV:
-                break;
-            case OGG:
-                return new VorbisAudioDecoder().decode(audioFile);
-            case MP3:
-                return new MP3AudioDecoder().decode(audioFile);
+        // Only supporting .ogg for now
+        if (dataFormat == AudioDataFormat.OGG) {
+            return new VorbisAudioDecoder().decode(audioFile);
         }
 
         Log.error("Unsupported audio data format: " + dataFormat);
+
         return null;
     }
 

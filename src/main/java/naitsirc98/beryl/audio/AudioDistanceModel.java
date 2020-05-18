@@ -1,6 +1,7 @@
 package naitsirc98.beryl.audio;
 
 public enum AudioDistanceModel {
+
     EXPONENT_DISTANCE,
     EXPONENT_DISTANCE_CLAMPED,
     INVERSE_DISTANCE,

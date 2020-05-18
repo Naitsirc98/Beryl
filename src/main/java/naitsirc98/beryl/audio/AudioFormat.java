@@ -3,6 +3,7 @@ package naitsirc98.beryl.audio;
 import naitsirc98.beryl.logging.Log;
 
 public enum AudioFormat {
+
     MONO8,
     MONO16,
     STEREO8,

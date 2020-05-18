@@ -15,7 +15,14 @@ import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.memAddress;
 import static org.lwjgl.system.libc.LibCStdlib.free;
 
+/**
+ * A simple Vorbis (.ogg) audio decoder. Audio files should be 96 Kbps.
+ *
+ * */
 public final class VorbisAudioDecoder implements AudioDecoder {
+
+    public VorbisAudioDecoder() {
+    }
 
     @Override
     public AudioBuffer decode(String audioFile) {
