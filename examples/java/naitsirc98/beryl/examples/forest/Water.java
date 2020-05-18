@@ -18,7 +18,7 @@ import naitsirc98.beryl.scenes.components.math.Transform;
 import naitsirc98.beryl.scenes.components.meshes.WaterMeshInstance;
 import org.joml.Vector3f;
 
-import static naitsirc98.beryl.scenes.EnhancedWaterUnit.ENHANCED_WATER_UNIT_0;
+import static naitsirc98.beryl.scenes.environment.EnhancedWaterUnit.ENHANCED_WATER_UNIT_0;
 import static naitsirc98.beryl.util.Maths.clamp;
 import static naitsirc98.beryl.util.Maths.radians;
 

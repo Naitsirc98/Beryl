@@ -1,4 +1,4 @@
-package naitsirc98.beryl.scenes;
+package naitsirc98.beryl.scenes.environment;
 
 import naitsirc98.beryl.graphics.GraphicsFactory;
 import naitsirc98.beryl.graphics.buffers.UniformBuffer;
@@ -7,6 +7,8 @@ import naitsirc98.beryl.lights.Light;
 import naitsirc98.beryl.lights.PointLight;
 import naitsirc98.beryl.lights.SpotLight;
 import naitsirc98.beryl.resources.Resource;
+import naitsirc98.beryl.scenes.Fog;
+import naitsirc98.beryl.scenes.environment.skybox.Skybox;
 import naitsirc98.beryl.util.Color;
 import naitsirc98.beryl.util.IColor;
 import org.lwjgl.system.MemoryStack;
@@ -16,11 +18,10 @@ import java.util.List;
 
 import static java.lang.Math.min;
 import static java.util.Objects.requireNonNull;
-import static naitsirc98.beryl.scenes.SceneLighting.MAX_POINT_LIGHTS;
-import static naitsirc98.beryl.scenes.SceneLighting.MAX_SPOT_LIGHTS;
+import static naitsirc98.beryl.scenes.environment.SceneLighting.MAX_POINT_LIGHTS;
+import static naitsirc98.beryl.scenes.environment.SceneLighting.MAX_SPOT_LIGHTS;
 import static naitsirc98.beryl.util.Maths.roundUp2;
 import static naitsirc98.beryl.util.types.DataType.*;
-import static naitsirc98.beryl.util.types.TypeUtils.getOrElse;
 import static org.lwjgl.system.MemoryStack.stackPush;
 
 public final class SceneEnvironment implements Resource {
@@ -46,7 +47,7 @@ public final class SceneEnvironment implements Resource {
     private UniformBuffer lightsBuffer;
     private Skybox skybox;
 
-    SceneEnvironment() {
+    public SceneEnvironment() {
         lights = new SceneLighting();
         ambientColor = DEFAULT_AMBIENT_COLOR;
         clearColor = DEFAULT_CLEAR_COLOR;
@@ -93,7 +94,7 @@ public final class SceneEnvironment implements Resource {
         return this;
     }
 
-    void update() {
+    public void update() {
 
         final DirectionalLight directionalLight = lights.directionalLight();
         final List<PointLight> pointLights = lights.pointLights();

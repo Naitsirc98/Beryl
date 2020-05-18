@@ -3,7 +3,6 @@
 #extension GL_KHR_vulkan_glsl: require
 #extension GL_ARB_bindless_texture: require
 
-
 @include "structs/lights.glsl"
 @include "structs/material.glsl"
 @include "structs/fog.glsl"

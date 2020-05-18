@@ -1,4 +1,4 @@
-package naitsirc98.beryl.scenes;
+package naitsirc98.beryl.scenes.environment;
 
 import naitsirc98.beryl.lights.DirectionalLight;
 import naitsirc98.beryl.lights.PointLight;

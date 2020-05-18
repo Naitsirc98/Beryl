@@ -18,6 +18,7 @@ import naitsirc98.beryl.scenes.components.meshes.StaticMeshInstance;
 import static naitsirc98.beryl.graphics.ShaderStage.FRAGMENT_STAGE;
 import static naitsirc98.beryl.graphics.ShaderStage.VERTEX_STAGE;
 import static naitsirc98.beryl.meshes.vertices.VertexAttribute.*;
+import static naitsirc98.beryl.meshes.vertices.VertexLayouts.VERTEX_LAYOUT_3D_INDIRECT;
 
 public final class GLStaticMeshRenderer extends GLIndirectRenderer implements Renderer {
 
@@ -60,10 +61,7 @@ public final class GLStaticMeshRenderer extends GLIndirectRenderer implements Re
 
         vertexArray = new GLVertexArray();
 
-        VertexLayout vertexLayout = new VertexLayout.Builder(2)
-                .put(0, 0, POSITION3D, NORMAL, TEXCOORDS2D)
-                .put(1, 3, INDEX, INDEX).instanced(1, true)
-                .build();
+        VertexLayout vertexLayout = VERTEX_LAYOUT_3D_INDIRECT;
 
         for (int i = 0; i < vertexLayout.bindings(); i++) {
             vertexArray.setVertexAttributes(i, vertexLayout.attributeList(i));

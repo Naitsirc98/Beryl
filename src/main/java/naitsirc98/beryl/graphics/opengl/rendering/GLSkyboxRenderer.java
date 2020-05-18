@@ -9,10 +9,9 @@ import naitsirc98.beryl.graphics.opengl.vertex.GLVertexArray;
 import naitsirc98.beryl.graphics.rendering.Renderer;
 import naitsirc98.beryl.meshes.Mesh;
 import naitsirc98.beryl.meshes.StaticMesh;
-import naitsirc98.beryl.meshes.vertices.VertexLayout;
 import naitsirc98.beryl.scenes.Scene;
-import naitsirc98.beryl.scenes.SceneEnvironment;
-import naitsirc98.beryl.scenes.Skybox;
+import naitsirc98.beryl.scenes.environment.SceneEnvironment;
+import naitsirc98.beryl.scenes.environment.skybox.Skybox;
 import org.joml.Matrix4f;
 import org.lwjgl.system.MemoryStack;
 
@@ -20,6 +19,7 @@ import java.nio.ByteBuffer;
 
 import static naitsirc98.beryl.graphics.ShaderStage.FRAGMENT_STAGE;
 import static naitsirc98.beryl.graphics.ShaderStage.VERTEX_STAGE;
+import static naitsirc98.beryl.meshes.vertices.VertexLayouts.VERTEX_LAYOUT_3D;
 import static naitsirc98.beryl.util.handles.LongHandle.NULL;
 import static naitsirc98.beryl.util.types.DataType.MATRIX4_SIZEOF;
 import static org.lwjgl.opengl.GL11.*;
@@ -63,7 +63,7 @@ public class GLSkyboxRenderer implements Renderer {
         indexBuffer = new GLBuffer();
         indexBuffer.data(cubeMesh.indexData());
 
-        vertexArray.addVertexBuffer(0, VertexLayout.VERTEX_LAYOUT_3D.attributeList(0), vertexBuffer);
+        vertexArray.addVertexBuffer(0, VERTEX_LAYOUT_3D.attributeList(0), vertexBuffer);
 
         vertexArray.setIndexBuffer(indexBuffer);
 

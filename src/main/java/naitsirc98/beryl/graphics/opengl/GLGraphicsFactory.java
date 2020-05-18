@@ -63,35 +63,6 @@ public class GLGraphicsFactory implements GraphicsFactory {
     }
 
     @Override
-    public Cubemap newCubemap(String skyboxFolder, PixelFormat pixelFormat) {
-
-        Cubemap cubemap = newCubemap();
-
-        Image[] images = new Image[6];
-
-        Face[] faces = Face.values();
-
-        String[] faceNames = {"left.png", "right.png", "top.png", "bottom.png", "front.png", "back.png"};
-
-        Path folder = Paths.get(skyboxFolder);
-
-        for(int i = 0;i < 6;i++) {
-
-            Image image = images[i] = ImageFactory.newImage(folder.resolve(faceNames[i]).toString(), pixelFormat);
-
-            if(i == 0) {
-                cubemap.allocate(image.width(), image.height(), pixelFormat);
-            }
-
-            cubemap.update(faces[i], 0, 0, 0, image.width(), image.height(), pixelFormat, image.pixels());
-        }
-
-        Arrays.stream(images).forEach(Image::release);
-
-        return cubemap;
-    }
-
-    @Override
     public StorageBuffer newStorageBuffer() {
         return new GLBuffer();
     }

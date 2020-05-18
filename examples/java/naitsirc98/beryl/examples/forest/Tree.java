@@ -99,7 +99,7 @@ public class Tree {
 
     public static class TreeRandomBouncing extends UpdateBehaviour {
 
-        private static final float BOUNCING_LIMIT = 92.0f;
+        private static final float BOUNCING_LIMIT = 95.0f;
 
         private float bouncingLimit;
         private float normalBouncingLimit;
@@ -117,7 +117,7 @@ public class Tree {
         }
 
         public void setBouncingLimit(float bouncingLimit) {
-            this.bouncingLimit = clamp(86, normalBouncingLimit, bouncingLimit);
+            this.bouncingLimit = clamp(89, normalBouncingLimit, bouncingLimit);
         }
 
         @Override

@@ -26,8 +26,6 @@ public interface GraphicsFactory extends Resource {
 
     Cubemap newCubemap();
 
-    Cubemap newCubemap(String skyboxImagePath, PixelFormat pixelFormat);
-
     StorageBuffer newStorageBuffer();
 
     VertexBuffer newVertexBuffer();

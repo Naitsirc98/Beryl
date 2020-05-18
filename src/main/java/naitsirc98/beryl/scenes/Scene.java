@@ -11,6 +11,8 @@ import naitsirc98.beryl.scenes.components.math.TransformManager;
 import naitsirc98.beryl.scenes.components.meshes.MeshInstance;
 import naitsirc98.beryl.scenes.components.meshes.MeshInstanceManager;
 import naitsirc98.beryl.scenes.components.meshes.SceneMeshInfo;
+import naitsirc98.beryl.scenes.environment.SceneEnhancedWater;
+import naitsirc98.beryl.scenes.environment.SceneEnvironment;
 
 import java.util.ArrayDeque;
 import java.util.Deque;

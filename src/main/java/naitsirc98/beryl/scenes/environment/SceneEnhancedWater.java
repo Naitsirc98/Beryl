@@ -1,4 +1,4 @@
-package naitsirc98.beryl.scenes;
+package naitsirc98.beryl.scenes.environment;
 
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.meshes.views.WaterMeshView;
@@ -13,7 +13,7 @@ public class SceneEnhancedWater {
 
     private final WaterMeshView[] enhancedWaterViews;
 
-    SceneEnhancedWater() {
+    public SceneEnhancedWater() {
         enhancedWaterViews = new WaterMeshView[MAX_ENHANCED_WATER_VIEWS];
     }
 

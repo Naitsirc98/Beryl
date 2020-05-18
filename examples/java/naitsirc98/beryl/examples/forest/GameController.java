@@ -7,7 +7,7 @@ import naitsirc98.beryl.lights.DirectionalLight;
 import naitsirc98.beryl.materials.PhongMaterial;
 import naitsirc98.beryl.scenes.Entity;
 import naitsirc98.beryl.scenes.Scene;
-import naitsirc98.beryl.scenes.Skybox;
+import naitsirc98.beryl.scenes.environment.skybox.Skybox;
 import naitsirc98.beryl.scenes.components.audio.AudioPlayer;
 import naitsirc98.beryl.scenes.components.behaviours.UpdateBehaviour;
 import naitsirc98.beryl.scenes.components.meshes.StaticMeshInstance;

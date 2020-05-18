@@ -8,7 +8,6 @@ import naitsirc98.beryl.core.BerylApplication;
 import naitsirc98.beryl.core.BerylConfiguration;
 import naitsirc98.beryl.core.BerylFiles;
 import naitsirc98.beryl.graphics.GraphicsAPI;
-import naitsirc98.beryl.graphics.rendering.RenderSystem;
 import naitsirc98.beryl.graphics.window.DisplayMode;
 import naitsirc98.beryl.graphics.window.Window;
 import naitsirc98.beryl.lights.DirectionalLight;
@@ -16,6 +15,10 @@ import naitsirc98.beryl.lights.LightRange;
 import naitsirc98.beryl.lights.PointLight;
 import naitsirc98.beryl.scenes.*;
 import naitsirc98.beryl.scenes.components.audio.AudioPlayer;
+import naitsirc98.beryl.scenes.environment.SceneEnvironment;
+import naitsirc98.beryl.scenes.environment.SceneLighting;
+import naitsirc98.beryl.scenes.environment.skybox.Skybox;
+import naitsirc98.beryl.scenes.environment.skybox.SkyboxFactory;
 import naitsirc98.beryl.util.Color;
 import org.joml.Vector3f;
 
@@ -129,7 +132,9 @@ public class ForestGame extends BerylApplication {
 
         SceneEnvironment environment = scene.environment();
 
-        environment.skybox(new Skybox(BerylFiles.getString("textures/skybox/day"), BerylFiles.getString("textures/skybox/night")));
+        Skybox skybox = SkyboxFactory.newSkybox(BerylFiles.getString("textures/skybox/day"), BerylFiles.getString("textures/skybox/night"));
+
+        environment.skybox(skybox);
         environment.ambientColor(new Color(0.8f));
         environment.fog().density(DEFAULT_FOG_DENSITY);
 
