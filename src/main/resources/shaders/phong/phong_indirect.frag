@@ -160,7 +160,7 @@ float computeDirShadows() {
         return 0.0;
     }
 
-    float bias = 0.005;//max(0.05 * (1.0 - dot(fragmentNormal, u_DirectionalLight.direction.xyz)), 0.005);
+    float bias = 0.005; //max(0.05 * (1.0 - dot(fragmentNormal, u_DirectionalLight.direction.xyz)), 0.005);
 
     float shadow = 0.0;
 
