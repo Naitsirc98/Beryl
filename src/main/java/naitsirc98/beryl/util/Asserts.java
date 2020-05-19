@@ -10,7 +10,7 @@ import java.util.Objects;
  * */
 public final class Asserts {
 
-    public static final boolean ASSERTS_ENABLED = BerylConfiguration.ENABLE_ASSERTS.get(Beryl.INTERNAL_DEBUG);
+    public static final boolean ASSERTS_ENABLED = BerylConfiguration.ENABLE_ASSERTS.getOrDefault(Beryl.INTERNAL_DEBUG);
 
     public static void assertTrue(boolean condition) {
         if(ASSERTS_ENABLED) {

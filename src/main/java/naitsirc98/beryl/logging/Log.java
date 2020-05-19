@@ -335,11 +335,11 @@ public final class Log extends BerylSystem {
     }
 
     private void setDateTimeFormatter() {
-        dateTimeFormatter = BerylConfiguration.LOG_DATETIME_FORMATTER.get(DEFAULT_DATETIME_FORMATTER);
+        dateTimeFormatter = BerylConfiguration.LOG_DATETIME_FORMATTER.getOrDefault(DEFAULT_DATETIME_FORMATTER);
     }
 
     private void setChannels() {
-        channels.addAll(BerylConfiguration.LOG_CHANNELS.get(Arrays.asList(
+        channels.addAll(BerylConfiguration.LOG_CHANNELS.getOrDefault(Arrays.asList(
                 LogChannel.stdout(),
                 new LogFileChannel(Paths.get("beryl.log"), Level.ERROR, StandardOpenOption.CREATE))));
     }
@@ -348,7 +348,7 @@ public final class Log extends BerylSystem {
         if(BerylConfiguration.LOG_LEVEL_COLORS.empty()) {
             setDefaultLevelColors();
         } else {
-            levelColors.putAll(BerylConfiguration.LOG_LEVEL_COLORS.get());
+            levelColors.putAll(BerylConfiguration.LOG_LEVEL_COLORS.getOrDefault());
         }
     }
 
@@ -365,7 +365,7 @@ public final class Log extends BerylSystem {
     private void setLevelMask() {
         if(!BerylConfiguration.LOG_LEVELS.empty()) {
             levelMask.clear();
-            levelMask.addAll(BerylConfiguration.LOG_LEVELS.get());
+            levelMask.addAll(BerylConfiguration.LOG_LEVELS.getOrDefault());
         }
     }
 

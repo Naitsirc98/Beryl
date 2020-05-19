@@ -3,10 +3,10 @@ package naitsirc98.beryl.examples.forest;
 import naitsirc98.beryl.audio.AudioClip;
 import naitsirc98.beryl.audio.AudioDistanceModel;
 import naitsirc98.beryl.audio.AudioSystem;
-import naitsirc98.beryl.core.Beryl;
 import naitsirc98.beryl.core.BerylApplication;
 import naitsirc98.beryl.core.BerylConfiguration;
 import naitsirc98.beryl.core.BerylFiles;
+import naitsirc98.beryl.examples.common.CameraController;
 import naitsirc98.beryl.graphics.GraphicsAPI;
 import naitsirc98.beryl.graphics.window.DisplayMode;
 import naitsirc98.beryl.graphics.window.Window;
@@ -37,24 +37,17 @@ public class ForestGame extends BerylApplication {
     public static final String FOREST_NIGHT_SOUND = "Forest night sound";
     private static final Random RAND = new Random(System.nanoTime());
 
-    public static void main(String[] args) {
-
-        BerylConfiguration.SET_CONFIGURATION_METHOD.set(ForestGame::setConfiguration);
-
-        Beryl.launch(new ForestGame());
+    public ForestGame() {
+        setConfiguration();
     }
 
-    private static void setConfiguration() {
+    private void setConfiguration() {
         BerylConfiguration.DEBUG.set(true);
         BerylConfiguration.INTERNAL_DEBUG.set(true);
         BerylConfiguration.SHOW_DEBUG_INFO.set(true);
         BerylConfiguration.GRAPHICS_API.set(GraphicsAPI.OPENGL);
         BerylConfiguration.WINDOW_DISPLAY_MODE.set(DisplayMode.WINDOWED);
         BerylConfiguration.VSYNC.set(false);
-    }
-
-    private ForestGame() {
-
     }
 
     @Override

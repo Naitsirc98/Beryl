@@ -20,9 +20,9 @@ import static org.lwjgl.opengl.GL30C.GL_FRAMEBUFFER_SRGB;
 
 public class GLContext implements GraphicsContext, LongHandle {
 
-    public static final boolean OPENGL_DEBUG_MESSAGES_ENABLED = BerylConfiguration.OPENGL_ENABLE_DEBUG_MESSAGES.get(Beryl.DEBUG);
+    public static final boolean OPENGL_DEBUG_MESSAGES_ENABLED = BerylConfiguration.OPENGL_ENABLE_DEBUG_MESSAGES.getOrDefault(Beryl.DEBUG);
 
-    private static final boolean INITIAL_VSYNC = BerylConfiguration.VSYNC.get(false);
+    private static final boolean INITIAL_VSYNC = BerylConfiguration.VSYNC.getOrDefault(false);
 
     private long glContext;
     private GLDebugMessenger debugMessenger;

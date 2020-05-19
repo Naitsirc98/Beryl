@@ -1,7 +1,6 @@
-package naitsirc98.beryl.examples.forest;
+package naitsirc98.beryl.examples.common;
 
 
-import naitsirc98.beryl.audio.AudioListener;
 import naitsirc98.beryl.graphics.Graphics;
 import naitsirc98.beryl.graphics.rendering.RenderSystem;
 import naitsirc98.beryl.graphics.window.Window;
@@ -10,13 +9,9 @@ import naitsirc98.beryl.input.Input;
 import naitsirc98.beryl.input.Joystick;
 import naitsirc98.beryl.input.Joystick.Axis;
 import naitsirc98.beryl.input.Joystick.AxisDirection;
-import naitsirc98.beryl.lights.LightRange;
-import naitsirc98.beryl.lights.SpotLight;
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.scenes.Camera;
-import naitsirc98.beryl.scenes.components.audio.AudioPlayer;
 import naitsirc98.beryl.scenes.components.behaviours.LateBehaviour;
-import org.joml.Vector3f;
 
 import static naitsirc98.beryl.graphics.window.CursorType.DISABLED;
 import static naitsirc98.beryl.graphics.window.CursorType.NORMAL;
@@ -26,17 +21,11 @@ import static naitsirc98.beryl.input.Key.*;
 public class CameraController extends LateBehaviour {
 
     private Camera camera;
-    private Vector3f lastPosition;
-    private SpotLight light;
 
     @Override
     protected void onStart() {
         Log.info("Initializing Camera controller...");
         camera = scene().camera();
-        lastPosition = new Vector3f();
-        light = new SpotLight();
-        light.range(LightRange.LARGE);
-        scene().environment().lighting().spotLights().add(light);
     }
 
     @Override
@@ -47,6 +36,23 @@ public class CameraController extends LateBehaviour {
         checkKeyboardMovement(amount);
 
         checkGamepadMovement(amount);
+
+        checkWindowControls();
+
+        if(Input.isKeyPressed(KEY_P)) {
+            Log.trace("Camera position: " + camera.position() + ", forward = " + camera.forward());
+        }
+
+        if(Input.isKeyTyped(KEY_U)) {
+            RenderSystem.shadowsEnabled(!RenderSystem.shadowsEnabled());
+        }
+
+        checkMouseLookAt();
+
+        checkGamepadLookAt();
+     }
+
+    private void checkWindowControls() {
 
         if(isKeyTyped(KEY_ESCAPE)) {
 
@@ -76,34 +82,7 @@ public class CameraController extends LateBehaviour {
         } else if(isKeyTyped(KEY_F5)) {
             Window.get().show();
         }
-
-        if(Input.isKeyPressed(KEY_P)) {
-            Log.trace("Camera position: " + camera.position() + ", forward = " + camera.forward());
-        }
-
-        if(Input.isKeyTyped(KEY_U)) {
-            RenderSystem.shadowsEnabled(!RenderSystem.shadowsEnabled());
-        }
-
-        checkMouseLookAt();
-
-        checkGamepadLookAt();
-
-        AudioListener.get().position(camera.position());
-        AudioListener.get().orientation(camera.forward(), camera.up());
-        AudioListener.get().velocity(lastPosition.sub(camera.position()).negate());
-
-        if(camera.position().y() < -4.0f) {
-            scene().entity(ForestGame.FOREST_DAY_SOUND).get(AudioPlayer.class).source().pitch(0.5f);
-        } else {
-            scene().entity(ForestGame.FOREST_DAY_SOUND).get(AudioPlayer.class).source().pitch(1.0f);
-        }
-
-        lastPosition.set(camera.position());
-
-        light.position(camera.position())
-                .direction(new Vector3f(camera.forward()).negate());
-     }
+    }
 
     private void checkGamepadLookAt() {
 

@@ -103,11 +103,8 @@ public final class GLShaderProgram implements GLObject {
     }
 
     public void uniformMatrix4f(int location, boolean transpose, FloatBuffer value) {
-        if(DEBUG) {
-            if(location >= 0) {
-                glUniformMatrix4fv(location, transpose, value);
-            }
-        }
+        checkUniformLocation("mat4", location);
+        glUniformMatrix4fv(location, transpose, value);
     }
 
     public void uniformVector4f(String name, Vector3fc vector) {
@@ -119,11 +116,7 @@ public final class GLShaderProgram implements GLObject {
     }
 
     public void uniformVector4f(int location, Vector4fc data) {
-        if(DEBUG) {
-            if(location >= 0) {
-                glUniform4f(location, data.x(), data.y(), data.z(), data.w());
-            }
-        }
+        uniformVector4f(location, data.x(), data.y(), data.z(), data.w());
     }
 
     public void uniformVector4f(String name, float x, float y, float z, float w) {
@@ -131,11 +124,8 @@ public final class GLShaderProgram implements GLObject {
     }
 
     public void uniformVector4f(int location, float x, float y, float z, float w) {
-        if(DEBUG) {
-            if(location >= 0) {
-                glUniform4f(location, x, y, z, w);
-            }
-        }
+        checkUniformLocation("vec4", location);
+        glUniform4f(location, x, y, z, w);
     }
 
     public void uniformVector3f(String name, Vector3fc vector) {
@@ -143,11 +133,8 @@ public final class GLShaderProgram implements GLObject {
     }
 
     public void uniformVector3f(int location, Vector3fc data) {
-        if(DEBUG) {
-            if(location >= 0) {
-                glUniform3f(location, data.x(), data.y(), data.z());
-            }
-        }
+        checkUniformLocation("vec3", location);
+        glUniform3f(location, data.x(), data.y(), data.z());
     }
 
     public void uniformColorRGBA(String name, Color color) {
@@ -155,11 +142,8 @@ public final class GLShaderProgram implements GLObject {
     }
 
     public void uniformColorRGBA(int location, Color color) {
-        if(DEBUG) {
-            if(location >= 0) {
-                glUniform4f(location, color.red(), color.green(), color.blue(), color.alpha());
-            }
-        }
+        checkUniformLocation("color (vec4)", location);
+        glUniform4f(location, color.red(), color.green(), color.blue(), color.alpha());
     }
 
     public void uniformColorRGB(String name, Color color) {
@@ -167,11 +151,8 @@ public final class GLShaderProgram implements GLObject {
     }
 
     public void uniformColorRGB(int location, Color color) {
-        if(DEBUG) {
-            if(location >= 0) {
-                glUniform3f(location, color.red(), color.green(), color.blue());
-            }
-        }
+        checkUniformLocation("color (vec3)", location);
+        glUniform3f(location, color.red(), color.green(), color.blue());
     }
 
     public void uniformSampler(String name, GLTexture texture, int unit) {
@@ -179,13 +160,10 @@ public final class GLShaderProgram implements GLObject {
     }
 
     public void uniformSampler(int location, GLTexture texture, int unit) {
-        if(DEBUG) {
-            if(location >= 0) {
-                glUniform1i(location, unit);
-                texture.bind(unit);
-                boundTextures.put(unit, texture);
-            }
-        }
+        checkUniformLocation("sampler", location);
+        glUniform1i(location, unit);
+        texture.bind(unit);
+        boundTextures.put(unit, texture);
     }
 
     public void uniformFloat(String name, float value) {
@@ -193,11 +171,8 @@ public final class GLShaderProgram implements GLObject {
     }
 
     public void uniformFloat(int location, float value) {
-        if(DEBUG) {
-            if(location >= 0) {
-                glUniform1f(location, value);
-            }
-        }
+        checkUniformLocation("float", location);
+        glUniform1f(location, value);
     }
 
     public void uniformInt(String name, int value) {
@@ -205,11 +180,8 @@ public final class GLShaderProgram implements GLObject {
     }
 
     public void uniformInt(int location, int value) {
-        if(DEBUG) {
-            if(location >= 0) {
-                glUniform1i(location, value);
-            }
-        }
+        checkUniformLocation("int", location);
+        glUniform1i(location, value);
     }
 
     public void uniformBool(String name, boolean value) {
@@ -243,5 +215,13 @@ public final class GLShaderProgram implements GLObject {
         glDeleteProgram(handle);
         shaders = null;
         uniformLocations = null;
+    }
+
+    private void checkUniformLocation(String uniform, int location) {
+        if(DEBUG) {
+            if(location < 0) {
+                Log.warning("Location of uniform " + uniform + " is invalid: " + location);
+            }
+        }
     }
 }

@@ -8,7 +8,7 @@ import naitsirc98.beryl.util.types.Singleton;
 
 public final class SceneManager extends BerylSystem {
 
-    public static final boolean DEBUG_REPORT_ENABLED = BerylConfiguration.SCENES_DEBUG_REPORT.get(Beryl.DEBUG);
+    public static final boolean DEBUG_REPORT_ENABLED = BerylConfiguration.SCENES_DEBUG_REPORT.getOrDefault(Beryl.DEBUG);
 
     @Singleton
     private static SceneManager instance;

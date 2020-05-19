@@ -98,12 +98,12 @@ public final class BerylConfiguration<T> {
     }
 
     @SuppressWarnings("unchecked")
-    public T get() {
+    public T getOrDefault() {
         return (T) value;
     }
 
     @SuppressWarnings("unchecked")
-    public T get(T defaultValue) {
+    public T getOrDefault(T defaultValue) {
         if(empty()) {
             value = defaultValue;
         }
@@ -111,7 +111,7 @@ public final class BerylConfiguration<T> {
     }
 
     @SuppressWarnings("unchecked")
-    public T get(Supplier<T> defaultValueSupplier) {
+    public T getOrDefault(Supplier<T> defaultValueSupplier) {
         if(empty()) {
             value = defaultValueSupplier.get();
         }

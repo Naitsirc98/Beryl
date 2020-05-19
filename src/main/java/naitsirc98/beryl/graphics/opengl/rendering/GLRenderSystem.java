@@ -151,10 +151,10 @@ public final class GLRenderSystem implements APIRenderSystem {
         mainFramebuffer = new GLFramebuffer();
 
         GLTexture2DMSAA colorBuffer = new GLTexture2DMSAA();
-        colorBuffer.allocate(MSAA_SAMPLES.get(), width, height, PixelFormat.RGBA);
+        colorBuffer.allocate(MSAA_SAMPLES.getOrDefault(), width, height, PixelFormat.RGBA);
 
         GLRenderbuffer depthStencilBuffer = new GLRenderbuffer();
-        depthStencilBuffer.storageMultisample(width, height, GL_DEPTH24_STENCIL8, MSAA_SAMPLES.get());
+        depthStencilBuffer.storageMultisample(width, height, GL_DEPTH24_STENCIL8, MSAA_SAMPLES.getOrDefault());
 
         mainFramebuffer.attach(GL_COLOR_ATTACHMENT0, colorBuffer, 0);
         mainFramebuffer.attach(GL_DEPTH_STENCIL_ATTACHMENT, depthStencilBuffer);

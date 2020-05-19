@@ -23,7 +23,7 @@ public final class Beryl {
 
     static {
 
-        final Runnable setConfigurationMethod = BerylConfiguration.SET_CONFIGURATION_METHOD.get(() -> {});
+        final Runnable setConfigurationMethod = BerylConfiguration.SET_CONFIGURATION_METHOD.getOrDefault(() -> {});
 
         if(setConfigurationMethod != null) {
             setConfigurationMethod.run();
@@ -33,17 +33,17 @@ public final class Beryl {
     public static final Version VERSION = new Version(1, 0, 0);
     public static final String NAME = "Beryl";
 
-    public static final boolean INTERNAL_DEBUG = BerylConfiguration.INTERNAL_DEBUG.get(false);
-    public static final boolean DEBUG = BerylConfiguration.DEBUG.get(INTERNAL_DEBUG);
+    public static final boolean INTERNAL_DEBUG = BerylConfiguration.INTERNAL_DEBUG.getOrDefault(false);
+    public static final boolean DEBUG = BerylConfiguration.DEBUG.getOrDefault(INTERNAL_DEBUG);
 
-    public static final boolean SHOW_DEBUG_INFO = BerylConfiguration.SHOW_DEBUG_INFO.get(DEBUG);
+    public static final boolean SHOW_DEBUG_INFO = BerylConfiguration.SHOW_DEBUG_INFO.getOrDefault(DEBUG);
 
-    private static final boolean SHOW_DEBUG_INFO_ON_WINDOW_TITLE = BerylConfiguration.SHOW_DEBUG_INFO_ON_WINDOW_TITLE.get(SHOW_DEBUG_INFO);
+    private static final boolean SHOW_DEBUG_INFO_ON_WINDOW_TITLE = BerylConfiguration.SHOW_DEBUG_INFO_ON_WINDOW_TITLE.getOrDefault(SHOW_DEBUG_INFO);
 
-    public static final String APPLICATION_NAME = BerylConfiguration.APPLICATION_NAME.get(NAME + " Application");
-    public static final Version APPLICATION_VERSION = BerylConfiguration.APPLICATION_VERSION.get(() -> new Version(1, 0, 0));
+    public static final String APPLICATION_NAME = BerylConfiguration.APPLICATION_NAME.getOrDefault(NAME + " Application");
+    public static final Version APPLICATION_VERSION = BerylConfiguration.APPLICATION_VERSION.getOrDefault(() -> new Version(1, 0, 0));
 
-    public static final boolean MEMORY_USAGE_REPORT = BerylConfiguration.MEMORY_USAGE_REPORT.get(DEBUG);
+    public static final boolean MEMORY_USAGE_REPORT = BerylConfiguration.MEMORY_USAGE_REPORT.getOrDefault(DEBUG);
 
     private static final int UPDATES_PER_SECOND = 60;
     private static final float IDEAL_FRAME_DELAY = 1.0f / UPDATES_PER_SECOND;
@@ -151,7 +151,7 @@ public final class Beryl {
 
     private void setup() {
 
-        if(BerylConfiguration.WINDOW_VISIBLE.get(true)) {
+        if(BerylConfiguration.WINDOW_VISIBLE.getOrDefault(true)) {
             Window.get().show();
         }
 
@@ -239,21 +239,24 @@ public final class Beryl {
                     + builder.toString()
                     + " | Memory used: " + memoryUsed() / 1024 / 1024 + " MB"
                     + " | Total memory: " + totalMemory() / 1024 / 1024 + " MB");
+
+            builder.append("\n\t");
         }
 
-        builder.append("\n\t");
         if(MEMORY_USAGE_REPORT) {
             builder.append("[JVM MEMORY]: Used = ").append(memoryUsed() / 1024 / 1024)
                     .append(" MB | Total = ").append(totalMemory() / 1024 / 1024)
                     .append(" MB | Max = ").append(maxMemory() / 1024 / 1024).append(" MB");
+
+            builder.append("\n\t");
         }
 
-        builder.append("\n\t");
+
         if(EventManager.DEBUG_REPORT_ENABLED) {
             builder.append("[EVENT-MANAGER]: ").append(systems.eventManager.debugReport());
+            builder.append("\n\t");
         }
 
-        builder.append("\n\t");
         if(SceneManager.DEBUG_REPORT_ENABLED) {
             builder.append("[SCENE-MANAGER]: ").append(systems.sceneManager.debugReport());
         }
@@ -276,8 +279,8 @@ public final class Beryl {
 
     private static void setJOMLConfiguration() {
         System.setProperty("joml.debug", String.valueOf(INTERNAL_DEBUG));
-        System.setProperty("joml.fastmath", String.valueOf(BerylConfiguration.FAST_MATH.get(true)));
-        System.setProperty("joml.sinLookup", String.valueOf(BerylConfiguration.FAST_MATH.get(true)));
+        System.setProperty("joml.fastmath", String.valueOf(BerylConfiguration.FAST_MATH.getOrDefault(true)));
+        System.setProperty("joml.sinLookup", String.valueOf(BerylConfiguration.FAST_MATH.getOrDefault(true)));
         System.setProperty("joml.format", String.valueOf(false));
     }
 }

@@ -1,16 +1,20 @@
 package naitsirc98.beryl.examples.forest;
 
+import naitsirc98.beryl.audio.AudioListener;
 import naitsirc98.beryl.core.Time;
 import naitsirc98.beryl.input.Input;
 import naitsirc98.beryl.input.Key;
 import naitsirc98.beryl.lights.DirectionalLight;
 import naitsirc98.beryl.materials.PhongMaterial;
+import naitsirc98.beryl.scenes.Camera;
 import naitsirc98.beryl.scenes.Entity;
 import naitsirc98.beryl.scenes.Scene;
 import naitsirc98.beryl.scenes.environment.skybox.Skybox;
 import naitsirc98.beryl.scenes.components.audio.AudioPlayer;
 import naitsirc98.beryl.scenes.components.behaviours.UpdateBehaviour;
 import naitsirc98.beryl.scenes.components.meshes.StaticMeshInstance;
+import org.joml.Matrix2d;
+import org.joml.Vector3f;
 
 import static naitsirc98.beryl.examples.forest.ForestGame.FOREST_DAY_SOUND;
 import static naitsirc98.beryl.examples.forest.ForestGame.FOREST_NIGHT_SOUND;
@@ -19,13 +23,25 @@ import static naitsirc98.beryl.util.Maths.*;
 
 public class GameController extends UpdateBehaviour {
 
+
     public static Entity create(Scene scene) {
         Entity entity = scene.newEntity();
         entity.add(GameController.class);
         return entity;
     }
 
+    private Vector3f lastPosition;
     private boolean helicopterSpawned;
+
+    public GameController() {
+
+    }
+
+    @Override
+    protected void init() {
+        super.init();
+        lastPosition = new Vector3f();
+    }
 
     @Override
     protected void onStart() {
@@ -36,6 +52,8 @@ public class GameController extends UpdateBehaviour {
 
     @Override
     public void onUpdate() {
+
+        updateAudioListener();
 
         if(!helicopterSpawned && Input.isKeyTyped(Key.KEY_H)) {
             Helicopter.create(scene());
@@ -69,5 +87,22 @@ public class GameController extends UpdateBehaviour {
         PhongMaterial lampMaterial = (PhongMaterial) scene().entity(LAMP_NAME).get(StaticMeshInstance.class).meshView().material();
         lampMaterial.emissiveColor().set(clamp(0.2f, 2.0f, time * 1.25f), 1.0f);
         lampMaterial.modify();
+    }
+
+    private void updateAudioListener() {
+
+        Camera camera = scene().camera();
+
+        AudioListener.get().position(camera.position());
+        AudioListener.get().orientation(camera.forward(), camera.up());
+        AudioListener.get().velocity(lastPosition.sub(camera.position()).negate());
+
+        if(camera.position().y() < -4.0f) {
+            scene().entity(ForestGame.FOREST_DAY_SOUND).get(AudioPlayer.class).source().pitch(0.5f);
+        } else {
+            scene().entity(ForestGame.FOREST_DAY_SOUND).get(AudioPlayer.class).source().pitch(1.0f);
+        }
+
+        lastPosition.set(camera.position());
     }
 }

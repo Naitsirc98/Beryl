@@ -130,7 +130,7 @@ public final class Time extends BerylSystem {
 
     @Override
     protected void init() {
-        glfwSetTime(BerylConfiguration.INITIAL_TIME_VALUE.get(0.0));
+        glfwSetTime(BerylConfiguration.INITIAL_TIME_VALUE.getOrDefault(0.0));
     }
 
     @Override

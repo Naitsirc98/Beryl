@@ -22,8 +22,8 @@ public final class WindowFactory {
     private static final int DEFAULT_WIDTH = 1280;
     private static final int DEFAULT_HEIGHT = 720;
 
-    public static final boolean MULTISAMPLE_ENABLE = BerylConfiguration.MULTISAMPLE_ENABLE.get(true);
-    public static final int MSAA_SAMPLES = BerylConfiguration.MSAA_SAMPLES.get(4);
+    public static final boolean MULTISAMPLE_ENABLE = BerylConfiguration.MULTISAMPLE_ENABLE.getOrDefault(true);
+    public static final int MSAA_SAMPLES = BerylConfiguration.MSAA_SAMPLES.getOrDefault(4);
 
     private WindowFactory() {}
 
@@ -32,8 +32,8 @@ public final class WindowFactory {
         setWindowHints();
 
         String title = Beryl.APPLICATION_NAME;
-        DisplayMode displayMode = BerylConfiguration.WINDOW_DISPLAY_MODE.get(WINDOWED);
-        Sizec defaultSize = BerylConfiguration.WINDOW_SIZE.get(new Size(DEFAULT_WIDTH, DEFAULT_HEIGHT));
+        DisplayMode displayMode = BerylConfiguration.WINDOW_DISPLAY_MODE.getOrDefault(WINDOWED);
+        Sizec defaultSize = BerylConfiguration.WINDOW_SIZE.getOrDefault(new Size(DEFAULT_WIDTH, DEFAULT_HEIGHT));
 
         Window window = new Window(createGLFWHandle(title, displayMode, defaultSize), title, displayMode, defaultSize);
 
@@ -47,8 +47,8 @@ public final class WindowFactory {
         glfwDefaultWindowHints();
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
 
-        glfwWindowHint(GLFW_RESIZABLE, asGLFWBoolean(BerylConfiguration.WINDOW_RESIZABLE.get(true)));
-        glfwWindowHint(GLFW_FOCUS_ON_SHOW, asGLFWBoolean(BerylConfiguration.WINDOW_FOCUS_ON_SHOW.get(true)));
+        glfwWindowHint(GLFW_RESIZABLE, asGLFWBoolean(BerylConfiguration.WINDOW_RESIZABLE.getOrDefault(true)));
+        glfwWindowHint(GLFW_FOCUS_ON_SHOW, asGLFWBoolean(BerylConfiguration.WINDOW_FOCUS_ON_SHOW.getOrDefault(true)));
 
         setGraphicsAPIDependentWindowHints();
     }

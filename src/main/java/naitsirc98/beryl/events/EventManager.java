@@ -17,7 +17,7 @@ import static org.lwjgl.glfw.GLFW.*;
  */
 public final class EventManager extends BerylSystem {
 
-    public static final boolean DEBUG_REPORT_ENABLED = BerylConfiguration.EVENTS_DEBUG_REPORT.get(Beryl.DEBUG);
+    public static final boolean DEBUG_REPORT_ENABLED = BerylConfiguration.EVENTS_DEBUG_REPORT.getOrDefault(Beryl.DEBUG);
 
     @Singleton
     private static EventManager instance;

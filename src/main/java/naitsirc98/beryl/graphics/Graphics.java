@@ -42,7 +42,7 @@ public final class Graphics extends BerylSystem {
     @Override
     protected void init() {
 
-        GraphicsAPI chosenGraphicsAPI = BerylConfiguration.GRAPHICS_API.get(OPENGL);
+        GraphicsAPI chosenGraphicsAPI = BerylConfiguration.GRAPHICS_API.getOrDefault(OPENGL);
 
         if(chosenGraphicsAPI != OPENGL) {
             Log.fatal("Beryl does not support " + chosenGraphicsAPI + " at the moment. Use OPENGL instead");
