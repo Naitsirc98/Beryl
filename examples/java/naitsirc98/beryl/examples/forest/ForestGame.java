@@ -134,11 +134,7 @@ public class ForestGame extends BerylApplication {
 
         SceneEnvironment environment = scene.environment();
 
-        // Skybox skybox = SkyboxFactory.newSkybox(BerylFiles.getString("textures/skybox/day"), BerylFiles.getString("textures/skybox/night"));
-
-        Skybox skybox = SkyboxFactory.newSkyboxHDR("G:\\JavaDevelopment\\Quasar\\src\\main\\resources\\resources\\textures\\hdr\\newport_loft.hdr");
-
-        // System.out.println(skybox.texture1().irradianceMap().toString());
+        Skybox skybox = SkyboxFactory.newSkybox(BerylFiles.getString("textures/skybox/day"), BerylFiles.getString("textures/skybox/night"));
 
         environment.skybox(skybox);
         environment.ambientColor(new Color(0.8f));

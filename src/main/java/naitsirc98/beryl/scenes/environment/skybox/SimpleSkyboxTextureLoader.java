@@ -33,9 +33,7 @@ public class SimpleSkyboxTextureLoader extends AbstractSkyboxTextureLoader {
 
         Cubemap cubemap = GraphicsFactory.get().newCubemap();
 
-        setupCubemapFaces(cubemap, Paths.get(skyboxFolder), pixelFormat());
-
-        return cubemap;
+        return setupCubemapFaces(cubemap, Paths.get(skyboxFolder), pixelFormat());
     }
 
     public Map<Cubemap.Face, String> cubemapFaceNames() {
@@ -56,14 +54,19 @@ public class SimpleSkyboxTextureLoader extends AbstractSkyboxTextureLoader {
 
             try(Image image = ImageFactory.newImage(folder.resolve(faceName).toString(), pixelFormat)) {
 
+                final int width = image.width();
+                final int height = image.height();
+
                 if(notAllocated) {
-                    cubemap.allocate(image.width(), image.height(), pixelFormat);
+                    cubemap.allocate(1, width, height, pixelFormat);
                     notAllocated = false;
                 }
 
-                cubemap.update(face, 0, 0, 0, image.width(), image.height(), pixelFormat, image.pixels());
+                cubemap.update(face, 0, 0, 0, width, height, pixelFormat, image.pixels());
             }
         }
+
+        cubemap.generateMipmaps();
 
         return cubemap;
     }

@@ -7,7 +7,9 @@ import naitsirc98.beryl.images.PixelFormat;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 
+import static naitsirc98.beryl.core.Beryl.DEBUG;
 import static naitsirc98.beryl.graphics.Graphics.opengl;
+import static naitsirc98.beryl.util.Asserts.assertTrue;
 import static org.lwjgl.opengl.GL11C.GL_TEXTURE_HEIGHT;
 import static org.lwjgl.opengl.GL11C.GL_TEXTURE_INTERNAL_FORMAT;
 import static org.lwjgl.opengl.GL11C.GL_TEXTURE_WIDTH;
@@ -47,21 +49,17 @@ public class GLCubemap extends GLTexture implements GLObject, Cubemap {
     @Override
     public void allocate(int mipLevels, int width, int height, PixelFormat internalFormat) {
 
-        // glTextureStorage2D(handle, 1, mapToAPI(internalFormat), width, height);
-        // glTextureStorage3D(handle, 1, mapToAPI(internalFormat), width, height, 6);
-
-        glBindTexture(GL_TEXTURE_CUBE_MAP, handle);
+        bind();
 
         final int interFormat = mapToAPI(internalFormat);
         final int format = opengl().mapper().mapToFormat(internalFormat);
         final int dataType = mapToAPI(internalFormat.dataType());
 
         for(int i = 0; i < 6; i++) {
-            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, interFormat, width, height, 0, format, dataType, NULL);
-            // glTextureSubImage3D(handle, mipLevels, 0, 0, face, width, height, 1, mapToAPI(internalFormat), dataType, NULL);
+            glTexImage2D(getCubemapFace(i), 0, interFormat, width, height, 0, format, dataType, NULL);
         }
 
-        glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+        unbind();
     }
 
     @Override
@@ -79,7 +77,7 @@ public class GLCubemap extends GLTexture implements GLObject, Cubemap {
     @Override
     public void update(int mipLevel, int xOffset, int yOffset, int width, int height, PixelFormat format, ByteBuffer pixels) {
 
-        glBindTexture(GL_TEXTURE_CUBE_MAP, handle);
+        bind();
 
         final int lastFace = GL_TEXTURE_CUBE_MAP_POSITIVE_X + 6;
 
@@ -89,13 +87,13 @@ public class GLCubemap extends GLTexture implements GLObject, Cubemap {
 
         this.imageFormat = format;
 
-        glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+        unbind();
     }
 
     @Override
     public void update(int mipLevel, int xOffset, int yOffset, int width, int height, PixelFormat format, FloatBuffer pixels) {
 
-        glBindTexture(GL_TEXTURE_CUBE_MAP, handle);
+        bind();
 
         final int lastFace = GL_TEXTURE_CUBE_MAP_POSITIVE_X + 6;
 
@@ -105,30 +103,57 @@ public class GLCubemap extends GLTexture implements GLObject, Cubemap {
 
         this.imageFormat = format;
 
-        glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+        unbind();
     }
 
     @Override
     public void update(Face face, int mipLevel, int xOffset, int yOffset, int width, int height, PixelFormat format, ByteBuffer pixels) {
 
-        glBindTexture(GL_TEXTURE_CUBE_MAP, handle);
+        bind();
 
         glTexSubImage2D(mapToAPI(face), mipLevel, xOffset, yOffset, width, height, mapToAPI(format), mapToAPI(format.dataType()), pixels);
 
         this.imageFormat = format;
 
-        glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+        unbind();
     }
 
     @Override
     public void update(Face face, int mipLevel, int xOffset, int yOffset, int width, int height, PixelFormat format, FloatBuffer pixels) {
 
-        glBindTexture(GL_TEXTURE_CUBE_MAP, handle);
+        bind();
 
         glTexSubImage2D(mapToAPI(face), mipLevel, xOffset, yOffset, width, height, mapToAPI(format), mapToAPI(format.dataType()), pixels);
 
         this.imageFormat = format;
 
+        unbind();
+    }
+
+    @Override
+    public void bind(int unit) {
+        glActiveTexture(GL_TEXTURE0 + unit);
+        bind();
+    }
+
+    @Override
+    public void unbind(int unit) {
+        glActiveTexture(GL_TEXTURE0 + unit);
+        unbind();
+    }
+
+    public void bind() {
+        glBindTexture(GL_TEXTURE_CUBE_MAP, handle);
+    }
+
+    public void unbind() {
         glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+    }
+
+    private int getCubemapFace(int index) {
+        if(DEBUG) {
+            assertTrue(index >= 0 && index < 6);
+        }
+        return GL_TEXTURE_CUBE_MAP_POSITIVE_X + index;
     }
 }

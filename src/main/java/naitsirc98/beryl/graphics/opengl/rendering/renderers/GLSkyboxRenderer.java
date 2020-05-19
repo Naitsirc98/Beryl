@@ -16,6 +16,7 @@ import org.joml.Matrix4f;
 import org.lwjgl.system.MemoryStack;
 
 import java.nio.ByteBuffer;
+import java.nio.file.Path;
 
 import static naitsirc98.beryl.graphics.ShaderStage.FRAGMENT_STAGE;
 import static naitsirc98.beryl.graphics.ShaderStage.VERTEX_STAGE;
@@ -32,6 +33,9 @@ public class GLSkyboxRenderer implements Renderer {
     private static final int MATRICES_BUFFER_SIZE = MATRIX4_SIZEOF * 2;
     private static final int PROJECTION_MATRIX_OFFSET = 0;
     private static final int VIEW_MATRIX_OFFSET = MATRIX4_SIZEOF;
+
+    public static final Path SKYBOX_VERTEX_SHADER_PATH = BerylFiles.getPath("shaders/skybox/skybox.vert");
+    public static final Path SKYBOX_FRAGMENT_SHADER_PATH = BerylFiles.getPath("shaders/skybox/skybox.frag");
 
     private static final int SKYBOX_INDEX_COUNT = 36;
 
@@ -53,8 +57,8 @@ public class GLSkyboxRenderer implements Renderer {
     public void init() {
 
         shader = new GLShaderProgram()
-                .attach(new GLShader(VERTEX_STAGE).source(BerylFiles.getPath("shaders/skybox/skybox.vert")))
-                .attach(new GLShader(FRAGMENT_STAGE).source(BerylFiles.getPath("shaders/skybox/skybox.frag")))
+                .attach(new GLShader(VERTEX_STAGE).source(SKYBOX_VERTEX_SHADER_PATH))
+                .attach(new GLShader(FRAGMENT_STAGE).source(SKYBOX_FRAGMENT_SHADER_PATH))
                 .link();
 
         Mesh cubeMesh = StaticMesh.cube();

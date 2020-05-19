@@ -218,13 +218,20 @@ public final class GLShaderProgram implements GLObject {
 
     public void unbindTextures() {
 
+        if(boundTextures.isEmpty()) {
+            return;
+        }
+
         Iterator<Entry<Integer, GLTexture>> iterator = boundTextures.entrySet().iterator();
 
         while(iterator.hasNext()) {
 
             Entry<Integer, GLTexture> textureUnit = iterator.next();
 
-            textureUnit.getValue().unbind(textureUnit.getKey());
+            final GLTexture texture = textureUnit.getValue();
+            final int unit = textureUnit.getKey();
+
+            texture.unbind(unit);
 
             iterator.remove();
         }
