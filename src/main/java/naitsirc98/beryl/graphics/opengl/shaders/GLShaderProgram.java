@@ -20,20 +20,30 @@ import static org.lwjgl.system.MemoryStack.stackPush;
 public final class GLShaderProgram implements GLObject {
 
     private final int handle;
+    private final String name;
     private Set<GLShader> shaders;
     private Map<String, Integer> uniformLocations;
     private Map<Integer, GLTexture> boundTextures;
 
-    public GLShaderProgram() {
+    public GLShaderProgram(String name) {
         handle = glCreateProgram();
         shaders = new HashSet<>();
         uniformLocations = new WeakHashMap<>();
         boundTextures = new HashMap<>();
+        this.name = name;
+    }
+
+    public GLShaderProgram() {
+        this("");
     }
 
     @Override
     public int handle() {
         return handle;
+    }
+
+    public String name() {
+        return name;
     }
 
     public GLShaderProgram attach(GLShader shader) {
@@ -223,5 +233,13 @@ public final class GLShaderProgram implements GLObject {
                 // Log.warning("Location of uniform " + uniform + " is invalid: " + location);
             }
         }
+    }
+
+    @Override
+    public String toString() {
+        return "GLShaderProgram{" +
+                "handle=" + handle +
+                ", name='" + name + '\'' +
+                '}';
     }
 }

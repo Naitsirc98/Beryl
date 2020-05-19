@@ -8,7 +8,7 @@ import static naitsirc98.beryl.util.Asserts.assertThat;
 
 public class SkyboxTexture implements Resource {
 
-    private static final int DEFAULT_IRRADIANCE_MAP_SIZE = 128;
+    private static final int DEFAULT_IRRADIANCE_MAP_SIZE = 64;
     private static final int DEFAULT_PREFILTER_MAP_SIZE = 512;
 
 
@@ -78,6 +78,7 @@ public class SkyboxTexture implements Resource {
     public void release() {
         Resource.release(irradianceMap);
         Resource.release(prefilterMap);
+        environmentMap = null;
         irradianceMap = null;
         prefilterMap = null;
     }

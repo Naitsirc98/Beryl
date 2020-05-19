@@ -17,7 +17,7 @@ import static naitsirc98.beryl.scenes.Fog.DEFAULT_FOG_DENSITY;
 public class PBRDemo extends BerylApplication {
 
     public PBRDemo() {
-        BerylConfiguration.SET_CONFIGURATION_METHOD.set(DefaultConfigurations.developmentConfiguration());
+        BerylConfiguration.SET_CONFIGURATION_METHOD.set(DefaultConfigurations.debugConfiguration());
     }
 
     @Override
@@ -44,6 +44,8 @@ public class PBRDemo extends BerylApplication {
         SceneEnvironment environment = scene.environment();
 
         Skybox skybox = SkyboxFactory.newSkyboxHDR("G:\\JavaDevelopment\\Quasar\\src\\main\\resources\\resources\\textures\\hdr\\newport_loft.hdr");
+
+        skybox.texture1().irradianceMap();
 
         environment.skybox(skybox);
         environment.ambientColor(new Color(0.8f));

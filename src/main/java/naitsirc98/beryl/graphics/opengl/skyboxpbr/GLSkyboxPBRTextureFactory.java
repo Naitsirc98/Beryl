@@ -12,7 +12,6 @@ import naitsirc98.beryl.graphics.opengl.textures.GLTexture;
 import naitsirc98.beryl.graphics.opengl.textures.GLTexture2D;
 import naitsirc98.beryl.graphics.opengl.vertex.GLVertexArray;
 import naitsirc98.beryl.graphics.textures.Cubemap;
-import naitsirc98.beryl.graphics.textures.Sampler;
 import naitsirc98.beryl.graphics.textures.Texture;
 import naitsirc98.beryl.graphics.textures.Texture2D;
 import naitsirc98.beryl.images.PixelFormat;
@@ -55,8 +54,10 @@ public class GLSkyboxPBRTextureFactory extends ManagedResource implements Skybox
 
     private static final int QUAD_INDEX_COUNT = 6;
     private static final int CUBE_INDEX_COUNT = 36;
+
     public static final String ENVIRONMENT_MAP_UNIFORM_NAME = "u_EnvironmentMap";
     public static final String EQUIRECTANGULAR_MAP_UNIFORM_NAME = "u_EquirectangularMap";
+    public static final String PROJECTION_VIEW_MATRIX_UNIFORM_NAME = "u_ProjectionViewMatrix";
 
 
     // Framebuffer
@@ -162,15 +163,17 @@ public class GLSkyboxPBRTextureFactory extends ManagedResource implements Skybox
 
         GLShaderProgram shader = irradianceShader();
 
+        framebuffer().bind();
+
         shader.bind();
 
         shader.uniformSampler(ENVIRONMENT_MAP_UNIFORM_NAME, environmentMap, 0);
 
         renderCubemap(irradianceTexture, shader, size, 0);
 
-        irradianceTexture.generateMipmaps();
-
         shader.unbind();
+
+        irradianceTexture.generateMipmaps();
     }
 
     private void bakePrefilterMap(Cubemap environmentMap, Cubemap prefilterTexture, int size) {
@@ -182,7 +185,6 @@ public class GLSkyboxPBRTextureFactory extends ManagedResource implements Skybox
         GLVertexArray cubeVAO = cubeVAO();
 
         shader.bind();
-        cubeVAO.bind();
 
         shader.uniformSampler(ENVIRONMENT_MAP_UNIFORM_NAME, (GLTexture) environmentMap, 0);
 
@@ -240,8 +242,6 @@ public class GLSkyboxPBRTextureFactory extends ManagedResource implements Skybox
 
         cubeVAO.bind();
 
-        framebuffer().bind();
-
         glDisable(GL_DEPTH_TEST);
         glViewport(0, 0, size, size);
 
@@ -251,7 +251,7 @@ public class GLSkyboxPBRTextureFactory extends ManagedResource implements Skybox
 
             Matrix4f projectionViewMatrix = projectionMatrix.mul(viewMatrix, viewMatrix);
 
-            shader.uniformMatrix4f("u_ProjectionViewMatrix", false, projectionViewMatrix);
+            shader.uniformMatrix4f(PROJECTION_VIEW_MATRIX_UNIFORM_NAME, false, projectionViewMatrix);
 
             framebuffer().attach(GL_COLOR_ATTACHMENT0, cubemap, faces[i], mipmapLevel);
             framebuffer().ensureComplete();
@@ -276,20 +276,18 @@ public class GLSkyboxPBRTextureFactory extends ManagedResource implements Skybox
     }
 
     private Matrix4fc getProjectionMatrix() {
-        return new Matrix4f().perspective(radians(90.0f), 1.0f, 0.1f, 10000.0f);
+        return new Matrix4f().perspective(radians(90.0f), 1.0f, 0.1f, 100.0f);
     }
 
     private GLCubemap createNewEnvironmentTexture(int size) {
 
-        GLCubemap cubemap = new GLCubemap();
+        GLCubemap environmentTexture = new GLCubemap();
 
-        cubemap.allocate(1, size, size, PixelFormat.RGB16F);
+        environmentTexture.allocate(1, size, size, PixelFormat.RGB16F);
 
-        SkyboxHelper.setSkyboxTextureSamplerParameters(cubemap);
+        SkyboxHelper.setSkyboxTextureSamplerParameters(environmentTexture);
 
-        cubemap.generateMipmaps();
-
-        return cubemap;
+        return environmentTexture;
     }
 
     private GLCubemap createNewIrradianceTexture(int size) {
@@ -299,8 +297,6 @@ public class GLSkyboxPBRTextureFactory extends ManagedResource implements Skybox
         irradianceTexture.allocate(1, size, size, PixelFormat.RGB16F);
 
         SkyboxHelper.setSkyboxTextureSamplerParameters(irradianceTexture);
-
-        irradianceTexture.generateMipmaps();
 
         return irradianceTexture;
     }
@@ -347,23 +343,9 @@ public class GLSkyboxPBRTextureFactory extends ManagedResource implements Skybox
     }
 
     private GLShaderProgram createEnvironmentMapShader() {
-        return new GLShaderProgram()
+        return new GLShaderProgram("Equirectangular to cubemap Shader")
                 .attach(new GLShader(VERTEX_STAGE).source(ENVIRONMENT_VERTEX_SHADER_PATH))
                 .attach(new GLShader(FRAGMENT_STAGE).source(ENVIRONMENT_FRAGMENT_SHADER_PATH))
-                .link();
-    }
-
-    private GLShaderProgram prefilterShader() {
-        if(prefilterShader == null) {
-            prefilterShader = createPrefilterShader();
-        }
-        return prefilterShader;
-    }
-
-    private GLShaderProgram createPrefilterShader() {
-        return new GLShaderProgram()
-                .attach(new GLShader(VERTEX_STAGE).source(PREFILTER_VERTEX_SHADER_PATH))
-                .attach(new GLShader(FRAGMENT_STAGE).source(PREFILTER_FRAGMENT_SHADER_PATH))
                 .link();
     }
 
@@ -375,9 +357,23 @@ public class GLSkyboxPBRTextureFactory extends ManagedResource implements Skybox
     }
 
     private GLShaderProgram createIrradianceShader() {
-        return new GLShaderProgram()
+        return new GLShaderProgram("Irradiance Shader")
                 .attach(new GLShader(VERTEX_STAGE).source(IRRADIANCE_VERTEX_SHADER_PATH))
                 .attach(new GLShader(FRAGMENT_STAGE).source(IRRADIANCE_FRAGMENT_SHADER_PATH))
+                .link();
+    }
+
+    private GLShaderProgram prefilterShader() {
+        if(prefilterShader == null) {
+            prefilterShader = createPrefilterShader();
+        }
+        return prefilterShader;
+    }
+
+    private GLShaderProgram createPrefilterShader() {
+        return new GLShaderProgram("Prefilter Shader")
+                .attach(new GLShader(VERTEX_STAGE).source(PREFILTER_VERTEX_SHADER_PATH))
+                .attach(new GLShader(FRAGMENT_STAGE).source(PREFILTER_FRAGMENT_SHADER_PATH))
                 .link();
     }
 
@@ -389,7 +385,7 @@ public class GLSkyboxPBRTextureFactory extends ManagedResource implements Skybox
     }
 
     private GLShaderProgram createBRDFShaderProgram() {
-        return new GLShaderProgram()
+        return new GLShaderProgram("BRDF Shader")
                 .attach(new GLShader(VERTEX_STAGE).source(BRDF_VERTEX_SHADER_PATH))
                 .attach(new GLShader(FRAGMENT_STAGE).source(BRDF_FRAGMENT_SHADER_PATH))
                 .link();

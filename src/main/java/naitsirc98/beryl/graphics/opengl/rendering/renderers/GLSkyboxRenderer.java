@@ -102,7 +102,7 @@ public class GLSkyboxRenderer implements Renderer {
             return;
         }
 
-        final GLCubemap skyboxTexture1 = skybox.texture1().environmentMap();
+        final GLCubemap skyboxTexture1 = skybox.texture1().irradianceMap();
         final GLCubemap skyboxTexture2 = skybox.texture2().environmentMap();
         final float textureBlendFactor = skybox.textureBlendFactor();
 

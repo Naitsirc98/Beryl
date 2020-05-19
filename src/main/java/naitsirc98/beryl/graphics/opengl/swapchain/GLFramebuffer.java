@@ -75,7 +75,7 @@ public class GLFramebuffer implements GLObject {
 
     public void attach(int attachment, GLCubemap cubemap, Cubemap.Face face, int level) {
         bind();
-        glBindTexture(GL_TEXTURE_CUBE_MAP, cubemap.handle());
+        // glBindTexture(GL_TEXTURE_CUBE_MAP, cubemap.handle());
         glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, mapToAPI(face), cubemap.handle(), level);
         // glNamedFramebufferTextureLayer(handle, attachment, cubemap.handle(), level, face.ordinal());
         attachments.put(attachment, cubemap);
