@@ -55,6 +55,8 @@ public class GLSkyboxPBRTextureFactory extends ManagedResource implements Skybox
 
     private static final int QUAD_INDEX_COUNT = 6;
     private static final int CUBE_INDEX_COUNT = 36;
+    public static final String ENVIRONMENT_MAP_UNIFORM_NAME = "u_EnvironmentMap";
+    public static final String EQUIRECTANGULAR_MAP_UNIFORM_NAME = "u_EquirectangularMap";
 
 
     // Framebuffer
@@ -72,6 +74,7 @@ public class GLSkyboxPBRTextureFactory extends ManagedResource implements Skybox
     private GLBuffer cubeVertexBuffer;
     private GLBuffer cubeIndexBuffer;
     // Depth buffers
+    @Deprecated
     private final Map<Integer, GLRenderbuffer> depthBuffers;
 
     public GLSkyboxPBRTextureFactory() {
@@ -110,14 +113,9 @@ public class GLSkyboxPBRTextureFactory extends ManagedResource implements Skybox
 
         GLTexture2D hdrTexture = (GLTexture2D) GraphicsFactory.get().newTexture2DFloat(hdrTexturePath, PixelFormat.RGB16F);
 
-        hdrTexture.sampler()
-                .wrapMode(Sampler.WrapMode.CLAMP_TO_EDGE)
-                .minFilter(Sampler.MinFilter.LINEAR_MIPMAP_LINEAR)
-                .magFilter(Sampler.MagFilter.LINEAR);
+        SkyboxHelper.setSkyboxTextureSamplerParameters(hdrTexture);
 
         GLCubemap environmentTexture = createNewEnvironmentTexture(size);
-
-        environmentTexture.generateMipmaps();
 
         bakeEnvironmentMap(hdrTexture, environmentTexture, size);
 
@@ -151,7 +149,7 @@ public class GLSkyboxPBRTextureFactory extends ManagedResource implements Skybox
 
         shader.bind();
 
-        shader.uniformSampler("u_EquirectangularMap", equirectangularTexture, 0);
+        shader.uniformSampler(EQUIRECTANGULAR_MAP_UNIFORM_NAME, equirectangularTexture, 0);
 
         renderCubemap(environmentMap, shader, size, 0);
 
@@ -160,13 +158,19 @@ public class GLSkyboxPBRTextureFactory extends ManagedResource implements Skybox
         environmentMap.generateMipmaps();
     }
 
-    private GLCubemap createNewEnvironmentTexture(int size) {
+    private void bakeIrradianceMap(GLCubemap environmentMap, GLCubemap irradianceTexture, int size) {
 
-        GLCubemap cubemap = new GLCubemap();
+        GLShaderProgram shader = irradianceShader();
 
-        cubemap.allocate(1, size, size, PixelFormat.RGB16F);
+        shader.bind();
 
-        return SkyboxHelper.setSkyboxTextureSamplerParameters(cubemap);
+        shader.uniformSampler(ENVIRONMENT_MAP_UNIFORM_NAME, environmentMap, 0);
+
+        renderCubemap(irradianceTexture, shader, size, 0);
+
+        irradianceTexture.generateMipmaps();
+
+        shader.unbind();
     }
 
     private void bakePrefilterMap(Cubemap environmentMap, Cubemap prefilterTexture, int size) {
@@ -180,7 +184,7 @@ public class GLSkyboxPBRTextureFactory extends ManagedResource implements Skybox
         shader.bind();
         cubeVAO.bind();
 
-        shader.uniformSampler("u_EnvironmentMap", (GLTexture) environmentMap, 0);
+        shader.uniformSampler(ENVIRONMENT_MAP_UNIFORM_NAME, (GLTexture) environmentMap, 0);
 
         final int minMipLevel = Texture.calculateMipLevels(size, size); // Size should be multiple of 2
 
@@ -196,100 +200,6 @@ public class GLSkyboxPBRTextureFactory extends ManagedResource implements Skybox
 
         cubeVAO.unbind();
         shader.unbind();
-    }
-
-    private Cubemap createNewPrefilterTexture(int size) {
-
-        GLCubemap prefilterTexture = new GLCubemap();
-
-        prefilterTexture.allocate(1, size, size, PixelFormat.RGB16F);
-
-        SkyboxHelper.setSkyboxTextureSamplerParameters(prefilterTexture);
-
-        prefilterTexture.generateMipmaps();
-
-        return prefilterTexture;
-    }
-
-    private void bakeIrradianceMap(GLCubemap environmentMap, GLCubemap irradianceTexture, int size) {
-
-        framebuffer().bind();
-
-        GLShaderProgram shader = irradianceShader();
-
-        shader.bind();
-
-        shader.uniformSampler("u_EnvironmentMap", environmentMap, 0);
-
-        renderCubemap(irradianceTexture, shader, size, 0);
-
-        shader.unbind();
-
-        framebuffer().detach(GL_DEPTH_ATTACHMENT);
-    }
-
-    private void renderCubemap(GLCubemap cubemap, GLShaderProgram shader, int size, int mipmapLevel) {
-
-        Cubemap.Face[] faces = Cubemap.Face.values();
-
-        Matrix4fc projectionMatrix = getProjectionMatrix();
-
-        Matrix4f[] viewMatrices = getViewMatrices();
-
-        GLVertexArray cubeVAO = cubeVAO();
-
-        cubeVAO.bind();
-
-        framebuffer().bind();
-        // framebuffer().attach(GL_DEPTH_ATTACHMENT, getDepthBuffer(size));
-
-        for(int i = 0;i < faces.length;i++) {
-
-            Matrix4fc viewMatrix = viewMatrices[i];
-            Matrix4f projectionViewMatrix = projectionMatrix.mul(viewMatrix, new Matrix4f());
-
-            shader.uniformMatrix4f("u_ProjectionViewMatrix", false, projectionViewMatrix);
-
-            framebuffer().attach(GL_COLOR_ATTACHMENT0, cubemap, faces[i], mipmapLevel);
-            framebuffer().ensureComplete();
-
-            glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
-            glDisable(GL_DEPTH_TEST);
-            glViewport(0, 0, size, size);
-            // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-            glDrawElements(GL_TRIANGLES, CUBE_INDEX_COUNT, GL_UNSIGNED_INT, NULL);
-
-            glFinish();
-        }
-
-        framebuffer().detach(GL_COLOR_ATTACHMENT0);
-
-        cubeVAO.unbind();
-    }
-
-    private Matrix4f[] getViewMatrices() {
-        return new Matrix4f[] {
-                new Matrix4f().lookAt(0.0f, 0.0f, 0.0f, 1.0f,  0.0f,  0.0f, 0.0f, -1.0f,  0.0f),
-                new Matrix4f().lookAt(0.0f, 0.0f, 0.0f,-1.0f,  0.0f,  0.0f, 0.0f, -1.0f,  0.0f),
-                new Matrix4f().lookAt(0.0f, 0.0f, 0.0f, 0.0f,  1.0f,  0.0f, 0.0f,  0.0f,  1.0f),
-                new Matrix4f().lookAt(0.0f, 0.0f, 0.0f, 0.0f, -1.0f,  0.0f, 0.0f,  0.0f, -1.0f),
-                new Matrix4f().lookAt(0.0f, 0.0f, 0.0f, 0.0f,  0.0f,  1.0f, 0.0f, -1.0f,  0.0f),
-                new Matrix4f().lookAt(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f,  0.0f, -1.0f,  0.0f)
-        };
-    }
-
-    private Matrix4fc getProjectionMatrix() {
-        return new Matrix4f().perspective(radians(90.0f), 1.0f, 0.1f, 10000.0f);
-    }
-
-    private GLCubemap createNewIrradianceTexture(int size) {
-
-        GLCubemap irradianceTexture = new GLCubemap();
-
-        irradianceTexture.allocate(1, size, size, PixelFormat.RGB16F);
-
-        return SkyboxHelper.setSkyboxTextureSamplerParameters(irradianceTexture);
     }
 
     private void bakeBRDFTexture(GLTexture2D brdfTexture, int size) {
@@ -318,14 +228,96 @@ public class GLSkyboxPBRTextureFactory extends ManagedResource implements Skybox
         framebuffer().detach(GL_COLOR_ATTACHMENT0);
     }
 
-    private void prepareFramebufferForBRDF(GLTexture2D brdfTexture) {
+    private void renderCubemap(GLCubemap cubemap, GLShaderProgram shader, int size, int mipmapLevel) {
 
-        framebuffer().attach(GL_COLOR_ATTACHMENT0, brdfTexture, 0);
+        Cubemap.Face[] faces = Cubemap.Face.values();
 
-        framebuffer().drawBuffer(GL_COLOR_ATTACHMENT0);
+        Matrix4fc projectionMatrix = getProjectionMatrix();
 
-        framebuffer().ensureComplete();
+        Matrix4f[] viewMatrices = getViewMatrices();
+
+        GLVertexArray cubeVAO = cubeVAO();
+
+        cubeVAO.bind();
+
+        framebuffer().bind();
+
+        glDisable(GL_DEPTH_TEST);
+        glViewport(0, 0, size, size);
+
+        for(int i = 0;i < faces.length;i++) {
+
+            Matrix4f viewMatrix = viewMatrices[i];
+
+            Matrix4f projectionViewMatrix = projectionMatrix.mul(viewMatrix, viewMatrix);
+
+            shader.uniformMatrix4f("u_ProjectionViewMatrix", false, projectionViewMatrix);
+
+            framebuffer().attach(GL_COLOR_ATTACHMENT0, cubemap, faces[i], mipmapLevel);
+            framebuffer().ensureComplete();
+
+            glDrawElements(GL_TRIANGLES, CUBE_INDEX_COUNT, GL_UNSIGNED_INT, NULL);
+        }
+
+        framebuffer().detach(GL_COLOR_ATTACHMENT0);
+
+        cubeVAO.unbind();
     }
+
+    private Matrix4f[] getViewMatrices() {
+        return new Matrix4f[] {
+                new Matrix4f().lookAt(0.0f, 0.0f, 0.0f, 1.0f,  0.0f,  0.0f, 0.0f, -1.0f,  0.0f),
+                new Matrix4f().lookAt(0.0f, 0.0f, 0.0f,-1.0f,  0.0f,  0.0f, 0.0f, -1.0f,  0.0f),
+                new Matrix4f().lookAt(0.0f, 0.0f, 0.0f, 0.0f,  1.0f,  0.0f, 0.0f,  0.0f,  -1.0f),
+                new Matrix4f().lookAt(0.0f, 0.0f, 0.0f, 0.0f, -1.0f,  0.0f, 0.0f,  0.0f,  1.0f),
+                new Matrix4f().lookAt(0.0f, 0.0f, 0.0f, 0.0f,  0.0f,  1.0f, 0.0f, -1.0f,  0.0f),
+                new Matrix4f().lookAt(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f,  0.0f, -1.0f, 0.0f)
+        };
+    }
+
+    private Matrix4fc getProjectionMatrix() {
+        return new Matrix4f().perspective(radians(90.0f), 1.0f, 0.1f, 10000.0f);
+    }
+
+    private GLCubemap createNewEnvironmentTexture(int size) {
+
+        GLCubemap cubemap = new GLCubemap();
+
+        cubemap.allocate(1, size, size, PixelFormat.RGB16F);
+
+        SkyboxHelper.setSkyboxTextureSamplerParameters(cubemap);
+
+        cubemap.generateMipmaps();
+
+        return cubemap;
+    }
+
+    private GLCubemap createNewIrradianceTexture(int size) {
+
+        GLCubemap irradianceTexture = new GLCubemap();
+
+        irradianceTexture.allocate(1, size, size, PixelFormat.RGB16F);
+
+        SkyboxHelper.setSkyboxTextureSamplerParameters(irradianceTexture);
+
+        irradianceTexture.generateMipmaps();
+
+        return irradianceTexture;
+    }
+
+    private Cubemap createNewPrefilterTexture(int size) {
+
+        GLCubemap prefilterTexture = new GLCubemap();
+
+        prefilterTexture.allocate(1, size, size, PixelFormat.RGB16F);
+
+        SkyboxHelper.setSkyboxTextureSamplerParameters(prefilterTexture);
+
+        prefilterTexture.generateMipmaps();
+
+        return prefilterTexture;
+    }
+
 
     private GLTexture2D createNewBRDFTexture(int size) {
 
@@ -336,6 +328,15 @@ public class GLSkyboxPBRTextureFactory extends ManagedResource implements Skybox
         SkyboxHelper.setSkyboxTextureSamplerParameters(brdf);
 
         return brdf;
+    }
+
+    private void prepareFramebufferForBRDF(GLTexture2D brdfTexture) {
+
+        framebuffer().attach(GL_COLOR_ATTACHMENT0, brdfTexture, 0);
+
+        framebuffer().drawBuffer(GL_COLOR_ATTACHMENT0);
+
+        framebuffer().ensureComplete();
     }
 
     private GLShaderProgram environmentMapShader() {

@@ -11,9 +11,7 @@ layout(location = 0) out vec3 frag_WorldPosition;
 
 void main() {
 
-    vec3 worldPos = in_Position;
+    frag_WorldPosition = in_Position;
 
-    frag_WorldPosition = worldPos;
-
-    gl_Position = u_ProjectionViewMatrix * vec4(worldPos, 1.0);
+    gl_Position = u_ProjectionViewMatrix * vec4(in_Position, 1.0);
 }

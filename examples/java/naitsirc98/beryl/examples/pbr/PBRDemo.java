@@ -17,7 +17,7 @@ import static naitsirc98.beryl.scenes.Fog.DEFAULT_FOG_DENSITY;
 public class PBRDemo extends BerylApplication {
 
     public PBRDemo() {
-        BerylConfiguration.SET_CONFIGURATION_METHOD.set(DefaultConfigurations.debugReleaseConfiguration());
+        BerylConfiguration.SET_CONFIGURATION_METHOD.set(DefaultConfigurations.developmentConfiguration());
     }
 
     @Override

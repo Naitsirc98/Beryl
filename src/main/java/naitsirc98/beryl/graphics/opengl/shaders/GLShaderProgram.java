@@ -220,7 +220,7 @@ public final class GLShaderProgram implements GLObject {
     private void checkUniformLocation(String uniform, int location) {
         if(DEBUG) {
             if(location < 0) {
-                Log.warning("Location of uniform " + uniform + " is invalid: " + location);
+                // Log.warning("Location of uniform " + uniform + " is invalid: " + location);
             }
         }
     }
