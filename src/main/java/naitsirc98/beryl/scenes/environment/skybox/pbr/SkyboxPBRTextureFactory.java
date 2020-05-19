@@ -18,9 +18,11 @@ public interface SkyboxPBRTextureFactory {
     }
 
 
-    Texture2D createBRDFTexture(int size);
+    Cubemap createEnvironmentMap(String hdrTexture, int size);
 
     Cubemap createIrradianceMap(Cubemap environmentMap, int size);
 
     Cubemap createPrefilterMap(Cubemap environmentMap, int size);
+
+    Texture2D createBRDFTexture(int size);
 }

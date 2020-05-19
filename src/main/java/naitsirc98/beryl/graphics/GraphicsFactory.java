@@ -21,7 +21,9 @@ public interface GraphicsFactory extends Resource {
     Texture2D blankTexture2D();
 
     Texture2D newTexture2D(String imagePath, PixelFormat pixelFormat);
-    
+
+    Texture2D newTexture2DFloat(String imagePath, PixelFormat pixelFormat);
+
     Texture2DMSAA newTexture2DMSAA();
 
     Cubemap newCubemap();

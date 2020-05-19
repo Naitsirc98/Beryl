@@ -46,7 +46,8 @@ public class GameController extends UpdateBehaviour {
 
         Skybox skybox = scene().environment().skybox();
 
-        skybox.rotate(radians(0.0042f));
+        // TODO
+        // skybox.rotate(radians(0.0042f));
 
         skybox.textureBlendFactor(time);
 

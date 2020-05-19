@@ -10,7 +10,6 @@ import java.nio.IntBuffer;
 import java.util.HashMap;
 import java.util.Map;
 
-import static naitsirc98.beryl.graphics.Graphics.opengl;
 import static org.lwjgl.opengl.GL11C.GL_NONE;
 import static org.lwjgl.opengl.GL45.*;
 
@@ -75,8 +74,10 @@ public class GLFramebuffer implements GLObject {
     }
 
     public void attach(int attachment, GLCubemap cubemap, Cubemap.Face face, int level) {
-        final int layer = face.ordinal() % 6;
-        glNamedFramebufferTextureLayer(handle, attachment, cubemap.handle(), level, layer);
+        bind();
+        glBindTexture(GL_TEXTURE_CUBE_MAP, cubemap.handle());
+        glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, mapToAPI(face), cubemap.handle(), level);
+        // glNamedFramebufferTextureLayer(handle, attachment, cubemap.handle(), level, face.ordinal());
         attachments.put(attachment, cubemap);
     }
 

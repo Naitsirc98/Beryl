@@ -35,6 +35,7 @@ public class GLSkyboxRenderer implements Renderer {
 
     private static final int SKYBOX_INDEX_COUNT = 36;
 
+
     private GLShaderProgram shader;
 
     private GLVertexArray vertexArray;

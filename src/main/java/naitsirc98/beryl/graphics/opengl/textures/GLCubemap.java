@@ -7,6 +7,7 @@ import naitsirc98.beryl.images.PixelFormat;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 
+import static naitsirc98.beryl.graphics.Graphics.opengl;
 import static org.lwjgl.opengl.GL11C.GL_TEXTURE_HEIGHT;
 import static org.lwjgl.opengl.GL11C.GL_TEXTURE_INTERNAL_FORMAT;
 import static org.lwjgl.opengl.GL11C.GL_TEXTURE_WIDTH;
@@ -14,7 +15,6 @@ import static org.lwjgl.opengl.GL45.glBindTexture;
 import static org.lwjgl.opengl.GL45.glTexSubImage2D;
 import static org.lwjgl.opengl.GL45.*;
 import static org.lwjgl.opengl.GL45C.glGetTextureLevelParameteri;
-import static org.lwjgl.opengl.GL45C.glTextureStorage2D;
 
 public class GLCubemap extends GLTexture implements GLObject, Cubemap {
 
@@ -45,17 +45,23 @@ public class GLCubemap extends GLTexture implements GLObject, Cubemap {
     }
 
     @Override
-    public void generateMipmaps() {
-
-    }
-
-    public void allocate(int mipLevels, int width, int height, int internalFormat) {
-        glTextureStorage2D(handle, mipLevels, internalFormat, width, height);
-    }
-
-    @Override
     public void allocate(int mipLevels, int width, int height, PixelFormat internalFormat) {
-        glTextureStorage2D(handle, mipLevels, mapper().mapToSizedInternalFormat(internalFormat), width, height);
+
+        // glTextureStorage2D(handle, 1, mapToAPI(internalFormat), width, height);
+        // glTextureStorage3D(handle, 1, mapToAPI(internalFormat), width, height, 6);
+
+        glBindTexture(GL_TEXTURE_CUBE_MAP, handle);
+
+        final int interFormat = mapToAPI(internalFormat);
+        final int format = opengl().mapper().mapToFormat(internalFormat);
+        final int dataType = mapToAPI(internalFormat.dataType());
+
+        for(int i = 0; i < 6; i++) {
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, interFormat, width, height, 0, format, dataType, NULL);
+            // glTextureSubImage3D(handle, mipLevels, 0, 0, face, width, height, 1, mapToAPI(internalFormat), dataType, NULL);
+        }
+
+        glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
     }
 
     @Override

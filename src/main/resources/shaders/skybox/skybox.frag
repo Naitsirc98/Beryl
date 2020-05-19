@@ -3,7 +3,7 @@
 #extension GL_KHR_vulkan_glsl: require
 
 #define LOWER_LIMIT 0.0
-#define UPPER_LIMIT 0.0
+#define UPPER_LIMIT 0.1
 
 @include "structs/fog.glsl"
 
@@ -19,8 +19,9 @@ layout(location = 0) in vec3 in_FragmentPosition;
 
 layout(location = 0) out vec4 out_FinalColor;
 
-void main()
-{
+
+void main() {
+
     vec4 color1 = textureLod(u_SkyboxTexture1, in_FragmentPosition, -1);
     vec4 color2 = textureLod(u_SkyboxTexture2, in_FragmentPosition, -1);
 

@@ -94,7 +94,7 @@ public final class GLShaderProgram implements GLObject {
 
     public void uniformMatrix4f(String name, boolean transpose, Matrix4fc matrix) {
         try(MemoryStack stack = stackPush()) {
-            uniformMatrix4f(name, true, matrix.get(stack.mallocFloat(16)));
+            uniformMatrix4f(name, transpose, matrix.get(stack.mallocFloat(16)));
         }
     }
 
