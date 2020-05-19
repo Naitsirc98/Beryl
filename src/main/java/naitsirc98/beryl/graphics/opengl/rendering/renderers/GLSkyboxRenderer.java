@@ -102,7 +102,7 @@ public class GLSkyboxRenderer implements Renderer {
             return;
         }
 
-        final GLCubemap skyboxTexture1 = skybox.texture1().irradianceMap();
+        final GLCubemap skyboxTexture1 = skybox.texture1().environmentMap();
         final GLCubemap skyboxTexture2 = skybox.texture2().environmentMap();
         final float textureBlendFactor = skybox.textureBlendFactor();
 
@@ -133,13 +133,7 @@ public class GLSkyboxRenderer implements Renderer {
 
         glDrawElements(GL_TRIANGLES, SKYBOX_INDEX_COUNT, GL_UNSIGNED_INT, NULL);
 
-        if(skyboxTexture1 != null) {
-            skyboxTexture1.unbind(0);
-        }
-
-        if(skyboxTexture2 != null) {
-            skyboxTexture2.unbind(1);
-        }
+        shader.unbind();
     }
 
     private void updateMatrices(Scene scene) {

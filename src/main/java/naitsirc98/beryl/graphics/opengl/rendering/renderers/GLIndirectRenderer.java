@@ -148,9 +148,7 @@ public abstract class GLIndirectRenderer implements Renderer {
 
         glMultiDrawElementsIndirect(GL_TRIANGLES, GL_UNSIGNED_INT, NULL, drawCount, 0);
 
-        if(shadowsEnabled) {
-            unbindShadowTextures(shader);
-        }
+        shader.unbind();
     }
 
     public abstract MeshInstanceList<?> getInstances(Scene scene);
@@ -177,16 +175,6 @@ public abstract class GLIndirectRenderer implements Renderer {
 
         for(int i = 0;i < dirShadowMaps.length;i++) {
             shader.uniformSampler("u_DirShadowMaps["+i+"]", dirShadowMaps[i], i + 5);
-        }
-
-    }
-
-    private void unbindShadowTextures(GLShaderProgram shader) {
-
-        GLTexture2D[] dirShadowMaps = shadowsInfo.dirShadowMaps();
-
-        for(int i = 0;i < dirShadowMaps.length;i++) {
-            dirShadowMaps[i].unbind(i + 5);
         }
 
     }

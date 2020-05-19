@@ -163,8 +163,6 @@ public class GLSkyboxPBRTextureFactory extends ManagedResource implements Skybox
 
         GLShaderProgram shader = irradianceShader();
 
-        framebuffer().bind();
-
         shader.bind();
 
         shader.uniformSampler(ENVIRONMENT_MAP_UNIFORM_NAME, environmentMap, 0);
@@ -177,8 +175,6 @@ public class GLSkyboxPBRTextureFactory extends ManagedResource implements Skybox
     }
 
     private void bakePrefilterMap(Cubemap environmentMap, Cubemap prefilterTexture, int size) {
-
-        framebuffer().bind();
 
         GLShaderProgram shader = prefilterShader();
 
@@ -242,6 +238,8 @@ public class GLSkyboxPBRTextureFactory extends ManagedResource implements Skybox
 
         cubeVAO.bind();
 
+        framebuffer().bind();
+
         glDisable(GL_DEPTH_TEST);
         glViewport(0, 0, size, size);
 
@@ -260,6 +258,8 @@ public class GLSkyboxPBRTextureFactory extends ManagedResource implements Skybox
         }
 
         framebuffer().detach(GL_COLOR_ATTACHMENT0);
+
+        framebuffer().unbind();
 
         cubeVAO.unbind();
     }

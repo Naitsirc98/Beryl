@@ -56,6 +56,10 @@ public class GLFramebuffer implements GLObject {
         glBindFramebuffer(GL_FRAMEBUFFER, handle);
     }
 
+    public void unbind() {
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    }
+
     public void ensureComplete() {
         final int status = glCheckNamedFramebufferStatus(handle, GL_FRAMEBUFFER);
         if(status != GL_FRAMEBUFFER_COMPLETE) {

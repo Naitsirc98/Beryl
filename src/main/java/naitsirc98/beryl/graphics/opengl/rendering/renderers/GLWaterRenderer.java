@@ -132,6 +132,8 @@ public class GLWaterRenderer implements Renderer {
             }
         }
 
+        waterShader.unbind();
+
         glDisable(GL_BLEND);
     }
 
