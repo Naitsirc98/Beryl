@@ -56,10 +56,7 @@ public class GLSkyboxRenderer implements Renderer {
     @Override
     public void init() {
 
-        shader = new GLShaderProgram()
-                .attach(new GLShader(VERTEX_STAGE).source(SKYBOX_VERTEX_SHADER_PATH))
-                .attach(new GLShader(FRAGMENT_STAGE).source(SKYBOX_FRAGMENT_SHADER_PATH))
-                .link();
+        shader = createShader();
 
         Mesh cubeMesh = StaticMesh.cube();
 
@@ -149,6 +146,13 @@ public class GLSkyboxRenderer implements Renderer {
 
             matricesUniformBuffer.copy(0, buffer);
         }
+    }
+
+    private GLShaderProgram createShader() {
+        return new GLShaderProgram()
+                .attach(new GLShader(VERTEX_STAGE).source(SKYBOX_VERTEX_SHADER_PATH))
+                .attach(new GLShader(FRAGMENT_STAGE).source(SKYBOX_FRAGMENT_SHADER_PATH))
+                .link();
     }
 
 }

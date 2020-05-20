@@ -39,7 +39,16 @@ public final class GLSLPreprocessor {
             Log.error("Could not process shader file: " + path, e);
         }
 
-        return sourceBuffer.toString();
+        String source = sourceBuffer.toString();
+
+        int i = 0;
+
+        for(String line : source.split("\n")) {
+            System.out.println(i + ": " + line);
+            ++i;
+        }
+
+        return source;
     }
 
     private void processShaderLines() throws IOException {

@@ -3,13 +3,13 @@
 #extension GL_KHR_vulkan_glsl: require
 #extension GL_ARB_bindless_texture: require
 
-@include "structs/lights.glsl"
-@include "structs/material.glsl"
-@include "structs/fog.glsl"
-
 #define MAX_SHADOW_CASCADES_COUNT 3
 #define MAX_POINT_LIGHTS 10
 #define MAX_SPOT_LIGHTS 10
+
+@include "structs/lights.glsl"
+@include "structs/phong_material.glsl"
+@include "structs/fog.glsl"
 
 layout(std140, binding = 0) uniform Camera {
     mat4 projectionViewMatrix;

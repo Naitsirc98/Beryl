@@ -3,13 +3,13 @@ package naitsirc98.beryl.graphics.opengl.rendering.renderers;
 import naitsirc98.beryl.graphics.buffers.MappedGraphicsBuffer;
 import naitsirc98.beryl.graphics.opengl.buffers.GLBuffer;
 import naitsirc98.beryl.graphics.opengl.commands.GLDrawElementsCommand;
-import naitsirc98.beryl.graphics.rendering.culling.FrustumCuller;
 import naitsirc98.beryl.graphics.opengl.rendering.culling.GLFrustumCuller;
 import naitsirc98.beryl.graphics.opengl.rendering.shadows.GLShadowsInfo;
 import naitsirc98.beryl.graphics.opengl.shaders.GLShaderProgram;
 import naitsirc98.beryl.graphics.opengl.textures.GLTexture2D;
 import naitsirc98.beryl.graphics.opengl.vertex.GLVertexArray;
 import naitsirc98.beryl.graphics.rendering.Renderer;
+import naitsirc98.beryl.graphics.rendering.culling.FrustumCuller;
 import naitsirc98.beryl.materials.MaterialManager;
 import naitsirc98.beryl.scenes.Scene;
 import naitsirc98.beryl.scenes.components.meshes.MeshInstanceList;
@@ -19,6 +19,7 @@ import java.util.ArrayDeque;
 import java.util.Queue;
 import java.util.function.Consumer;
 
+import static naitsirc98.beryl.graphics.opengl.shaders.UniformUtils.uniformArrayName;
 import static naitsirc98.beryl.util.types.DataType.INT32_SIZEOF;
 import static naitsirc98.beryl.util.types.DataType.MATRIX4_SIZEOF;
 import static org.lwjgl.opengl.GL11.GL_TRIANGLES;
@@ -32,6 +33,9 @@ public abstract class GLIndirectRenderer implements Renderer {
 
     private static final int INSTANCE_BUFFER_MIN_SIZE = INT32_SIZEOF * 2;
     private static final int TRANSFORMS_BUFFER_MIN_SIZE = MATRIX4_SIZEOF * 2;
+
+    private static final String SHADOWS_ENABLED_UNIFORM_NAME = "u_ShadowsEnabled";
+    private static final String DIR_SHADOW_MAPS_UNIFORM_NAME = "u_DirShadowMaps";
 
 
     protected GLShaderProgram shader;
@@ -174,9 +178,8 @@ public abstract class GLIndirectRenderer implements Renderer {
         GLTexture2D[] dirShadowMaps = shadowsInfo.dirShadowMaps();
 
         for(int i = 0;i < dirShadowMaps.length;i++) {
-            shader.uniformSampler("u_DirShadowMaps["+i+"]", dirShadowMaps[i], i + 5);
+            shader.uniformSampler(uniformArrayName(DIR_SHADOW_MAPS_UNIFORM_NAME, i), dirShadowMaps[i], i + 5);
         }
-
     }
 
     protected void bindShaderUniformsAndBuffers(Scene scene, GLShaderProgram shader, boolean shadowsEnabled) {
@@ -185,7 +188,7 @@ public abstract class GLIndirectRenderer implements Renderer {
         final GLBuffer materialsBuffer = MaterialManager.get().buffer();
         final GLBuffer cameraUniformBuffer = scene.cameraInfo().cameraBuffer();
 
-        shader.uniformBool("u_ShadowsEnabled", shadowsEnabled);
+        shader.uniformBool(SHADOWS_ENABLED_UNIFORM_NAME, shadowsEnabled);
 
         cameraUniformBuffer.bind(GL_UNIFORM_BUFFER, 0);
 
