@@ -1,12 +1,14 @@
 #version 450 core
 
 #extension GL_KHR_vulkan_glsl: require
+#extension GL_ARB_bindless_texture: require
 
 #define MAX_POINT_LIGHTS 10
 #define MAX_SPOT_LIGHTS 10
 
 @include "structs/lights.glsl"
 @include "structs/fog.glsl"
+@include "structs/water_material.glsl"
 
 layout(std140, binding = 0) uniform Camera {
     mat4 projectionViewMatrix;
@@ -24,23 +26,14 @@ layout(std140, binding = 1) uniform Lights {
     int u_SpotLightsCount;
 };
 
+layout(std140, binding = 2) uniform Material {
+    WaterMaterial u_Material;
+};
+
+uniform sampler2D u_DepthMap;
+
 uniform float u_NearPlane;
 uniform float u_FarPlane;
-
-uniform sampler2D u_DepthTexture;
-uniform sampler2D u_ReflectionMap;
-uniform sampler2D u_RefractionMap;
-uniform sampler2D u_DUDVMap;
-uniform sampler2D u_NormalMap;
-
-uniform bool u_DUDVMapPresent;
-uniform bool u_NormalMapPresent;
-
-uniform float u_DistortionStrength;
-uniform float u_TextureCoordsOffset;
-
-uniform vec4 u_WaterColor;
-uniform float u_WaterColorStrength;
 
 layout(location = 0) in FragmentData {
     vec4 clipSpace;
@@ -147,7 +140,7 @@ float linearizeDepth(float depth) {
 }
 
 float getFloorDistance(vec2 depthCoords) {
-    float depth = texture(u_DepthTexture, depthCoords).r;
+    float depth = texture(u_DepthMap, depthCoords).r;
     return linearizeDepth(depth);
 }
 
@@ -166,15 +159,17 @@ void main() {
 
     vec2 distortionTexCoords = vec2(0.0);
     vec2 distortion = vec2(0.0);
+    
+    float textureOffset = u_Material.textureOffset;
 
-    if(u_DUDVMapPresent) {
+    if(testMaterialFlag(u_Material.flags, DUDV_MAP_PRESENT)) {
 
         vec2 texCoords = fragmentData.textureCoords;
 
-        distortionTexCoords = texture(u_DUDVMap, vec2(texCoords.x + u_TextureCoordsOffset, texCoords.y)).rg * 0.1;
-        distortionTexCoords = texCoords + vec2(distortionTexCoords.x, distortionTexCoords.y + u_TextureCoordsOffset);
+        distortionTexCoords = texture(u_Material.dudvMap, vec2(texCoords.x + textureOffset, texCoords.y)).rg * 0.1;
+        distortionTexCoords = texCoords + vec2(distortionTexCoords.x, distortionTexCoords.y + textureOffset);
 
-        distortion = (texture(u_DUDVMap, distortionTexCoords).rg * 2.0 - 1.0) * u_DistortionStrength;
+        distortion = (texture(u_Material.dudvMap, distortionTexCoords).rg * 2.0 - 1.0) * u_Material.distortionStrength;
 
         // Do not distort the edges
         float distortionBlending = clamp(waterDepth / distortionBlendFactor, 0.0, 1.0);
@@ -182,10 +177,12 @@ void main() {
         distortion *= distortionBlending;
     }
 
-    if(u_NormalMapPresent) {
-        fragmentNormal = texture(u_NormalMap, distortionTexCoords).rgb;
+    if(testMaterialFlag(u_Material.flags, NORMAL_MAP_PRESENT)) {
+
+        fragmentNormal = texture(u_Material.normalMap, distortionTexCoords).rgb;
         fragmentNormal = vec3(fragmentNormal.r * 2.0 - 1.0, fragmentNormal.b * waterFlatFactor, fragmentNormal.g * 2.0 - 1.0);
         fragmentNormal = normalize(fragmentNormal);
+
     } else {
         fragmentNormal = normalize(fragmentData.normal);
     }
@@ -197,8 +194,8 @@ void main() {
     refractionTexCoords += distortion;
     refractionTexCoords = clamp(refractionTexCoords, 0.001, 0.999);
 
-    vec4 reflectionColor = texture(u_ReflectionMap, reflectionTexCoords);
-    vec4 refractionColor = texture(u_RefractionMap, refractionTexCoords);
+    vec4 reflectionColor = texture(u_Material.reflectionMap, reflectionTexCoords);
+    vec4 refractionColor = texture(u_Material.refractionMap, refractionTexCoords);
 
     viewDirection = normalize(u_Camera.position.xyz - fragmentData.position);
     float reflectionFactor = dot(viewDirection, fragmentNormal);
@@ -207,7 +204,7 @@ void main() {
 
     vec4 environmentColor = underWater ? refractionColor : mix(reflectionColor, refractionColor, reflectionFactor);
 
-    vec4 waterColor = mix(environmentColor, u_WaterColor, u_WaterColorStrength);
+    vec4 waterColor = mix(environmentColor, u_Material.color, u_Material.colorStrength);
 
     // Smooth edges by blending them gradually. Blending must be enabled
     waterColor.a = clamp(waterDepth / edgesBlendFactor, 0.0, 1.0);

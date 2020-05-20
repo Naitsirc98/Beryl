@@ -32,6 +32,8 @@ public enum DataType implements ByteSize {
     public static final int VECTOR4_SIZEOF = 4 * FLOAT32_SIZEOF;
     public static final int MATRIX4_SIZEOF = 4 * 4 * FLOAT32_SIZEOF;
 
+    public static final int SAMPLER_SIZEOF = UINT64_SIZEOF;
+
     public static final int INT32_MIN = Integer.MIN_VALUE;
     public static final int INT32_MAX = Integer.MAX_VALUE;
 

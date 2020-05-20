@@ -9,7 +9,7 @@ import java.util.stream.Stream;
 
 public class SceneEnhancedWater {
 
-    public static final int MAX_ENHANCED_WATER_VIEWS = 2;
+    public static final int MAX_ENHANCED_WATER_VIEWS = 1;
 
     private final WaterMeshView[] enhancedWaterViews;
 
@@ -30,12 +30,16 @@ public class SceneEnhancedWater {
         return alreadyEnhanced(waterMeshView);
     }
 
-    public SceneEnhancedWater setEnhancedWaterView(EnhancedWaterUnit waterUnit, WaterMeshView waterMeshView) {
+    public SceneEnhancedWater setEnhancedWaterView(WaterMeshView waterMeshView) {
+        return setEnhancedWaterView(0, waterMeshView);
+    }
+
+    public SceneEnhancedWater setEnhancedWaterView(int waterUnit, WaterMeshView waterMeshView) {
         if(alreadyEnhanced(waterMeshView)) {
             Log.error("WaterMeshView " + waterMeshView + " is already marked as enhanced");
             return this;
         }
-        enhancedWaterViews[waterUnit.ordinal()] = waterMeshView;
+        enhancedWaterViews[waterUnit] = waterMeshView;
         return this;
     }
 

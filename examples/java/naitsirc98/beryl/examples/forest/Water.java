@@ -18,7 +18,6 @@ import naitsirc98.beryl.scenes.components.math.Transform;
 import naitsirc98.beryl.scenes.components.meshes.WaterMeshInstance;
 import org.joml.Vector3f;
 
-import static naitsirc98.beryl.scenes.environment.EnhancedWaterUnit.ENHANCED_WATER_UNIT_0;
 import static naitsirc98.beryl.util.Maths.clamp;
 import static naitsirc98.beryl.util.Maths.radians;
 
@@ -38,7 +37,7 @@ public class Water {
         water.add(WaterMeshInstance.class).meshView(waterMeshView);
         water.add(WaterController.class);
 
-        scene.enhancedWater().setEnhancedWaterView(ENHANCED_WATER_UNIT_0, waterMeshView);
+        scene.enhancedWater().setEnhancedWaterView(waterMeshView);
 
         addWaterAudioSource(scene, scale, 50, 445.163f, -5.879f, 319.965f);
 

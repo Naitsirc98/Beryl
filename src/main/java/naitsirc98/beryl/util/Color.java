@@ -7,6 +7,14 @@ import java.nio.ByteBuffer;
 @ByteSize.Static(IColor.SIZEOF)
 public final class Color implements IColor {
 
+    public static Color colorBlackTransparent() {
+        return new Color(0.0f, 0.0f, 0.0f, 0.0f);
+    }
+
+    public static Color colorWhiteTransparent() {
+        return new Color(1.0f, 1.0f, 1.0f, 0.0f);
+    }
+
     public static Color colorBlack() {
         return new Color(0.0f, 0.0f, 0.0f);
     }
