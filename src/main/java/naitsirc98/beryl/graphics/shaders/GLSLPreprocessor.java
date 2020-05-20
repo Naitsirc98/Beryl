@@ -1,15 +1,16 @@
 package naitsirc98.beryl.graphics.shaders;
 
+import naitsirc98.beryl.core.BerylFiles;
 import naitsirc98.beryl.graphics.GraphicsAPI;
 import naitsirc98.beryl.graphics.ShaderStage;
 import naitsirc98.beryl.logging.Log;
-import naitsirc98.beryl.core.BerylFiles;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
 import static java.nio.file.Files.exists;
+import static naitsirc98.beryl.core.Beryl.DEBUG;
 
 public final class GLSLPreprocessor {
 
@@ -41,20 +42,32 @@ public final class GLSLPreprocessor {
 
         String source = sourceBuffer.toString();
 
-        int i = 0;
-
-        for(String line : source.split("\n")) {
-            System.out.println(i + ": " + line);
-            ++i;
+        if(DEBUG) {
+            printShaderSource(source);
         }
 
         return source;
     }
 
+    private void printShaderSource(String source) {
+
+        StringBuilder stringBuilder = new StringBuilder(String.format("%s shader '%s' source:\n", stage, path));
+
+        String[] lines = source.split("\n");
+
+        for(int i = 0;i < lines.length;i++) {
+            stringBuilder.append(i)
+                    .append(": ")
+                    .append(lines[i])
+                    .append('\n');
+        }
+
+        Log.trace(stringBuilder);
+    }
+
     private void processShaderLines() throws IOException {
         Files.lines(path)
                 .parallel()
-                .map(String::trim)
                 .map(this::processDirective)
                 .forEachOrdered(this::appendLine);
     }
