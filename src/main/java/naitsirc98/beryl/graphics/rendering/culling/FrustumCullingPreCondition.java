@@ -9,5 +9,5 @@ public interface FrustumCullingPreCondition {
     FrustumCullingPreCondition NEVER_PASS = ((instance, meshView) -> FrustumCullingPreConditionState.DISCARD);
     FrustumCullingPreCondition ALWAYS_PASS = ((instance, meshView) -> FrustumCullingPreConditionState.PASS);
 
-    FrustumCullingPreConditionState getPrecondition(MeshInstance<?> instance, MeshView<?> meshView);
+    FrustumCullingPreConditionState compute(MeshInstance<?> instance, MeshView<?> meshView);
 }

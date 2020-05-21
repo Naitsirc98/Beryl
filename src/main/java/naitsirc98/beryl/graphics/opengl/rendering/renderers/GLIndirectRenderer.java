@@ -22,7 +22,7 @@ import java.util.Queue;
 import java.util.function.Consumer;
 
 import static naitsirc98.beryl.graphics.opengl.shaders.UniformUtils.uniformArrayElement;
-import static naitsirc98.beryl.materials.Material.Type.PHONG_MATERIAL;
+import static naitsirc98.beryl.materials.MaterialType.PHONG_MATERIAL;
 import static naitsirc98.beryl.util.types.DataType.INT32_SIZEOF;
 import static naitsirc98.beryl.util.types.DataType.MATRIX4_SIZEOF;
 import static org.lwjgl.opengl.GL11.GL_TRIANGLES;

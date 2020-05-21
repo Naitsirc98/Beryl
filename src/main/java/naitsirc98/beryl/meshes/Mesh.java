@@ -29,6 +29,7 @@ public abstract class Mesh extends ManagedResource implements Asset {
     public static final int VERTEX_TEXCOORDS_OFFSET = VERTEX_POSITION_SIZE + VERTEX_NORMAL_SIZE;
     public static final int VERTEX_TEXCOORDS_SIZE = 2 * FLOAT32_SIZEOF;
 
+
     protected final int handle;
     protected final String name;
     protected final ByteBuffer vertexData;

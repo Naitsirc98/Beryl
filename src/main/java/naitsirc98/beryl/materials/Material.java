@@ -10,17 +10,10 @@ public interface Material extends Asset, ByteSize {
 
     Material tiling(float x, float y);
 
-    Material.Type type();
+    MaterialType type();
 
     int flags();
 
     boolean destroyed();
-
-    enum Type {
-
-        PHONG_MATERIAL,
-        PBR_METALLIC_MATERIAL,
-        WATER_MATERIAL
-    }
 
 }

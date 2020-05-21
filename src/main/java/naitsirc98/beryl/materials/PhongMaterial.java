@@ -103,7 +103,7 @@ public class PhongMaterial extends ManagedMaterial {
 
             Material material = manager.get(name);
 
-            if(material.type() == Type.PHONG_MATERIAL) {
+            if(material.type() == MaterialType.PHONG_MATERIAL) {
                 return (PhongMaterial) material;
             }
         }
@@ -135,8 +135,8 @@ public class PhongMaterial extends ManagedMaterial {
     }
 
     @Override
-    public Type type() {
-        return Type.PHONG_MATERIAL;
+    public MaterialType type() {
+        return MaterialType.PHONG_MATERIAL;
     }
 
     @Override

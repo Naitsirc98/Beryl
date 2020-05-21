@@ -21,19 +21,19 @@ public final class MaterialManager implements AssetManager<Material> {
     private final Queue<Material> garbageQueue;
     private final Queue<Material> modificationsQueue;
     private final AtomicInteger handleProvider;
-    private final Map<Material.Type, MaterialStorageHandler> storageHandlers;
+    private final Map<MaterialType, MaterialStorageHandler> storageHandlers;
 
     public MaterialManager() {
         materials = new HashMap<>();
         garbageQueue = new ArrayDeque<>();
         modificationsQueue = new ArrayDeque<>();
         handleProvider = new AtomicInteger();
-        storageHandlers = new EnumMap<>(Material.Type.class);
+        storageHandlers = new EnumMap<>(MaterialType.class);
     }
 
     @Override
     public void init() {
-        storageHandlers.put(Material.Type.PHONG_MATERIAL, new PhongMaterialStorageHandler());
+        storageHandlers.put(MaterialType.PHONG_MATERIAL, new PhongMaterialStorageHandler());
     }
 
     @Override
@@ -42,7 +42,7 @@ public final class MaterialManager implements AssetManager<Material> {
     }
 
     @SuppressWarnings("unchecked")
-    public <T extends ManagedMaterial> MaterialStorageHandler<T> getStorageHandler(Material.Type type) {
+    public <T extends ManagedMaterial> MaterialStorageHandler<T> getStorageHandler(MaterialType type) {
         return storageHandlers.get(type);
     }
 

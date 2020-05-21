@@ -2,7 +2,6 @@ package naitsirc98.beryl.materials;
 
 import naitsirc98.beryl.graphics.GraphicsFactory;
 import naitsirc98.beryl.graphics.textures.Texture2D;
-import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.util.Color;
 import naitsirc98.beryl.util.IColor;
 import naitsirc98.beryl.util.types.ByteSize;
@@ -120,8 +119,8 @@ public class WaterMaterial extends AbstractMaterial {
     }
 
     @Override
-    public Type type() {
-        return Type.WATER_MATERIAL;
+    public MaterialType type() {
+        return MaterialType.WATER_MATERIAL;
     }
 
     @Override
