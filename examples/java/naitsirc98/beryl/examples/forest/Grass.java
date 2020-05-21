@@ -75,7 +75,7 @@ public class Grass {
         PhongMaterial material = (PhongMaterial) meshView.material();
         Texture2D colorTexture = GraphicsFactory.get().newTexture2D(BerylFiles.getString("textures/grass.png"), PixelFormat.SRGBA);
         colorTexture.setQuality(Texture.Quality.MEDIUM);
-        material.colorMap(colorTexture);
+        material.setColorMap(colorTexture);
     }
 
 }

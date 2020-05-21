@@ -6,6 +6,7 @@ import naitsirc98.beryl.events.window.WindowResizedEvent;
 import naitsirc98.beryl.graphics.opengl.buffers.GLBuffer;
 import naitsirc98.beryl.graphics.opengl.shaders.GLShader;
 import naitsirc98.beryl.graphics.opengl.shaders.GLShaderProgram;
+import naitsirc98.beryl.graphics.opengl.shaders.UniformUtils;
 import naitsirc98.beryl.graphics.opengl.swapchain.GLFramebuffer;
 import naitsirc98.beryl.graphics.opengl.textures.GLTexture2D;
 import naitsirc98.beryl.graphics.opengl.vertex.GLVertexArray;
@@ -18,9 +19,12 @@ import naitsirc98.beryl.meshes.StaticMesh;
 import naitsirc98.beryl.meshes.views.WaterMeshView;
 import naitsirc98.beryl.scenes.Camera;
 import naitsirc98.beryl.scenes.Scene;
-import naitsirc98.beryl.scenes.environment.SceneEnhancedWater;
 import naitsirc98.beryl.scenes.components.meshes.MeshInstanceList;
 import naitsirc98.beryl.scenes.components.meshes.WaterMeshInstance;
+import naitsirc98.beryl.scenes.environment.SceneEnhancedWater;
+import naitsirc98.beryl.util.IColor;
+import org.joml.Vector2f;
+import org.joml.Vector2fc;
 import org.joml.Vector3fc;
 import org.joml.Vector4f;
 import org.lwjgl.system.MemoryStack;
@@ -32,6 +36,7 @@ import java.util.function.Consumer;
 import static java.lang.StrictMath.max;
 import static naitsirc98.beryl.graphics.ShaderStage.FRAGMENT_STAGE;
 import static naitsirc98.beryl.graphics.ShaderStage.VERTEX_STAGE;
+import static naitsirc98.beryl.graphics.opengl.shaders.UniformUtils.uniformStructMember;
 import static naitsirc98.beryl.meshes.vertices.VertexLayouts.VERTEX_LAYOUT_3D;
 import static naitsirc98.beryl.util.handles.LongHandle.NULL;
 import static org.lwjgl.opengl.GL11C.GL_COLOR_BUFFER_BIT;
@@ -73,10 +78,7 @@ public class GLWaterRenderer implements Renderer {
 
         setClipPlaneUniform = shader -> shader.uniformVector4f("u_ClipPlane", clipPlane);
 
-        waterShader = new GLShaderProgram()
-                .attach(new GLShader(VERTEX_STAGE).source(BerylFiles.getPath("shaders/water/water.vert")))
-                .attach(new GLShader(FRAGMENT_STAGE).source(BerylFiles.getPath("shaders/water/water.frag")))
-                .link();
+        waterShader = createShader();
 
         quadMesh = StaticMesh.quad();
 
@@ -144,61 +146,46 @@ public class GLWaterRenderer implements Renderer {
 
         waterShader.uniformMatrix4f("u_ModelMatrix", false, instance.modelMatrix().get(modelMatrixBuffer));
 
-        waterShader.uniformFloat("u_DistortionStrength", view.distortionStrength());
-        waterShader.uniformFloat("u_TextureCoordsOffset", view.texturesOffset());
-        waterShader.uniformColorRGBA("u_WaterColor", view.waterColor());
-        waterShader.uniformFloat("u_WaterColorStrength", view.waterColorStrength());
-        waterShader.uniformFloat("u_Tiling", view.tiling());
-
-        bindTextures(material);
+        setMaterialUniforms(material);
 
         glDrawElements(GL_TRIANGLES, QUAD_INDEX_COUNT, GL_UNSIGNED_INT, NULL);
-
-        unbindTextures(material);
     }
 
-    private void unbindTextures(WaterMaterial material) {
+    private void setMaterialUniforms(WaterMaterial material) {
 
-        GLTexture2D reflectionMap = (GLTexture2D) material.reflectionMap();
-        GLTexture2D refractionMap = (GLTexture2D) material.refractionMap();
-        GLTexture2D dudvMap = (GLTexture2D) material.dudvMap();
-        GLTexture2D normalMap = (GLTexture2D) material.normalMap();
+        final GLShaderProgram shader = waterShader;
 
-        reflectionMap.unbind(1);
-        refractionMap.unbind(2);
+        final String matName = "u_Material";
 
-        if(dudvMap != null) {
-            dudvMap.unbind(3);
-        }
+        IColor color = material.getColor();
 
-        if(normalMap != null) {
-            normalMap.unbind(4);
-        }
-    }
+        GLTexture2D reflectionMap = (GLTexture2D) material.getReflectionMap();
+        GLTexture2D refractionMap = (GLTexture2D) material.getRefractionMap();
+        GLTexture2D dudvMap = (GLTexture2D) material.getDudvMap();
+        GLTexture2D normalMap = (GLTexture2D) material.getNormalMap();
 
-    private void bindTextures(WaterMaterial material) {
+        Vector2fc tiling = material.tiling();
 
-        GLTexture2D reflectionMap = (GLTexture2D) material.reflectionMap();
-        GLTexture2D refractionMap = (GLTexture2D) material.refractionMap();
-        GLTexture2D dudvMap = (GLTexture2D) material.dudvMap();
-        GLTexture2D normalMap = (GLTexture2D) material.normalMap();
+        final float distortionStrength = material.getDistortionStrength();
+        final float textureOffset = material.getTextureOffset();
+        final float colorStrength = material.getColorStrength();
 
-        waterShader.uniformSampler("u_ReflectionMap", reflectionMap, 1);
-        waterShader.uniformSampler("u_RefractionMap", refractionMap, 2);
+        final int flags = material.flags();
 
-        if(dudvMap != null) {
-            waterShader.uniformSampler("u_DUDVMap", dudvMap, 3);
-            waterShader.uniformBool("u_DUDVMapPresent", true);
-        } else {
-            waterShader.uniformBool("u_DUDVMapPresent", false);
-        }
+        shader.uniformColorRGBA(uniformStructMember(matName, "color"), color);
 
-        if(normalMap != null) {
-            waterShader.uniformSampler("u_NormalMap", normalMap, 4);
-            waterShader.uniformBool("u_NormalMapPresent", true);
-        } else {
-            waterShader.uniformBool("u_NormalMapPresent", false);
-        }
+        shader.uniformSampler(uniformStructMember(matName, "reflectionMap"), reflectionMap, 1);
+        shader.uniformSampler(uniformStructMember(matName, "refractionMap"), refractionMap, 2);
+        shader.uniformSampler(uniformStructMember(matName, "dudvMap"), dudvMap, 3);
+        shader.uniformSampler(uniformStructMember(matName, "normalMap"), normalMap, 4);
+
+        shader.uniformVector2f(uniformStructMember(matName, "tiling"), tiling);
+
+        shader.uniformFloat(uniformStructMember(matName, "distortionStrength"), distortionStrength);
+        shader.uniformFloat(uniformStructMember(matName, "textureOffset"), textureOffset);
+        shader.uniformFloat(uniformStructMember(matName, "colorStrength"), colorStrength);
+
+        shader.uniformInt(uniformStructMember(matName, "flags"), flags);
     }
 
     private void setOpenGLState(Scene scene) {
@@ -216,7 +203,7 @@ public class GLWaterRenderer implements Renderer {
 
         lightsBuffer.bind(GL_UNIFORM_BUFFER, 1);
 
-        waterShader.uniformSampler("u_DepthTexture", depthTexture, 0);
+        waterShader.uniformSampler("u_DepthMap", depthTexture, 0);
         waterShader.uniformFloat("u_NearPlane", camera.nearPlane());
         waterShader.uniformFloat("u_FarPlane", camera.farPlane());
     }
@@ -255,7 +242,7 @@ public class GLWaterRenderer implements Renderer {
 
         WaterMeshView waterView = instance.meshView();
 
-        bakeWaterTexture(scene, enhancedWater, instance.meshView(), refractionFramebuffer, waterView.material().refractionMap(), true);
+        bakeWaterTexture(scene, enhancedWater, instance.meshView(), refractionFramebuffer, waterView.material().getRefractionMap(), true);
     }
 
     private void bakeWaterTexturesNormally(Scene scene, Camera camera, SceneEnhancedWater enhancedWater, WaterMeshInstance instance) {
@@ -271,12 +258,12 @@ public class GLWaterRenderer implements Renderer {
 
     private void bakeReflectionTexture(Scene scene, Camera camera, SceneEnhancedWater enhancedWater, WaterMeshView waterView, float displacement) {
         prepareCameraToRenderWithReflectionPerspective(camera, waterView, displacement);
-        bakeWaterTexture(scene, enhancedWater, waterView, reflectionFramebuffer, waterView.material().reflectionMap(), true);
+        bakeWaterTexture(scene, enhancedWater, waterView, reflectionFramebuffer, waterView.material().getReflectionMap(), true);
     }
 
     private void bakeRefractionTexture(Scene scene, Camera camera, SceneEnhancedWater enhancedWater, WaterMeshView waterView, float displacement) {
         prepareCameraToRenderWithRefractionPerspective(camera, waterView, displacement);
-        bakeWaterTexture(scene, enhancedWater, waterView, refractionFramebuffer, waterView.material().refractionMap(), false);
+        bakeWaterTexture(scene, enhancedWater, waterView, refractionFramebuffer, waterView.material().getRefractionMap(), false);
     }
 
     private void prepareCameraToRenderWithReflectionPerspective(Camera camera, WaterMeshView waterView, float displacement) {
@@ -387,5 +374,12 @@ public class GLWaterRenderer implements Renderer {
         framebuffer.attach(GL_DEPTH_ATTACHMENT, depthTexture, 0);
 
         return framebuffer;
+    }
+
+    private GLShaderProgram createShader() {
+        return new GLShaderProgram("OpenGL Water shader")
+                .attach(new GLShader(VERTEX_STAGE).source(BerylFiles.getPath("shaders/water/water.vert")))
+                .attach(new GLShader(FRAGMENT_STAGE).source(BerylFiles.getPath("shaders/water/water.frag")))
+                .link();
     }
 }

@@ -1,10 +1,12 @@
 package naitsirc98.beryl.graphics.opengl.shaders;
 
+import naitsirc98.beryl.core.BerylConfiguration;
 import naitsirc98.beryl.graphics.opengl.GLObject;
 import naitsirc98.beryl.graphics.opengl.textures.GLTexture;
 import naitsirc98.beryl.logging.Log;
-import naitsirc98.beryl.util.Color;
+import naitsirc98.beryl.util.IColor;
 import org.joml.Matrix4fc;
+import org.joml.Vector2fc;
 import org.joml.Vector3fc;
 import org.joml.Vector4fc;
 import org.lwjgl.system.MemoryStack;
@@ -14,10 +16,16 @@ import java.util.*;
 import java.util.Map.Entry;
 
 import static naitsirc98.beryl.core.Beryl.DEBUG;
+import static naitsirc98.beryl.core.Beryl.INTERNAL_DEBUG;
 import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.system.MemoryStack.stackPush;
 
 public final class GLShaderProgram implements GLObject {
+
+    private static final int INVALID_UNIFORM_LOCATION = -1;
+
+    private static final boolean ENABLE_WARNINGS_UNIFORMS = BerylConfiguration.ENABLE_WARNINGS_UNIFORMS.getOrDefault(INTERNAL_DEBUG);
+
 
     private final int handle;
     private final String name;
@@ -86,17 +94,10 @@ public final class GLShaderProgram implements GLObject {
 
     public int uniformLocation(String name) {
 
-        int location = uniformLocations.getOrDefault(name, Integer.MIN_VALUE);
+        int location = uniformLocations.computeIfAbsent(name, n -> glGetUniformLocation(handle, name));
 
-        if(location == Integer.MIN_VALUE) {
-
-            location = glGetUniformLocation(handle, name);
-
-            if(location == -1) {
-                Log.warning("Uniform " + name + " does not exists or is not used in shader " + this);
-            }
-
-            uniformLocations.put(name, location);
+        if(location == INVALID_UNIFORM_LOCATION && ENABLE_WARNINGS_UNIFORMS) {
+            Log.warning("Uniform " + name + " does not exists or is not used in shader " + this);
         }
 
         return location;
@@ -147,20 +148,29 @@ public final class GLShaderProgram implements GLObject {
         glUniform3f(location, data.x(), data.y(), data.z());
     }
 
-    public void uniformColorRGBA(String name, Color color) {
+    public void uniformVector2f(String name, Vector2fc vector) {
+        uniformVector2f(uniformLocation(name), vector);
+    }
+
+    public void uniformVector2f(int location, Vector2fc data) {
+        checkUniformLocation("vec2", location);
+        glUniform2f(location, data.x(), data.y());
+    }
+
+    public void uniformColorRGBA(String name, IColor color) {
         uniformColorRGBA(uniformLocation(name), color);
     }
 
-    public void uniformColorRGBA(int location, Color color) {
+    public void uniformColorRGBA(int location, IColor color) {
         checkUniformLocation("color (vec4)", location);
         glUniform4f(location, color.red(), color.green(), color.blue(), color.alpha());
     }
 
-    public void uniformColorRGB(String name, Color color) {
+    public void uniformColorRGB(String name, IColor color) {
         uniformColorRGB(uniformLocation(name), color);
     }
 
-    public void uniformColorRGB(int location, Color color) {
+    public void uniformColorRGB(int location, IColor color) {
         checkUniformLocation("color (vec3)", location);
         glUniform3f(location, color.red(), color.green(), color.blue());
     }

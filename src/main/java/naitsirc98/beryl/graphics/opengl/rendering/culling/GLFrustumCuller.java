@@ -6,6 +6,7 @@ import naitsirc98.beryl.graphics.rendering.culling.FrustumCuller;
 import naitsirc98.beryl.graphics.rendering.culling.FrustumCullingPreCondition;
 import naitsirc98.beryl.graphics.rendering.culling.FrustumCullingPreConditionState;
 import naitsirc98.beryl.logging.Log;
+import naitsirc98.beryl.materials.ManagedMaterial;
 import naitsirc98.beryl.meshes.Mesh;
 import naitsirc98.beryl.meshes.views.MeshView;
 import naitsirc98.beryl.scenes.components.meshes.MeshInstance;
@@ -150,7 +151,9 @@ public class GLFrustumCuller implements FrustumCuller {
 
                 final int baseInstance = this.baseInstance.getAndIncrement();
 
-                final int materialIndex = meshView.material().bufferIndex();
+                ManagedMaterial material = (ManagedMaterial) meshView.material();
+
+                final int materialIndex = material.storageInfo().bufferIndex();
 
                 setInstanceData(baseInstance, matricesIndex, materialIndex);
 

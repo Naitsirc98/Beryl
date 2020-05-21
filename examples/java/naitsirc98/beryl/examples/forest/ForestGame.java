@@ -6,6 +6,7 @@ import naitsirc98.beryl.audio.AudioSystem;
 import naitsirc98.beryl.core.BerylApplication;
 import naitsirc98.beryl.core.BerylConfiguration;
 import naitsirc98.beryl.core.BerylFiles;
+import naitsirc98.beryl.core.DefaultConfigurations;
 import naitsirc98.beryl.examples.common.CameraController;
 import naitsirc98.beryl.graphics.GraphicsAPI;
 import naitsirc98.beryl.graphics.window.DisplayMode;
@@ -38,16 +39,7 @@ public class ForestGame extends BerylApplication {
     private static final Random RAND = new Random(System.nanoTime());
 
     public ForestGame() {
-        setConfiguration();
-    }
-
-    private void setConfiguration() {
-        BerylConfiguration.DEBUG.set(true);
-        BerylConfiguration.INTERNAL_DEBUG.set(true);
-        BerylConfiguration.SHOW_DEBUG_INFO.set(true);
-        BerylConfiguration.GRAPHICS_API.set(GraphicsAPI.OPENGL);
-        BerylConfiguration.WINDOW_DISPLAY_MODE.set(DisplayMode.WINDOWED);
-        BerylConfiguration.VSYNC.set(false);
+        BerylConfiguration.SET_CONFIGURATION_METHOD.set(DefaultConfigurations.debugReleaseConfiguration());
     }
 
     @Override
@@ -76,11 +68,11 @@ public class ForestGame extends BerylApplication {
 
         Water.create(scene, TERRAIN_SIZE / 2, waterSurfaceY, TERRAIN_SIZE / 2, TERRAIN_SIZE / 2);
 
-        Tree.createRandomForest(scene, Terrain.getTerrainMesh(), (int) TERRAIN_SIZE, -4.0f, 700);
-
         Grass.placeGrassUnderWater(scene, Terrain.getTerrainMesh(), (int) TERRAIN_SIZE, 8.0f, waterSurfaceY, 100);
 
         Lamp.create(scene, 473.74f, 0.067f, 376.301f, 4.0f);
+
+        Tree.createRandomForest(scene, Terrain.getTerrainMesh(), (int) TERRAIN_SIZE, -4.0f, 700);
 
         Helicopter.getHelicopterModel();
     }

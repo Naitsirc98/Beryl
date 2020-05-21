@@ -16,8 +16,6 @@ import naitsirc98.beryl.scenes.components.math.Transform;
 import naitsirc98.beryl.scenes.components.meshes.StaticMeshInstance;
 import naitsirc98.beryl.util.Color;
 
-import java.nio.file.Paths;
-
 public class Lamp {
 
     public static final String LAMP_NAME = "Lamp";
@@ -62,10 +60,10 @@ public class Lamp {
         Texture2D emissiveMap = GraphicsFactory.get().newTexture2D(getTexturePath("lightning1_Emissive.tga"), PixelFormat.RGBA);
         emissiveMap.setQuality(Texture.Quality.HIGH);
 
-        material.colorMap(colorTexture)
-                .normalMap(normalMap)
-                .emissiveMap(emissiveMap)
-                .emissiveColor(Color.colorWhite());
+        material.setColorMap(colorTexture)
+                .setNormalMap(normalMap)
+                .setEmissiveMap(emissiveMap)
+                .setEmissiveColor(Color.colorWhite());
     }
 
     private static String getTexturePath(String name) {

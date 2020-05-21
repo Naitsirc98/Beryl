@@ -122,21 +122,25 @@ public class Helicopter {
 
             if(meshName.contains("Glass")) {
 
-                ((PhongMaterial)meshView.material()).color(new Color(0, 0, 0, 0));
+                ((PhongMaterial)meshView.material()).setAmbientColor(Color.colorBlack()).setDiffuseColor(Color.colorBlack());
 
             } else if(meshName.contains("Rotor") || meshName.contains("Propeller") || meshName.contains("Wheel")) {
 
                 PhongMaterial material = (PhongMaterial) meshView.material();
 
-                material.color(new Color(0.1f, 0.1f, 0.1f, 1.0f));
-                material.shininess(1);
+                Color color = new Color(0.1f, 0.1f, 0.1f, 1.0f);
+
+                material.setAmbientColor(color).setDiffuseColor(color);
+                material.setShininess(1);
 
             } else {
 
                 PhongMaterial material = (PhongMaterial) meshView.material();
 
-                material.color(new Color(0.294f, 0.325f, 0.125f, 1.0f).intensify(0.5f));
-                material.shininess(1);
+                Color color = new Color(0.294f, 0.325f, 0.125f, 1.0f).intensify(0.5f);
+
+                material.setAmbientColor(color).setDiffuseColor(color);
+                material.setShininess(1);
             }
         });
 

@@ -1,4 +1,4 @@
-package naitsirc98.beryl.materials.v2;
+package naitsirc98.beryl.materials;
 
 import naitsirc98.beryl.graphics.GraphicsFactory;
 import naitsirc98.beryl.graphics.textures.Texture2D;
@@ -10,56 +10,36 @@ public abstract class AbstractMaterial implements Material {
 
     static final Texture2D BLANK_TEXTURE = GraphicsFactory.get().blankTexture2D();
 
-    private static final Vector2f DEFAULT_TILING = new Vector2f(1.0f, 1.0f);
+    private static final Vector2fc DEFAULT_TILING = new Vector2f(1.0f, 1.0f);
 
 
     private final String name;
-    private final int handle;
-    private Vector2f tiling;
-    private final MaterialStorageInfo storageInfo;
+    private int handle = Integer.MIN_VALUE;
+    private final Vector2f tiling;
     private final BitFlags flags;
     private transient boolean destroyed;
-    private transient boolean modified;
+    protected transient MaterialManager materialManager;
 
-    public AbstractMaterial(String name, int handle) {
+    public AbstractMaterial(String name) {
         this.name = name;
-        this.handle = handle;
         flags = new BitFlags();
-        storageInfo = new MaterialStorageInfo(sizeof());
+        tiling = new Vector2f(DEFAULT_TILING);
     }
 
     @Override
     public Vector2fc tiling() {
-        return tiling == null ? DEFAULT_TILING : tiling;
+        return tiling;
     }
 
     @Override
     public Material tiling(float x, float y) {
-
-        if(tiling == null) {
-            tiling = new Vector2f(x, y);
-        } else {
-            tiling.set(x, y);
-        }
-
-        markModified();
-
+        tiling.set(x, y);
         return this;
-    }
-
-    @Override
-    public MaterialStorageInfo storageInfo() {
-        return storageInfo;
     }
 
     @Override
     public int flags() {
         return flags.get();
-    }
-
-    @Override
-    public boolean modified() {
-        return modified;
     }
 
     @Override
@@ -78,11 +58,10 @@ public abstract class AbstractMaterial implements Material {
     }
 
     protected void destroy() {
-        destroyed = true;
-    }
-
-    protected void markModified() {
-        modified = true;
+        if(!destroyed) {
+            destroyed = true;
+            materialManager.markDestroyed(this);
+        }
     }
 
     protected void setFlag(int flag) {
@@ -106,5 +85,13 @@ public abstract class AbstractMaterial implements Material {
 
     protected Texture2D getMapOrDefault(Texture2D map) {
         return map == null ? BLANK_TEXTURE : map;
+    }
+
+    void setHandle(int handle) {
+        this.handle = handle;
+    }
+
+    void setMaterialManager(MaterialManager materialManager) {
+        this.materialManager = materialManager;
     }
 }

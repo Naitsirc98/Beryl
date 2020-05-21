@@ -1,4 +1,4 @@
-package naitsirc98.beryl.materials.v2;
+package naitsirc98.beryl.materials;
 
 public class MaterialStorageInfo {
 

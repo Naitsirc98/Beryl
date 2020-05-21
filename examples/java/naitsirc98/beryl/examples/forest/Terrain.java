@@ -37,16 +37,16 @@ public class Terrain {
 
     private static PhongMaterial getTerrainMaterial() {
 
-        return PhongMaterial.get("floor", material -> {
+        return PhongMaterial.get("Terrain", material -> {
 
             Texture2D colorMap = GraphicsFactory.get()
                     .newTexture2D("C:\\Users\\naits\\Downloads\\TexturesCom_Grass0157_1_seamless_S.jpg", PixelFormat.SRGBA);
 
             colorMap.setQuality(Texture.Quality.HIGH);
 
-            material.colorMap(colorMap)
-                    .shininess(1)
-                    .textureTiling(48, 48);
+            material.setColorMap(colorMap)
+                    // .setShininess(1)
+                    .tiling(48, 48);
         });
     }
 

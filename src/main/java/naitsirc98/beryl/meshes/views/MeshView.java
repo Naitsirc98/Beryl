@@ -1,6 +1,6 @@
 package naitsirc98.beryl.meshes.views;
 
-import naitsirc98.beryl.materials.IMaterial;
+import naitsirc98.beryl.materials.Material;
 import naitsirc98.beryl.meshes.Mesh;
 
 import java.util.Objects;
@@ -8,9 +8,9 @@ import java.util.Objects;
 public abstract class MeshView<T extends Mesh> {
 
     private final T mesh;
-    private final IMaterial material;
+    private final Material material;
 
-    public MeshView(T mesh, IMaterial material) {
+    public MeshView(T mesh, Material material) {
         this.mesh = mesh;
         this.material = material;
     }
@@ -20,7 +20,7 @@ public abstract class MeshView<T extends Mesh> {
         return (U) mesh;
     }
 
-    public IMaterial material() {
+    public Material material() {
         return material;
     }
 

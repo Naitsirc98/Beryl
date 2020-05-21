@@ -11,6 +11,8 @@ import naitsirc98.beryl.graphics.opengl.vertex.GLVertexArray;
 import naitsirc98.beryl.graphics.rendering.Renderer;
 import naitsirc98.beryl.graphics.rendering.culling.FrustumCuller;
 import naitsirc98.beryl.materials.MaterialManager;
+import naitsirc98.beryl.materials.MaterialStorageHandler;
+import naitsirc98.beryl.materials.PhongMaterial;
 import naitsirc98.beryl.scenes.Scene;
 import naitsirc98.beryl.scenes.components.meshes.MeshInstanceList;
 import org.joml.FrustumIntersection;
@@ -19,7 +21,8 @@ import java.util.ArrayDeque;
 import java.util.Queue;
 import java.util.function.Consumer;
 
-import static naitsirc98.beryl.graphics.opengl.shaders.UniformUtils.uniformArrayName;
+import static naitsirc98.beryl.graphics.opengl.shaders.UniformUtils.uniformArrayElement;
+import static naitsirc98.beryl.materials.Material.Type.PHONG_MATERIAL;
 import static naitsirc98.beryl.util.types.DataType.INT32_SIZEOF;
 import static naitsirc98.beryl.util.types.DataType.MATRIX4_SIZEOF;
 import static org.lwjgl.opengl.GL11.GL_TRIANGLES;
@@ -178,14 +181,15 @@ public abstract class GLIndirectRenderer implements Renderer {
         GLTexture2D[] dirShadowMaps = shadowsInfo.dirShadowMaps();
 
         for(int i = 0;i < dirShadowMaps.length;i++) {
-            shader.uniformSampler(uniformArrayName(DIR_SHADOW_MAPS_UNIFORM_NAME, i), dirShadowMaps[i], i + 5);
+            shader.uniformSampler(uniformArrayElement(DIR_SHADOW_MAPS_UNIFORM_NAME, i), dirShadowMaps[i], i + 5);
         }
     }
 
     protected void bindShaderUniformsAndBuffers(Scene scene, GLShaderProgram shader, boolean shadowsEnabled) {
 
         final GLBuffer lightsUniformBuffer = scene.environment().buffer();
-        final GLBuffer materialsBuffer = MaterialManager.get().buffer();
+        MaterialStorageHandler<PhongMaterial> phongMaterialHandler = MaterialManager.get().getStorageHandler(PHONG_MATERIAL);
+        final GLBuffer materialsBuffer = phongMaterialHandler.buffer();
         final GLBuffer cameraUniformBuffer = scene.cameraInfo().cameraBuffer();
 
         shader.uniformBool(SHADOWS_ENABLED_UNIFORM_NAME, shadowsEnabled);

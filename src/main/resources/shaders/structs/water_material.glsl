@@ -2,15 +2,19 @@ struct WaterMaterial {
 
     vec4 color;
 
-    layout(bindless_sampler) sampler2D dudvMap;
-    layout(bindless_sampler) sampler2D normalMap;
-    layout(bindless_sampler) sampler2D reflectionMap;
-    layout(bindless_sampler) sampler2D refractionMap;
+    sampler2D dudvMap;
+    sampler2D normalMap;
+    sampler2D reflectionMap;
+    sampler2D refractionMap;
+
+    vec2 tiling;
+    float _padding0;
+    float _padding1;
 
     float distortionStrength;
     float textureOffset;
     float colorStrength;
-    float _padding;
+    float _padding2;
 
     int flags;
 };

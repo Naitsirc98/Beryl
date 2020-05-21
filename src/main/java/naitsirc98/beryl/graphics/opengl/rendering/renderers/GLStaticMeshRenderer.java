@@ -71,7 +71,7 @@ public final class GLStaticMeshRenderer extends GLIndirectRenderer implements Re
 
     @Override
     protected void initRenderShader() {
-        shader = new GLShaderProgram()
+        shader = new GLShaderProgram("OpenGL Phong shader")
                 .attach(new GLShader(VERTEX_STAGE).source(BerylFiles.getPath("shaders/phong/phong.vert")))
                 .attach(new GLShader(FRAGMENT_STAGE).source(BerylFiles.getPath("shaders/phong/phong.frag")))
                 .link();

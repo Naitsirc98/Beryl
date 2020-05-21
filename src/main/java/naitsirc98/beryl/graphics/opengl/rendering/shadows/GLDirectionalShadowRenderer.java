@@ -45,7 +45,7 @@ public class GLDirectionalShadowRenderer {
     }
 
     private GLShaderProgram createShader() {
-        return new GLShaderProgram()
+        return new GLShaderProgram("OpenGL dir shadows shader")
                 .attach(new GLShader(VERTEX_STAGE).source(BerylFiles.getPath("shaders/depth/directional_depth.vert")))
                 .attach(new GLShader(FRAGMENT_STAGE).source(BerylFiles.getPath("shaders/depth/depth.frag")))
                 .link();

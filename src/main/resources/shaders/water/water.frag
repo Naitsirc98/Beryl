@@ -1,7 +1,6 @@
 #version 450 core
 
 #extension GL_KHR_vulkan_glsl: require
-#extension GL_ARB_bindless_texture: require
 
 #define MAX_POINT_LIGHTS 10
 #define MAX_SPOT_LIGHTS 10
@@ -26,9 +25,7 @@ layout(std140, binding = 1) uniform Lights {
     int u_SpotLightsCount;
 };
 
-layout(std140, binding = 2) uniform Material {
-    WaterMaterial u_Material;
-};
+uniform WaterMaterial u_Material;
 
 uniform sampler2D u_DepthMap;
 

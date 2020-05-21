@@ -1,128 +1,339 @@
 package naitsirc98.beryl.materials;
 
-import naitsirc98.beryl.graphics.GraphicsFactory;
 import naitsirc98.beryl.graphics.textures.Texture2D;
-import naitsirc98.beryl.util.BitFlags;
 import naitsirc98.beryl.util.Color;
 import naitsirc98.beryl.util.IColor;
 import naitsirc98.beryl.util.types.ByteSize;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.function.Consumer;
 
-import static naitsirc98.beryl.materials.IMaterial.Type.PHONG_MATERIAL;
-import static naitsirc98.beryl.util.Color.colorBlack;
-import static naitsirc98.beryl.util.Color.colorWhite;
+import static naitsirc98.beryl.util.types.DataType.*;
 
-@ByteSize.Static(IMaterial.SIZEOF)
-public interface PhongMaterial extends IMaterial {
+/**
+ * struct PhongMaterial {
+ *
+ *     vec4 ambientColor;
+ *     vec4 diffuseColor;
+ *     vec4 specularColor;
+ *     vec4 emissiveColor;
+ *
+ *     layout(bindless_sampler) sampler2D ambientMap;
+ *     layout(bindless_sampler) sampler2D diffuseMap;
+ *     layout(bindless_sampler) sampler2D specularMap;
+ *     layout(bindless_sampler) sampler2D emissiveMap;
+ *     layout(bindless_sampler) sampler2D occlusionMap;
+ *     layout(bindless_sampler) sampler2D normalMap;
+ *
+ *     vec2 tiling;
+ *
+ *     float alpha;
+ *     float shininess;
+ *     float reflectivity;
+ *     float refractiveIndex;
+ *
+ *     int flags;
+ *
+ *     float _padding;
+ * };
+ * */
+@ByteSize.Static(PhongMaterial.SIZEOF)
+public class PhongMaterial extends ManagedMaterial {
 
-    String PHONG_MATERIAL_DEFAULT_NAME = "DEFAULT_PHONG_MATERIAL";
+    public static final int SIZEOF = 4 * VECTOR4_SIZEOF + 6 * SAMPLER_SIZEOF + VECTOR2_SIZEOF + 4 * FLOAT32_SIZEOF + INT32_SIZEOF + FLOAT32_SIZEOF;
 
-    static PhongMaterial getDefault() {
-        return MaterialManager.get().get(PHONG_MATERIAL_DEFAULT_NAME);
+    // FLAGS
+
+    private static final int NORMAL_MAP_PRESENT = 0x1;
+
+    // === //
+
+    private static final float DEFAULT_ALPHA = 1.0f;
+    private static final float DEFAULT_SHININESS = 1.0f;
+    private static final float DEFAULT_REFLECTIVITY = 0.0f;
+    private static final float DEFAULT_REFRACTIVE_INDEX = 0.0f;
+
+    private static final String DEFAULT_NAME = "_DEFAULT_PHONG_MATERIAL";
+
+
+    public static PhongMaterial getDefault() {
+        return get(DEFAULT_NAME, phongMaterial -> {});
     }
 
-    static boolean exists(String name) {
-        return MaterialManager.get().exists(name);
+    public static boolean exists(String name) {
+        return getUnchecked(name) != null;
     }
 
-    static PhongMaterial get(String name) {
-        if(MaterialManager.get().exists(name)) {
-            return MaterialManager.get().get(name);
+    public static PhongMaterial get(String name) {
+
+        PhongMaterial material = getUnchecked(name);
+
+        if(material != null) {
+            return material;
         }
-        return MaterialManager.get().create(name, PHONG_MATERIAL, getDefaultProperties(), getDefaultFlags());
-    }
 
-    static PhongMaterial get(String name, Consumer<PhongMaterial> materialConfiguration) {
-        if(exists(name)) {
-            return get(name);
-        }
-        PhongMaterial material = get(name);
-        materialConfiguration.accept(material);
+        material = new PhongMaterial(name);
+
+        MaterialManager.get().addMaterial(material);
+
         return material;
     }
 
-    Color ambientColor();
-    PhongMaterial ambientColor(IColor color);
+    public static PhongMaterial get(String name, Consumer<PhongMaterial> initializer) {
 
-    Color diffuseColor();
-    PhongMaterial diffuseColor(IColor color);
+        PhongMaterial material = getUnchecked(name);
 
-    default PhongMaterial color(IColor color) {
-        return ambientColor(color).diffuseColor(color);
+        if(material != null) {
+            return material;
+        }
+
+        material = new PhongMaterial(name);
+
+        MaterialManager.get().addMaterial(material);
+
+        initializer.accept(material);
+
+        return material;
     }
 
-    default PhongMaterial colorMap(Texture2D map) {
-        return ambientMap(map).diffuseMap(map);
+    private static PhongMaterial getUnchecked(String name) {
+
+        MaterialManager manager = MaterialManager.get();
+
+        if(manager.exists(name)) {
+
+            Material material = manager.get(name);
+
+            if(material.type() == Type.PHONG_MATERIAL) {
+                return (PhongMaterial) material;
+            }
+        }
+
+        return null;
     }
 
-    Color specularColor();
-    PhongMaterial specularColor(IColor color);
 
-    Color emissiveColor();
-    PhongMaterial emissiveColor(IColor color);
+    private Color ambientColor;
+    private Color diffuseColor;
+    private Color specularColor;
+    private Color emissiveColor;
 
-    Texture2D ambientMap();
-    PhongMaterial ambientMap(Texture2D ambientMap);
+    private Texture2D ambientMap;
+    private Texture2D diffuseMap;
+    private Texture2D specularMap;
+    private Texture2D emissiveMap;
+    private Texture2D occlusionMap;
+    private Texture2D normalMap;
 
-    Texture2D diffuseMap();
-    PhongMaterial diffuseMap(Texture2D diffuseMap);
+    private float alpha;
+    private float shininess;
+    private float reflectivity;
+    private float refractiveIndex;
 
-    Texture2D specularMap();
-    PhongMaterial specularMap(Texture2D specularMap);
-
-    Texture2D emissiveMap();
-    PhongMaterial emissiveMap(Texture2D emissiveMap);
-
-    Texture2D occlusionMap();
-    PhongMaterial occlusionMap(Texture2D occlusionMap);
-
-    Texture2D normalMap();
-    PhongMaterial normalMap(Texture2D normalMap);
-
-    float alpha();
-    PhongMaterial alpha(float alpha);
-
-    float shininess();
-    PhongMaterial shininess(float shininess);
-
-    float reflectivity();
-    PhongMaterial reflectivity(float reflectivity);
-
-    float refractiveIndex();
-    PhongMaterial refractiveIndex(float refractiveIndex);
-
-
-
-    private static BitFlags getDefaultFlags() {
-        return new BitFlags();
+    PhongMaterial(String name) {
+        super(name);
+        setupDefaults();
     }
 
-    private static Map<Byte, Object> getDefaultProperties() {
-
-        Map<Byte, Object> properties = new HashMap<>();
-
-        properties.put(AMBIENT_COLOR, colorWhite());
-        properties.put(DIFFUSE_COLOR, colorWhite());
-        properties.put(SPECULAR_COLOR, colorBlack());
-        properties.put(EMISSIVE_COLOR, colorBlack());
-
-        properties.put(ALPHA, 1.0f);
-        properties.put(SHININESS, 1.0f);
-        properties.put(REFLECTIVITY, 0.0f);
-        properties.put(REFRACTIVE_INDEX, 0.0f);
-
-        properties.put(TEXTURE_TILING, DEFAULT_TEXTURE_TILING);
-
-        Texture2D blankTexture = GraphicsFactory.get().blankTexture2D();
-
-        properties.put(AMBIENT_MAP, blankTexture);
-        properties.put(DIFFUSE_MAP, blankTexture);
-        properties.put(SPECULAR_MAP, blankTexture);
-
-        return properties;
+    @Override
+    public Type type() {
+        return Type.PHONG_MATERIAL;
     }
 
+    @Override
+    public int sizeof() {
+        return SIZEOF;
+    }
+
+    public IColor getAmbientColor() {
+        return ambientColor;
+    }
+
+    public PhongMaterial setAmbientColor(IColor ambientColor) {
+        this.ambientColor.set(ambientColor);
+        markModified();
+        return this;
+    }
+
+    public IColor getDiffuseColor() {
+        return diffuseColor;
+    }
+
+    public PhongMaterial setDiffuseColor(IColor diffuseColor) {
+        this.diffuseColor.set(diffuseColor);
+        markModified();
+        return this;
+    }
+
+    public IColor getSpecularColor() {
+        return specularColor;
+    }
+
+    public PhongMaterial setSpecularColor(IColor specularColor) {
+        this.specularColor.set(specularColor);
+        markModified();
+        return this;
+    }
+
+    public IColor getEmissiveColor() {
+        return emissiveColor;
+    }
+
+    public PhongMaterial setEmissiveColor(IColor emissiveColor) {
+        this.emissiveColor.set(emissiveColor);
+        markModified();
+        return this;
+    }
+
+    public Texture2D getAmbientMap() {
+        return getMapOrDefault(ambientMap);
+    }
+
+    public PhongMaterial setAmbientMap(Texture2D ambientMap) {
+
+        updateTexturesUseCount(this.ambientMap, ambientMap);
+
+        this.ambientMap = ambientMap;
+
+        markModified();
+
+        return this;
+    }
+
+    public Texture2D getDiffuseMap() {
+        return getMapOrDefault(diffuseMap);
+    }
+
+    public PhongMaterial setDiffuseMap(Texture2D diffuseMap) {
+
+        updateTexturesUseCount(this.diffuseMap, diffuseMap);
+
+        this.diffuseMap = diffuseMap;
+
+        markModified();
+
+        return this;
+    }
+
+    public PhongMaterial setColorMap(Texture2D colorMap) {
+        return setAmbientMap(colorMap).setDiffuseMap(colorMap);
+    }
+
+    public Texture2D getSpecularMap() {
+        return getMapOrDefault(specularMap);
+    }
+
+    public PhongMaterial setSpecularMap(Texture2D specularMap) {
+
+        updateTexturesUseCount(this.specularMap, specularMap);
+
+        this.specularMap = specularMap;
+
+        markModified();
+
+        return this;
+    }
+
+    public Texture2D getEmissiveMap() {
+        return getMapOrDefault(emissiveMap);
+    }
+
+    public PhongMaterial setEmissiveMap(Texture2D emissiveMap) {
+
+        updateTexturesUseCount(this.emissiveMap, emissiveMap);
+
+        this.emissiveMap = emissiveMap;
+
+        markModified();
+
+        return this;
+    }
+
+    public Texture2D getOcclusionMap() {
+        return getMapOrDefault(occlusionMap);
+    }
+
+    public PhongMaterial setOcclusionMap(Texture2D occlusionMap) {
+
+        updateTexturesUseCount(this.occlusionMap, occlusionMap);
+
+        this.occlusionMap = occlusionMap;
+
+        markModified();
+
+        return this;
+    }
+
+    public Texture2D getNormalMap() {
+        return getMapOrDefault(normalMap);
+    }
+
+    public PhongMaterial setNormalMap(Texture2D normalMap) {
+
+        updateTexturesUseCount(this.normalMap, normalMap);
+
+        this.normalMap = normalMap;
+
+        if(normalMap != null) {
+            setFlag(NORMAL_MAP_PRESENT);
+        } else {
+            removeFlag(NORMAL_MAP_PRESENT);
+        }
+
+        markModified();
+
+        return this;
+    }
+
+    public float getAlpha() {
+        return alpha;
+    }
+
+    public PhongMaterial setAlpha(float alpha) {
+        this.alpha = alpha;
+        markModified();
+        return this;
+    }
+
+    public float getShininess() {
+        return shininess;
+    }
+
+    public PhongMaterial setShininess(float shininess) {
+        this.shininess = shininess;
+        markModified();
+        return this;
+    }
+
+    public float getReflectivity() {
+        return reflectivity;
+    }
+
+    public PhongMaterial setReflectivity(float reflectivity) {
+        this.reflectivity = reflectivity;
+        markModified();
+        return this;
+    }
+
+    public float getRefractiveIndex() {
+        return refractiveIndex;
+    }
+
+    public PhongMaterial setRefractiveIndex(float refractiveIndex) {
+        this.refractiveIndex = refractiveIndex;
+        markModified();
+        return this;
+    }
+
+    private void setupDefaults() {
+
+        ambientColor = Color.colorWhite();
+        diffuseColor = Color.colorWhite();
+        specularColor = Color.colorWhite();
+        emissiveColor = Color.colorBlackTransparent();
+
+        alpha = DEFAULT_ALPHA;
+        shininess = DEFAULT_SHININESS;
+        reflectivity = DEFAULT_REFLECTIVITY;
+        refractiveIndex = DEFAULT_REFRACTIVE_INDEX;
+    }
 }

@@ -158,13 +158,13 @@ public abstract class AssimpLoader {
         AIMaterial aiMaterial = AIMaterial.createSafe(aiScene.mMaterials().get(aiMesh.mMaterialIndex()));
 
         loadColorAndMap(texturesDir, aiMaterial, AI_MATKEY_COLOR_AMBIENT, aiTextureType_AMBIENT, texturesCache,
-                (color, map) -> material.ambientColor(color).ambientMap(getOrElse(map, Texture2D.whiteTexture())));
+                (color, map) -> material.setAmbientColor(color).setAmbientMap(getOrElse(map, Texture2D.whiteTexture())));
 
         loadColorAndMap(texturesDir, aiMaterial, AI_MATKEY_COLOR_DIFFUSE, AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_BASE_COLOR_TEXTURE, texturesCache,
-                (color, map) -> material.diffuseColor(color).diffuseMap(getOrElse(map, Texture2D.whiteTexture())));
+                (color, map) -> material.setDiffuseColor(color).setDiffuseMap(getOrElse(map, Texture2D.whiteTexture())));
 
         loadColorAndMap(texturesDir, aiMaterial, AI_MATKEY_COLOR_SPECULAR, aiTextureType_SPECULAR, texturesCache,
-                (color, map) -> material.specularColor(color).specularMap(getOrElse(map, Texture2D.whiteTexture())));
+                (color, map) -> material.setSpecularColor(color).setDiffuseMap(getOrElse(map, Texture2D.whiteTexture())));
 
         return material;
     }

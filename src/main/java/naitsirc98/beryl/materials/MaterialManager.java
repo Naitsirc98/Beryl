@@ -1,27 +1,13 @@
 package naitsirc98.beryl.materials;
 
 import naitsirc98.beryl.assets.AssetManager;
-import naitsirc98.beryl.graphics.buffers.StorageBuffer;
-import naitsirc98.beryl.graphics.textures.Texture;
 import naitsirc98.beryl.logging.Log;
-import naitsirc98.beryl.util.BitFlags;
 import naitsirc98.beryl.util.types.Singleton;
-import org.lwjgl.system.MemoryStack;
 
-import java.nio.ByteBuffer;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static naitsirc98.beryl.materials.IMaterial.Type;
-import static naitsirc98.beryl.util.Asserts.assertFalse;
-import static naitsirc98.beryl.util.handles.LongHandle.NULL;
-import static naitsirc98.beryl.util.types.DataType.INT32_SIZEOF;
-
-public final class MaterialManager implements AssetManager<IMaterial> {
-
-    private static final int BUFFER_INITIAL_CAPACITY = 1000 * IMaterial.SIZEOF;
+public final class MaterialManager implements AssetManager<Material> {
 
     @Singleton
     private static MaterialManager instance;
@@ -30,202 +16,158 @@ public final class MaterialManager implements AssetManager<IMaterial> {
         return instance;
     }
 
-    private AtomicInteger handleProvider;
-    private Map<Type, List<IMaterial>> materials;
-    private Map<String, IMaterial> materialNames;
-    private Queue<Number> recycleQueue;
-    private StorageBuffer buffer;
-    private long bufferSize;
-    private Queue<IMaterial> modifiedMaterials;
+
+    private final Map<String, Material> materials;
+    private final Queue<Material> garbageQueue;
+    private final Queue<Material> modificationsQueue;
+    private final AtomicInteger handleProvider;
+    private final Map<Material.Type, MaterialStorageHandler> storageHandlers;
+
+    public MaterialManager() {
+        materials = new HashMap<>();
+        garbageQueue = new ArrayDeque<>();
+        modificationsQueue = new ArrayDeque<>();
+        handleProvider = new AtomicInteger();
+        storageHandlers = new EnumMap<>(Material.Type.class);
+    }
 
     @Override
     public void init() {
-        handleProvider = new AtomicInteger(0);
-        materials = new ConcurrentHashMap<>();
-        materialNames = new ConcurrentHashMap<>();
-        recycleQueue = new ConcurrentLinkedQueue<>();
-        buffer = StorageBuffer.create();
-        buffer.allocate(BUFFER_INITIAL_CAPACITY);
-        bufferSize = 0;
-        modifiedMaterials = new ArrayDeque<>();
-        putDefaults();
-    }
-
-    @SuppressWarnings("unchecked")
-    public <T extends StorageBuffer> T buffer() {
-        return (T) buffer;
-    }
-
-    @SuppressWarnings("unchecked")
-    synchronized <T extends IMaterial> T create(String name, Type type, Map<Byte, Object> properties, BitFlags flags) {
-
-        if(name == null) {
-            Log.fatal("Material name cannot be null");
-            return null;
-        }
-
-        if(materialNames.containsKey(name)) {
-            Log.fatal("Material named " + name + " already exists");
-            return null;
-        }
-
-        if(type == null) {
-            Log.fatal("Material type cannot be null");
-            return null;
-        }
-
-        if(properties == null || properties.isEmpty()) {
-            Log.fatal("Material properties cannot be empty");
-            return null;
-        }
-
-        Material material = new Material(handleProvider.getAndIncrement(), name, type, properties, flags);
-
-        List<IMaterial> typeList = materials.computeIfAbsent(material.type(), k -> new ArrayList<>());
-
-        long offset;
-        int index;
-
-        if(recycleQueue.isEmpty()) {
-            offset = bufferSize;
-            index = typeList.size();
-            typeList.add(null);
-            bufferSize += Material.SIZEOF;
-        } else {
-            offset = recycleQueue.element().longValue();
-            index = recycleQueue.element().intValue();
-        }
-
-        material.setOffset(offset);
-        material.setIndex(index);
-
-        typeList.set(index, material);
-
-        materialNames.put(name, material);
-
-        copyMaterialToBuffer(material, offset);
-
-        return (T) material;
+        storageHandlers.put(Material.Type.PHONG_MATERIAL, new PhongMaterialStorageHandler());
     }
 
     @Override
     public int count() {
-        return materialNames.size();
+        return materials.size();
     }
 
-    @Override
-    public boolean exists(String name) {
-        return materialNames.containsKey(name);
-    }
-
-    @Override
     @SuppressWarnings("unchecked")
-    public <T extends IMaterial> T get(String name) {
-        return (T) materialNames.get(name);
+    public <T extends ManagedMaterial> MaterialStorageHandler<T> getStorageHandler(Material.Type type) {
+        return storageHandlers.get(type);
     }
 
     @Override
-    public synchronized void destroy(IMaterial material) {
+    public boolean exists(String assetName) {
+        return materials.containsKey(assetName);
+    }
 
-        assertFalse(material.destroyed());
+    @SuppressWarnings("unchecked")
+    @Override
+    public <K extends Material> K get(String assetName) {
+        return (K) materials.get(assetName);
+    }
 
-        ((Material) material).destroy();
+    public void addMaterial(Material material) {
 
-        final long offset = material.offset();
-        final int index = material.index();
+        if(exists(material.name())) {
+            Log.error("Material has been already added");
+            return;
+        }
 
-        List<IMaterial> typeMaterialList = materials.get(material.type());
-        typeMaterialList.set(index, null);
+        final int handle = handleProvider.getAndIncrement();
 
-        materialNames.remove(material.name());
+        addManagedMaterial(material);
 
-        recycleQueue.add(offset);
-        recycleQueue.add(index);
+        materials.put(material.name(), material);
+
+        AbstractMaterial abstractMaterial = (AbstractMaterial) material;
+
+        abstractMaterial.setHandle(handle);
+        abstractMaterial.setMaterialManager(this);
+    }
+
+    public void update() {
+        updateModifiedMaterials();
+        destroyGarbage();
     }
 
     @Override
-    public synchronized void destroyAll() {
-        materialNames.values().forEach(material -> ((Material) material).destroy());
-        recycleQueue.clear();
-        materialNames.clear();
+    public void destroy(Material material) {
+
+        destroyManagedMaterial(material);
+
+        materials.remove(material.name());
+    }
+
+    @Override
+    public void destroyAll() {
+        storageHandlers.values().forEach(MaterialStorageHandler::clear);
         materials.clear();
     }
 
     @Override
     public void terminate() {
         destroyAll();
-        buffer.release();
+        storageHandlers.values().forEach(MaterialStorageHandler::terminate);
     }
 
-    public void update() {
-        while(!modifiedMaterials.isEmpty()) {
-            Material material = (Material) modifiedMaterials.poll();
-            copyMaterialToBuffer(material, material.offset());
-            material.markUpdated();
+    void markDestroyed(Material material) {
+        garbageQueue.add(material);
+    }
+
+    void markModified(Material material) {
+        modificationsQueue.add(material);
+    }
+
+    private void updateModifiedMaterials() {
+
+        while(!modificationsQueue.isEmpty()) {
+
+            AbstractMaterial material = (AbstractMaterial) modificationsQueue.poll();
+
+            updateManagedMaterial(material);
         }
     }
 
-    void setModified(IMaterial material) {
-        modifiedMaterials.add(material);
-    }
+    private void destroyGarbage() {
 
-    private void copyMaterialToBuffer(Material material, long offset) {
+        while(!garbageQueue.isEmpty()) {
 
-        try(MemoryStack stack = MemoryStack.stackPush()) {
+            Material material = garbageQueue.poll();
 
-            ByteBuffer data = stack.calloc(Material.SIZEOF);
-
-            switch(material.type()) {
-
-                case PHONG_MATERIAL:
-                    copyPhongMaterialToBuffer(material, data);
-                    break;
-                case WATER_MATERIAL:
-                    data.putInt(IMaterial.SIZEOF - INT32_SIZEOF, material.flags());
-                    break;
-                default:
-                    Log.fatal("Unknown material type: " + material.type());
-                    return;
-            }
-
-            buffer.update(offset, data.rewind());
+            destroy(material);
         }
     }
 
-    private void copyPhongMaterialToBuffer(PhongMaterial material, ByteBuffer data) {
+    @SuppressWarnings("unchecked")
+    private void updateManagedMaterial(AbstractMaterial material) {
 
-        material.ambientColor().getRGBA(data);
-        material.diffuseColor().getRGBA(data);
-        material.specularColor().getRGBA(data);
-        material.emissiveColor().getRGBA(data);
+        if(material instanceof ManagedMaterial) {
 
-        // Phong materials use resident textures
-        data.putLong(handle(material.ambientMap()));
-        data.putLong(handle(material.diffuseMap()));
-        data.putLong(handle(material.specularMap()));
-        data.putLong(handle(material.emissiveMap()));
-        data.putLong(handle(material.occlusionMap()));
-        data.putLong(handle(material.normalMap()));
+            ManagedMaterial managedMaterial = (ManagedMaterial) material;
 
-        data.putFloat(material.textureTiling().x()).putFloat(material.textureTiling().y());
+            MaterialStorageHandler storageHandler = storageHandlers.get(managedMaterial.type());
 
-        data.putFloat(material.alpha());
-        data.putFloat(material.shininess());
-        data.putFloat(material.reflectivity());
-        data.putFloat(material.refractiveIndex());
+            storageHandler.update(managedMaterial);
 
-        data.putInt(material.flags());
+            managedMaterial.markUpdated();
+        }
     }
 
-    private long handle(Texture texture) {
-        return texture == null ? NULL : texture.makeResident();
+    @SuppressWarnings("unchecked")
+    private void addManagedMaterial(Material material) {
+
+        if(material instanceof ManagedMaterial) {
+
+            ManagedMaterial managedMaterial = (ManagedMaterial) material;
+
+            MaterialStorageHandler storageHandler = storageHandlers.get(managedMaterial.type());
+
+            storageHandler.allocate(managedMaterial);
+        }
     }
 
-    private void putDefaults() {
+    @SuppressWarnings("unchecked")
+    private void destroyManagedMaterial(Material material) {
 
-        PhongMaterial.get(PhongMaterial.PHONG_MATERIAL_DEFAULT_NAME);
+        if(material instanceof ManagedMaterial) {
 
-        // TODO...
+            ManagedMaterial managedMaterial = (ManagedMaterial) material;
+
+            MaterialStorageHandler storageHandler = storageHandlers.get(material.type());
+
+            storageHandler.free(managedMaterial);
+        }
     }
 
 }

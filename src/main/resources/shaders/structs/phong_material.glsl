@@ -12,7 +12,7 @@ struct PhongMaterial {
     layout(bindless_sampler) sampler2D occlusionMap;
     layout(bindless_sampler) sampler2D normalMap;
 
-    vec2 texCoordsFactor;
+    vec2 tiling;
 
     float alpha;
     float shininess;
@@ -20,6 +20,8 @@ struct PhongMaterial {
     float refractiveIndex;
 
     int flags;
+
+    float _padding;
 };
 
 // FLAGS

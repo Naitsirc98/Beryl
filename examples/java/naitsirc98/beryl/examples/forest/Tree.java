@@ -83,14 +83,14 @@ public class Tree {
         GraphicsFactory g = GraphicsFactory.get();
 
         PhongMaterial trunkMaterial = (PhongMaterial) treeModel.meshView("conifer_macedonian_pine_5").material();
-        trunkMaterial.colorMap(g.newTexture2D(getTexturePath("Bark_Color.png"), PixelFormat.SRGBA).setQuality(Texture.Quality.MEDIUM));
+        trunkMaterial.setColorMap(g.newTexture2D(getTexturePath("Bark_Color.png"), PixelFormat.SRGBA).setQuality(Texture.Quality.MEDIUM));
 
         PhongMaterial capMaterial = (PhongMaterial) treeModel.meshView("/Game/Cap_Branch_Mat_Cap_Branch_Mat").material();
-        capMaterial.colorMap(g.newTexture2D(getTexturePath("Cap_Color.png"), PixelFormat.SRGBA).setQuality(Texture.Quality.LOW));
+        capMaterial.setColorMap(g.newTexture2D(getTexturePath("Cap_Color.png"), PixelFormat.SRGBA).setQuality(Texture.Quality.LOW));
 
         PhongMaterial leafMaterial = (PhongMaterial) treeModel.meshView("/Game/conifer_macedonian_pine_Leaf_Mat_conifer_macedonian_pine_Leaf_Mat").material();
-        leafMaterial.colorMap(g.newTexture2D(getTexturePath("Leaf_Color.png"), PixelFormat.SRGBA).setQuality(Texture.Quality.HIGH));
-        leafMaterial.diffuseMap().sampler().lodBias(-1.5f);
+        leafMaterial.setColorMap(g.newTexture2D(getTexturePath("Leaf_Color.png"), PixelFormat.SRGBA).setQuality(Texture.Quality.HIGH));
+        leafMaterial.getDiffuseMap().sampler().lodBias(-1.5f);
     }
 
     private static String getTexturePath(String textureName) {

@@ -149,7 +149,7 @@ public class GLSkyboxRenderer implements Renderer {
     }
 
     private GLShaderProgram createShader() {
-        return new GLShaderProgram()
+        return new GLShaderProgram("OpenGL Skybox shader")
                 .attach(new GLShader(VERTEX_STAGE).source(SKYBOX_VERTEX_SHADER_PATH))
                 .attach(new GLShader(FRAGMENT_STAGE).source(SKYBOX_FRAGMENT_SHADER_PATH))
                 .link();

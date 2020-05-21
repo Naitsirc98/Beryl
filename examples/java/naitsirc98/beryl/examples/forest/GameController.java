@@ -13,7 +13,7 @@ import naitsirc98.beryl.scenes.environment.skybox.Skybox;
 import naitsirc98.beryl.scenes.components.audio.AudioPlayer;
 import naitsirc98.beryl.scenes.components.behaviours.UpdateBehaviour;
 import naitsirc98.beryl.scenes.components.meshes.StaticMeshInstance;
-import org.joml.Matrix2d;
+import naitsirc98.beryl.util.Color;
 import org.joml.Vector3f;
 
 import static naitsirc98.beryl.examples.forest.ForestGame.FOREST_DAY_SOUND;
@@ -85,8 +85,7 @@ public class GameController extends UpdateBehaviour {
         scene().environment().ambientColor().set(clamp(0.2f, 0.9f, 1.0f - time), 1.0f);
 
         PhongMaterial lampMaterial = (PhongMaterial) scene().entity(LAMP_NAME).get(StaticMeshInstance.class).meshView().material();
-        lampMaterial.emissiveColor().set(clamp(0.2f, 2.0f, time * 1.25f), 1.0f);
-        lampMaterial.modify();
+        lampMaterial.setEmissiveColor(new Color().set(clamp(0.2f, 2.0f, time * 1.25f), 1.0f));
     }
 
     private void updateAudioListener() {

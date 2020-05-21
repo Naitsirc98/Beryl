@@ -87,7 +87,7 @@ void main() {
 
     // float lod = distance(u_Camera.position.xyz, vertexData.position) / 100.0;
 
-    vec2 texCoords = vertexData.texCoords * material.texCoordsFactor;
+    vec2 texCoords = vertexData.texCoords * material.tiling;
 
     materialAmbientColor = material.ambientColor * texture(material.ambientMap, texCoords);
     materialDiffuseColor = material.diffuseColor * texture(material.diffuseMap, texCoords);
@@ -108,7 +108,7 @@ void main() {
     }
 
     if(u_Fog.color.a != 0.0) {
-        fragmentColor = applyFogEffect(fragmentColor);
+        // fragmentColor = applyFogEffect(fragmentColor);
     }
 
     out_FragmentColor = fragmentColor;

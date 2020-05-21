@@ -16,6 +16,7 @@ import naitsirc98.beryl.scenes.components.audio.AudioPlayer;
 import naitsirc98.beryl.scenes.components.behaviours.UpdateBehaviour;
 import naitsirc98.beryl.scenes.components.math.Transform;
 import naitsirc98.beryl.scenes.components.meshes.WaterMeshInstance;
+import org.joml.Vector2f;
 import org.joml.Vector3f;
 
 import static naitsirc98.beryl.util.Maths.clamp;
@@ -28,10 +29,7 @@ public class Water {
         Entity water = scene.newEntity("Water");
         water.add(Transform.class).position(x, y, z).rotateX(radians(90)).scale(scale);
 
-        WaterMeshView waterMeshView = new WaterMeshView(StaticMesh.quad(), getWaterMaterial())
-                .tiling(20)
-                .waterColorStrength(0.03f)
-                .distortionStrength(0.025f);
+        WaterMeshView waterMeshView = new WaterMeshView(StaticMesh.quad(), getWaterMaterial());
 
         waterMeshView.clipPlane(0, 1, 0, water.get(Transform.class).position().y() + 0.1f);
         water.add(WaterMeshInstance.class).meshView(waterMeshView);
@@ -82,7 +80,11 @@ public class Water {
             normalMap.sampler().maxAnisotropy(4);
             normalMap.sampler().lodBias(0);
 
-            material.dudvMap(dudv).normalMap(normalMap);
+            material.setDudvMap(dudv).setNormalMap(normalMap);
+
+            material.tiling(20, 20)
+                    .setColorStrength(0.03f)
+                    .setDistortionStrength(0.025f);
         });
     }
 
@@ -109,7 +111,9 @@ public class Water {
             movement += movementFactor * Time.IDEAL_DELTA_TIME;
             movementFactor = clamp(normalMovementFactor, 1.0f, movementFactor - 0.0001f * Time.IDEAL_DELTA_TIME);
 
-            get(WaterMeshInstance.class).meshView().texturesOffset(movement);
+            WaterMaterial material = get(WaterMeshInstance.class).meshView().material();
+
+            material.setTextureOffset(movement);
 
             movement %= 1;
         }
