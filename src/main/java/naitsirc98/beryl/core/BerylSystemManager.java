@@ -1,6 +1,6 @@
 package naitsirc98.beryl.core;
 
-import naitsirc98.beryl.assets.Assets;
+import naitsirc98.beryl.assets.AssetsSystem;
 import naitsirc98.beryl.audio.AudioSystem;
 import naitsirc98.beryl.events.EventManager;
 import naitsirc98.beryl.graphics.Graphics;
@@ -19,18 +19,19 @@ import static naitsirc98.beryl.util.types.TypeUtils.newInstance;
 
 public class BerylSystemManager {
 
-    final Log log;
-    final GLFWLibrary glfwLibrary;
-    final Time time;
-    final EventManager eventManager;
-    final Input input;
-    final Graphics graphics;
-    final ResourceManager resourceManager;
-    final Assets assets;
-    final RenderSystem renderSystem;
-    final AudioSystem audioSystem;
-    final TaskManager taskManager;
-    final SceneManager sceneManager;
+    private final Log log;
+    private final GLFWLibrary glfwLibrary;
+    private final Time time;
+    private final EventManager eventManager;
+    private final Input input;
+    private final Graphics graphics;
+    private final ResourceManager resourceManager;
+    private final AssetsSystem assetsSystem;
+    private final RenderSystem renderSystem;
+    private final AudioSystem audioSystem;
+    private final TaskManager taskManager;
+    private final SceneManager sceneManager;
+    // All systems in array for sorted initialization / termination
     private final BerylSystem[] systems;
 
     public BerylSystemManager() {
@@ -42,12 +43,60 @@ public class BerylSystemManager {
                 input = createSystem(Input.class),
                 graphics = createSystem(Graphics.class),
                 resourceManager = createSystem(ResourceManager.class),
-                assets = createSystem(Assets.class),
+                assetsSystem = createSystem(AssetsSystem.class),
                 renderSystem = createSystem(RenderSystem.class),
                 audioSystem = createSystem(AudioSystem.class),
                 taskManager = createSystem(TaskManager.class),
                 sceneManager = createSystem(SceneManager.class)
         };
+    }
+
+    public Log getLog() {
+        return log;
+    }
+
+    public GLFWLibrary getGLFWLibrary() {
+        return glfwLibrary;
+    }
+
+    public Time getTimeSystem() {
+        return time;
+    }
+
+    public EventManager getEventManager() {
+        return eventManager;
+    }
+
+    public Input getInputSystem() {
+        return input;
+    }
+
+    public Graphics getGraphics() {
+        return graphics;
+    }
+
+    public ResourceManager getResourceManager() {
+        return resourceManager;
+    }
+
+    public AssetsSystem getAssetsSystem() {
+        return assetsSystem;
+    }
+
+    public RenderSystem getRenderSystem() {
+        return renderSystem;
+    }
+
+    public AudioSystem getAudioSystem() {
+        return audioSystem;
+    }
+
+    public TaskManager getTaskManager() {
+        return taskManager;
+    }
+
+    public SceneManager getSceneManager() {
+        return sceneManager;
     }
 
     public void init() throws Throwable {
@@ -110,7 +159,7 @@ public class BerylSystemManager {
     }
 
     private <T extends BerylSystem> T createSystem(Class<T> clazz) {
-        final T system = newInstance(clazz);
+        final T system = newInstance(clazz, this);
         initSingleton(clazz, system);
         return system;
     }

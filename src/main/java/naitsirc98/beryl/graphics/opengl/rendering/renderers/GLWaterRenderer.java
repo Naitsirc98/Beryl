@@ -4,9 +4,9 @@ import naitsirc98.beryl.core.BerylFiles;
 import naitsirc98.beryl.events.EventManager;
 import naitsirc98.beryl.events.window.WindowResizedEvent;
 import naitsirc98.beryl.graphics.opengl.buffers.GLBuffer;
+import naitsirc98.beryl.graphics.opengl.rendering.GLShadingPipeline;
 import naitsirc98.beryl.graphics.opengl.shaders.GLShader;
 import naitsirc98.beryl.graphics.opengl.shaders.GLShaderProgram;
-import naitsirc98.beryl.graphics.opengl.shaders.UniformUtils;
 import naitsirc98.beryl.graphics.opengl.swapchain.GLFramebuffer;
 import naitsirc98.beryl.graphics.opengl.textures.GLTexture2D;
 import naitsirc98.beryl.graphics.opengl.vertex.GLVertexArray;
@@ -23,7 +23,6 @@ import naitsirc98.beryl.scenes.components.meshes.MeshInstanceList;
 import naitsirc98.beryl.scenes.components.meshes.WaterMeshInstance;
 import naitsirc98.beryl.scenes.environment.SceneEnhancedWater;
 import naitsirc98.beryl.util.IColor;
-import org.joml.Vector2f;
 import org.joml.Vector2fc;
 import org.joml.Vector3fc;
 import org.joml.Vector4f;
@@ -49,7 +48,8 @@ public class GLWaterRenderer implements Renderer {
     public static final int QUAD_INDEX_COUNT = 6;
 
 
-    private GLShaderProgram waterShader;
+    private GLShadingPipeline waterShadingPipeline;
+    private GLShadingPipeline sceneShadingPipeline;
 
     private GLVertexArray vertexArray;
     private GLBuffer vertexBuffer;
@@ -78,7 +78,7 @@ public class GLWaterRenderer implements Renderer {
 
         setClipPlaneUniform = shader -> shader.uniformVector4f("u_ClipPlane", clipPlane);
 
-        waterShader = createShader();
+        waterShadingPipeline = createWaterShadingPipeline();
 
         quadMesh = StaticMesh.quad();
 
@@ -100,7 +100,7 @@ public class GLWaterRenderer implements Renderer {
 
     @Override
     public void terminate() {
-        waterShader.release();
+        waterShadingPipeline.release();
         vertexArray.release();
         vertexBuffer.release();
         indexBuffer.release();
@@ -112,13 +112,15 @@ public class GLWaterRenderer implements Renderer {
 
     public void render(Scene scene) {
 
-        final MeshInstanceList<WaterMeshInstance> waterInstances = scene.meshInfo().meshViewsOfType(WaterMeshView.class);
+        final MeshInstanceList<WaterMeshInstance> waterInstances = scene.meshInfo().getWaterMeshInstances();
 
         if(waterInstances == null) {
             return;
         }
 
-        waterShader.bind();
+        final GLShaderProgram shader = waterShadingPipeline.getShader();
+
+        shader.bind();
 
         setOpenGLState(scene);
 
@@ -134,7 +136,7 @@ public class GLWaterRenderer implements Renderer {
             }
         }
 
-        waterShader.unbind();
+        shader.unbind();
 
         glDisable(GL_BLEND);
     }
@@ -144,7 +146,9 @@ public class GLWaterRenderer implements Renderer {
         final WaterMeshView view = instance.meshView();
         final WaterMaterial material = view.material();
 
-        waterShader.uniformMatrix4f("u_ModelMatrix", false, instance.modelMatrix().get(modelMatrixBuffer));
+        modelMatrixBuffer = instance.modelMatrix().get(modelMatrixBuffer);
+
+        waterShadingPipeline.getShader().uniformMatrix4f("u_ModelMatrix", false, modelMatrixBuffer);
 
         setMaterialUniforms(material);
 
@@ -153,7 +157,7 @@ public class GLWaterRenderer implements Renderer {
 
     private void setMaterialUniforms(WaterMaterial material) {
 
-        final GLShaderProgram shader = waterShader;
+        final GLShaderProgram shader = waterShadingPipeline.getShader();
 
         final String matName = "u_Material";
 
@@ -193,6 +197,7 @@ public class GLWaterRenderer implements Renderer {
         final Camera camera = scene.camera();
         final GLBuffer cameraBuffer = scene.cameraInfo().cameraBuffer();
         final GLBuffer lightsBuffer = scene.environment().buffer();
+        final GLShaderProgram shader = waterShadingPipeline.getShader();
 
         glEnable(GL_DEPTH_TEST);
         glDisable(GL_CULL_FACE);
@@ -203,18 +208,20 @@ public class GLWaterRenderer implements Renderer {
 
         lightsBuffer.bind(GL_UNIFORM_BUFFER, 1);
 
-        waterShader.uniformSampler("u_DepthMap", depthTexture, 0);
-        waterShader.uniformFloat("u_NearPlane", camera.nearPlane());
-        waterShader.uniformFloat("u_FarPlane", camera.farPlane());
+        shader.uniformSampler("u_DepthMap", depthTexture, 0);
+        shader.uniformFloat("u_NearPlane", camera.nearPlane());
+        shader.uniformFloat("u_FarPlane", camera.farPlane());
     }
 
-    public void bakeWaterTextures(Scene scene) {
+    public void bakeWaterTextures(Scene scene, GLShadingPipeline sceneShadingPipeline) {
+
+        this.sceneShadingPipeline = sceneShadingPipeline;
 
         glEnable(GL_CLIP_DISTANCE0);
 
         final Camera camera = scene.camera();
 
-        final MeshInstanceList<WaterMeshInstance> waterInstances = scene.meshInfo().meshViewsOfType(WaterMeshView.class);
+        final MeshInstanceList<WaterMeshInstance> waterInstances = scene.meshInfo().getWaterMeshInstances();
 
         if(waterInstances == null) {
             return;
@@ -312,7 +319,7 @@ public class GLWaterRenderer implements Renderer {
 
     private void renderMeshes(Scene scene, GLIndirectRenderer renderer) {
         renderer.addDynamicState(setClipPlaneUniform);
-        renderer.render(scene, false);
+        renderer.render(scene, sceneShadingPipeline);
     }
 
     private void renderSkybox(Scene scene) {
@@ -374,6 +381,10 @@ public class GLWaterRenderer implements Renderer {
         framebuffer.attach(GL_DEPTH_ATTACHMENT, depthTexture, 0);
 
         return framebuffer;
+    }
+
+    private GLShadingPipeline createWaterShadingPipeline() {
+        return new GLShadingPipeline(createShader());
     }
 
     private GLShaderProgram createShader() {

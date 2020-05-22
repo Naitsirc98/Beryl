@@ -11,7 +11,19 @@ package naitsirc98.beryl.core;
  */
 public abstract class BerylSystem {
 
+    private final BerylSystemManager systemManager;
     private boolean initialized;
+
+    public BerylSystem(BerylSystemManager systemManager) {
+        this.systemManager = systemManager;
+    }
+
+    /**
+     * Gets this BerylSystem Manager
+     * */
+    protected final BerylSystemManager getSystemManager() {
+        return systemManager;
+    }
 
     /**
      * Marks this system as successfully initialized.

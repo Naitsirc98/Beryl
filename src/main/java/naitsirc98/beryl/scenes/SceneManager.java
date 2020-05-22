@@ -3,6 +3,8 @@ package naitsirc98.beryl.scenes;
 import naitsirc98.beryl.core.Beryl;
 import naitsirc98.beryl.core.BerylConfiguration;
 import naitsirc98.beryl.core.BerylSystem;
+import naitsirc98.beryl.core.BerylSystemManager;
+import naitsirc98.beryl.graphics.rendering.APIRenderSystem;
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.util.types.Singleton;
 
@@ -14,9 +16,7 @@ public final class SceneManager extends BerylSystem {
     private static SceneManager instance;
 
     public static Scene newScene(String name) {
-        Scene scene = new Scene(name);
-        setScene(scene);
-        return scene;
+        return new Scene(name, getAPIRenderSystem());
     }
 
     public static boolean withinScenePass() {
@@ -46,8 +46,8 @@ public final class SceneManager extends BerylSystem {
 
     private Scene scene;
 
-    private SceneManager() {
-
+    private SceneManager(BerylSystemManager systemManager) {
+        super(systemManager);
     }
 
     @Override
@@ -112,5 +112,9 @@ public final class SceneManager extends BerylSystem {
         }
 
         return false;
+    }
+
+    private static APIRenderSystem getAPIRenderSystem() {
+        return instance.getSystemManager().getRenderSystem().getAPIRenderSystem();
     }
 }

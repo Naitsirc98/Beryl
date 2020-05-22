@@ -124,8 +124,8 @@ public final class Time extends BerylSystem {
     float ups;
     long frames;
 
-    private Time() {
-
+    private Time(BerylSystemManager systemManager) {
+        super(systemManager);
     }
 
     @Override

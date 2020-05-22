@@ -3,6 +3,7 @@ package naitsirc98.beryl.events;
 import naitsirc98.beryl.core.Beryl;
 import naitsirc98.beryl.core.BerylConfiguration;
 import naitsirc98.beryl.core.BerylSystem;
+import naitsirc98.beryl.core.BerylSystemManager;
 import naitsirc98.beryl.util.types.Singleton;
 
 import java.util.*;
@@ -92,7 +93,8 @@ public final class EventManager extends BerylSystem {
     private EventDispatcher dispatcher;
     private EventDebugReport debugReport;
 
-    private EventManager() {
+    private EventManager(BerylSystemManager systemManager) {
+        super(systemManager);
     }
 
     @Override

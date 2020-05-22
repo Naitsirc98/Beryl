@@ -1,5 +1,7 @@
 package naitsirc98.beryl.graphics.opengl.rendering.shadows;
 
+import naitsirc98.beryl.graphics.opengl.rendering.GLShadingPipeline;
+import naitsirc98.beryl.graphics.rendering.culling.FrustumCuller;
 import naitsirc98.beryl.graphics.rendering.culling.FrustumCullingPreConditionState;
 import naitsirc98.beryl.graphics.opengl.rendering.renderers.GLIndirectRenderer;
 import naitsirc98.beryl.graphics.opengl.rendering.renderers.GLMeshRenderer;
@@ -18,6 +20,7 @@ import org.lwjgl.system.MemoryStack;
 import java.nio.FloatBuffer;
 
 import static java.lang.Math.max;
+import static naitsirc98.beryl.graphics.rendering.culling.FrustumCullingPreConditionState.*;
 import static org.lwjgl.opengl.GL11C.*;
 import static org.lwjgl.opengl.GL14C.GL_DEPTH_COMPONENT32;
 import static org.lwjgl.opengl.GL30C.GL_DEPTH_ATTACHMENT;
@@ -27,10 +30,10 @@ public class GLShadowCascadeRenderer {
     private final GLTexture2D depthTexture;
     private final GLFramebuffer framebuffer;
     private final ShadowCascade shadowCascade;
-    private final GLShaderProgram depthShader;
+    private final GLShadingPipeline depthShadingPipeline;
 
-    GLShadowCascadeRenderer(GLShaderProgram depthShader) {
-        this.depthShader = depthShader;
+    GLShadowCascadeRenderer(GLShadingPipeline depthShadingPipeline) {
+        this.depthShadingPipeline = depthShadingPipeline;
         depthTexture = new GLTexture2D();
         framebuffer = new GLFramebuffer();
         framebuffer.setAsDepthOnlyFramebuffer();
@@ -60,15 +63,17 @@ public class GLShadowCascadeRenderer {
 
         final MeshInstanceList<?> instances = renderer.getInstances(scene);
 
-        final int drawCount = renderer.frustumCuller().performCullingCPU(shadowCascade.lightFrustum(), instances, this::discardTerrain);
+        final FrustumCuller frustumCuller = renderer.frustumCuller();
+
+        final int drawCount = frustumCuller.performCullingCPU(shadowCascade.lightFrustum(), instances, this::discardTerrain);
 
         renderer.addDynamicState(this::setOpenGLStateAndUniforms);
 
-        renderer.render(scene, drawCount, false, depthShader);
+        renderer.render(scene, drawCount, depthShadingPipeline);
     }
 
     private FrustumCullingPreConditionState discardTerrain(MeshInstance<?> instance, MeshView<?> meshView) {
-        return meshView.mesh().getClass() == TerrainMesh.class ? FrustumCullingPreConditionState.DISCARD : FrustumCullingPreConditionState.CONTINUE;
+        return meshView.mesh().getClass() == TerrainMesh.class ? DISCARD : CONTINUE;
     }
 
     private void setOpenGLStateAndUniforms(GLShaderProgram shader) {

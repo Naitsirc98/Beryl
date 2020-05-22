@@ -1,6 +1,7 @@
 package naitsirc98.beryl.core;
 
 import naitsirc98.beryl.graphics.GraphicsAPI;
+import naitsirc98.beryl.graphics.rendering.ShadingModel;
 import naitsirc98.beryl.graphics.window.CursorType;
 import naitsirc98.beryl.graphics.window.DisplayMode;
 import naitsirc98.beryl.logging.Log;
@@ -65,7 +66,8 @@ public final class BerylConfiguration<T> {
 
     public static final BerylConfiguration<GraphicsAPI> GRAPHICS_API = new BerylConfiguration<>();
 
-    public static final BerylConfiguration<Boolean> ENABLE_WARNINGS_UNIFORMS = new BerylConfiguration<>();
+    public static final BerylConfiguration<ShadingModel> DEFAULT_SHADING_MODEL = new BerylConfiguration<>();
+    public static final BerylConfiguration<Boolean> SHADOWS_ENABLED_ON_START = new BerylConfiguration<>();
 
     public static final BerylConfiguration<Boolean> SHOW_DEBUG_INFO_ON_WINDOW_TITLE = new BerylConfiguration<>();
     public static final BerylConfiguration<Vector2ic> WINDOW_POSITION = new BerylConfiguration<>();
@@ -79,6 +81,7 @@ public final class BerylConfiguration<T> {
     public static final BerylConfiguration<Boolean> VSYNC = new BerylConfiguration<>();
 
     public static final BerylConfiguration<Boolean> OPENGL_ENABLE_DEBUG_MESSAGES = new BerylConfiguration<>();
+    public static final BerylConfiguration<Boolean> OPENGL_ENABLE_WARNINGS_UNIFORMS = new BerylConfiguration<>();
 
 
     private Object value;
@@ -100,7 +103,7 @@ public final class BerylConfiguration<T> {
     }
 
     @SuppressWarnings("unchecked")
-    public T getOrDefault() {
+    public T get() {
         return (T) value;
     }
 

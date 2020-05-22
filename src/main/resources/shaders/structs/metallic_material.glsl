@@ -4,9 +4,8 @@ struct MetallicMaterial {
     vec4 emissiveColor;
 
     layout(bindless_sampler) sampler2D albedoMap;
-    layout(bindless_sampler) sampler2D metallicRoughnessMap;
+    layout(bindless_sampler) sampler2D metallicRoughnessOcclusionMap;
     layout(bindless_sampler) sampler2D emissiveMap;
-    layout(bindless_sampler) sampler2D occlusionMap;
     layout(bindless_sampler) sampler2D normalMap;
 
     vec2 tiling;
@@ -72,21 +71,21 @@ vec4 getAlbedo(MetallicMaterial material, vec2 uv) {
 float getMetallic(MetallicMaterial material, vec2 uv) {
 
     return testMaterialFlag(material.flags, METALLIC_MAP_PRESENT)
-        ? texture(material.metallicRoughnessMap, uv).r
+        ? texture(material.metallicRoughnessOcclusionMap, uv).r
         : material.metallic;
 }
 
 float getRoughness(MetallicMaterial material, vec2 uv) {
 
     return testMaterialFlag(material.flags, ROUGHNESS_MAP_PRESENT)
-        ? texture(material.metallicRoughnessMap, uv).g
+        ? texture(material.metallicRoughnessOcclusionMap, uv).g
         : material.roughness;
 }
 
 float getOcclusion(MetallicMaterial material, vec2 uv) {
 
     return testMaterialFlag(material.flags, OCLUSSION_MAP_PRESENT)
-        ? texture(material.occlusionMap, uv).r
+        ? texture(material.metallicRoughnessOcclusionMap, uv).b
         : material.occlusion;
 }
 

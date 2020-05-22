@@ -6,7 +6,9 @@ import java.util.Map;
 
 public interface SceneMeshInfo {
 
-    Map<Class<MeshView>, MeshInstanceList> allInstances();
+    Map<Class<? extends MeshView>, MeshInstanceList> allInstances();
 
-    <T extends MeshView, U extends MeshInstance> MeshInstanceList<U> meshViewsOfType(Class<T> meshViewType);
+    MeshInstanceList<StaticMeshInstance> getStaticMeshInstances();
+
+    MeshInstanceList<WaterMeshInstance> getWaterMeshInstances();
 }

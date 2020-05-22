@@ -1,6 +1,7 @@
 package naitsirc98.beryl.resources;
 
 import naitsirc98.beryl.core.BerylSystem;
+import naitsirc98.beryl.core.BerylSystemManager;
 import naitsirc98.beryl.util.types.Singleton;
 
 import java.util.HashSet;
@@ -33,7 +34,8 @@ public final class ResourceManager extends BerylSystem {
     private final Set<Resource> resources;
     private boolean terminating;
 
-    private ResourceManager() {
+    private ResourceManager(BerylSystemManager systemManager) {
+        super(systemManager);
         resources = new HashSet<>();
     }
 

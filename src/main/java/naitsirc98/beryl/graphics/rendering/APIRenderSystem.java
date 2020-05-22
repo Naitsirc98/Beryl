@@ -8,10 +8,6 @@ public interface APIRenderSystem {
 
     void terminate();
 
-    boolean shadowsEnabled();
-
-    void shadowsEnabled(boolean shadowsEnabled);
-
     void begin();
 
     void prepare(Scene scene);

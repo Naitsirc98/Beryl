@@ -7,6 +7,7 @@ import naitsirc98.beryl.graphics.textures.Texture;
 import java.util.ArrayList;
 import java.util.List;
 
+import static naitsirc98.beryl.util.Asserts.assertTrue;
 import static naitsirc98.beryl.util.handles.LongHandle.NULL;
 
 public abstract class MaterialStorageHandler<T extends ManagedMaterial> {
@@ -31,6 +32,8 @@ public abstract class MaterialStorageHandler<T extends ManagedMaterial> {
         storageInfo.offset(offset);
 
         offset += getMaterialSizeof();
+
+        assertTrue(offset % 16 == 0);
 
         materials.add(material);
     }
@@ -66,6 +69,8 @@ public abstract class MaterialStorageHandler<T extends ManagedMaterial> {
         }
 
         this.offset = offset;
+
+        assertTrue(offset % 16 == 0);
 
         materials.remove(index);
     }

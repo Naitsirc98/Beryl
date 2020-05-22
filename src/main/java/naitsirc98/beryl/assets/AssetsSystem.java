@@ -2,6 +2,7 @@ package naitsirc98.beryl.assets;
 
 import naitsirc98.beryl.audio.AudioClipManager;
 import naitsirc98.beryl.core.BerylSystem;
+import naitsirc98.beryl.core.BerylSystemManager;
 import naitsirc98.beryl.materials.MaterialManager;
 import naitsirc98.beryl.meshes.MeshManager;
 import naitsirc98.beryl.util.types.Singleton;
@@ -9,16 +10,19 @@ import naitsirc98.beryl.util.types.Singleton;
 import static naitsirc98.beryl.util.types.TypeUtils.initSingleton;
 import static naitsirc98.beryl.util.types.TypeUtils.newInstance;
 
-public class Assets extends BerylSystem {
+public class AssetsSystem extends BerylSystem {
 
     @Singleton
-    private static Assets instance;
+    private static AssetsSystem instance;
 
     private final MaterialManager materialManager;
     private final MeshManager meshManager;
     private final AudioClipManager audioClipManager;
 
-    public Assets() {
+    public AssetsSystem(BerylSystemManager systemManager) {
+
+        super(systemManager);
+
         materialManager = newAssetManager(MaterialManager.class);
         meshManager = newAssetManager(MeshManager.class);
         audioClipManager = newAssetManager(AudioClipManager.class);

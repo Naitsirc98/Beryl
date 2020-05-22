@@ -4,9 +4,9 @@ import naitsirc98.beryl.graphics.rendering.ShadingModel;
 
 public enum MaterialType {
 
-    PHONG_MATERIAL(ShadingModel.PHONG_SHADING_MODEL),
-    PBR_METALLIC_MATERIAL(ShadingModel.PBR_METALLIC_SHADING_MODEL),
-    WATER_MATERIAL(ShadingModel.ANY_SHADING_MODEL);
+    PHONG_MATERIAL(ShadingModel.PHONG),
+    PBR_METALLIC_MATERIAL(ShadingModel.PBR_METALLIC),
+    WATER_MATERIAL(null);
 
     private final ShadingModel shadingModel;
 

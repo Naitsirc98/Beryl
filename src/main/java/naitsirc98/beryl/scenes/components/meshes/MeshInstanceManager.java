@@ -1,6 +1,8 @@
 package naitsirc98.beryl.scenes.components.meshes;
 
 import naitsirc98.beryl.meshes.views.MeshView;
+import naitsirc98.beryl.meshes.views.StaticMeshView;
+import naitsirc98.beryl.meshes.views.WaterMeshView;
 import naitsirc98.beryl.scenes.Scene;
 import naitsirc98.beryl.scenes.components.AbstractComponentManager;
 
@@ -9,7 +11,7 @@ import java.util.Map;
 
 public final class MeshInstanceManager extends AbstractComponentManager<MeshInstance> implements SceneMeshInfo {
 
-    private final Map<Class<MeshView>, MeshInstanceList> meshInstancesTable;
+    private final Map<Class<? extends MeshView>, MeshInstanceList> meshInstancesTable;
 
     protected MeshInstanceManager(Scene scene) {
         super(scene);
@@ -17,14 +19,20 @@ public final class MeshInstanceManager extends AbstractComponentManager<MeshInst
     }
 
     @Override
-    public Map<Class<MeshView>, MeshInstanceList> allInstances() {
+    public Map<Class<? extends MeshView>, MeshInstanceList> allInstances() {
         return meshInstancesTable;
     }
 
-    @Override
     @SuppressWarnings("unchecked")
-    public <T extends MeshView, U extends MeshInstance> MeshInstanceList<U> meshViewsOfType(Class<T> meshViewType) {
-        return (MeshInstanceList<U>) meshInstancesTable.get(meshViewType);
+    @Override
+    public MeshInstanceList<StaticMeshInstance> getStaticMeshInstances() {
+        return meshInstancesTable.get(StaticMeshView.class);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public MeshInstanceList<WaterMeshInstance> getWaterMeshInstances() {
+        return meshInstancesTable.get(WaterMeshView.class);
     }
 
     @Override

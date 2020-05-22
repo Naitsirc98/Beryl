@@ -28,7 +28,7 @@ public class PBRDemo extends BerylApplication {
     @Override
     protected void onStart() {
 
-        Scene scene = new Scene("PBR Demo");
+        Scene scene = SceneManager.newScene("PBR Demo");
 
         setupCamera(scene);
 

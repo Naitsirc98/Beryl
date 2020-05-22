@@ -39,7 +39,8 @@ import static naitsirc98.beryl.util.types.DataType.*;
 @ByteSize.Static(PhongMaterial.SIZEOF)
 public class PhongMaterial extends ManagedMaterial {
 
-    public static final int SIZEOF = 4 * VECTOR4_SIZEOF + 6 * SAMPLER_SIZEOF + VECTOR2_SIZEOF + 4 * FLOAT32_SIZEOF + INT32_SIZEOF + FLOAT32_SIZEOF;
+    public static final int SIZEOF = 4 * VECTOR4_SIZEOF + 6 * SAMPLER_SIZEOF + VECTOR2_SIZEOF
+            + 4 * FLOAT32_SIZEOF + INT32_SIZEOF + FLOAT32_SIZEOF;
 
     // FLAGS
 

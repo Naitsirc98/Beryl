@@ -1,6 +1,7 @@
 package naitsirc98.beryl.tasks;
 
 import naitsirc98.beryl.core.BerylSystem;
+import naitsirc98.beryl.core.BerylSystemManager;
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.util.types.Singleton;
 
@@ -50,15 +51,19 @@ public final class TaskManager extends BerylSystem {
     private final ExecutorService taskThread;
     private final TaskProcessor taskProcessor;
 
-    private TaskManager() {
+    private TaskManager(BerylSystemManager systemManager) {
+        super(systemManager);
+
         running = new AtomicBoolean(false);
         taskQueue = new PriorityBlockingQueue<>();
+
         taskThread = newSingleThreadExecutor(runnable -> {
             Thread thread = Executors.defaultThreadFactory().newThread(runnable);
             thread.setName("TaskManager Thread");
             thread.setDaemon(true);
             return thread;
         });
+
         taskProcessor = new TaskProcessor();
     }
 

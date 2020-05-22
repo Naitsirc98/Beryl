@@ -13,7 +13,7 @@ public final class TerrainMesh extends StaticMesh {
     TerrainMesh(int handle, String name, ByteBuffer vertexData, ByteBuffer indexData, HeightMap heightMap) {
         super(handle, name, vertexData, indexData);
         this.heightMap = heightMap;
-        boundingSphere.radius *= 1.2f;
+        boundingSphere.radius *= 1.5f;
     }
 
     public HeightMap heightMap() {

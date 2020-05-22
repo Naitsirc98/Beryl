@@ -24,7 +24,7 @@ public final class GLShaderProgram implements GLObject {
 
     private static final int INVALID_UNIFORM_LOCATION = -1;
 
-    private static final boolean ENABLE_WARNINGS_UNIFORMS = BerylConfiguration.ENABLE_WARNINGS_UNIFORMS.getOrDefault(INTERNAL_DEBUG);
+    private static final boolean ENABLE_WARNINGS_UNIFORMS = BerylConfiguration.OPENGL_ENABLE_WARNINGS_UNIFORMS.getOrDefault(INTERNAL_DEBUG);
 
 
     private final int handle;

@@ -1,8 +1,8 @@
 package naitsirc98.beryl.graphics.opengl.rendering.culling;
 
-import naitsirc98.beryl.graphics.opengl.buffers.GLBuffer;
 import naitsirc98.beryl.graphics.opengl.commands.GLCommandBuilder;
 import naitsirc98.beryl.graphics.opengl.commands.GLDrawElementsCommand;
+import naitsirc98.beryl.graphics.opengl.rendering.renderers.data.GLRenderData;
 import naitsirc98.beryl.graphics.rendering.culling.FrustumCuller;
 import naitsirc98.beryl.graphics.rendering.culling.FrustumCullingPreCondition;
 import naitsirc98.beryl.graphics.rendering.culling.FrustumCullingPreConditionState;
@@ -11,7 +11,6 @@ import naitsirc98.beryl.meshes.Mesh;
 import naitsirc98.beryl.meshes.views.MeshView;
 import naitsirc98.beryl.scenes.components.meshes.MeshInstance;
 import naitsirc98.beryl.scenes.components.meshes.MeshInstanceList;
-import naitsirc98.beryl.util.SystemInfo;
 import naitsirc98.beryl.util.geometry.ISphere;
 import org.joml.FrustumIntersection;
 import org.joml.Matrix4fc;
@@ -30,7 +29,8 @@ import static org.lwjgl.system.MemoryStack.stackPush;
 
 public class GLFrustumCuller implements FrustumCuller {
 
-    private static final int THREAD_COUNT = SystemInfo.processorCount();
+    private static final int MAX_BATCH_SIZE = 32;
+
 
     private final ExecutorService executor;
     private final GLCommandBuilder commandBuilder;
@@ -39,9 +39,9 @@ public class GLFrustumCuller implements FrustumCuller {
     private MeshInstanceList<?> instances;
     private FrustumCullingPreCondition preCondition;
 
-    public GLFrustumCuller(GLBuffer commandBuffer, GLBuffer transformsBuffer, GLBuffer instanceBuffer) {
-        this.executor = Executors.newFixedThreadPool(THREAD_COUNT);
-        commandBuilder = new GLCommandBuilder(commandBuffer, transformsBuffer, instanceBuffer);
+    public GLFrustumCuller(GLRenderData renderData) {
+        this.executor = Executors.newCachedThreadPool();
+        commandBuilder = new GLCommandBuilder(renderData);
     }
 
     @Override
@@ -82,11 +82,11 @@ public class GLFrustumCuller implements FrustumCuller {
 
     private void runFrustumCullingCPU() {
 
-        final int batchSize = (int) Math.ceil((float) instances.size() / (float) THREAD_COUNT);
+        final int batchSize = (int) Math.ceil((float) instances.size() / (float) MAX_BATCH_SIZE);
 
-        final CountDownLatch countDownLatch = new CountDownLatch(THREAD_COUNT);
+        final CountDownLatch countDownLatch = new CountDownLatch(MAX_BATCH_SIZE);
 
-        for(int i = 0;i < THREAD_COUNT;i++) {
+        for(int i = 0;i < MAX_BATCH_SIZE;i++) {
 
             final int batchBegin = i * batchSize;
             final int batchEnd = min(batchBegin + batchSize, instances.size());

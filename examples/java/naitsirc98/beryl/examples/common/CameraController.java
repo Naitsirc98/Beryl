@@ -2,7 +2,6 @@ package naitsirc98.beryl.examples.common;
 
 
 import naitsirc98.beryl.graphics.Graphics;
-import naitsirc98.beryl.graphics.rendering.RenderSystem;
 import naitsirc98.beryl.graphics.window.Window;
 import naitsirc98.beryl.input.Gamepad;
 import naitsirc98.beryl.input.Input;
@@ -11,6 +10,7 @@ import naitsirc98.beryl.input.Joystick.Axis;
 import naitsirc98.beryl.input.Joystick.AxisDirection;
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.scenes.Camera;
+import naitsirc98.beryl.scenes.SceneRenderInfo;
 import naitsirc98.beryl.scenes.components.behaviours.LateBehaviour;
 
 import static naitsirc98.beryl.graphics.window.CursorType.DISABLED;
@@ -44,7 +44,8 @@ public class CameraController extends LateBehaviour {
         }
 
         if(Input.isKeyTyped(KEY_U)) {
-            RenderSystem.shadowsEnabled(!RenderSystem.shadowsEnabled());
+            SceneRenderInfo renderInfo = scene().renderInfo();
+            renderInfo.setShadowsEnabled(!renderInfo.areShadowsEnabled());
         }
 
         checkMouseLookAt();

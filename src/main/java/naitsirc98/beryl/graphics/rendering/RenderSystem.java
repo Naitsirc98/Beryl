@@ -1,8 +1,8 @@
 package naitsirc98.beryl.graphics.rendering;
 
 import naitsirc98.beryl.core.BerylSystem;
+import naitsirc98.beryl.core.BerylSystemManager;
 import naitsirc98.beryl.graphics.opengl.rendering.GLRenderSystem;
-import naitsirc98.beryl.scenes.Scene;
 import naitsirc98.beryl.util.types.Singleton;
 
 import static java.util.Objects.requireNonNull;
@@ -16,28 +16,11 @@ public final class RenderSystem extends BerylSystem {
 
     private static APIRenderSystem apiRenderSystem;
 
-    public static boolean shadowsEnabled() {
-        return apiRenderSystem.shadowsEnabled();
+    private RenderSystem(BerylSystemManager systemManager) {
+        super(systemManager);
     }
 
-    public static void shadowsEnabled(boolean shadowsEnabled) {
-        apiRenderSystem.shadowsEnabled(shadowsEnabled);
-    }
-
-    public static void prepare(Scene scene) {
-        apiRenderSystem.prepare(scene);
-    }
-
-    public static void render(Scene scene) {
-        apiRenderSystem.render(scene);
-    }
-
-
-    private RenderSystem() {
-
-    }
-
-    public APIRenderSystem apiRenderSystem() {
+    public APIRenderSystem getAPIRenderSystem() {
         return apiRenderSystem;
     }
 

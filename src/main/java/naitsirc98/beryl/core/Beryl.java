@@ -113,13 +113,13 @@ public final class Beryl {
 
         application.start();
 
-        renderSystem = systems.renderSystem.apiRenderSystem();
-        audioSystem = systems.audioSystem;
+        renderSystem = systems.getRenderSystem().getAPIRenderSystem();
+        audioSystem = systems.getAudioSystem();
         window = Window.get();
 
         setup();
 
-        final Time time = systems.time;
+        final Time time = systems.getTimeSystem();
 
         float lastFrame = Time.time();
         float lastDebugReport = Time.time();
@@ -162,9 +162,9 @@ public final class Beryl {
 
     private void update(float deltaTime) {
 
-        final EventManager eventManager = systems.eventManager;
-        final Input input = systems.input;
-        final SceneManager sceneManager = systems.sceneManager;
+        final EventManager eventManager = systems.getEventManager();
+        final Input input = systems.getInputSystem();
+        final SceneManager sceneManager = systems.getSceneManager();
         final AudioSystem audio = audioSystem;
         final MaterialManager materials = MaterialManager.get();
 
@@ -207,7 +207,7 @@ public final class Beryl {
 
             application.onRenderBegin();
 
-            systems.sceneManager.render();
+            systems.getSceneManager().render();
 
             application.onRenderEnd();
 
@@ -253,12 +253,12 @@ public final class Beryl {
 
 
         if(EventManager.DEBUG_REPORT_ENABLED) {
-            builder.append("[EVENT-MANAGER]: ").append(systems.eventManager.debugReport());
+            builder.append("[EVENT-MANAGER]: ").append(systems.getEventManager().debugReport());
             builder.append("\n\t");
         }
 
         if(SceneManager.DEBUG_REPORT_ENABLED) {
-            builder.append("[SCENE-MANAGER]: ").append(systems.sceneManager.debugReport());
+            builder.append("[SCENE-MANAGER]: ").append(systems.getEventManager().debugReport());
         }
 
         return builder.toString();

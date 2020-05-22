@@ -1,6 +1,6 @@
 package naitsirc98.beryl.graphics.opengl.commands;
 
-import naitsirc98.beryl.graphics.opengl.buffers.GLBuffer;
+import naitsirc98.beryl.graphics.opengl.rendering.renderers.data.GLRenderData;
 import naitsirc98.beryl.materials.ManagedMaterial;
 import naitsirc98.beryl.meshes.Mesh;
 import naitsirc98.beryl.meshes.views.MeshView;
@@ -25,15 +25,11 @@ public class GLCommandBuilder {
 
 
     private final AtomicInteger baseInstance;
-    private final GLBuffer commandBuffer;
-    private final GLBuffer transformsBuffer;
-    private final GLBuffer instanceBuffer;
+    private final GLRenderData renderData;
 
-    public GLCommandBuilder(GLBuffer commandBuffer, GLBuffer transformsBuffer, GLBuffer instanceBuffer) {
+    public GLCommandBuilder(GLRenderData renderData) {
         this.baseInstance = new AtomicInteger();
-        this.commandBuffer = commandBuffer;
-        this.transformsBuffer = transformsBuffer;
-        this.instanceBuffer = instanceBuffer;
+        this.renderData = renderData;
     }
 
     public int count() {
@@ -56,15 +52,19 @@ public class GLCommandBuilder {
                 .baseVertex(mesh.storageInfo().baseVertex())
                 .baseInstance(baseInstance);
 
-        commandBuffer.copy(baseInstance * GLDrawElementsCommand.SIZEOF, command.buffer());
+        renderData.getCommandBuffer().copy(baseInstance * GLDrawElementsCommand.SIZEOF, command.buffer());
     }
 
     public void setInstanceTransform(int objectIndex, Matrix4fc modelMatrix, Matrix4fc normalMatrix) {
+
         try(MemoryStack stack = stackPush()) {
+
             ByteBuffer buffer = stack.malloc(MATRIX4_SIZEOF * 2);
+
             modelMatrix.get(TRANSFORMS_BUFFER_MODEL_MATRIX_OFFSET, buffer);
             normalMatrix.get(TRANSFORMS_BUFFER_NORMAL_MATRIX_OFFSET, buffer);
-            transformsBuffer.copy(objectIndex * TRANSFORMS_BUFFER_MIN_SIZE, buffer);
+
+            renderData.getTransformsBuffer().copy(objectIndex * TRANSFORMS_BUFFER_MIN_SIZE, buffer);
         }
     }
 
@@ -76,7 +76,7 @@ public class GLCommandBuilder {
 
             buffer.put(0, matrixIndex).put(1, materialIndex);
 
-            instanceBuffer.copy(instanceID * INSTANCE_BUFFER_MIN_SIZE, buffer);
+            renderData.getInstanceBuffer().copy(instanceID * INSTANCE_BUFFER_MIN_SIZE, buffer);
         }
     }
 

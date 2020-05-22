@@ -5,7 +5,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Stream;
 
-public final class MeshInstanceList<T extends MeshInstance> implements Iterable<T> {
+public class MeshInstanceList<T extends MeshInstance> implements Iterable<T> {
 
     private final List<T> instances;
     private int numMeshViews;

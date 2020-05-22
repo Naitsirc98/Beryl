@@ -1,6 +1,7 @@
 package naitsirc98.beryl.input;
 
 import naitsirc98.beryl.core.BerylSystem;
+import naitsirc98.beryl.core.BerylSystemManager;
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.events.EventManager;
 import naitsirc98.beryl.events.input.joystick.JoystickConnectedEvent;
@@ -189,7 +190,8 @@ public final class Input extends BerylSystem {
     private float mouseX, mouseY;
     private float mouseScrollX, mouseScrollY;
 
-    private Input() {
+    private Input(BerylSystemManager systemManager) {
+        super(systemManager);
         keyStates = new StateTable<>(Key.class);
         mouseButtonStates = new StateTable<>(MouseButton.class);
         gamepads = new EnumMap<>(Joystick.class);

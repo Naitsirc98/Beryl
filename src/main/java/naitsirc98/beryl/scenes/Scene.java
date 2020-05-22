@@ -1,5 +1,6 @@
 package naitsirc98.beryl.scenes;
 
+import naitsirc98.beryl.graphics.rendering.APIRenderSystem;
 import naitsirc98.beryl.graphics.rendering.RenderSystem;
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.scenes.components.audio.AudioPlayer;
@@ -47,13 +48,20 @@ public final class Scene {
     private final Map<Class<? extends Component>, ComponentManager<?>> componentManagers;
     // ===
 
+    // Rendering
+    private final SceneRenderInfo renderInfo;
+    private final APIRenderSystem renderSystem;
+
+    // Tasks
     private final Deque<Runnable> taskQueue;
 
     private boolean started;
 
-    public Scene(String name) {
+    Scene(String name, APIRenderSystem renderSystem) {
 
         this.name = requireNonNull(name);
+
+        this.renderSystem = requireNonNull(renderSystem);
 
         entityManager = new EntityManager(this);
 
@@ -74,6 +82,8 @@ public final class Scene {
         componentManagers = createComponentManagersMap();
         // ===
 
+        renderInfo = new SceneRenderInfo();
+
         taskQueue = new ArrayDeque<>();
     }
 
@@ -91,6 +101,10 @@ public final class Scene {
 
     public SceneMeshInfo meshInfo() {
         return meshes;
+    }
+
+    public SceneRenderInfo renderInfo() {
+        return renderInfo;
     }
 
     public SceneCameraInfo cameraInfo() {
@@ -125,11 +139,11 @@ public final class Scene {
         transforms.update();
         environment.update();
 
-        RenderSystem.prepare(this);
+        renderSystem.prepare(this);
     }
 
     void render() {
-        RenderSystem.render(this);
+        renderSystem.render(this);
     }
 
     void terminate() {

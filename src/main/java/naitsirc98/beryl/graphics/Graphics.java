@@ -3,6 +3,7 @@ package naitsirc98.beryl.graphics;
 import naitsirc98.beryl.core.Beryl;
 import naitsirc98.beryl.core.BerylConfiguration;
 import naitsirc98.beryl.core.BerylSystem;
+import naitsirc98.beryl.core.BerylSystemManager;
 import naitsirc98.beryl.graphics.opengl.GLContext;
 import naitsirc98.beryl.graphics.window.Window;
 import naitsirc98.beryl.graphics.window.WindowFactory;
@@ -35,8 +36,8 @@ public final class Graphics extends BerylSystem {
     private GraphicsContext graphicsContext;
     private Window window;
 
-    private Graphics() {
-
+    private Graphics(BerylSystemManager systemManager) {
+        super(systemManager);
     }
 
     @Override

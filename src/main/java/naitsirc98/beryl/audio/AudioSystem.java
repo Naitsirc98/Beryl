@@ -1,6 +1,7 @@
 package naitsirc98.beryl.audio;
 
 import naitsirc98.beryl.core.BerylSystem;
+import naitsirc98.beryl.core.BerylSystemManager;
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.util.types.Singleton;
 import org.lwjgl.openal.ALC;
@@ -32,8 +33,8 @@ public final class AudioSystem extends BerylSystem {
     private AudioDevice device;
     private AudioListener listener;
 
-    private AudioSystem() {
-
+    private AudioSystem(BerylSystemManager systemManager) {
+        super(systemManager);
     }
 
     @Override

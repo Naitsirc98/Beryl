@@ -3,6 +3,7 @@ package naitsirc98.beryl.logging;
 import naitsirc98.beryl.core.Beryl;
 import naitsirc98.beryl.core.BerylConfiguration;
 import naitsirc98.beryl.core.BerylSystem;
+import naitsirc98.beryl.core.BerylSystemManager;
 import naitsirc98.beryl.util.ANSIColor;
 import naitsirc98.beryl.util.types.Singleton;
 
@@ -216,7 +217,8 @@ public final class Log extends BerylSystem {
     private final ExecutorService executor;
     private DateTimeFormatter dateTimeFormatter;
 
-    private Log() {
+    private Log(BerylSystemManager systemManager) {
+        super(systemManager);
         levelMask = Beryl.DEBUG ? EnumSet.allOf(Level.class) : EnumSet.of(Level.WARNING, Level.ERROR, Level.FATAL);
         levelColors = new EnumMap<>(Level.class);
         channels = new ArrayList<>(2);
@@ -348,7 +350,7 @@ public final class Log extends BerylSystem {
         if(BerylConfiguration.LOG_LEVEL_COLORS.empty()) {
             setDefaultLevelColors();
         } else {
-            levelColors.putAll(BerylConfiguration.LOG_LEVEL_COLORS.getOrDefault());
+            levelColors.putAll(BerylConfiguration.LOG_LEVEL_COLORS.get());
         }
     }
 
@@ -365,7 +367,7 @@ public final class Log extends BerylSystem {
     private void setLevelMask() {
         if(!BerylConfiguration.LOG_LEVELS.empty()) {
             levelMask.clear();
-            levelMask.addAll(BerylConfiguration.LOG_LEVELS.getOrDefault());
+            levelMask.addAll(BerylConfiguration.LOG_LEVELS.get());
         }
     }
 

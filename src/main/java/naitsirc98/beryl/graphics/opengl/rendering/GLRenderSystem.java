@@ -2,6 +2,7 @@ package naitsirc98.beryl.graphics.opengl.rendering;
 
 import naitsirc98.beryl.events.EventManager;
 import naitsirc98.beryl.events.window.WindowResizedEvent;
+import naitsirc98.beryl.graphics.opengl.GLShadingPipelineManager;
 import naitsirc98.beryl.graphics.opengl.rendering.renderers.GLMeshRenderer;
 import naitsirc98.beryl.graphics.opengl.rendering.renderers.GLSkyboxRenderer;
 import naitsirc98.beryl.graphics.opengl.rendering.renderers.GLWaterRenderer;
@@ -13,6 +14,8 @@ import naitsirc98.beryl.graphics.rendering.APIRenderSystem;
 import naitsirc98.beryl.graphics.window.Window;
 import naitsirc98.beryl.images.PixelFormat;
 import naitsirc98.beryl.scenes.Scene;
+import naitsirc98.beryl.scenes.SceneRenderInfo;
+import naitsirc98.beryl.scenes.environment.SceneEnvironment;
 import naitsirc98.beryl.util.Color;
 import naitsirc98.beryl.util.geometry.Sizec;
 
@@ -33,12 +36,14 @@ public final class GLRenderSystem implements APIRenderSystem {
 
     private GLFramebuffer mainFramebuffer;
 
+    // Renderers
     private final GLSkyboxRenderer skyboxRenderer;
     private final GLShadowRenderer shadowRenderer;
     private final GLMeshRenderer meshRenderer;
     private final GLWaterRenderer waterRenderer;
-
-    private boolean shadowsEnabled;
+    // Shading Pipelines
+    private final GLShadingPipelineManager shadingPipelineManager;
+    private GLShadingPipeline currentShadingPipeline;
 
     private GLRenderSystem() {
 
@@ -51,7 +56,7 @@ public final class GLRenderSystem implements APIRenderSystem {
         meshRenderer = new GLMeshRenderer(shadowRenderer);
         waterRenderer = new GLWaterRenderer(meshRenderer, skyboxRenderer);
 
-        shadowsEnabled = true;
+        shadingPipelineManager = new GLShadingPipelineManager();
 
         EventManager.addEventCallback(WindowResizedEvent.class, this::recreateFramebuffer);
     }
@@ -62,6 +67,7 @@ public final class GLRenderSystem implements APIRenderSystem {
         skyboxRenderer.init();
         waterRenderer.init();
         shadowRenderer.init();
+        shadingPipelineManager.init();
     }
 
     @Override
@@ -70,16 +76,6 @@ public final class GLRenderSystem implements APIRenderSystem {
         waterRenderer.terminate();
         skyboxRenderer.terminate();
         meshRenderer.terminate();
-    }
-
-    @Override
-    public boolean shadowsEnabled() {
-        return shadowsEnabled;
-    }
-
-    @Override
-    public void shadowsEnabled(boolean shadowsEnabled) {
-        this.shadowsEnabled = shadowsEnabled;
     }
 
     public GLFramebuffer mainFramebuffer() {
@@ -96,13 +92,15 @@ public final class GLRenderSystem implements APIRenderSystem {
     @Override
     public void prepare(Scene scene) {
 
+        currentShadingPipeline = getCurrentShadingPipeline(scene.renderInfo());
+
         meshRenderer.prepare(scene);
 
-        if(shadowsEnabled) {
+        if(currentShadingPipeline.areShadowsEnabled()) {
             shadowRenderer.render(scene, meshRenderer);
         }
 
-        waterRenderer.bakeWaterTextures(scene);
+        waterRenderer.bakeWaterTextures(scene, currentShadingPipeline);
 
         meshRenderer.preComputeFrustumCulling(scene);
     }
@@ -110,15 +108,17 @@ public final class GLRenderSystem implements APIRenderSystem {
     @Override
     public void render(Scene scene) {
 
+        SceneEnvironment environment = scene.environment();
+
         mainFramebuffer.bind();
 
-        clear(scene.environment().clearColor());
+        clear(environment.clearColor());
 
-        meshRenderer.renderPreComputedVisibleObjects(scene, shadowsEnabled);
+        meshRenderer.renderPreComputedVisibleObjects(scene, currentShadingPipeline);
 
         waterRenderer.render(scene);
 
-        if(scene.environment().skybox() != null) {
+        if(environment.skybox() != null) {
             skyboxRenderer.render(scene);
         }
     }
@@ -151,10 +151,10 @@ public final class GLRenderSystem implements APIRenderSystem {
         mainFramebuffer = new GLFramebuffer();
 
         GLTexture2DMSAA colorBuffer = new GLTexture2DMSAA();
-        colorBuffer.allocate(MSAA_SAMPLES.getOrDefault(), width, height, PixelFormat.RGBA);
+        colorBuffer.allocate(MSAA_SAMPLES.get(), width, height, PixelFormat.RGBA);
 
         GLRenderbuffer depthStencilBuffer = new GLRenderbuffer();
-        depthStencilBuffer.storageMultisample(width, height, GL_DEPTH24_STENCIL8, MSAA_SAMPLES.getOrDefault());
+        depthStencilBuffer.storageMultisample(width, height, GL_DEPTH24_STENCIL8, MSAA_SAMPLES.get());
 
         mainFramebuffer.attach(GL_COLOR_ATTACHMENT0, colorBuffer, 0);
         mainFramebuffer.attach(GL_DEPTH_STENCIL_ATTACHMENT, depthStencilBuffer);
@@ -169,5 +169,9 @@ public final class GLRenderSystem implements APIRenderSystem {
             mainFramebuffer.release();
             createMainFramebuffer();
         }
+    }
+
+    private GLShadingPipeline getCurrentShadingPipeline(SceneRenderInfo renderInfo) {
+        return shadingPipelineManager.getShadingPipeline(renderInfo);
     }
 }

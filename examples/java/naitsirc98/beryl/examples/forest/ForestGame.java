@@ -8,8 +8,6 @@ import naitsirc98.beryl.core.BerylConfiguration;
 import naitsirc98.beryl.core.BerylFiles;
 import naitsirc98.beryl.core.DefaultConfigurations;
 import naitsirc98.beryl.examples.common.CameraController;
-import naitsirc98.beryl.graphics.GraphicsAPI;
-import naitsirc98.beryl.graphics.window.DisplayMode;
 import naitsirc98.beryl.graphics.window.Window;
 import naitsirc98.beryl.lights.DirectionalLight;
 import naitsirc98.beryl.lights.LightRange;
@@ -17,6 +15,7 @@ import naitsirc98.beryl.lights.PointLight;
 import naitsirc98.beryl.scenes.Camera;
 import naitsirc98.beryl.scenes.Entity;
 import naitsirc98.beryl.scenes.Scene;
+import naitsirc98.beryl.scenes.SceneManager;
 import naitsirc98.beryl.scenes.components.audio.AudioPlayer;
 import naitsirc98.beryl.scenes.environment.SceneEnvironment;
 import naitsirc98.beryl.scenes.environment.SceneLighting;
@@ -29,7 +28,6 @@ import java.util.Random;
 
 import static naitsirc98.beryl.examples.forest.Terrain.TERRAIN_SIZE;
 import static naitsirc98.beryl.scenes.Fog.DEFAULT_FOG_DENSITY;
-import static naitsirc98.beryl.scenes.SceneManager.newScene;
 
 
 public class ForestGame extends BerylApplication {
@@ -39,7 +37,7 @@ public class ForestGame extends BerylApplication {
     private static final Random RAND = new Random(System.nanoTime());
 
     public ForestGame() {
-        BerylConfiguration.SET_CONFIGURATION_METHOD.set(DefaultConfigurations.debugReleaseConfiguration());
+        BerylConfiguration.SET_CONFIGURATION_METHOD.set(DefaultConfigurations.developmentConfiguration());
     }
 
     @Override
@@ -52,7 +50,7 @@ public class ForestGame extends BerylApplication {
 
     private void createScene() {
 
-        Scene scene = newScene("Forest Scene");
+        Scene scene = SceneManager.newScene("Forest Scene");
 
         setSceneEnvironment(scene);
 
@@ -72,9 +70,11 @@ public class ForestGame extends BerylApplication {
 
         Lamp.create(scene, 473.74f, 0.067f, 376.301f, 4.0f);
 
-        Tree.createRandomForest(scene, Terrain.getTerrainMesh(), (int) TERRAIN_SIZE, -4.0f, 700);
+        Tree.createRandomForest(scene, Terrain.getTerrainMesh(), (int) TERRAIN_SIZE, -4.0f, 500);
 
         Helicopter.getHelicopterModel();
+
+        SceneManager.setScene(scene);
     }
 
     private void setEnvironmentSounds(Scene scene) {
@@ -132,7 +132,7 @@ public class ForestGame extends BerylApplication {
 
         SceneLighting lighting = scene.environment().lighting();
 
-        DirectionalLight sun = new DirectionalLight().direction(0, 0, 1);
+        DirectionalLight sun = new DirectionalLight();
 
         lighting.directionalLight(sun);
         lighting.directionalLight().direction(-0.365f, -0.808f, 0.462f);

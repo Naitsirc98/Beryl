@@ -11,7 +11,8 @@ final class GLFWLibrary extends BerylSystem {
 
     private final GLFWErrorCallback errorCallback;
 
-    private GLFWLibrary() {
+    private GLFWLibrary(BerylSystemManager systemManager) {
+        super(systemManager);
         errorCallback = GLFWErrorCallback.create(this::onGLFWError);
     }
 
