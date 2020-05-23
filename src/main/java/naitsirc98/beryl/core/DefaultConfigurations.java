@@ -15,6 +15,7 @@ public final class DefaultConfigurations {
             BerylConfiguration.OPENGL_ENABLE_DEBUG_MESSAGES.set(true);
             BerylConfiguration.SHOW_DEBUG_INFO_ON_WINDOW_TITLE.set(true);
             BerylConfiguration.OPENGL_ENABLE_WARNINGS_UNIFORMS.set(true);
+            BerylConfiguration.PRINT_SHADERS_SOURCE.set(true);
             BerylConfiguration.VSYNC.set(false);
         };
     }
@@ -32,6 +33,7 @@ public final class DefaultConfigurations {
             BerylConfiguration.OPENGL_ENABLE_DEBUG_MESSAGES.set(true);
             BerylConfiguration.SHOW_DEBUG_INFO_ON_WINDOW_TITLE.set(true);
             BerylConfiguration.OPENGL_ENABLE_WARNINGS_UNIFORMS.set(false);
+            BerylConfiguration.PRINT_SHADERS_SOURCE.set(false);
             BerylConfiguration.VSYNC.set(false);
         };
     }
@@ -49,6 +51,7 @@ public final class DefaultConfigurations {
             BerylConfiguration.OPENGL_ENABLE_DEBUG_MESSAGES.set(true);
             BerylConfiguration.SHOW_DEBUG_INFO_ON_WINDOW_TITLE.set(true);
             BerylConfiguration.OPENGL_ENABLE_WARNINGS_UNIFORMS.set(false);
+            BerylConfiguration.PRINT_SHADERS_SOURCE.set(false);
             BerylConfiguration.VSYNC.set(false);
         };
     }
@@ -66,6 +69,7 @@ public final class DefaultConfigurations {
             BerylConfiguration.OPENGL_ENABLE_DEBUG_MESSAGES.set(false);
             BerylConfiguration.SHOW_DEBUG_INFO_ON_WINDOW_TITLE.set(false);
             BerylConfiguration.OPENGL_ENABLE_WARNINGS_UNIFORMS.set(false);
+            BerylConfiguration.PRINT_SHADERS_SOURCE.set(false);
             BerylConfiguration.VSYNC.set(true);
         };
     }

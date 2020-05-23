@@ -48,18 +48,7 @@ public class GLCubemap extends GLTexture implements GLObject, Cubemap {
 
     @Override
     public void allocate(int mipLevels, int width, int height, PixelFormat internalFormat) {
-
-        bind();
-
-        final int interFormat = mapToAPI(internalFormat);
-        final int format = opengl().mapper().mapToFormat(internalFormat);
-        final int dataType = mapToAPI(internalFormat.dataType());
-
-        for(int i = 0; i < 6; i++) {
-            glTexImage2D(getCubemapFace(i), 0, interFormat, width, height, 0, format, dataType, NULL);
-        }
-
-        unbind();
+        glTextureStorage2D(handle, mipLevels, opengl().mapper().mapToSizedInternalFormat(internalFormat), width, height);
     }
 
     @Override

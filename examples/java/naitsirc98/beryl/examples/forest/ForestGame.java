@@ -8,6 +8,7 @@ import naitsirc98.beryl.core.BerylConfiguration;
 import naitsirc98.beryl.core.BerylFiles;
 import naitsirc98.beryl.core.DefaultConfigurations;
 import naitsirc98.beryl.examples.common.CameraController;
+import naitsirc98.beryl.graphics.rendering.ShadingModel;
 import naitsirc98.beryl.graphics.window.Window;
 import naitsirc98.beryl.lights.DirectionalLight;
 import naitsirc98.beryl.lights.LightRange;
@@ -37,6 +38,7 @@ public class ForestGame extends BerylApplication {
     private static final Random RAND = new Random(System.nanoTime());
 
     public ForestGame() {
+        BerylConfiguration.DEFAULT_SHADING_MODEL.set(ShadingModel.PHONG);
         BerylConfiguration.SET_CONFIGURATION_METHOD.set(DefaultConfigurations.developmentConfiguration());
     }
 

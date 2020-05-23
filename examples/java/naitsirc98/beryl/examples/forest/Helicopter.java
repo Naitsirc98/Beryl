@@ -3,8 +3,9 @@ package naitsirc98.beryl.examples.forest;
 import naitsirc98.beryl.audio.AudioClip;
 import naitsirc98.beryl.core.BerylFiles;
 import naitsirc98.beryl.core.Time;
-import naitsirc98.beryl.logging.Log;
+import naitsirc98.beryl.materials.Material;
 import naitsirc98.beryl.materials.PhongMaterial;
+import naitsirc98.beryl.meshes.StaticMesh;
 import naitsirc98.beryl.meshes.models.StaticModel;
 import naitsirc98.beryl.meshes.models.StaticModelLoader;
 import naitsirc98.beryl.meshes.views.StaticMeshView;
@@ -16,6 +17,7 @@ import naitsirc98.beryl.scenes.components.behaviours.UpdateBehaviour;
 import naitsirc98.beryl.scenes.components.math.Transform;
 import naitsirc98.beryl.scenes.components.meshes.StaticMeshInstance;
 import naitsirc98.beryl.util.Color;
+import naitsirc98.beryl.util.IColor;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
 
@@ -31,19 +33,14 @@ public class Helicopter {
 
     private static StaticModel helicopterModel;
 
+    static {
+
+        Path modelPath = BerylFiles.getPath("models/helicopter.obj");
+
+        helicopterModel = new StaticModelLoader().load(modelPath);
+    }
+
     public static StaticModel getHelicopterModel() {
-
-        if(helicopterModel == null) {
-
-            Path modelPath = BerylFiles.getPath("models/helicopter.obj");
-
-            helicopterModel = new StaticModelLoader().load(modelPath, false);
-
-            Log.trace(helicopterModel);
-
-            setHelicopterMaterials(helicopterModel);
-        }
-
         return helicopterModel;
     }
 
@@ -52,7 +49,9 @@ public class Helicopter {
         Entity helicopter = scene.newEntity();
 
         Transform transform = helicopter.add(Transform.class);
+
         helicopter.add(StaticMeshInstance.class).meshViews(getHelicopterBodyMeshViews());
+
         AudioPlayer audio = helicopter.add(AudioPlayer.class);
 
         audio.clip(AudioClip.get("helicopter", params -> params.audioFile(BerylFiles.getString("audio/helicopter.ogg"))));
@@ -82,7 +81,7 @@ public class Helicopter {
 
         Transform transform = rotor.add(Transform.class);
 
-        rotor.add(StaticMeshInstance.class).meshView(getHelicopterModel().meshView("PropellerGray"));
+        rotor.add(StaticMeshInstance.class).meshView(getMainRotorMeshView());
 
         rotor.add(LateMutableBehaviour.class).onLateUpdate(self -> {
             Vector3f pos = new Vector3f(transform.position()).add(0.552f, 46.28f, 27.378f);
@@ -98,7 +97,7 @@ public class Helicopter {
 
         Transform transform = rotor.add(Transform.class);
 
-        rotor.add(StaticMeshInstance.class).meshView(getHelicopterModel().meshView("TailRotor"));
+        rotor.add(StaticMeshInstance.class).meshView(getTailRotorMeshView());
 
         rotor.add(LateMutableBehaviour.class).onLateUpdate(self -> {
             Vector3f pos = new Vector3f(transform.position()).add(-2.367f, 48.328f, -100.561f);
@@ -109,41 +108,44 @@ public class Helicopter {
     }
 
     private static List<StaticMeshView> getHelicopterBodyMeshViews() {
-        return getHelicopterModel().meshViews().stream()
-                .filter(mv -> !mv.mesh().name().contains("TailRotor") && !mv.mesh().name().contains("Propeller"))
+        return getHelicopterModel().meshes().stream()
+                .filter(mesh -> !mesh.name().contains("TailRotor") && !mesh.name().contains("Propeller"))
+                .map(mesh -> new StaticMeshView(mesh, PhongMaterial.getFactory().getMaterial(mesh.name(), Helicopter::setupBodyMaterial)))
                 .collect(Collectors.toList());
     }
 
-    private static void setHelicopterMaterials(StaticModel helicopterModel) {
+    private static void setupBodyMaterial(PhongMaterial material) {
+        if(material.name().contains("Glass")) {
+            material.setAmbientColor(Color.colorBlack()).setDiffuseColor(Color.colorBlack());
+        } else {
+            IColor color = new Color(0.294f, 0.325f, 0.125f, 1.0f).intensify(0.5f);
+            material.setAmbientColor(color).setDiffuseColor(color);
+            material.setShininess(1);
+        }
+    }
 
-        helicopterModel.meshViews().forEach(meshView -> {
+    private static StaticMeshView getMainRotorMeshView() {
+        StaticMesh mesh = getHelicopterModel().mesh("PropellerGray");
+        Material material = PhongMaterial.getFactory().getMaterial(mesh.name(), Helicopter::createMainRotorMaterial);
+        return new StaticMeshView(mesh, material);
+    }
 
-            String meshName = meshView.mesh().name();
+    private static void createMainRotorMaterial(PhongMaterial material) {
+        IColor color = new Color(0.1f, 0.1f, 0.1f, 1.0f);
+        material.setAmbientColor(color).setDiffuseColor(color);
+        material.setShininess(1);
+    }
 
-            if(meshName.contains("Glass")) {
+    private static StaticMeshView getTailRotorMeshView() {
+        StaticMesh mesh = getHelicopterModel().mesh("TailRotor");
+        Material material = PhongMaterial.getFactory().getMaterial(mesh.name(), Helicopter::createTailRotorMaterial);
+        return new StaticMeshView(mesh, material);
+    }
 
-                ((PhongMaterial)meshView.material()).setAmbientColor(Color.colorBlack()).setDiffuseColor(Color.colorBlack());
-
-            } else if(meshName.contains("Rotor") || meshName.contains("Propeller") || meshName.contains("Wheel")) {
-
-                PhongMaterial material = (PhongMaterial) meshView.material();
-
-                Color color = new Color(0.1f, 0.1f, 0.1f, 1.0f);
-
-                material.setAmbientColor(color).setDiffuseColor(color);
-                material.setShininess(1);
-
-            } else {
-
-                PhongMaterial material = (PhongMaterial) meshView.material();
-
-                Color color = new Color(0.294f, 0.325f, 0.125f, 1.0f).intensify(0.5f);
-
-                material.setAmbientColor(color).setDiffuseColor(color);
-                material.setShininess(1);
-            }
-        });
-
+    private static void createTailRotorMaterial(PhongMaterial material) {
+        IColor color = new Color(0.1f, 0.1f, 0.1f, 1.0f);
+        material.setAmbientColor(color).setDiffuseColor(color);
+        material.setShininess(1);
     }
 
     private static class HelicopterController extends UpdateBehaviour {

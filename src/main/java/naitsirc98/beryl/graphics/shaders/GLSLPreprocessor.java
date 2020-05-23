@@ -1,5 +1,7 @@
 package naitsirc98.beryl.graphics.shaders;
 
+import naitsirc98.beryl.core.Beryl;
+import naitsirc98.beryl.core.BerylConfiguration;
 import naitsirc98.beryl.core.BerylFiles;
 import naitsirc98.beryl.graphics.GraphicsAPI;
 import naitsirc98.beryl.graphics.ShaderStage;
@@ -13,6 +15,8 @@ import static java.nio.file.Files.exists;
 import static naitsirc98.beryl.core.Beryl.DEBUG;
 
 public final class GLSLPreprocessor {
+
+    private static final boolean PRINT_SHADERS_SOURCE = BerylConfiguration.PRINT_SHADERS_SOURCE.getOrDefault(Beryl.DEBUG);
 
     private static final String DIRECTIVE_CHARACTER = "@";
     private static final Path SHADERS_ROOT = BerylFiles.getPath("shaders");
@@ -40,9 +44,9 @@ public final class GLSLPreprocessor {
             Log.error("Could not process shader file: " + path, e);
         }
 
-        String source = sourceBuffer.toString();
+        final String source = sourceBuffer.toString();
 
-        if(DEBUG) {
+        if(PRINT_SHADERS_SOURCE) {
             printShaderSource(source);
         }
 

@@ -9,9 +9,9 @@ public class Main {
 
     public static void main(String[] args) {
 
-        BerylApplication app = new ForestGame();
+        // BerylApplication app = new ForestGame();
 
-        // BerylApplication app = new PBRDemo();
+        BerylApplication app = new PBRDemo();
 
         Beryl.launch(app);
     }

@@ -83,6 +83,8 @@ public final class BerylConfiguration<T> {
     public static final BerylConfiguration<Boolean> OPENGL_ENABLE_DEBUG_MESSAGES = new BerylConfiguration<>();
     public static final BerylConfiguration<Boolean> OPENGL_ENABLE_WARNINGS_UNIFORMS = new BerylConfiguration<>();
 
+    public static final BerylConfiguration<Boolean> PRINT_SHADERS_SOURCE = new BerylConfiguration<>();
+
 
     private Object value;
 

@@ -1,6 +1,7 @@
 package naitsirc98.beryl.materials;
 
 import naitsirc98.beryl.graphics.GraphicsFactory;
+import naitsirc98.beryl.graphics.rendering.ShadingModel;
 import naitsirc98.beryl.graphics.textures.Texture2D;
 import naitsirc98.beryl.util.Color;
 import naitsirc98.beryl.util.IColor;
@@ -48,57 +49,10 @@ public class WaterMaterial extends AbstractMaterial {
     private static final float DEFAULT_TEXTURE_OFFSET = 0.0f;
     private static final float DEFAULT_COLOR_STRENGTH = 0.2f;
 
+    private static final MaterialFactory<WaterMaterial> FACTORY = new MaterialFactory<>(WaterMaterial.class);
 
-    public static boolean exists(String name) {
-        return getUnchecked(name) != null;
-    }
-
-    public static WaterMaterial get(String name) {
-
-        WaterMaterial material = getUnchecked(name);
-
-        if(material != null) {
-            return material;
-        }
-
-        material = new WaterMaterial(name);
-
-        MaterialManager.get().addMaterial(material);
-
-        return material;
-    }
-
-    public static WaterMaterial get(String name, Consumer<WaterMaterial> initializer) {
-
-        WaterMaterial material = getUnchecked(name);
-
-        if(material != null) {
-            return material;
-        }
-
-        material = new WaterMaterial(name);
-
-        MaterialManager.get().addMaterial(material);
-
-        initializer.accept(material);
-
-        return material;
-    }
-
-    private static WaterMaterial getUnchecked(String name) {
-
-        MaterialManager manager = MaterialManager.get();
-
-        if(manager.exists(name)) {
-
-            Material material = manager.get(name);
-
-            if(material instanceof WaterMaterial) {
-                return (WaterMaterial) material;
-            }
-        }
-
-        return null;
+    public static MaterialFactory<WaterMaterial> getFactory() {
+        return FACTORY;
     }
 
 
@@ -119,11 +73,6 @@ public class WaterMaterial extends AbstractMaterial {
     }
 
     @Override
-    public MaterialType type() {
-        return MaterialType.WATER_MATERIAL;
-    }
-
-    @Override
     public int sizeof() {
         return SIZEOF;
     }
@@ -132,6 +81,11 @@ public class WaterMaterial extends AbstractMaterial {
     public WaterMaterial tiling(float x, float y) {
         super.tiling(x, y);
         return this;
+    }
+
+    @Override
+    public ShadingModel shadingModel() {
+        return null;
     }
 
     public IColor getColor() {

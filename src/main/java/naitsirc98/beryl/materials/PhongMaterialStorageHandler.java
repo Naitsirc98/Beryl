@@ -22,7 +22,6 @@ public class PhongMaterialStorageHandler extends MaterialStorageHandler<PhongMat
             material.getSpecularColor().getRGBA(data);
             material.getEmissiveColor().getRGBA(data);
 
-            // Phong materials use resident textures
             data.putLong(textureResidentHandle(material.getAmbientMap()));
             data.putLong(textureResidentHandle(material.getDiffuseMap()));
             data.putLong(textureResidentHandle(material.getSpecularMap()));

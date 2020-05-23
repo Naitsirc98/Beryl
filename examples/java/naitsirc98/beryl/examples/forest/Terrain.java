@@ -37,7 +37,7 @@ public class Terrain {
 
     private static PhongMaterial getTerrainMaterial() {
 
-        return PhongMaterial.get("Terrain", material -> {
+        return PhongMaterial.getFactory().getMaterial("Terrain", material -> {
 
             Texture2D colorMap = GraphicsFactory.get()
                     .newTexture2D("C:\\Users\\naits\\Downloads\\TexturesCom_Grass0157_1_seamless_S.jpg", PixelFormat.SRGBA);

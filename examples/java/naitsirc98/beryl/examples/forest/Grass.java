@@ -5,6 +5,7 @@ import naitsirc98.beryl.graphics.GraphicsFactory;
 import naitsirc98.beryl.graphics.textures.Texture;
 import naitsirc98.beryl.graphics.textures.Texture2D;
 import naitsirc98.beryl.images.PixelFormat;
+import naitsirc98.beryl.materials.Material;
 import naitsirc98.beryl.materials.PhongMaterial;
 import naitsirc98.beryl.meshes.TerrainMesh;
 import naitsirc98.beryl.meshes.models.StaticModel;
@@ -21,19 +22,20 @@ import java.util.Random;
 public class Grass {
 
     private static StaticModel grassModel;
+    private static StaticMeshView grassMeshView;
+
+    static {
+
+        grassModel = new StaticModelLoader().load(BerylFiles.getPath("models/grass.obj"),
+                new StaticVertexHandler.Builder().normalFunction(n -> n.set(0, 1, 0)).build());
+
+        grassMeshView = new StaticMeshView(grassModel.mesh(0), getGrassMaterial());
+    }
 
     public static StaticModel getGrassModel() {
-
-        if(grassModel == null) {
-
-            grassModel = new StaticModelLoader().load(BerylFiles.getPath("models/grass.obj"), false,
-                    new StaticVertexHandler.Builder().normalFunction(n -> n.set(0, 1, 0)).build());
-
-            setGrassMaterial(grassModel.meshView(0));
-        }
-
         return grassModel;
     }
+
 
     public static Entity create(Scene scene, float scale) {
 
@@ -41,7 +43,7 @@ public class Grass {
 
         grass.add(Transform.class).scale(scale);
 
-        grass.add(StaticMeshInstance.class).meshView(getGrassModel().meshView(0));
+        grass.add(StaticMeshInstance.class).meshView(grassMeshView);
 
         return grass;
     }
@@ -71,11 +73,12 @@ public class Grass {
 
     }
 
-    public static void setGrassMaterial(StaticMeshView meshView) {
-        PhongMaterial material = (PhongMaterial) meshView.material();
+    public static Material getGrassMaterial() {
+        PhongMaterial material = PhongMaterial.getFactory().getMaterial("GrassMaterial");
         Texture2D colorTexture = GraphicsFactory.get().newTexture2D(BerylFiles.getString("textures/grass.png"), PixelFormat.SRGBA);
         colorTexture.setQuality(Texture.Quality.MEDIUM);
         material.setColorMap(colorTexture);
+        return material;
     }
 
 }

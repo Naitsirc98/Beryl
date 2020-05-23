@@ -5,6 +5,8 @@ import naitsirc98.beryl.meshes.Mesh;
 
 import java.util.Objects;
 
+import static java.util.Objects.requireNonNull;
+
 public abstract class MeshView<T extends Mesh> {
 
     private final T mesh;
@@ -12,7 +14,7 @@ public abstract class MeshView<T extends Mesh> {
 
     public MeshView(T mesh, Material material) {
         this.mesh = mesh;
-        this.material = material;
+        this.material = requireNonNull(material);
     }
 
     @SuppressWarnings("unchecked")

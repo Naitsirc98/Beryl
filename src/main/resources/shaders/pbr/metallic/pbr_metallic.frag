@@ -7,6 +7,8 @@
 #define MAX_POINT_LIGHTS 10
 #define MAX_SPOT_LIGHTS 10
 
+#define PI 3.1415
+
 @include "structs/lights.glsl"
 @include "structs/metallic_material.glsl"
 @include "structs/fog.glsl"
@@ -56,7 +58,50 @@ layout(location = 0) in FragmentData {
 layout(location = 0) out vec4 out_FragmentColor;
 
 
-@include "pbr/functions.glsl"
+float distributionGGX(vec3 N, vec3 H, float roughness)
+{
+    float a = roughness * roughness;
+    float a2 = a * a;
+    float NdotH = max(dot(N, H), 0.0f);
+    float NdotH2 = NdotH*NdotH;
+
+    float nom = a2;
+    float denom = (NdotH2 * (a2 - 1.0f) + 1.0f);
+    denom = PI * denom * denom;
+
+    return nom / denom;
+}
+
+float geometrySchlickGGX(float NdotV, float roughness)
+{
+    float r = (roughness + 1.0);
+    float k = (r*r) / 8.0;
+
+    float nom = NdotV;
+    float denom = NdotV * (1.0 - k) + k;
+
+    return nom / denom;
+}
+
+float geometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
+{
+    float NdotV = max(dot(N, V), 0.0);
+    float NdotL = max(dot(N, L), 0.0);
+    float ggx2 = geometrySchlickGGX(NdotV, roughness);
+    float ggx1 = geometrySchlickGGX(NdotL, roughness);
+
+    return ggx1 * ggx2;
+}
+
+vec3 fresnelSchlick(float cosTheta, vec3 F0)
+{
+    return F0 + (1.0 - F0) * pow(1.0 - cosTheta, 5.0);
+}
+
+vec3 fresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness)
+{
+    return F0 + (max(vec3(1.0 - roughness), F0) - F0) * pow(1.0 - cosTheta, 5.0);
+}
 
 @include "pbr/metallic/pbr_metallic_lighting.glsl"
 
@@ -67,6 +112,10 @@ PBRMetallicInfo info;
 
 
 vec3 computeDirLights() {
+
+    if(u_DirectionalLight.type == NULL) {
+        return vec3(0.0);
+    }
 
     vec3 L = normalize(u_DirectionalLight.direction.xyz);
     vec3 H = normalize(info.viewDirection + L);
@@ -82,13 +131,16 @@ vec3 computePointLights() {
 
     vec3 L0 = vec3(0.0);
 
-    for(uint i = 0; i < u_PointLightsCount; ++i) {
+    // TODO: use u_PointLightCount
+    for(int i = 0; i < 1; ++i) {
 
         Light light = u_PointLights[i];
 
-        vec3 L = normalize(light.position.xyz - info.fragmentPosition);
+        vec3 direction = light.position.xyz - info.fragmentPosition;
+
+        vec3 L = normalize(direction);
         vec3 H = normalize(info.viewDirection + L);
-        float distance = length(light.position.xyz - info.fragmentPosition);
+        float distance = length(direction);
         float attenuation = 1.0 / (distance * distance);
 
         L0 += calculateLighting(light.color.rgb, L, H, attenuation, info);
@@ -99,11 +151,11 @@ vec3 computePointLights() {
 
 vec3 reflectanceEquation() {
 
-    vec3 dirLighting = computeDirLights();
+    // vec3 dirLighting = computeDirLights();
     
     vec3 pointLighting = computePointLights();
           
-    vec3 lighting = dirLighting + pointLighting;
+    vec3 lighting = /*dirLighting +*/ pointLighting;
 
     return lighting;
 }
@@ -183,12 +235,14 @@ vec4 applyFogEffect(vec4 fragmentColor) {
 
 vec4 computeLighting() {
 
+    vec2 texCoords = fragment.texCoords * material.tiling;
+
     // Material properties
-    info.albedo = getAlbedo(material, fragment.texCoords).rgb;
-    info.metallic = getMetallic(material, fragment.texCoords);
-    info.roughness = getRoughness(material, fragment.texCoords);
-    info.occlusion = getOcclusion(material, fragment.texCoords);
-    info.normal = getNormal(material, fragment.texCoords, fragment.position, fragment.normal);
+    info.albedo = getAlbedo(material, texCoords).rgb;
+    info.metallic = getMetallic(material, texCoords);
+    info.roughness = getRoughness(material, texCoords);
+    info.occlusion = getOcclusion(material, texCoords);
+    info.normal = getNormal(material, texCoords, fragment.position, fragment.normal);
     info.F0 = getF0(material, info.albedo, info.metallic);
 
     info.fragmentPosition = fragment.position;
@@ -204,9 +258,15 @@ vec4 computeLighting() {
     // ambient lighting (we now use IBL as the ambient term)
     vec3 F = fresnelSchlickRoughness(angle, info.F0, info.roughness);
 
+    float shadows = 0.0;
+
+    if(u_ShadowsEnabled) {
+        // shadows = computeDirShadows();
+    }
+
     vec3 kS = F;
     vec3 kD = 1.0 - kS;
-    kD *= 1.0 - material.metallic;
+    kD = kD * (1.0 - shadows) * (1.0 - info.metallic);
 
     vec3 irradiance = texture(u_Skybox.irradianceMap, info.normal).rgb;
     vec3 diffuse = irradiance * info.albedo;
@@ -217,22 +277,17 @@ vec4 computeLighting() {
     vec2 brdf = texture(u_Skybox.brdfMap, vec2(angle, info.roughness)).rg;
     vec3 specular = prefilteredColor * (F * brdf.x + brdf.y);
 
-    float shadows = 0.0;
-
-    if(u_ShadowsEnabled) {
-        shadows = computeDirShadows();
-    }
-
-    vec3 ambient = (u_AmbientColor.rgb + ((kD + (1.0 - shadows)) * (diffuse + specular))) * info.occlusion;
+    vec3 ambient = (kD * diffuse + specular) * info.occlusion;
 
     vec3 color = ambient + L0;
 
     // HDR tonemapping
-    // color = color / (color + vec3(1.0));
+    color = color / (color + vec3(1.0));
 
     // Gamma correct
-    // color = pow(color, vec3(GAMMA_CORRECTION));
+    color = pow(color, vec3(2.2));
 
+    // return vec4(info.albedo, 1.0);
     return vec4(color, 1.0);
 }
 
@@ -253,7 +308,7 @@ void main() {
     }
 
     if(u_Fog.color.a != 0.0) {
-        fragmentColor = applyFogEffect(fragmentColor);
+        // fragmentColor = applyFogEffect(fragmentColor);
     }
 
     out_FragmentColor = fragmentColor;

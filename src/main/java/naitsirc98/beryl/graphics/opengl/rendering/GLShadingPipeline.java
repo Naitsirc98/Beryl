@@ -9,7 +9,7 @@ import static java.util.Objects.requireNonNull;
 public class GLShadingPipeline implements Resource {
 
     private final GLShaderProgram shader;
-    private final ShadingModel shadingModel;
+    private ShadingModel shadingModel;
     private boolean shadowsEnabled;
 
     public GLShadingPipeline(GLShaderProgram shader) {
@@ -27,6 +27,11 @@ public class GLShadingPipeline implements Resource {
 
     public ShadingModel getShadingModel() {
         return shadingModel;
+    }
+
+    public GLShadingPipeline setShadingModel(ShadingModel shadingModel) {
+        this.shadingModel = shadingModel;
+        return this;
     }
 
     public boolean areShadowsEnabled() {

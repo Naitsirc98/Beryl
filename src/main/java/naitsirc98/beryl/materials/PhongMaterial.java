@@ -1,5 +1,6 @@
 package naitsirc98.beryl.materials;
 
+import naitsirc98.beryl.graphics.rendering.ShadingModel;
 import naitsirc98.beryl.graphics.textures.Texture2D;
 import naitsirc98.beryl.util.Color;
 import naitsirc98.beryl.util.IColor;
@@ -9,33 +10,6 @@ import java.util.function.Consumer;
 
 import static naitsirc98.beryl.util.types.DataType.*;
 
-/**
- * struct PhongMaterial {
- *
- *     vec4 ambientColor;
- *     vec4 diffuseColor;
- *     vec4 specularColor;
- *     vec4 emissiveColor;
- *
- *     layout(bindless_sampler) sampler2D ambientMap;
- *     layout(bindless_sampler) sampler2D diffuseMap;
- *     layout(bindless_sampler) sampler2D specularMap;
- *     layout(bindless_sampler) sampler2D emissiveMap;
- *     layout(bindless_sampler) sampler2D occlusionMap;
- *     layout(bindless_sampler) sampler2D normalMap;
- *
- *     vec2 tiling;
- *
- *     float alpha;
- *     float shininess;
- *     float reflectivity;
- *     float refractiveIndex;
- *
- *     int flags;
- *
- *     float _padding;
- * };
- * */
 @ByteSize.Static(PhongMaterial.SIZEOF)
 public class PhongMaterial extends ManagedMaterial {
 
@@ -53,63 +27,10 @@ public class PhongMaterial extends ManagedMaterial {
     private static final float DEFAULT_REFLECTIVITY = 0.0f;
     private static final float DEFAULT_REFRACTIVE_INDEX = 0.0f;
 
-    private static final String DEFAULT_NAME = "_DEFAULT_PHONG_MATERIAL";
+    private static final MaterialFactory<PhongMaterial> FACTORY = new MaterialFactory<>(PhongMaterial.class);
 
-
-    public static PhongMaterial getDefault() {
-        return get(DEFAULT_NAME, phongMaterial -> {});
-    }
-
-    public static boolean exists(String name) {
-        return getUnchecked(name) != null;
-    }
-
-    public static PhongMaterial get(String name) {
-
-        PhongMaterial material = getUnchecked(name);
-
-        if(material != null) {
-            return material;
-        }
-
-        material = new PhongMaterial(name);
-
-        MaterialManager.get().addMaterial(material);
-
-        return material;
-    }
-
-    public static PhongMaterial get(String name, Consumer<PhongMaterial> initializer) {
-
-        PhongMaterial material = getUnchecked(name);
-
-        if(material != null) {
-            return material;
-        }
-
-        material = new PhongMaterial(name);
-
-        MaterialManager.get().addMaterial(material);
-
-        initializer.accept(material);
-
-        return material;
-    }
-
-    private static PhongMaterial getUnchecked(String name) {
-
-        MaterialManager manager = MaterialManager.get();
-
-        if(manager.exists(name)) {
-
-            Material material = manager.get(name);
-
-            if(material.type() == MaterialType.PHONG_MATERIAL) {
-                return (PhongMaterial) material;
-            }
-        }
-
-        return null;
+    public static MaterialFactory<PhongMaterial> getFactory() {
+        return FACTORY;
     }
 
 
@@ -133,11 +54,6 @@ public class PhongMaterial extends ManagedMaterial {
     PhongMaterial(String name) {
         super(name);
         setupDefaults();
-    }
-
-    @Override
-    public MaterialType type() {
-        return MaterialType.PHONG_MATERIAL;
     }
 
     @Override
@@ -190,13 +106,9 @@ public class PhongMaterial extends ManagedMaterial {
     }
 
     public PhongMaterial setAmbientMap(Texture2D ambientMap) {
-
         updateTexturesUseCount(this.ambientMap, ambientMap);
-
         this.ambientMap = ambientMap;
-
         markModified();
-
         return this;
     }
 
@@ -205,13 +117,9 @@ public class PhongMaterial extends ManagedMaterial {
     }
 
     public PhongMaterial setDiffuseMap(Texture2D diffuseMap) {
-
         updateTexturesUseCount(this.diffuseMap, diffuseMap);
-
         this.diffuseMap = diffuseMap;
-
         markModified();
-
         return this;
     }
 
@@ -224,13 +132,9 @@ public class PhongMaterial extends ManagedMaterial {
     }
 
     public PhongMaterial setSpecularMap(Texture2D specularMap) {
-
         updateTexturesUseCount(this.specularMap, specularMap);
-
         this.specularMap = specularMap;
-
         markModified();
-
         return this;
     }
 
@@ -239,13 +143,9 @@ public class PhongMaterial extends ManagedMaterial {
     }
 
     public PhongMaterial setEmissiveMap(Texture2D emissiveMap) {
-
         updateTexturesUseCount(this.emissiveMap, emissiveMap);
-
         this.emissiveMap = emissiveMap;
-
         markModified();
-
         return this;
     }
 
@@ -254,13 +154,9 @@ public class PhongMaterial extends ManagedMaterial {
     }
 
     public PhongMaterial setOcclusionMap(Texture2D occlusionMap) {
-
         updateTexturesUseCount(this.occlusionMap, occlusionMap);
-
         this.occlusionMap = occlusionMap;
-
         markModified();
-
         return this;
     }
 
@@ -336,5 +232,10 @@ public class PhongMaterial extends ManagedMaterial {
         shininess = DEFAULT_SHININESS;
         reflectivity = DEFAULT_REFLECTIVITY;
         refractiveIndex = DEFAULT_REFRACTIVE_INDEX;
+    }
+
+    @Override
+    public ShadingModel shadingModel() {
+        return ShadingModel.PHONG;
     }
 }

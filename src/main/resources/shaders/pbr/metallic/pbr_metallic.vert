@@ -48,7 +48,7 @@ void main() {
     gl_ClipDistance[0] = dot(position, u_ClipPlane);
 
     fragment.position = position.xyz;
-    fragment.normal = normalize(mat3(transform.normalMatrix) * in_Normal);
+    fragment.normal = normalize(mat3(transform.modelMatrix) * in_Normal);
     fragment.texCoords = in_TexCoords;
     fragment.materialIndex = in_MaterialIndex;
 

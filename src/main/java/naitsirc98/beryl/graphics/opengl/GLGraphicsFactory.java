@@ -10,7 +10,6 @@ import naitsirc98.beryl.graphics.opengl.textures.GLCubemap;
 import naitsirc98.beryl.graphics.opengl.textures.GLTexture2D;
 import naitsirc98.beryl.graphics.opengl.textures.GLTexture2DMSAA;
 import naitsirc98.beryl.graphics.textures.Cubemap;
-import naitsirc98.beryl.graphics.textures.Cubemap.Face;
 import naitsirc98.beryl.graphics.textures.Texture2D;
 import naitsirc98.beryl.graphics.textures.Texture2DMSAA;
 import naitsirc98.beryl.images.Image;
@@ -19,29 +18,22 @@ import naitsirc98.beryl.images.PixelFormat;
 import naitsirc98.beryl.logging.Log;
 import org.lwjgl.system.MemoryStack;
 
-import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Arrays;
 
 import static java.util.Objects.requireNonNull;
-import static naitsirc98.beryl.graphics.Graphics.opengl;
 import static org.lwjgl.opengl.GL11.glTexImage2D;
 import static org.lwjgl.opengl.GL11C.*;
-import static org.lwjgl.opengl.GL13.GL_TEXTURE_CUBE_MAP_POSITIVE_X;
 import static org.lwjgl.opengl.GL30.GL_RGB16F;
-import static org.lwjgl.opengl.GL42C.glTexStorage2D;
-import static org.lwjgl.opengl.GL45C.glTextureStorage2D;
-import static org.lwjgl.opengl.GL45C.glTextureSubImage2D;
+import static org.lwjgl.opengl.GL45C.*;
 import static org.lwjgl.stb.STBImage.*;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.memByteBuffer;
 
 public class GLGraphicsFactory implements GraphicsFactory {
 
-    private Texture2D blankTexture2D;
+    private Texture2D whiteTexture2D;
+    private Texture2D blackTexture2D;
 
     @Override
     public Texture2D newTexture2D() {
@@ -49,21 +41,31 @@ public class GLGraphicsFactory implements GraphicsFactory {
     }
 
     @Override
-    public Texture2D blankTexture2D() {
-        if(blankTexture2D == null) {
-            blankTexture2D = newBlankTexture2D();
+    public Texture2D whiteTexture() {
+        if(whiteTexture2D == null) {
+            whiteTexture2D = newWhiteTexture2D();
         }
-        return blankTexture2D;
+        return whiteTexture2D;
+    }
+
+    @Override
+    public Texture2D blackTexture2D() {
+        if(blackTexture2D == null) {
+            blackTexture2D = newBlackTexture2D();
+        }
+        return blackTexture2D;
     }
 
     @Override
     public Texture2D newTexture2D(String imagePath, PixelFormat pixelFormat) {
 
-        Texture2D texture = newTexture2D();
+        GLTexture2D texture = new GLTexture2D();
 
         try(Image image = ImageFactory.newImage(imagePath, pixelFormat)) {
             texture.pixels(requireNonNull(image));
         }
+
+        // texture.generateMipmaps();
 
         return texture;
     }
@@ -78,7 +80,7 @@ public class GLGraphicsFactory implements GraphicsFactory {
             IntBuffer width = stack.mallocInt(1);
             IntBuffer height = stack.mallocInt(1);
             IntBuffer channels = stack.mallocInt(1);
-            int desiredChannels = pixelFormat == null ? STBI_default : pixelFormat.channels();
+            int desiredChannels = STBI_default;
 
             stbi_set_flip_vertically_on_load(true);
 
@@ -89,14 +91,12 @@ public class GLGraphicsFactory implements GraphicsFactory {
                 return null;
             }
 
-            glBindTexture(GL_TEXTURE_2D, texture.handle());
-
             glTextureStorage2D(texture.handle(), 1, GL_RGB16F, width.get(0), height.get(0));
             glTextureSubImage2D(texture.handle(), 0, 0, 0, width.get(0), height.get(0), GL_RGB, GL_FLOAT, pixelsf);
+            glGenerateTextureMipmap(texture.handle());
 
             // glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, width.get(0), height.get(0), 0, GL_RGB, GL_FLOAT, pixelsf);
 
-            glBindTexture(GL_TEXTURE_2D, 0);
             // texture.pixels(1, width.get(0), height.get(0), pixelFormat, pixelsf);
 
         } catch(Throwable e) {
@@ -136,23 +136,32 @@ public class GLGraphicsFactory implements GraphicsFactory {
         return new GLBuffer();
     }
 
-    private Texture2D newBlankTexture2D() {
+    private Texture2D newWhiteTexture2D() {
 
         Texture2D texture = newTexture2D();
 
-        try(Image image = ImageFactory.newBlankImage(PixelFormat.RGBA)) {
+        try(Image image = ImageFactory.newWhiteImage(PixelFormat.RGBA)) {
             texture.pixels(image);
         }
 
-        texture.makeResident();
+        return texture;
+    }
+
+    private Texture2D newBlackTexture2D() {
+
+        Texture2D texture = newTexture2D();
+
+        try(Image image = ImageFactory.newBlackImage(PixelFormat.RGBA)) {
+            texture.pixels(image);
+        }
 
         return texture;
     }
 
     @Override
     public void release() {
-        if(blankTexture2D != null) {
-            blankTexture2D.release();
+        if(whiteTexture2D != null) {
+            whiteTexture2D.release();
         }
     }
 }

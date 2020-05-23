@@ -5,7 +5,7 @@ import naitsirc98.beryl.graphics.rendering.ShadingModel;
 
 public class SceneRenderInfo {
 
-    private static final ShadingModel DEFAULT_SHADING_MODEL = BerylConfiguration.DEFAULT_SHADING_MODEL.getOrDefault(ShadingModel.PHONG);
+    public static final ShadingModel DEFAULT_SHADING_MODEL = BerylConfiguration.DEFAULT_SHADING_MODEL.getOrDefault(ShadingModel.PHONG);
     private static final boolean SHADOWS_ENABLED_ON_START = BerylConfiguration.SHADOWS_ENABLED_ON_START.getOrDefault(true);
 
 

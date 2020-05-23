@@ -35,7 +35,7 @@ vec3 calculateLighting(vec3 lightColor, vec3 L, vec3 H, float attenuation, PBRMe
 
     vec3 nominator = NDF * G * F;
     float denominator = 4.0 * max(dot(normal, viewDir), 0.0) * max(dot(normal, L), 0.0);
-    vec3 specular = nominator / (denominator + 0.001); // 0.001 to prevent division by zero.
+    vec3 specular = nominator / (denominator + 0.0001); // 0.001 to prevent division by zero.
 
     // kS is equal to Fresnel
     vec3 kS = F;

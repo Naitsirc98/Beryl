@@ -5,6 +5,7 @@ import naitsirc98.beryl.graphics.GraphicsFactory;
 import naitsirc98.beryl.graphics.textures.Texture;
 import naitsirc98.beryl.graphics.textures.Texture2D;
 import naitsirc98.beryl.images.PixelFormat;
+import naitsirc98.beryl.materials.Material;
 import naitsirc98.beryl.materials.PhongMaterial;
 import naitsirc98.beryl.meshes.models.StaticModel;
 import naitsirc98.beryl.meshes.models.StaticModelLoader;
@@ -22,18 +23,15 @@ public class Lamp {
 
     private static StaticModel lampModel;
 
+    static {
+
+        StaticModelLoader loader = new StaticModelLoader();
+
+        lampModel = loader.load(BerylFiles.getPath("models/lamp.fbx"),
+                new StaticVertexHandler.Builder().positionFunction(p -> p.mul(0.01f)).build());
+    }
+
     public static StaticModel getLampModel() {
-
-        if(lampModel == null) {
-
-            StaticModelLoader loader = new StaticModelLoader();
-
-            lampModel = loader.load(BerylFiles.getPath("models/lamp.fbx"),
-                            false, new StaticVertexHandler.Builder().positionFunction(p -> p.mul(0.01f)).build());
-
-            setLampMaterial(lampModel.meshView(0));
-        }
-
         return lampModel;
     }
 
@@ -42,14 +40,14 @@ public class Lamp {
 
         Entity lamp = scene.newEntity(LAMP_NAME);
         lamp.get(Transform.class).position(x, y, z).scale(scale);
-        lamp.add(StaticMeshInstance.class).meshView(getLampModel().meshView(0));
+        lamp.add(StaticMeshInstance.class).meshView(new StaticMeshView(lampModel.mesh(0), getLampMaterial()));
 
         return lamp;
     }
 
-    private static void setLampMaterial(StaticMeshView meshView) {
+    private static Material getLampMaterial() {
 
-        PhongMaterial material = (PhongMaterial) meshView.material();
+        PhongMaterial material = PhongMaterial.getFactory().getMaterial("LampMaterial");
 
         Texture2D colorTexture = GraphicsFactory.get().newTexture2D(getTexturePath("lightning1_lightoff_BaseColor.tga"), PixelFormat.SRGBA);
         colorTexture.setQuality(Texture.Quality.HIGH);
@@ -60,7 +58,7 @@ public class Lamp {
         Texture2D emissiveMap = GraphicsFactory.get().newTexture2D(getTexturePath("lightning1_Emissive.tga"), PixelFormat.RGBA);
         emissiveMap.setQuality(Texture.Quality.HIGH);
 
-        material.setColorMap(colorTexture)
+        return material.setColorMap(colorTexture)
                 .setNormalMap(normalMap)
                 .setEmissiveMap(emissiveMap)
                 .setEmissiveColor(Color.colorWhite());

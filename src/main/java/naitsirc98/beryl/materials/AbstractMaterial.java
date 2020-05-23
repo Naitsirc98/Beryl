@@ -8,7 +8,8 @@ import org.joml.Vector2fc;
 
 public abstract class AbstractMaterial implements Material {
 
-    static final Texture2D BLANK_TEXTURE = GraphicsFactory.get().blankTexture2D();
+    static final Texture2D WHITE_TEXTURE = GraphicsFactory.get().whiteTexture();
+    static final Texture2D BLACK_TEXTURE = GraphicsFactory.get().blackTexture2D();
 
     private static final Vector2fc DEFAULT_TILING = new Vector2f(1.0f, 1.0f);
 
@@ -84,7 +85,7 @@ public abstract class AbstractMaterial implements Material {
     }
 
     protected Texture2D getMapOrDefault(Texture2D map) {
-        return map == null ? BLANK_TEXTURE : map;
+        return map == null ? WHITE_TEXTURE : map;
     }
 
     void setHandle(int handle) {

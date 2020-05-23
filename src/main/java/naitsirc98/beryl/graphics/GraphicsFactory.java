@@ -18,7 +18,9 @@ public interface GraphicsFactory extends Resource {
 
     Texture2D newTexture2D();
 
-    Texture2D blankTexture2D();
+    Texture2D whiteTexture();
+
+    Texture2D blackTexture2D();
 
     Texture2D newTexture2D(String imagePath, PixelFormat pixelFormat);
 

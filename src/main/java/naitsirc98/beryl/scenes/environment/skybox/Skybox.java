@@ -1,6 +1,5 @@
 package naitsirc98.beryl.scenes.environment.skybox;
 
-import naitsirc98.beryl.graphics.Graphics;
 import naitsirc98.beryl.graphics.textures.Cubemap;
 import naitsirc98.beryl.graphics.textures.Texture2D;
 import naitsirc98.beryl.logging.Log;
@@ -14,7 +13,7 @@ public class Skybox extends ManagedResource {
     private static final float DEFAULT_TEXTURE_BLEND_FACTOR = 0.5f;
     private static final float DEFAULT_ROTATION_ANGLE = 0.0f;
 
-    private static final int DEFAULT_BRDF_TEXTURE_SIZE = 1024;
+    private static final int DEFAULT_BRDF_TEXTURE_SIZE = 512;
 
 
     private SkyboxTexture texture1;
@@ -27,9 +26,9 @@ public class Skybox extends ManagedResource {
     Skybox(Cubemap texture1, Cubemap texture2) {
         this.texture1 = new SkyboxTexture(SkyboxHelper.getSkyboxPBRTextureFactory(), texture1);
         this.texture2 = new SkyboxTexture(SkyboxHelper.getSkyboxPBRTextureFactory(), texture2);
+        brdfTexture = SkyboxHelper.getSkyboxPBRTextureFactory().createBRDFTexture(brdfTextureSize);
     }
 
-    @SuppressWarnings("unchecked")
     public SkyboxTexture texture1() {
         return texture1;
     }
@@ -39,7 +38,6 @@ public class Skybox extends ManagedResource {
         return this;
     }
 
-    @SuppressWarnings("unchecked")
     public SkyboxTexture texture2() {
         return texture2;
     }
@@ -81,9 +79,6 @@ public class Skybox extends ManagedResource {
 
     @SuppressWarnings("unchecked")
     public <T extends Texture2D> T brdfTexture() {
-        if(brdfTexture == null && Graphics.isGraphicsThread()) {
-            brdfTexture = SkyboxHelper.getSkyboxPBRTextureFactory().createBRDFTexture(brdfTextureSize);
-        }
         return (T) brdfTexture;
     }
 

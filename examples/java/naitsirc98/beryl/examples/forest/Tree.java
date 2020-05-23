@@ -5,11 +5,13 @@ import naitsirc98.beryl.core.Time;
 import naitsirc98.beryl.graphics.GraphicsFactory;
 import naitsirc98.beryl.graphics.textures.Texture;
 import naitsirc98.beryl.images.PixelFormat;
+import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.materials.PhongMaterial;
 import naitsirc98.beryl.meshes.TerrainMesh;
 import naitsirc98.beryl.meshes.models.StaticModel;
 import naitsirc98.beryl.meshes.models.StaticModelLoader;
 import naitsirc98.beryl.meshes.models.StaticVertexHandler;
+import naitsirc98.beryl.meshes.views.StaticMeshView;
 import naitsirc98.beryl.scenes.Entity;
 import naitsirc98.beryl.scenes.Scene;
 import naitsirc98.beryl.scenes.components.behaviours.UpdateBehaviour;
@@ -25,22 +27,28 @@ import static naitsirc98.beryl.util.Maths.sin;
 public class Tree {
 
     private static StaticModel treeModel;
+    private static StaticMeshView trunkMeshView;
+    private static StaticMeshView capMeshView;
+    private static StaticMeshView leafMeshView;
+
+    static {
+
+        Path modelPath = BerylFiles.getPath("models/tree.obj");
+
+        StaticVertexHandler handlerToMakeModelSmaller = new StaticVertexHandler.Builder()
+                .positionFunction(p -> p.mul(0.012f))
+                .build();
+
+        treeModel = new StaticModelLoader().load(modelPath, handlerToMakeModelSmaller);
+
+        Log.warning(treeModel);
+
+        trunkMeshView = getTrunkMeshView();
+        capMeshView = getCapMeshView();
+        leafMeshView = getLeafMeshView();
+    }
 
     public static StaticModel getTreeModel() {
-
-        if(treeModel == null) {
-
-            Path modelPath = BerylFiles.getPath("models/tree.obj");
-
-            StaticVertexHandler handlerToMakeModelSmaller = new StaticVertexHandler.Builder()
-                    .positionFunction(p -> p.mul(0.012f))
-                    .build();
-
-            treeModel = new StaticModelLoader().load(modelPath, false, handlerToMakeModelSmaller);
-
-            setTreeMaterials(treeModel);
-        }
-
         return treeModel;
     }
 
@@ -48,7 +56,7 @@ public class Tree {
 
         Entity tree = scene.newEntity(name);
         tree.add(Transform.class);
-        tree.add(StaticMeshInstance.class).meshViews(getTreeModel().meshViews());
+        tree.add(StaticMeshInstance.class).meshViews(trunkMeshView, capMeshView, leafMeshView);
         tree.add(TreeRandomBouncing.class);
 
         return tree;
@@ -78,19 +86,29 @@ public class Tree {
         }
     }
 
-    private static void setTreeMaterials(StaticModel treeModel) {
+    private static StaticMeshView getTrunkMeshView() {
+        String name = "conifer_macedonian_pine_5";
+        return new StaticMeshView(treeModel.mesh(name), PhongMaterial.getFactory().getMaterial(name, material -> {
+            GraphicsFactory g = GraphicsFactory.get();
+            material.setColorMap(g.newTexture2D(getTexturePath("Bark_Color.png"), PixelFormat.SRGBA).setQuality(Texture.Quality.MEDIUM));
+        }));
+    }
 
-        GraphicsFactory g = GraphicsFactory.get();
+    private static StaticMeshView getCapMeshView() {
+        String name = "/Game/Cap_Branch_Mat_Cap_Branch_Mat";
+        return new StaticMeshView(treeModel.mesh(name), PhongMaterial.getFactory().getMaterial(name, material -> {
+            GraphicsFactory g = GraphicsFactory.get();
+            material.setColorMap(g.newTexture2D(getTexturePath("Cap_Color.png"), PixelFormat.SRGBA).setQuality(Texture.Quality.LOW));
+        }));
+    }
 
-        PhongMaterial trunkMaterial = (PhongMaterial) treeModel.meshView("conifer_macedonian_pine_5").material();
-        trunkMaterial.setColorMap(g.newTexture2D(getTexturePath("Bark_Color.png"), PixelFormat.SRGBA).setQuality(Texture.Quality.MEDIUM));
-
-        PhongMaterial capMaterial = (PhongMaterial) treeModel.meshView("/Game/Cap_Branch_Mat_Cap_Branch_Mat").material();
-        capMaterial.setColorMap(g.newTexture2D(getTexturePath("Cap_Color.png"), PixelFormat.SRGBA).setQuality(Texture.Quality.LOW));
-
-        PhongMaterial leafMaterial = (PhongMaterial) treeModel.meshView("/Game/conifer_macedonian_pine_Leaf_Mat_conifer_macedonian_pine_Leaf_Mat").material();
-        leafMaterial.setColorMap(g.newTexture2D(getTexturePath("Leaf_Color.png"), PixelFormat.SRGBA).setQuality(Texture.Quality.HIGH));
-        leafMaterial.getDiffuseMap().sampler().lodBias(-1.5f);
+    private static StaticMeshView getLeafMeshView() {
+        String name = "/Game/conifer_macedonian_pine_Leaf_Mat_conifer_macedonian_pine_Leaf_Mat";
+        return new StaticMeshView(treeModel.mesh(name), PhongMaterial.getFactory().getMaterial(name, material -> {
+            GraphicsFactory g = GraphicsFactory.get();
+            material.setColorMap(g.newTexture2D(getTexturePath("Leaf_Color.png"), PixelFormat.SRGBA).setQuality(Texture.Quality.HIGH));
+            material.getDiffuseMap().sampler().lodBias(-1.5f);
+        }));
     }
 
     private static String getTexturePath(String textureName) {

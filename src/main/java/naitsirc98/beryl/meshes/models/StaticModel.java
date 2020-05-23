@@ -1,49 +1,56 @@
 package naitsirc98.beryl.meshes.models;
 
-import naitsirc98.beryl.meshes.views.StaticMeshView;
+import naitsirc98.beryl.meshes.StaticMesh;
 import naitsirc98.beryl.util.collections.LookupTable;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
-public class StaticModel {
+public class StaticModel implements Iterable<StaticMesh> {
 
     private final Path path;
-    private final List<StaticMeshView> meshViews;
-    private final LookupTable<String, StaticMeshView> meshNames;
+    private final List<StaticMesh> meshes;
+    private final LookupTable<String, StaticMesh> meshNames;
 
     public StaticModel(Path path) {
         this.path = path;
-        meshViews = new ArrayList<>();
+        meshes = new ArrayList<>();
         meshNames = new LookupTable<>();
     }
 
-    public List<StaticMeshView> meshViews() {
-        return meshViews;
+    public List<StaticMesh> meshes() {
+        return Collections.unmodifiableList(meshes);
     }
 
-    public int numMeshViews() {
-        return meshViews.size();
+    public int numMeshes() {
+        return meshes.size();
     }
 
-    public StaticMeshView meshView(int index) {
-        return meshViews.get(index);
+    public StaticMesh mesh(int index) {
+        return meshes.get(index);
     }
 
-    public StaticMeshView meshView(String name) {
+    public StaticMesh mesh(String name) {
         return meshNames.valueOf(name);
     }
 
-    void addMeshView(StaticMeshView meshView) {
-        meshViews.add(meshView);
-        meshNames.put(meshView.mesh().name(), meshView);
+    void addMesh(StaticMesh mesh) {
+        meshes.add(mesh);
+        meshNames.put(mesh.name(), mesh);
     }
 
     @Override
     public String toString() {
         return "StaticModel {" +
                 "path=" + path +
-                ", meshes=" + meshViews;
+                ", meshes=" + meshes;
+    }
+
+    @Override
+    public Iterator<StaticMesh> iterator() {
+        return meshes.iterator();
     }
 }

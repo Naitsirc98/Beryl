@@ -4,30 +4,27 @@ struct MetallicMaterial {
     vec4 emissiveColor;
 
     layout(bindless_sampler) sampler2D albedoMap;
-    layout(bindless_sampler) sampler2D metallicRoughnessOcclusionMap;
+    layout(bindless_sampler) sampler2D metallicMap;
+    layout(bindless_sampler) sampler2D roughnessMap;
+    layout(bindless_sampler) sampler2D occlusionMap;
     layout(bindless_sampler) sampler2D emissiveMap;
     layout(bindless_sampler) sampler2D normalMap;
 
     vec2 tiling;
-    vec2 _padding0;
 
     float alpha;
     float metallic;
     float roughness;
-    float fresnel0;
     float occlusion;
-    float _padding1;
-    float _padding2;
-    float _padding3;
+    float fresnel0;
 
     int flags;
 };
 
 // FLAGS
-#define ALBEDO_MAP_PRESENT 0x1
 #define METALLIC_MAP_PRESENT 0x2
 #define ROUGHNESS_MAP_PRESENT 0x4
-#define OCLUSSION_MAP_PRESENT 0x8
+#define OCCLUSION_MAP_PRESENT 0x8
 #define NORMAL_MAP_PRESENT 0x10
 
 @include "structs/materials_base.glsl"
@@ -50,42 +47,40 @@ vec3 getNormalFromMap(MetallicMaterial material, vec2 uv, vec3 position, vec3 no
     vec3 B = -normalize(cross(N, T));
     mat3 TBN = mat3(T, B, N);
 
-    return normalize(TBN * normal);
+    return normalize(TBN * tangentNormal);
  }
 
  vec3 getNormal(MetallicMaterial material, vec2 uv, vec3 position, vec3 normal) {
+     return getNormalFromMap(material, uv, position, normal);
+     /*
      return testMaterialFlag(material.flags, NORMAL_MAP_PRESENT)
          ? getNormalFromMap(material, uv, position, normal)
          : normalize(normal);
+         */
  }
 
 vec4 getAlbedo(MetallicMaterial material, vec2 uv) {
-
-    if(testMaterialFlag(material.flags, ALBEDO_MAP_PRESENT)) {
-        return material.albedo * pow(texture(material.albedoMap, uv), vec4(2.2)); // gamma corrected here?
-    }
-
-    return material.albedo;
+    return material.albedo * pow(texture(material.albedoMap, uv), vec4(2.2));
 }
 
 float getMetallic(MetallicMaterial material, vec2 uv) {
 
     return testMaterialFlag(material.flags, METALLIC_MAP_PRESENT)
-        ? texture(material.metallicRoughnessOcclusionMap, uv).r
+        ? texture(material.metallicMap, uv).r
         : material.metallic;
 }
 
 float getRoughness(MetallicMaterial material, vec2 uv) {
 
     return testMaterialFlag(material.flags, ROUGHNESS_MAP_PRESENT)
-        ? texture(material.metallicRoughnessOcclusionMap, uv).g
+        ? texture(material.roughnessMap, uv).r
         : material.roughness;
 }
 
 float getOcclusion(MetallicMaterial material, vec2 uv) {
 
-    return testMaterialFlag(material.flags, OCLUSSION_MAP_PRESENT)
-        ? texture(material.metallicRoughnessOcclusionMap, uv).b
+    return testMaterialFlag(material.flags, OCCLUSION_MAP_PRESENT)
+        ? texture(material.occlusionMap, uv).r
         : material.occlusion;
 }
 

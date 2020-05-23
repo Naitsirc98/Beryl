@@ -1,11 +1,8 @@
 package naitsirc98.beryl.meshes.models;
 
-import naitsirc98.beryl.graphics.textures.Texture2D;
 import naitsirc98.beryl.logging.Log;
-import naitsirc98.beryl.materials.PhongMaterial;
 import naitsirc98.beryl.meshes.MeshManager;
 import naitsirc98.beryl.meshes.StaticMesh;
-import naitsirc98.beryl.meshes.views.StaticMeshView;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.assimp.AIMesh;
 import org.lwjgl.assimp.AIScene;
@@ -43,19 +40,19 @@ public final class StaticModelLoader extends AssimpLoader {
         cache = new HashMap<>();
     }
 
-    public synchronized StaticModel load(Path path, boolean loadMaterials) {
-        return load(path, loadMaterials, DEFAULT_HANDLER, DEFAULT_NAME_MAPPER);
+    public synchronized StaticModel load(Path path) {
+        return load(path, DEFAULT_HANDLER, DEFAULT_NAME_MAPPER);
     }
 
-    public synchronized StaticModel load(Path path, boolean loadMaterials, StaticVertexHandler handler) {
-        return load(path, loadMaterials, handler, DEFAULT_NAME_MAPPER);
+    public synchronized StaticModel load(Path path, StaticVertexHandler handler) {
+        return load(path, handler, DEFAULT_NAME_MAPPER);
     }
 
-    public synchronized StaticModel load(Path path, boolean loadMaterials, NameMapper nameMapper) {
-        return load(path, loadMaterials, DEFAULT_HANDLER, nameMapper);
+    public synchronized StaticModel load(Path path, NameMapper nameMapper) {
+        return load(path, DEFAULT_HANDLER, nameMapper);
     }
 
-    public synchronized StaticModel load(Path path, boolean loadMaterials, StaticVertexHandler handler, NameMapper nameMapper) {
+    public synchronized StaticModel load(Path path, StaticVertexHandler handler, NameMapper nameMapper) {
 
         assertNonNull(handler);
 
@@ -69,7 +66,7 @@ public final class StaticModelLoader extends AssimpLoader {
 
         float start = System.nanoTime();
 
-        StaticModel model = loadAssimp(path, loadMaterials, handler, nameMapper);
+        StaticModel model = loadAssimp(path, handler, nameMapper);
 
         float end = (float) ((System.nanoTime() - start) / 1e6);
 
@@ -80,7 +77,7 @@ public final class StaticModelLoader extends AssimpLoader {
         return model;
     }
 
-    private StaticModel loadAssimp(Path path, boolean loadMaterials, StaticVertexHandler handler, NameMapper nameMapper) {
+    private StaticModel loadAssimp(Path path, StaticVertexHandler handler, NameMapper nameMapper) {
 
         AIScene aiScene = aiImportFile(path.toString(), DEFAULT_FLAGS);
 
@@ -94,13 +91,9 @@ public final class StaticModelLoader extends AssimpLoader {
 
             PointerBuffer meshes = aiScene.mMeshes();
 
-            Path texturesDir = path.getParent();
-
-            Map<String, Texture2D> texturesCache = new HashMap<>();
-
             for(int i = 0;i < meshes.capacity();i++) {
                 AIMesh aiMesh = requireNonNull(AIMesh.createSafe(meshes.get(i)));
-                model.addMeshView(loadMeshView(aiScene, aiMesh, texturesDir, loadMaterials, handler, nameMapper, texturesCache));
+                model.addMesh(loadMesh(aiScene, aiMesh, handler, nameMapper));
             }
 
             return model;
@@ -110,8 +103,7 @@ public final class StaticModelLoader extends AssimpLoader {
         }
     }
 
-    private StaticMeshView loadMeshView(AIScene aiScene, AIMesh aiMesh, Path texturesDir,
-                                        boolean loadMaterials, StaticVertexHandler handler, NameMapper nameMapper, Map<String, Texture2D> texturesCache) {
+    private StaticMesh loadMesh(AIScene aiScene, AIMesh aiMesh, StaticVertexHandler handler, NameMapper nameMapper) {
 
         final String meshName = nameMapper.rename(aiMesh.mName().dataString());
 
@@ -131,8 +123,6 @@ public final class StaticModelLoader extends AssimpLoader {
             mesh = StaticMesh.get(meshName, staticMeshData -> staticMeshData.set(vertices, indices));
         }
 
-        PhongMaterial material = loadMaterials ? loadMaterial(aiScene, aiMesh, meshName, texturesDir, texturesCache) : PhongMaterial.get(meshName);
-
-        return new StaticMeshView(mesh, material);
+        return mesh;
     }
 }

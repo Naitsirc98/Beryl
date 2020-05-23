@@ -55,6 +55,8 @@ public class GLDirectionalShadowRenderer {
 
     public void bakeDirectionalShadows(Scene scene, GLMeshRenderer meshRenderer) {
 
+        shadingPipeline.setShadingModel(scene.renderInfo().getShadingModel());
+
         DirectionalLight light = scene.environment().lighting().directionalLight();
 
         Camera camera = scene.camera();

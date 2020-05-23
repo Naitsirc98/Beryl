@@ -239,9 +239,9 @@ public final class Beryl {
                     + builder.toString()
                     + " | Memory used: " + memoryUsed() / 1024 / 1024 + " MB"
                     + " | Total memory: " + totalMemory() / 1024 / 1024 + " MB");
-
-            builder.append("\n\t");
         }
+
+        builder.append("\n\t");
 
         if(MEMORY_USAGE_REPORT) {
             builder.append("[JVM MEMORY]: Used = ").append(memoryUsed() / 1024 / 1024)
@@ -250,7 +250,6 @@ public final class Beryl {
 
             builder.append("\n\t");
         }
-
 
         if(EventManager.DEBUG_REPORT_ENABLED) {
             builder.append("[EVENT-MANAGER]: ").append(systems.getEventManager().debugReport());

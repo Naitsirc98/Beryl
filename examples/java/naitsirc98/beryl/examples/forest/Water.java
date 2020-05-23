@@ -61,7 +61,7 @@ public class Water {
 
     private static WaterMaterial getWaterMaterial() {
 
-        return WaterMaterial.get("water", material -> {
+        return WaterMaterial.getFactory().getMaterial("water", material -> {
 
             Texture2D dudv = GraphicsFactory.get().newTexture2D(BerylFiles.getString("textures/water/dudv.png"), PixelFormat.RGBA);
             Texture2D normalMap = GraphicsFactory.get().newTexture2D(BerylFiles.getString("textures/water/normalMap.png"), PixelFormat.RGBA);

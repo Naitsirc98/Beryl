@@ -10,7 +10,7 @@ import java.nio.FloatBuffer;
 public interface Texture2D extends Texture {
 
     static Texture2D whiteTexture() {
-        return GraphicsFactory.get().blankTexture2D();
+        return GraphicsFactory.get().whiteTexture();
     }
 
     int width();

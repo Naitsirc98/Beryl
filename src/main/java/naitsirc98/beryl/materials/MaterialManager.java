@@ -1,6 +1,7 @@
 package naitsirc98.beryl.materials;
 
 import naitsirc98.beryl.assets.AssetManager;
+import naitsirc98.beryl.graphics.rendering.ShadingModel;
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.util.types.Singleton;
 
@@ -21,19 +22,20 @@ public final class MaterialManager implements AssetManager<Material> {
     private final Queue<Material> garbageQueue;
     private final Queue<Material> modificationsQueue;
     private final AtomicInteger handleProvider;
-    private final Map<MaterialType, MaterialStorageHandler> storageHandlers;
+    private final Map<ShadingModel, MaterialStorageHandler> storageHandlers;
 
     public MaterialManager() {
         materials = new HashMap<>();
         garbageQueue = new ArrayDeque<>();
         modificationsQueue = new ArrayDeque<>();
         handleProvider = new AtomicInteger();
-        storageHandlers = new EnumMap<>(MaterialType.class);
+        storageHandlers = new EnumMap<>(ShadingModel.class);
     }
 
     @Override
     public void init() {
-        storageHandlers.put(MaterialType.PHONG_MATERIAL, new PhongMaterialStorageHandler());
+        storageHandlers.put(ShadingModel.PHONG, new PhongMaterialStorageHandler());
+        storageHandlers.put(ShadingModel.PBR_METALLIC, new PBRMetallicMaterialStorageHandler());
     }
 
     @Override
@@ -42,8 +44,8 @@ public final class MaterialManager implements AssetManager<Material> {
     }
 
     @SuppressWarnings("unchecked")
-    public <T extends ManagedMaterial> MaterialStorageHandler<T> getStorageHandler(MaterialType type) {
-        return storageHandlers.get(type);
+    public <T extends ManagedMaterial> MaterialStorageHandler<T> getStorageHandler(ShadingModel shadingModel) {
+        return storageHandlers.get(shadingModel);
     }
 
     @Override
@@ -136,7 +138,7 @@ public final class MaterialManager implements AssetManager<Material> {
 
             ManagedMaterial managedMaterial = (ManagedMaterial) material;
 
-            MaterialStorageHandler storageHandler = storageHandlers.get(managedMaterial.type());
+            MaterialStorageHandler storageHandler = storageHandlers.get(managedMaterial.shadingModel());
 
             storageHandler.update(managedMaterial);
 
@@ -151,7 +153,7 @@ public final class MaterialManager implements AssetManager<Material> {
 
             ManagedMaterial managedMaterial = (ManagedMaterial) material;
 
-            MaterialStorageHandler storageHandler = storageHandlers.get(managedMaterial.type());
+            MaterialStorageHandler storageHandler = storageHandlers.get(managedMaterial.shadingModel());
 
             storageHandler.allocate(managedMaterial);
         }
@@ -164,7 +166,7 @@ public final class MaterialManager implements AssetManager<Material> {
 
             ManagedMaterial managedMaterial = (ManagedMaterial) material;
 
-            MaterialStorageHandler storageHandler = storageHandlers.get(material.type());
+            MaterialStorageHandler storageHandler = storageHandlers.get(material.shadingModel());
 
             storageHandler.free(managedMaterial);
         }

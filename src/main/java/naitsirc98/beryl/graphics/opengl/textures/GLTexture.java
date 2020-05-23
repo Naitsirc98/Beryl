@@ -75,6 +75,10 @@ public abstract class GLTexture extends ManagedResource implements GLObject, Tex
         return glGetTextureLevelParameteri(handle, 0, GL_TEXTURE_HEIGHT);
     }
 
+    public int size() {
+        return width() * height() * internalFormat().sizeof();
+    }
+
     @Override
     public PixelFormat internalFormat() {
         return mapFromAPI(PixelFormat.class, glGetTextureLevelParameteri(handle, 0, GL_TEXTURE_INTERNAL_FORMAT));

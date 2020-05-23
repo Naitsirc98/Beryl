@@ -18,25 +18,47 @@ import static org.lwjgl.system.MemoryUtil.*;
 public final class ImageFactory {
 
     /**
-     * Creates a 1x1 blank image backed by a new buffer in memory. The buffer must be manually freed by calling {@link Image#release()}
+     * Creates a 1x1 white image backed by a new buffer in memory. The buffer must be manually freed by calling {@link Image#release()}
      *
      * @param format the pixel format
      * @return the new image
      */
-    public static Image newBlankImage(PixelFormat format) {
-        return newBlankImage(1, 1, format);
+    public static Image newWhiteImage(PixelFormat format) {
+        return newWhiteImage(1, 1, format);
     }
 
     /**
-     * Creates a blank image backed by a new buffer in memory. The buffer must be manually freed by calling {@link Image#release()}
+     * Creates a 1x1 black image backed by a new buffer in memory. The buffer must be manually freed by calling {@link Image#release()}
+     *
+     * @param format the pixel format
+     * @return the new image
+     */
+    public static Image newBlackImage(PixelFormat format) {
+        return newBlackImage(1, 1, format);
+    }
+
+    /**
+     * Creates a white image backed by a new buffer in memory. The buffer must be manually freed by calling {@link Image#release()}
      *
      * @param width  the width
      * @param height the height
      * @param format the pixel format
      * @return the new image
      */
-    public static Image newBlankImage(int width, int height, PixelFormat format) {
+    public static Image newWhiteImage(int width, int height, PixelFormat format) {
         return newImage(width, height, format, 0xFFFFFFFF);
+    }
+
+    /**
+     * Creates a black image backed by a new buffer in memory. The buffer must be manually freed by calling {@link Image#release()}
+     *
+     * @param width  the width
+     * @param height the height
+     * @param format the pixel format
+     * @return the new image
+     */
+    public static Image newBlackImage(int width, int height, PixelFormat format) {
+        return newImage(width, height, format, 0x0);
     }
 
     /**

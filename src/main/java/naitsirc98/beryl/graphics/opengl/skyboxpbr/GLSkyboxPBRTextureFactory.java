@@ -178,39 +178,38 @@ public class GLSkyboxPBRTextureFactory extends ManagedResource implements Skybox
 
         GLShaderProgram shader = prefilterShader();
 
-        GLVertexArray cubeVAO = cubeVAO();
-
         shader.bind();
 
         shader.uniformSampler(ENVIRONMENT_MAP_UNIFORM_NAME, (GLTexture) environmentMap, 0);
 
-        final int minMipLevel = Texture.calculateMipLevels(size, size); // Size should be multiple of 2
+        final int minMipLevel = 4;
 
-        for(int mipLevel = 0;mipLevel < minMipLevel;mipLevel++) {
+        for(int mipLevel = 0;mipLevel <= minMipLevel;mipLevel++) {
 
             final int mipLevelSize = (int)(size * pow(0.5f, mipLevel));
 
             final float roughness = (float)mipLevel / (float)minMipLevel;
+
             shader.uniformFloat("u_Roughness", roughness);
 
             renderCubemap((GLCubemap) prefilterTexture, shader, mipLevelSize, mipLevel);
         }
 
-        cubeVAO.unbind();
+        prefilterTexture.generateMipmaps();
+
         shader.unbind();
     }
 
     private void bakeBRDFTexture(GLTexture2D brdfTexture, int size) {
 
-        prepareFramebufferForBRDF(brdfTexture);
+        framebuffer().attach(GL_COLOR_ATTACHMENT0, brdfTexture, 0);
+        framebuffer().ensureComplete();
 
         framebuffer().bind();
 
-        framebuffer().attach(GL_DEPTH_ATTACHMENT, getDepthBuffer(size));
-
-        glEnable(GL_DEPTH_TEST);
+        glDisable(GL_DEPTH_TEST);
         glViewport(0, 0, size, size);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT);
 
         GLShaderProgram shader = brdfShader();
         GLVertexArray quadVAO = quadVAO();
@@ -224,6 +223,8 @@ public class GLSkyboxPBRTextureFactory extends ManagedResource implements Skybox
         shader.unbind();
 
         framebuffer().detach(GL_COLOR_ATTACHMENT0);
+
+        framebuffer().unbind();
     }
 
     private void renderCubemap(GLCubemap cubemap, GLShaderProgram shader, int size, int mipmapLevel) {
@@ -238,40 +239,54 @@ public class GLSkyboxPBRTextureFactory extends ManagedResource implements Skybox
 
         cubeVAO.bind();
 
+        // cubemap.bind();
+
         framebuffer().bind();
 
         glDisable(GL_DEPTH_TEST);
         glViewport(0, 0, size, size);
 
+        int f = GL_TEXTURE_CUBE_MAP_POSITIVE_X;
+
         for(int i = 0;i < faces.length;i++) {
 
             Matrix4f viewMatrix = viewMatrices[i];
 
-            Matrix4f projectionViewMatrix = projectionMatrix.mul(viewMatrix, viewMatrix);
+            Matrix4f projectionViewMatrix = projectionMatrix.mul(viewMatrix, new Matrix4f());
 
             shader.uniformMatrix4f(PROJECTION_VIEW_MATRIX_UNIFORM_NAME, false, projectionViewMatrix);
 
-            framebuffer().attach(GL_COLOR_ATTACHMENT0, cubemap, faces[i], mipmapLevel);
-            framebuffer().ensureComplete();
+            framebuffer().bind();
+
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, f, cubemap.handle(), mipmapLevel);
+
+            f++;
+
+            // framebuffer().attach(GL_COLOR_ATTACHMENT0, cubemap, faces[i], mipmapLevel);
+            // framebuffer().ensureComplete();
 
             glDrawElements(GL_TRIANGLES, CUBE_INDEX_COUNT, GL_UNSIGNED_INT, NULL);
-        }
 
-        framebuffer().detach(GL_COLOR_ATTACHMENT0);
+        }
+        glFinish();
+
+        // framebuffer().detach(GL_COLOR_ATTACHMENT0);
 
         framebuffer().unbind();
+
+        // cubemap.unbind();
 
         cubeVAO.unbind();
     }
 
     private Matrix4f[] getViewMatrices() {
         return new Matrix4f[] {
-                new Matrix4f().lookAt(0.0f, 0.0f, 0.0f, 1.0f,  0.0f,  0.0f, 0.0f, -1.0f,  0.0f),
-                new Matrix4f().lookAt(0.0f, 0.0f, 0.0f,-1.0f,  0.0f,  0.0f, 0.0f, -1.0f,  0.0f),
-                new Matrix4f().lookAt(0.0f, 0.0f, 0.0f, 0.0f,  1.0f,  0.0f, 0.0f,  0.0f,  -1.0f),
-                new Matrix4f().lookAt(0.0f, 0.0f, 0.0f, 0.0f, -1.0f,  0.0f, 0.0f,  0.0f,  1.0f),
-                new Matrix4f().lookAt(0.0f, 0.0f, 0.0f, 0.0f,  0.0f,  1.0f, 0.0f, -1.0f,  0.0f),
-                new Matrix4f().lookAt(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f,  0.0f, -1.0f, 0.0f)
+                new Matrix4f().setLookAt(0.0f, 0.0f, 0.0f, 1.0f,  0.0f,  0.0f, 0.0f, -1.0f,  0.0f),
+                new Matrix4f().setLookAt(0.0f, 0.0f, 0.0f,-1.0f,  0.0f,  0.0f, 0.0f, -1.0f,  0.0f),
+                new Matrix4f().setLookAt(0.0f, 0.0f, 0.0f, 0.0f,  1.0f,  0.0f, 0.0f,  0.0f,  1.0f),
+                new Matrix4f().setLookAt(0.0f, 0.0f, 0.0f, 0.0f, -1.0f,  0.0f, 0.0f,  0.0f, -1.0f),
+                new Matrix4f().setLookAt(0.0f, 0.0f, 0.0f, 0.0f,  0.0f,  1.0f, 0.0f, -1.0f,  0.0f),
+                new Matrix4f().setLookAt(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f,  0.0f, -1.0f, 0.0f)
         };
     }
 
@@ -283,7 +298,7 @@ public class GLSkyboxPBRTextureFactory extends ManagedResource implements Skybox
 
         GLCubemap environmentTexture = new GLCubemap();
 
-        environmentTexture.allocate(1, size, size, PixelFormat.RGB16F);
+        environmentTexture.allocate(4, size, size, PixelFormat.RGB16F);
 
         SkyboxHelper.setSkyboxTextureSamplerParameters(environmentTexture);
 
@@ -294,9 +309,11 @@ public class GLSkyboxPBRTextureFactory extends ManagedResource implements Skybox
 
         GLCubemap irradianceTexture = new GLCubemap();
 
-        irradianceTexture.allocate(1, size, size, PixelFormat.RGB16F);
+        irradianceTexture.allocate(4, size, size, PixelFormat.RGB16F);
 
         SkyboxHelper.setSkyboxTextureSamplerParameters(irradianceTexture);
+
+        irradianceTexture.generateMipmaps();
 
         return irradianceTexture;
     }
@@ -305,7 +322,7 @@ public class GLSkyboxPBRTextureFactory extends ManagedResource implements Skybox
 
         GLCubemap prefilterTexture = new GLCubemap();
 
-        prefilterTexture.allocate(1, size, size, PixelFormat.RGB16F);
+        prefilterTexture.allocate(5, size, size, PixelFormat.RGB16F);
 
         SkyboxHelper.setSkyboxTextureSamplerParameters(prefilterTexture);
 
@@ -314,25 +331,13 @@ public class GLSkyboxPBRTextureFactory extends ManagedResource implements Skybox
         return prefilterTexture;
     }
 
-
     private GLTexture2D createNewBRDFTexture(int size) {
 
         GLTexture2D brdf = new GLTexture2D();
 
         brdf.allocate(1, size, size, GL_RG16F);
 
-        SkyboxHelper.setSkyboxTextureSamplerParameters(brdf);
-
-        return brdf;
-    }
-
-    private void prepareFramebufferForBRDF(GLTexture2D brdfTexture) {
-
-        framebuffer().attach(GL_COLOR_ATTACHMENT0, brdfTexture, 0);
-
-        framebuffer().drawBuffer(GL_COLOR_ATTACHMENT0);
-
-        framebuffer().ensureComplete();
+        return SkyboxHelper.setSkyboxTextureSamplerParameters(brdf);
     }
 
     private GLShaderProgram environmentMapShader() {

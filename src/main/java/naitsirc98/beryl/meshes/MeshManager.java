@@ -149,9 +149,9 @@ public final class MeshManager implements AssetManager<Mesh> {
 
         StaticModelLoader loader = new StaticModelLoader();
 
-        loader.load(BerylFiles.getPath("models/cube.obj"), false, name -> PrimitiveMeshNames.CUBE_MESH_NAME);
-        loader.load(BerylFiles.getPath("models/quad.obj"), false, name -> PrimitiveMeshNames.QUAD_MESH_NAME);
-        loader.load(BerylFiles.getPath("models/sphere.obj"), false, name -> PrimitiveMeshNames.SPHERE_MESH_NAME);
+        loader.load(BerylFiles.getPath("models/cube.obj"), name -> PrimitiveMeshNames.CUBE_MESH_NAME);
+        loader.load(BerylFiles.getPath("models/quad.obj"), name -> PrimitiveMeshNames.QUAD_MESH_NAME);
+        loader.load(BerylFiles.getPath("models/sphere.obj"), name -> PrimitiveMeshNames.SPHERE_MESH_NAME);
     }
 
     private Map<Class<? extends Mesh>, MeshStorageHandler<? extends Mesh>> createMeshStorageHandlers() {

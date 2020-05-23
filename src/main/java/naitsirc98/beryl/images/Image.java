@@ -74,6 +74,15 @@ public abstract class Image extends ManagedResource {
     }
 
     /**
+     * Returns the size of this image data.
+     *
+     * @return the image size, in bytes.
+     * */
+    public int size() {
+        return width * height * pixelFormat.sizeof();
+    }
+
+    /**
      * Returns the pixel buffer as a {@link ByteBuffer}
      *
      * @return the pixel byte buffer
