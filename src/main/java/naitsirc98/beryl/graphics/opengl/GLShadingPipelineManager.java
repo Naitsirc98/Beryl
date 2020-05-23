@@ -49,7 +49,7 @@ public class GLShadingPipelineManager implements Resource {
     private GLShadingPipeline createPBRMetallicShadingPipeline() {
         return new GLShadingPipeline(new GLShaderProgram("OpenGL PBR Metallic shader")
                 .attach(new GLShader(VERTEX_STAGE).source(BerylFiles.getPath("shaders/pbr/metallic/pbr_metallic.vert")))
-                .attach(new GLShader(FRAGMENT_STAGE).source(BerylFiles.getPath("shaders/pbr/metallic/pbr_metallic_2.frag")))
+                .attach(new GLShader(FRAGMENT_STAGE).source(BerylFiles.getPath("shaders/pbr/metallic/pbr_metallic.frag")))
                 .link(), ShadingModel.PBR_METALLIC);
     }
 

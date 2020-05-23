@@ -1,16 +1,17 @@
 package naitsirc98.beryl.examples.pbr;
 
-import naitsirc98.beryl.core.*;
+import naitsirc98.beryl.core.BerylApplication;
+import naitsirc98.beryl.core.BerylConfiguration;
+import naitsirc98.beryl.core.BerylFiles;
+import naitsirc98.beryl.core.DefaultConfigurations;
 import naitsirc98.beryl.examples.common.CameraController;
 import naitsirc98.beryl.graphics.GraphicsFactory;
-import naitsirc98.beryl.graphics.opengl.textures.GLTexture2D;
 import naitsirc98.beryl.graphics.rendering.ShadingModel;
-import naitsirc98.beryl.graphics.textures.Texture;
+import naitsirc98.beryl.graphics.textures.Sampler;
 import naitsirc98.beryl.graphics.textures.Texture.Quality;
+import naitsirc98.beryl.graphics.textures.Texture2D;
 import naitsirc98.beryl.images.PixelFormat;
-import naitsirc98.beryl.lights.LightRange;
 import naitsirc98.beryl.lights.PointLight;
-import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.materials.PBRMetallicMaterial;
 import naitsirc98.beryl.meshes.SphereMesh;
 import naitsirc98.beryl.meshes.StaticMesh;
@@ -24,24 +25,10 @@ import naitsirc98.beryl.scenes.environment.SceneEnvironment;
 import naitsirc98.beryl.scenes.environment.skybox.Skybox;
 import naitsirc98.beryl.scenes.environment.skybox.SkyboxFactory;
 import naitsirc98.beryl.util.Color;
-import org.lwjgl.system.MemoryStack;
 
-import java.nio.ByteBuffer;
-import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
 import java.nio.file.Path;
 
 import static naitsirc98.beryl.scenes.Fog.DEFAULT_FOG_DENSITY;
-import static org.lwjgl.opengl.GL11.GL_RED;
-import static org.lwjgl.opengl.GL11.GL_UNSIGNED_BYTE;
-import static org.lwjgl.opengl.GL11C.GL_FLOAT;
-import static org.lwjgl.opengl.GL11C.GL_RGB;
-import static org.lwjgl.opengl.GL30.*;
-import static org.lwjgl.opengl.GL30.GL_R8;
-import static org.lwjgl.opengl.GL45C.*;
-import static org.lwjgl.stb.STBImage.*;
-import static org.lwjgl.stb.STBImage.stbi_failure_reason;
-import static org.lwjgl.system.MemoryStack.stackPush;
 
 public class PBRDemo extends BerylApplication {
 
@@ -69,32 +56,15 @@ public class PBRDemo extends BerylApplication {
 
     private void setSceneObjects(Scene scene) {
 
-        StaticMesh sphere = SphereMesh.create("SphereMeshPBR", 64, 64);
+        PBRSphere.create(scene, 0, 0, 0, BerylFiles.getPath("textures/rusted_iron"));
 
-        Entity entity = scene.newEntity();
+        PBRSphere.create(scene, 60, 0, 0, BerylFiles.getPath("textures/gold"));
 
-        StaticMeshView view = new StaticMeshView(sphere, getPBRMetallicMaterialFromFolder(BerylFiles.getPath("textures/gold")));
-
-        entity.add(Transform.class).position(0, 0, -40).scale(1);
-        entity.add(StaticMeshInstance.class).meshView(view);
-
-    }
-
-    private PBRMetallicMaterial getPBRMetallicMaterialFromFolder(Path folder) {
-
-        return PBRMetallicMaterial.getFactory().getMaterial(folder.toString(), material -> {
-
-            GraphicsFactory g = GraphicsFactory.get();
-
-            material.setAlbedoMap(g.newTexture2D(folder.resolve("albedo.png").toString(), PixelFormat.RGBA).setQuality(Quality.MEDIUM));
-            material.setNormalMap(g.newTexture2D(folder.resolve("normal.png").toString(), PixelFormat.RGBA).setQuality(Quality.MEDIUM));
-            material.setMetallicMap(g.newTexture2D(folder.resolve("metallic.png").toString(), PixelFormat.RGB).setQuality(Quality.MEDIUM));
-            material.setRoughnessMap(g.newTexture2D(folder.resolve("roughness.png").toString(), PixelFormat.RGB).setQuality(Quality.MEDIUM));
-            material.setOcclusionMap(g.newTexture2D(folder.resolve("ao.png").toString(), PixelFormat.RGB).setQuality(Quality.MEDIUM));
-        });
     }
 
     private void setupCamera(Scene scene) {
+
+        scene.camera().position(0, 0, -50);
 
         Entity cameraController = scene.newEntity();
 
@@ -107,7 +77,7 @@ public class PBRDemo extends BerylApplication {
 
         Skybox skybox = SkyboxFactory.newSkyboxHDR("G:\\JavaDevelopment\\Quasar\\src\\main\\resources\\resources\\textures\\hdr\\newport_loft.hdr");
 
-        PointLight light = new PointLight().position(0, 0, 10).color(Color.colorWhite().intensify(10));
+        PointLight light = new PointLight().position(scene.camera().position()).color(Color.colorWhite().intensify(10));
 
         environment.lighting().pointLights().add(light);
         environment.skybox(skybox);

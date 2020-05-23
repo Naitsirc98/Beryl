@@ -195,7 +195,8 @@ public class GLSkyboxPBRTextureFactory extends ManagedResource implements Skybox
             renderCubemap((GLCubemap) prefilterTexture, shader, mipLevelSize, mipLevel);
         }
 
-        prefilterTexture.generateMipmaps();
+        // Do not generate mipmaps after render!
+        // prefilterTexture.generateMipmaps();
 
         shader.unbind();
     }

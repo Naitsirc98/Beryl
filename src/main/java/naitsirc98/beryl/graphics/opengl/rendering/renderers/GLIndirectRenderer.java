@@ -115,7 +115,7 @@ public abstract class GLIndirectRenderer implements Renderer {
 
         renderData.getVertexArray().bind();
 
-        glMultiDrawElementsIndirect(GL_TRIANGLE_STRIP, GL_UNSIGNED_INT, NULL, drawCount, 0);
+        glMultiDrawElementsIndirect(GL_TRIANGLES, GL_UNSIGNED_INT, NULL, drawCount, 0);
 
         shader.unbind();
     }
@@ -126,9 +126,8 @@ public abstract class GLIndirectRenderer implements Renderer {
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         glEnable(GL_DEPTH_TEST);
         glDepthMask(true);
-        // TODO
-        // glEnable(GL_CULL_FACE);
-        //glCullFace(GL_BACK);
+        glEnable(GL_CULL_FACE);
+        glCullFace(GL_BACK);
     }
 
     protected void bindShaderUniformsAndBuffers(Scene scene, GLShadingPipeline shadingPipeline) {

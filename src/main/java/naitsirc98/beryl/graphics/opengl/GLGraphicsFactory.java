@@ -65,7 +65,7 @@ public class GLGraphicsFactory implements GraphicsFactory {
             texture.pixels(requireNonNull(image));
         }
 
-        // texture.generateMipmaps();
+        texture.generateMipmaps();
 
         return texture;
     }

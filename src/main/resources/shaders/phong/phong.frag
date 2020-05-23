@@ -111,6 +111,11 @@ void main() {
         // fragmentColor = applyFogEffect(fragmentColor);
     }
 
+    // HDR tonemapping
+    fragmentColor = fragmentColor / (fragmentColor + vec4(1.0));
+    // gamma correct
+    fragmentColor = pow(fragmentColor, vec4(1.0/2.2)); 
+
     out_FragmentColor = fragmentColor;
 }
 

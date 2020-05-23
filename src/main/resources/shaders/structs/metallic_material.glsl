@@ -51,12 +51,9 @@ vec3 getNormalFromMap(MetallicMaterial material, vec2 uv, vec3 position, vec3 no
  }
 
  vec3 getNormal(MetallicMaterial material, vec2 uv, vec3 position, vec3 normal) {
-     return getNormalFromMap(material, uv, position, normal);
-     /*
      return testMaterialFlag(material.flags, NORMAL_MAP_PRESENT)
          ? getNormalFromMap(material, uv, position, normal)
          : normalize(normal);
-         */
  }
 
 vec4 getAlbedo(MetallicMaterial material, vec2 uv) {

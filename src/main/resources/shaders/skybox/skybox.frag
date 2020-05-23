@@ -28,8 +28,8 @@ void main() {
     vec4 color = mix(color1, color2, u_TextureBlendFactor);
 
     // HDR tonemap and gamma correct
-    // color /= (color + vec4(1.0));
-    // color = pow(color, vec4(2.2));
+    color /= (color + vec4(1.0));
+    color = pow(color, vec4(1.0/2.2));
 
     if(true || u_FogColor.a == 0.0) {
         out_FinalColor = color;

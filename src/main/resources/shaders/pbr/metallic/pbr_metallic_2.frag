@@ -113,6 +113,7 @@ void main()
     float metallic = getMetallic(material, texCoords);
     float roughness = getRoughness(material, texCoords);
     float ao = getOcclusion(material, texCoords);
+    vec3 F0 = getF0(material, albedo, metallic);
        
     // input lighting data
     vec3 N = getNormal(material, texCoords, fragment.position, fragment.normal);
@@ -121,8 +122,8 @@ void main()
 
     // calculate reflectance at normal incidence; if dia-electric (like plastic) use F0 
     // of 0.04 and if it's a metal, use the albedo color as F0 (metallic workflow)    
-    vec3 F0 = vec3(0.04); 
-    F0 = mix(F0, albedo, metallic);
+    //vec3 F0 = vec3(0.04); 
+    //F0 = mix(F0, albedo, metallic);
 
     // reflectance equation
     vec3 Lo = vec3(0.0);
@@ -131,7 +132,7 @@ void main()
         // calculate per-light radiance
         Light light = u_PointLights[i];
 
-        vec3 direction = vec3(0, 0, 10) - fragment.position;
+        vec3 direction = light.position.xyz - fragment.position;
 
         vec3 L = normalize(direction);
         vec3 H = normalize(V + L);
