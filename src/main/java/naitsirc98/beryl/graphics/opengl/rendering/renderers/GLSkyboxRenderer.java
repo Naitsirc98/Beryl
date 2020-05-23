@@ -126,6 +126,8 @@ public class GLSkyboxRenderer implements Renderer {
 
         shader.uniformFloat("u_TextureBlendFactor", textureBlendFactor);
 
+        shader.uniformBool("u_EnableHDR", skybox.enableHDR());
+
         vertexArray.bind();
 
         glDrawElements(GL_TRIANGLES, SKYBOX_INDEX_COUNT, GL_UNSIGNED_INT, NULL);

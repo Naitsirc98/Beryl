@@ -27,6 +27,7 @@ import static org.lwjgl.opengl.GL11.glFinish;
 import static org.lwjgl.opengl.GL11.glViewport;
 import static org.lwjgl.opengl.GL11C.GL_COLOR_BUFFER_BIT;
 import static org.lwjgl.opengl.GL30.*;
+import static org.lwjgl.opengl.GL30C.GL_FRAMEBUFFER_SRGB;
 
 public final class GLRenderSystem implements APIRenderSystem {
 
@@ -144,6 +145,8 @@ public final class GLRenderSystem implements APIRenderSystem {
     }
 
     private void createMainFramebuffer() {
+
+        glEnable(GL_FRAMEBUFFER_SRGB);
 
         final int width = max(Window.get().width(), 1);
         final int height = max(Window.get().height(), 1);

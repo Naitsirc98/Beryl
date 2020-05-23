@@ -35,7 +35,7 @@ public class SkyboxFactory {
 
         Cubemap environmentMap = SkyboxHelper.getSkyboxPBRTextureFactory().createEnvironmentMap(hdrTexturePath1, size);
 
-        return new Skybox(environmentMap, null);
+        return new Skybox(environmentMap, null).enableHDR(true);
     }
 
     public static Skybox newSkyboxHDR(String hdrTexturePath1, String hdrTexturePath2) {
@@ -48,7 +48,7 @@ public class SkyboxFactory {
 
         Cubemap environmentMap2 = SkyboxHelper.getSkyboxPBRTextureFactory().createEnvironmentMap(hdrTexturePath2, size);
 
-        return new Skybox(environmentMap1, environmentMap2);
+        return new Skybox(environmentMap1, environmentMap2).enableHDR(true);
     }
 
 }

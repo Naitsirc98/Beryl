@@ -13,6 +13,8 @@ uniform samplerCube u_SkyboxTexture2;
 
 uniform float u_TextureBlendFactor;
 
+uniform bool u_EnableHDR;
+
 uniform vec4 u_FogColor;
 
 layout(location = 0) in vec3 in_FragmentPosition;
@@ -27,11 +29,13 @@ void main() {
 
     vec4 color = mix(color1, color2, u_TextureBlendFactor);
 
-    // HDR tonemap and gamma correct
-    color /= (color + vec4(1.0));
-    color = pow(color, vec4(1.0/2.2));
+    if(u_EnableHDR) {
+        // HDR tonemap and gamma correct
+        color /= (color + vec4(1.0));
+        color = pow(color, vec4(1.0 / 2.2));
+    }
 
-    if(true || u_FogColor.a == 0.0) {
+    if(u_FogColor.a == 0.0) {
         out_FinalColor = color;
     } else {
         float factor = (in_FragmentPosition.y - LOWER_LIMIT) / (UPPER_LIMIT - LOWER_LIMIT);

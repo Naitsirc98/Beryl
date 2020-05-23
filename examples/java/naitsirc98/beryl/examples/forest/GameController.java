@@ -71,20 +71,18 @@ public class GameController extends UpdateBehaviour {
 
         DirectionalLight sun = scene().environment().lighting().directionalLight();
 
-        sun.color(Color.colorWhite().intensify(1.0f));
-
-        // sun.color().set(1.0f - time, 1.0f);
+        sun.color().set(1.0f - time, 1.0f);
 
         // sun.direction(new Vector3f(-0.365f, -0.808f, 0.462f).rotateX(time * 10));
 
         scene().entity(FOREST_DAY_SOUND).get(AudioPlayer.class).source().gain(1.0f - time * 2);
         scene().entity(FOREST_NIGHT_SOUND).get(AudioPlayer.class).source().gain(time * time);
 
-        // scene().environment().fog().density(time / 2.0f);
+        scene().environment().fog().density(time / 2.0f);
 
-        // scene().environment().lighting().pointLights().get(0).color().set(time * 1.25f, 1.0f);
+        scene().environment().lighting().pointLights().get(0).color().set(time * 1.25f, 1.0f);
 
-        // scene().environment().ambientColor().set(clamp(0.05f, 0.2f, 1.0f - time), 1.0f);
+        scene().environment().ambientColor().set(clamp(0.2f, 1.0f, 1.0f - time), 1.0f);
 
         PhongMaterial lampMaterial = (PhongMaterial) scene().entity(LAMP_NAME).get(StaticMeshInstance.class).meshView().material();
         lampMaterial.setEmissiveColor(new Color().set(clamp(0.2f, 2.0f, time * 1.25f), 1.0f));

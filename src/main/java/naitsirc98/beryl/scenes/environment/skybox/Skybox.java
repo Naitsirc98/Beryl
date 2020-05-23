@@ -22,6 +22,7 @@ public class Skybox extends ManagedResource {
     private int brdfTextureSize = DEFAULT_BRDF_TEXTURE_SIZE;
     private float textureBlendFactor = DEFAULT_TEXTURE_BLEND_FACTOR;
     private float rotationAngle = DEFAULT_ROTATION_ANGLE;
+    private boolean enableHDR;
 
     Skybox(Cubemap texture1, Cubemap texture2) {
         this.texture1 = new SkyboxTexture(SkyboxHelper.getSkyboxPBRTextureFactory(), texture1);
@@ -74,6 +75,15 @@ public class Skybox extends ManagedResource {
 
     public Skybox textureBlendFactor(float factor) {
         this.textureBlendFactor = factor;
+        return this;
+    }
+
+    public boolean enableHDR() {
+        return enableHDR;
+    }
+
+    public Skybox enableHDR(boolean enableHDR) {
+        this.enableHDR = enableHDR;
         return this;
     }
 

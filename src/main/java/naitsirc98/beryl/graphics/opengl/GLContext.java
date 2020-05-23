@@ -53,8 +53,6 @@ public class GLContext implements GraphicsContext, LongHandle {
         } else {
             glDisable(GL_MULTISAMPLE);
         }
-
-        // glEnable(GL_FRAMEBUFFER_SRGB);
     }
 
     @Override

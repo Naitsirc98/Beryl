@@ -35,10 +35,9 @@ public final class SceneEnvironment implements Resource {
     public static final int SPOT_LIGHTS_COUNT_OFFSET = 1744;//roundUp2(POINT_LIGHTS_COUNT_OFFSET + INT32_SIZEOF, INT32_SIZEOF);
     public static final int LIGHTS_BUFFER_SIZE = roundUp2(SPOT_LIGHTS_COUNT_OFFSET + INT32_SIZEOF, VECTOR4_SIZEOF);
 
-
-    public static final Color DEFAULT_AMBIENT_COLOR = new Color(0.2f, 0.2f, 0.2f);
-
+    public static final Color DEFAULT_AMBIENT_COLOR = new Color(0.8f, 0.8f, 0.8f);
     public static final Color DEFAULT_CLEAR_COLOR = new Color(0.8f, 0.8f, 0.8f);
+
 
     private final SceneLighting lights;
     private final Fog fog;
@@ -52,7 +51,6 @@ public final class SceneEnvironment implements Resource {
         ambientColor = DEFAULT_AMBIENT_COLOR;
         clearColor = DEFAULT_CLEAR_COLOR;
         fog = new Fog();
-        fog.color(clearColor);
         lightsBuffer = GraphicsFactory.get().newUniformBuffer();
         lightsBuffer.allocate(LIGHTS_BUFFER_SIZE);
         lightsBuffer.mapMemory();

@@ -20,7 +20,7 @@ public final class Fog implements ByteSize {
     private float density;
 
     public Fog() {
-        color = Color.colorWhite();
+        color = Color.colorBlackTransparent();
         density = DEFAULT_FOG_DENSITY;
     }
 

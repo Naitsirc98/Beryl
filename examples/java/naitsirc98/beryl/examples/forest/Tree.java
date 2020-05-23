@@ -90,7 +90,7 @@ public class Tree {
         String name = "conifer_macedonian_pine_5";
         return new StaticMeshView(treeModel.mesh(name), PhongMaterial.getFactory().getMaterial(name, material -> {
             GraphicsFactory g = GraphicsFactory.get();
-            material.setColorMap(g.newTexture2D(getTexturePath("Bark_Color.png"), PixelFormat.RGBA).setQuality(Texture.Quality.MEDIUM));
+            material.setColorMap(g.newTexture2D(getTexturePath("Bark_Color.png"), PixelFormat.SRGBA).setQuality(Texture.Quality.MEDIUM));
         }));
     }
 
@@ -98,7 +98,7 @@ public class Tree {
         String name = "/Game/Cap_Branch_Mat_Cap_Branch_Mat";
         return new StaticMeshView(treeModel.mesh(name), PhongMaterial.getFactory().getMaterial(name, material -> {
             GraphicsFactory g = GraphicsFactory.get();
-            material.setColorMap(g.newTexture2D(getTexturePath("Cap_Color.png"), PixelFormat.RGBA).setQuality(Texture.Quality.LOW));
+            material.setColorMap(g.newTexture2D(getTexturePath("Cap_Color.png"), PixelFormat.SRGBA).setQuality(Texture.Quality.LOW));
         }));
     }
 
@@ -106,7 +106,7 @@ public class Tree {
         String name = "/Game/conifer_macedonian_pine_Leaf_Mat_conifer_macedonian_pine_Leaf_Mat";
         return new StaticMeshView(treeModel.mesh(name), PhongMaterial.getFactory().getMaterial(name, material -> {
             GraphicsFactory g = GraphicsFactory.get();
-            material.setColorMap(g.newTexture2D(getTexturePath("Leaf_Color.png"), PixelFormat.RGBA).setQuality(Texture.Quality.HIGH));
+            material.setColorMap(g.newTexture2D(getTexturePath("Leaf_Color.png"), PixelFormat.SRGBA).setQuality(Texture.Quality.HIGH));
             material.getDiffuseMap().sampler().lodBias(-1.5f);
         }));
     }

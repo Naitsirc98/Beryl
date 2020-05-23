@@ -38,6 +38,7 @@ public class ForestGame extends BerylApplication {
     private static final Random RAND = new Random(System.nanoTime());
 
     public ForestGame() {
+        BerylConfiguration.SHADOWS_ENABLED_ON_START.set(true);
         BerylConfiguration.DEFAULT_SHADING_MODEL.set(ShadingModel.PHONG);
         BerylConfiguration.SET_CONFIGURATION_METHOD.set(DefaultConfigurations.developmentConfiguration());
     }
@@ -124,7 +125,7 @@ public class ForestGame extends BerylApplication {
         Skybox skybox = SkyboxFactory.newSkybox(BerylFiles.getString("textures/skybox/day"), BerylFiles.getString("textures/skybox/night"));
 
         environment.skybox(skybox);
-        environment.ambientColor(new Color(0.2f));
+        environment.ambientColor(new Color(0.8f));
         environment.fog().density(DEFAULT_FOG_DENSITY);
 
         setSceneLights(scene);
