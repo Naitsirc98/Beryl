@@ -1,7 +1,5 @@
 package naitsirc98.beryl.events;
 
-import naitsirc98.beryl.core.Beryl;
-import naitsirc98.beryl.core.BerylConfiguration;
 import naitsirc98.beryl.core.BerylSystem;
 import naitsirc98.beryl.core.BerylSystemManager;
 import naitsirc98.beryl.util.types.Singleton;
@@ -10,6 +8,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
 import static java.util.stream.IntStream.range;
+import static naitsirc98.beryl.core.BerylConfigConstants.EVENTS_DEBUG_REPORT;
 import static naitsirc98.beryl.util.Asserts.assertNonNull;
 import static org.lwjgl.glfw.GLFW.*;
 
@@ -17,8 +16,6 @@ import static org.lwjgl.glfw.GLFW.*;
  * The event manager process all the events that occur during a frame
  */
 public final class EventManager extends BerylSystem {
-
-    public static final boolean DEBUG_REPORT_ENABLED = BerylConfiguration.EVENTS_DEBUG_REPORT.getOrDefault(Beryl.DEBUG);
 
     @Singleton
     private static EventManager instance;
@@ -103,7 +100,7 @@ public final class EventManager extends BerylSystem {
         this.backEventQueue = new ConcurrentLinkedDeque<>();
         this.eventCallbacks = new HashMap<>();
         dispatcher = new EventDispatcher(eventCallbacks);
-        debugReport = DEBUG_REPORT_ENABLED ? new EventDebugReport() : null;
+        debugReport = EVENTS_DEBUG_REPORT ? new EventDebugReport() : null;
     }
 
     @Override
@@ -118,7 +115,7 @@ public final class EventManager extends BerylSystem {
 
         glfwPollEvents();
 
-        if(DEBUG_REPORT_ENABLED) {
+        if(EVENTS_DEBUG_REPORT) {
             debugReport.count(frontEventQueue.size());
         }
 
@@ -131,7 +128,7 @@ public final class EventManager extends BerylSystem {
      * @return the debug report, or null if debug reports are disabled
      * */
     public CharSequence debugReport() {
-        return DEBUG_REPORT_ENABLED ? instance.debugReport.report() : null;
+        return EVENTS_DEBUG_REPORT ? instance.debugReport.report() : null;
     }
 
     private void processEventQueue() {

@@ -1,13 +1,12 @@
 package naitsirc98.beryl.graphics.window;
 
-import naitsirc98.beryl.core.Beryl;
-import naitsirc98.beryl.core.BerylConfiguration;
 import naitsirc98.beryl.graphics.GraphicsAPI;
 import naitsirc98.beryl.util.geometry.Size;
 import naitsirc98.beryl.util.geometry.Sizec;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.system.Platform;
 
+import static naitsirc98.beryl.core.BerylConfigConstants.*;
 import static naitsirc98.beryl.graphics.GraphicsAPI.OPENGL;
 import static naitsirc98.beryl.graphics.window.DisplayMode.FULLSCREEN;
 import static naitsirc98.beryl.graphics.window.DisplayMode.WINDOWED;
@@ -22,18 +21,15 @@ public final class WindowFactory {
     private static final int DEFAULT_WIDTH = 1280;
     private static final int DEFAULT_HEIGHT = 720;
 
-    public static final boolean MULTISAMPLE_ENABLE = BerylConfiguration.MULTISAMPLE_ENABLE.getOrDefault(true);
-    public static final int MSAA_SAMPLES = BerylConfiguration.MSAA_SAMPLES.getOrDefault(4);
-
     private WindowFactory() {}
 
     public Window newWindow() {
 
         setWindowHints();
 
-        String title = Beryl.APPLICATION_NAME;
-        DisplayMode displayMode = BerylConfiguration.WINDOW_DISPLAY_MODE.getOrDefault(WINDOWED);
-        Sizec defaultSize = BerylConfiguration.WINDOW_SIZE.getOrDefault(new Size(DEFAULT_WIDTH, DEFAULT_HEIGHT));
+        String title = APPLICATION_NAME;
+        DisplayMode displayMode = WINDOW_DISPLAY_MODE;
+        Sizec defaultSize = WINDOW_SIZE == null ? new Size(DEFAULT_WIDTH, DEFAULT_HEIGHT) : WINDOW_SIZE;
 
         Window window = new Window(createGLFWHandle(title, displayMode, defaultSize), title, displayMode, defaultSize);
 
@@ -47,8 +43,8 @@ public final class WindowFactory {
         glfwDefaultWindowHints();
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
 
-        glfwWindowHint(GLFW_RESIZABLE, asGLFWBoolean(BerylConfiguration.WINDOW_RESIZABLE.getOrDefault(true)));
-        glfwWindowHint(GLFW_FOCUS_ON_SHOW, asGLFWBoolean(BerylConfiguration.WINDOW_FOCUS_ON_SHOW.getOrDefault(true)));
+        glfwWindowHint(GLFW_RESIZABLE, asGLFWBoolean(WINDOW_RESIZABLE));
+        glfwWindowHint(GLFW_FOCUS_ON_SHOW, asGLFWBoolean(WINDOW_FOCUS_ON_SHOW));
 
         setGraphicsAPIDependentWindowHints();
     }
@@ -56,19 +52,12 @@ public final class WindowFactory {
     private void setGraphicsAPIDependentWindowHints() {
 
         switch(GraphicsAPI.get()) {
-            case VULKAN:
-                setVulkanWindowHints();
-                break;
             case OPENGL:
                 setOpenGLWindowHints();
                 break;
         }
     }
 
-    private void setVulkanWindowHints() {
-
-        glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    }
 
     private void setOpenGLWindowHints() {
 
@@ -83,7 +72,7 @@ public final class WindowFactory {
             glfwWindowHint(GLFW_OPENGL_COMPAT_PROFILE, GLFW_TRUE);
         }
 
-        glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, Beryl.DEBUG ? GLFW_TRUE : GLFW_FALSE);
+        glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, DEBUG ? GLFW_TRUE : GLFW_FALSE);
 
         glfwWindowHint(GLFW_SRGB_CAPABLE, GLFW_TRUE);
         glfwWindowHint(GLFW_DOUBLEBUFFER, GLFW_TRUE);

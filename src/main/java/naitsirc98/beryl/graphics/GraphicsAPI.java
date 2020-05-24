@@ -4,22 +4,13 @@ import naitsirc98.beryl.util.types.Singleton;
 
 public enum GraphicsAPI {
 
-    VULKAN(1, 1, "450 core"),
     OPENGL(4, 5, "450 core");
 
     @Singleton
     private static GraphicsAPI currentGraphicsAPI;
 
-    public static boolean flipTexCoords() {
-        return currentGraphicsAPI == VULKAN;
-    }
-
     public static GraphicsAPI get() {
         return currentGraphicsAPI;
-    }
-
-    public static <T> T chooseByAPI(T valueIfVulkan, T valueIfOpenGL) {
-        return get() == VULKAN ? valueIfVulkan : valueIfOpenGL;
     }
 
     private final int versionMajor;

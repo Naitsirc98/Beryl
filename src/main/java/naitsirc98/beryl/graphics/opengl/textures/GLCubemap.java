@@ -7,7 +7,7 @@ import naitsirc98.beryl.images.PixelFormat;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 
-import static naitsirc98.beryl.core.Beryl.DEBUG;
+import static naitsirc98.beryl.core.BerylConfigConstants.DEBUG;
 import static naitsirc98.beryl.graphics.Graphics.opengl;
 import static naitsirc98.beryl.util.Asserts.assertTrue;
 import static org.lwjgl.opengl.GL11C.GL_TEXTURE_HEIGHT;

@@ -1,28 +1,22 @@
 package naitsirc98.beryl.graphics.opengl;
 
-import naitsirc98.beryl.core.Beryl;
-import naitsirc98.beryl.core.BerylConfiguration;
 import naitsirc98.beryl.graphics.GraphicsContext;
 import naitsirc98.beryl.graphics.GraphicsFactory;
 import naitsirc98.beryl.graphics.window.Window;
-import naitsirc98.beryl.graphics.window.WindowFactory;
 import naitsirc98.beryl.util.handles.LongHandle;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GLCapabilities;
 
+import static naitsirc98.beryl.core.BerylConfigConstants.*;
 import static naitsirc98.beryl.graphics.opengl.GLDebugMessenger.newGLDebugMessenger;
 import static org.lwjgl.glfw.GLFW.glfwMakeContextCurrent;
 import static org.lwjgl.glfw.GLFW.glfwSwapInterval;
 import static org.lwjgl.opengl.GL11.glDisable;
 import static org.lwjgl.opengl.GL11.glEnable;
 import static org.lwjgl.opengl.GL13.GL_MULTISAMPLE;
-import static org.lwjgl.opengl.GL30C.GL_FRAMEBUFFER_SRGB;
 
 public class GLContext implements GraphicsContext, LongHandle {
 
-    public static final boolean OPENGL_DEBUG_MESSAGES_ENABLED = BerylConfiguration.OPENGL_ENABLE_DEBUG_MESSAGES.getOrDefault(Beryl.DEBUG);
-
-    private static final boolean INITIAL_VSYNC = BerylConfiguration.VSYNC.getOrDefault(false);
 
     private long glContext;
     private GLDebugMessenger debugMessenger;
@@ -46,9 +40,9 @@ public class GLContext implements GraphicsContext, LongHandle {
         graphicsFactory = new GLGraphicsFactory();
         mapper = new GLMapper();
 
-        glfwSwapInterval(INITIAL_VSYNC ? 1 : 0);
+        glfwSwapInterval(VSYNC ? 1 : 0);
 
-        if(WindowFactory.MULTISAMPLE_ENABLE) {
+        if(MULTISAMPLE_ENABLE) {
             glEnable(GL_MULTISAMPLE);
         } else {
             glDisable(GL_MULTISAMPLE);
@@ -94,7 +88,7 @@ public class GLContext implements GraphicsContext, LongHandle {
 
         graphicsFactory.release();
 
-        if(OPENGL_DEBUG_MESSAGES_ENABLED) {
+        if(OPENGL_ENABLE_DEBUG_MESSAGES) {
             debugMessenger.release();
         }
 

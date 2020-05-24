@@ -1,7 +1,5 @@
 package naitsirc98.beryl.scenes;
 
-import naitsirc98.beryl.core.Beryl;
-import naitsirc98.beryl.core.BerylConfiguration;
 import naitsirc98.beryl.core.BerylSystem;
 import naitsirc98.beryl.core.BerylSystemManager;
 import naitsirc98.beryl.graphics.rendering.APIRenderSystem;
@@ -9,8 +7,6 @@ import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.util.types.Singleton;
 
 public final class SceneManager extends BerylSystem {
-
-    public static final boolean DEBUG_REPORT_ENABLED = BerylConfiguration.SCENES_DEBUG_REPORT.getOrDefault(Beryl.DEBUG);
 
     @Singleton
     private static SceneManager instance;

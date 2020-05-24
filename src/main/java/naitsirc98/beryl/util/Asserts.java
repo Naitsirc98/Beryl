@@ -1,19 +1,16 @@
 package naitsirc98.beryl.util;
 
-import naitsirc98.beryl.core.Beryl;
-import naitsirc98.beryl.core.BerylConfiguration;
-
 import java.util.Objects;
+
+import static naitsirc98.beryl.core.BerylConfigConstants.ENABLE_ASSERTS;
 
 /**
  * Utility class for internal assertions
  * */
 public final class Asserts {
 
-    public static final boolean ASSERTS_ENABLED = BerylConfiguration.ENABLE_ASSERTS.getOrDefault(Beryl.INTERNAL_DEBUG);
-
     public static void assertTrue(boolean condition) {
-        if(ASSERTS_ENABLED) {
+        if(ENABLE_ASSERTS) {
             if(!condition) {
                 throw new AssertionException("Assert condition was false");
             }
@@ -21,13 +18,13 @@ public final class Asserts {
     }
 
     public static void assertFalse(boolean condition) {
-        if(ASSERTS_ENABLED) {
+        if(ENABLE_ASSERTS) {
             assertTrue(!condition);
         }
     }
 
     public static <T> T assertEquals(T actual, T expected) {
-        if(ASSERTS_ENABLED) {
+        if(ENABLE_ASSERTS) {
             if(Objects.equals(actual, expected)) {
                 return actual;
             }
@@ -37,7 +34,7 @@ public final class Asserts {
     }
 
     public static <T> T assertNotEquals(T actual, T other) {
-        if(ASSERTS_ENABLED) {
+        if(ENABLE_ASSERTS) {
             if(Objects.equals(actual, other)) {
                 throw new AssertionException(actual, other, false);
             }
@@ -47,28 +44,28 @@ public final class Asserts {
     }
 
     public static <T> T assertNull(T object) {
-        if(ASSERTS_ENABLED) {
+        if(ENABLE_ASSERTS) {
             return assertEquals(object, null);
         }
         return object;
     }
 
     public static <T> T assertNonNull(T object) {
-        if(ASSERTS_ENABLED) {
+        if(ENABLE_ASSERTS) {
             return assertNotEquals(object, null);
         }
         return object;
     }
 
     public static <T> T assertOfType(Object object, Class<T> clazz) {
-        if(ASSERTS_ENABLED) {
+        if(ENABLE_ASSERTS) {
             return clazz.cast(object);
         }
         return clazz.cast(object);
     }
 
     public static <T> T assertThat(T object, boolean condition) {
-        if(ASSERTS_ENABLED) {
+        if(ENABLE_ASSERTS) {
             if(!condition) {
                 throw new AssertionException("The given object " + object + " does not pass the condition");
             }

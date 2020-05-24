@@ -1,9 +1,9 @@
 package naitsirc98.beryl.audio;
 
-import naitsirc98.beryl.core.Beryl;
 import org.lwjgl.system.MemoryStack;
 
 import static naitsirc98.beryl.audio.AudioDebug.checkAudioErrors;
+import static naitsirc98.beryl.core.BerylConfigConstants.DEBUG;
 import static naitsirc98.beryl.util.Asserts.assertNonNull;
 import static naitsirc98.beryl.util.Asserts.assertTrue;
 import static naitsirc98.beryl.util.handles.IntHandle.NULL;
@@ -20,7 +20,7 @@ public class AudioQueue {
     public void enqueue(AudioBuffer buffer) {
         assertNonNull(buffer);
         alSourceQueueBuffers(sourceHandle, buffer.handle());
-        if(Beryl.DEBUG) {
+        if(DEBUG) {
             checkAudioErrors();
         }
     }

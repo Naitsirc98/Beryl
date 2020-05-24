@@ -2,6 +2,7 @@ package naitsirc98.beryl.core;
 
 import naitsirc98.beryl.util.types.Singleton;
 
+import static naitsirc98.beryl.core.BerylConfigConstants.INITIAL_TIME_VALUE;
 import static org.lwjgl.glfw.GLFW.*;
 
 public final class Time extends BerylSystem {
@@ -130,7 +131,7 @@ public final class Time extends BerylSystem {
 
     @Override
     protected void init() {
-        glfwSetTime(BerylConfiguration.INITIAL_TIME_VALUE.getOrDefault(0.0));
+        glfwSetTime(INITIAL_TIME_VALUE);
     }
 
     @Override

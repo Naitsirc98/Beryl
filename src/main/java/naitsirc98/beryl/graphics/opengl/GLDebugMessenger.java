@@ -6,7 +6,7 @@ import naitsirc98.beryl.resources.Resource;
 import org.lwjgl.opengl.GL43;
 import org.lwjgl.opengl.GLDebugMessageCallback;
 
-import static naitsirc98.beryl.graphics.opengl.GLContext.OPENGL_DEBUG_MESSAGES_ENABLED;
+import static naitsirc98.beryl.core.BerylConfigConstants.*;
 import static org.lwjgl.opengl.GL43.GL_DEBUG_OUTPUT;
 import static org.lwjgl.opengl.GL43.glEnable;
 import static org.lwjgl.opengl.GL43C.*;
@@ -47,7 +47,7 @@ public class GLDebugMessenger implements Resource {
     }
 
     static GLDebugMessenger newGLDebugMessenger() {
-        return OPENGL_DEBUG_MESSAGES_ENABLED ? new GLDebugMessenger() : null;
+        return OPENGL_ENABLE_DEBUG_MESSAGES ? new GLDebugMessenger() : null;
     }
 
     private final GLDebugMessageCallback debugCallback;

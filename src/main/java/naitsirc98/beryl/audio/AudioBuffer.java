@@ -5,7 +5,7 @@ import naitsirc98.beryl.resources.Resource;
 import naitsirc98.beryl.util.handles.IntHandle;
 
 import static naitsirc98.beryl.audio.AudioDebug.checkAudioErrors;
-import static naitsirc98.beryl.core.Beryl.DEBUG;
+import static naitsirc98.beryl.core.BerylConfigConstants.DEBUG;
 import static org.lwjgl.openal.AL10.*;
 
 public class AudioBuffer implements IntHandle, Resource {

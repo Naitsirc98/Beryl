@@ -14,11 +14,9 @@ import org.joml.Vector2ic;
 import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
-import java.util.function.Supplier;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import static naitsirc98.beryl.core.DefaultBerylConfigurations.*;
 
 /**
  * A class to set different configuration variables. The value of each configuration container will be read once and
@@ -31,98 +29,95 @@ import java.util.logging.Logger;
  * */
 public final class BerylConfiguration<T> {
 
-    private static final Object EMPTY = new Object();
-
-    private static final Logger LOGGER = Logger.getLogger(BerylConfiguration.class.getSimpleName());
-
-
-    public static final BerylConfiguration<Runnable> SET_CONFIGURATION_METHOD = new BerylConfiguration<>();
-
-    public static final BerylConfiguration<Boolean> DEBUG = new BerylConfiguration<>();
-    public static final BerylConfiguration<Boolean> INTERNAL_DEBUG = new BerylConfiguration<>();
-
-    public static final BerylConfiguration<Boolean> SHOW_DEBUG_INFO = new BerylConfiguration<>();
-
-    public static final BerylConfiguration<Boolean> FAST_MATH = new BerylConfiguration<>();
-
-    public static final BerylConfiguration<Boolean> MULTISAMPLE_ENABLE = new BerylConfiguration<>();
-    public static final BerylConfiguration<Integer> MSAA_SAMPLES = new BerylConfiguration<>();
-
-    public static final BerylConfiguration<Boolean> MEMORY_USAGE_REPORT = new BerylConfiguration<>();
-    public static final BerylConfiguration<Boolean> EVENTS_DEBUG_REPORT = new BerylConfiguration<>();
-    public static final BerylConfiguration<Boolean> SCENES_DEBUG_REPORT = new BerylConfiguration<>();
-
-    public static final BerylConfiguration<String> APPLICATION_NAME = new BerylConfiguration<>();
-    public static final BerylConfiguration<Version> APPLICATION_VERSION = new BerylConfiguration<>();
-
-    public static final BerylConfiguration<Double> INITIAL_TIME_VALUE = new BerylConfiguration<>();
-
-    public static final BerylConfiguration<Set<Log.Level>> LOG_LEVELS = new BerylConfiguration<>();
-    public static final BerylConfiguration<Map<Log.Level, ANSIColor>> LOG_LEVEL_COLORS = new BerylConfiguration<>();
-    public static final BerylConfiguration<Collection<LogChannel>> LOG_CHANNELS = new BerylConfiguration<>();
-    public static final BerylConfiguration<DateTimeFormatter> LOG_DATETIME_FORMATTER = new BerylConfiguration<>();
-
-    public static final BerylConfiguration<Boolean> ENABLE_ASSERTS = new BerylConfiguration<>();
-
-    public static final BerylConfiguration<GraphicsAPI> GRAPHICS_API = new BerylConfiguration<>();
-
-    public static final BerylConfiguration<ShadingModel> DEFAULT_SHADING_MODEL = new BerylConfiguration<>();
-    public static final BerylConfiguration<Boolean> SHADOWS_ENABLED_ON_START = new BerylConfiguration<>();
-
-    public static final BerylConfiguration<Boolean> SHOW_DEBUG_INFO_ON_WINDOW_TITLE = new BerylConfiguration<>();
-    public static final BerylConfiguration<Vector2ic> WINDOW_POSITION = new BerylConfiguration<>();
-    public static final BerylConfiguration<Sizec> WINDOW_SIZE = new BerylConfiguration<>();
-    public static final BerylConfiguration<DisplayMode> WINDOW_DISPLAY_MODE = new BerylConfiguration<>();
-    public static final BerylConfiguration<CursorType> WINDOW_CURSOR_TYPE = new BerylConfiguration<>();
-    public static final BerylConfiguration<Boolean> WINDOW_VISIBLE = new BerylConfiguration<>();
-    public static final BerylConfiguration<Boolean> WINDOW_RESIZABLE = new BerylConfiguration<>();
-    public static final BerylConfiguration<Boolean> WINDOW_FOCUS_ON_SHOW = new BerylConfiguration<>();
-
-    public static final BerylConfiguration<Boolean> VSYNC = new BerylConfiguration<>();
-
-    public static final BerylConfiguration<Boolean> OPENGL_ENABLE_DEBUG_MESSAGES = new BerylConfiguration<>();
-    public static final BerylConfiguration<Boolean> OPENGL_ENABLE_WARNINGS_UNIFORMS = new BerylConfiguration<>();
-
-    public static final BerylConfiguration<Boolean> PRINT_SHADERS_SOURCE = new BerylConfiguration<>();
-
-
-    private Object value;
-
-    private BerylConfiguration() {
-        value = EMPTY;
+    static {
+        ensureDefaultConfigurationsClassIsLoaded();
     }
 
-    public boolean empty() {
-        return Objects.equals(value, EMPTY);
+    public static final BerylConfiguration<Boolean> DEBUG = new BerylConfiguration<>(DEFAULT_DEBUG);
+
+    public static final BerylConfiguration<Boolean> INTERNAL_DEBUG = new BerylConfiguration<>(DEFAULT_INTERNAL_DEBUG);
+
+    public static final BerylConfiguration<Boolean> SHOW_DEBUG_INFO = new BerylConfiguration<>(DEFAULT_SHOW_DEBUG_INFO);
+
+    public static final BerylConfiguration<Boolean> FAST_MATH = new BerylConfiguration<>(DEFAULT_FAST_MATH);
+
+    public static final BerylConfiguration<Boolean> MULTISAMPLE_ENABLE = new BerylConfiguration<>(DEFAULT_MULTISAMPLE_ENABLE);
+
+    public static final BerylConfiguration<Integer> MSAA_SAMPLES = new BerylConfiguration<>(DEFAULT_MSAA_SAMPLES);
+
+    public static final BerylConfiguration<Boolean> MEMORY_USAGE_REPORT = new BerylConfiguration<>(DEFAULT_MEMORY_USAGE_REPORT);
+
+    public static final BerylConfiguration<Boolean> EVENTS_DEBUG_REPORT = new BerylConfiguration<>(DEFAULT_EVENTS_DEBUG_REPORT);
+
+    public static final BerylConfiguration<Boolean> SCENES_DEBUG_REPORT = new BerylConfiguration<>(DEFAULT_SCENES_DEBUG_REPORT);
+
+    public static final BerylConfiguration<String> APPLICATION_NAME = new BerylConfiguration<>(DEFAULT_APPLICATION_NAME);
+
+    public static final BerylConfiguration<Version> APPLICATION_VERSION = new BerylConfiguration<>(DEFAULT_APPLICATION_VERSION);
+
+    public static final BerylConfiguration<Double> INITIAL_TIME_VALUE = new BerylConfiguration<>(DEFAULT_INITIAL_TIME_VALUE);
+
+    public static final BerylConfiguration<Set<Log.Level>> LOG_LEVELS = new BerylConfiguration<>(DEFAULT_LOG_LEVELS);
+
+    public static final BerylConfiguration<Map<Log.Level, ANSIColor>> LOG_LEVEL_COLORS = new BerylConfiguration<>(DEFAULT_LOG_LEVEL_COLORS);
+
+    public static final BerylConfiguration<Collection<LogChannel>> LOG_CHANNELS = new BerylConfiguration<>(DEFAULT_LOG_CHANNELS);
+
+    public static final BerylConfiguration<DateTimeFormatter> LOG_DATETIME_FORMATTER = new BerylConfiguration<>(DEFAULT_LOG_DATETIME_FORMATTER);
+
+    public static final BerylConfiguration<Boolean> ENABLE_ASSERTS = new BerylConfiguration<>(DEFAULT_ENABLE_ASSERTS);
+
+    public static final BerylConfiguration<GraphicsAPI> GRAPHICS_API = new BerylConfiguration<>(DEFAULT_GRAPHICS_API);
+
+    public static final BerylConfiguration<ShadingModel> SCENE_SHADING_MODEL = new BerylConfiguration<>(DEFAULT_SCENE_SHADING_MODEL);
+
+    public static final BerylConfiguration<Boolean> SHADOWS_ENABLED_ON_START = new BerylConfiguration<>(DEFAULT_SHADOWS_ENABLED_ON_START);
+
+    public static final BerylConfiguration<Boolean> SHOW_DEBUG_INFO_ON_WINDOW_TITLE = new BerylConfiguration<>(DEFAULT_SHOW_DEBUG_INFO_ON_WINDOW_TITLE);
+
+    public static final BerylConfiguration<Vector2ic> WINDOW_POSITION = new BerylConfiguration<>(DEFAULT_WINDOW_POSITION);
+
+    public static final BerylConfiguration<Sizec> WINDOW_SIZE = new BerylConfiguration<>(DEFAULT_WINDOW_SIZE);
+
+    public static final BerylConfiguration<DisplayMode> WINDOW_DISPLAY_MODE = new BerylConfiguration<>(DEFAULT_WINDOW_DISPLAY_MODE);
+
+    public static final BerylConfiguration<CursorType> WINDOW_CURSOR_TYPE = new BerylConfiguration<>(DEFAULT_WINDOW_CURSOR_TYPE);
+
+    public static final BerylConfiguration<Boolean> WINDOW_VISIBLE = new BerylConfiguration<>(DEFAULT_WINDOW_VISIBLE);
+
+    public static final BerylConfiguration<Boolean> WINDOW_RESIZABLE = new BerylConfiguration<>(DEFAULT_WINDOW_RESIZABLE);
+
+    public static final BerylConfiguration<Boolean> WINDOW_FOCUS_ON_SHOW = new BerylConfiguration<>(DEFAULT_WINDOW_FOCUS_ON_SHOW);
+
+    public static final BerylConfiguration<Boolean> VSYNC = new BerylConfiguration<>(DEFAULT_VSYNC);
+
+    public static final BerylConfiguration<Boolean> OPENGL_ENABLE_DEBUG_MESSAGES = new BerylConfiguration<>(DEFAULT_OPENGL_ENABLE_DEBUG_MESSAGES);
+
+    public static final BerylConfiguration<Boolean> OPENGL_ENABLE_WARNINGS_UNIFORMS = new BerylConfiguration<>(DEFAULT_OPENGL_ENABLE_WARNINGS_UNIFORMS);
+
+    public static final BerylConfiguration<Boolean> PRINT_SHADERS_SOURCE = new BerylConfiguration<>(DEFAULT_PRINT_SHADERS_SOURCE);
+
+
+    static void ensureLoaded() {
     }
+
+
+    private T value;
+
+    private BerylConfiguration(T defaultValue) {
+        value = defaultValue;
+    }
+
 
     public void set(T value) {
-        if(empty()) {
-            this.value = value;
+        if(Beryl.LAUNCHED.get()) {
+            Log.warning("Setting configuration values after Beryl has been launched has no effect");
         } else {
-            LOGGER.log(Level.SEVERE, "A BerylConfiguration can only be set once", new IllegalStateException());
+            this.value = value;
         }
     }
 
-    @SuppressWarnings("unchecked")
     public T get() {
         return (T) value;
     }
-
-    @SuppressWarnings("unchecked")
-    public T getOrDefault(T defaultValue) {
-        if(empty()) {
-            value = defaultValue;
-        }
-        return (T) value;
-    }
-
-    @SuppressWarnings("unchecked")
-    public T getOrDefault(Supplier<T> defaultValueSupplier) {
-        if(empty()) {
-            value = defaultValueSupplier.get();
-        }
-        return (T) value;
-    }
-
 }

@@ -1,19 +1,17 @@
 package naitsirc98.beryl.scenes;
 
-import naitsirc98.beryl.core.BerylConfiguration;
 import naitsirc98.beryl.graphics.rendering.ShadingModel;
 
+import static naitsirc98.beryl.core.BerylConfigConstants.SCENE_SHADING_MODEL;
+import static naitsirc98.beryl.core.BerylConfigConstants.SHADOWS_ENABLED_ON_START;
+
 public class SceneRenderInfo {
-
-    public static final ShadingModel DEFAULT_SHADING_MODEL = BerylConfiguration.DEFAULT_SHADING_MODEL.getOrDefault(ShadingModel.PHONG);
-    private static final boolean SHADOWS_ENABLED_ON_START = BerylConfiguration.SHADOWS_ENABLED_ON_START.getOrDefault(true);
-
 
     private ShadingModel shadingModel;
     private boolean shadowsEnabled;
 
     public SceneRenderInfo() {
-        shadingModel = DEFAULT_SHADING_MODEL;
+        shadingModel = SCENE_SHADING_MODEL;
         shadowsEnabled = SHADOWS_ENABLED_ON_START;
     }
 

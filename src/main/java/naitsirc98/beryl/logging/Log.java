@@ -1,14 +1,10 @@
 package naitsirc98.beryl.logging;
 
-import naitsirc98.beryl.core.Beryl;
-import naitsirc98.beryl.core.BerylConfiguration;
 import naitsirc98.beryl.core.BerylSystem;
 import naitsirc98.beryl.core.BerylSystemManager;
 import naitsirc98.beryl.util.ANSIColor;
 import naitsirc98.beryl.util.types.Singleton;
 
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -22,6 +18,7 @@ import java.util.logging.Logger;
 import static java.util.Objects.requireNonNull;
 import static java.util.concurrent.Executors.newSingleThreadExecutor;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static naitsirc98.beryl.core.BerylConfigConstants.*;
 
 /**
  * Utility Logger class for both internal and client side
@@ -31,8 +28,6 @@ public final class Log extends BerylSystem {
     private static final int MSG_QUEUE_TERMINATION_WAIT_TIME = 1000;
 
     private static final String PATTERN = "%s[%s]: %s\n";
-
-    private static final DateTimeFormatter DEFAULT_DATETIME_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/YYYY HH:mm:ss");
 
     private static final Message TERMINATION_COMMAND = new Message(null, null);
 
@@ -215,15 +210,17 @@ public final class Log extends BerylSystem {
     private final BlockingQueue<Message> messageQueue;
     private final AtomicBoolean running;
     private final ExecutorService executor;
-    private DateTimeFormatter dateTimeFormatter;
+    private final DateTimeFormatter dateTimeFormatter;
 
     private Log(BerylSystemManager systemManager) {
         super(systemManager);
-        levelMask = Beryl.DEBUG ? EnumSet.allOf(Level.class) : EnumSet.of(Level.WARNING, Level.ERROR, Level.FATAL);
+        levelMask = EnumSet.copyOf(LOG_LEVELS);
         levelColors = new EnumMap<>(Level.class);
-        channels = new ArrayList<>(2);
+        levelColors.putAll(LOG_LEVEL_COLORS);
+        channels = new ArrayList<>(LOG_CHANNELS);
         messageQueue = new LinkedBlockingDeque<>();
         running = new AtomicBoolean(false);
+        dateTimeFormatter = LOG_DATETIME_FORMATTER;
         executor = newSingleThreadExecutor(runnable -> {
             Thread thread = Executors.defaultThreadFactory().newThread(runnable);
             thread.setName("Log Thread");
@@ -234,11 +231,6 @@ public final class Log extends BerylSystem {
 
     @Override
     protected void init() {
-
-        setLevelMask();
-        setLevelColors();
-        setChannels();
-        setDateTimeFormatter();
         running.set(true);
         executor.execute(this::run);
     }
@@ -334,41 +326,6 @@ public final class Log extends BerylSystem {
     private String timestamp() {
         final String timestamp = LocalDateTime.now().format(dateTimeFormatter);
         return timestamp.isEmpty() ? "" : '[' + timestamp + ']';
-    }
-
-    private void setDateTimeFormatter() {
-        dateTimeFormatter = BerylConfiguration.LOG_DATETIME_FORMATTER.getOrDefault(DEFAULT_DATETIME_FORMATTER);
-    }
-
-    private void setChannels() {
-        channels.addAll(BerylConfiguration.LOG_CHANNELS.getOrDefault(Arrays.asList(
-                LogChannel.stdout(),
-                new LogFileChannel(Paths.get("beryl.log"), Level.ERROR, StandardOpenOption.CREATE))));
-    }
-
-    private void setLevelColors() {
-        if(BerylConfiguration.LOG_LEVEL_COLORS.empty()) {
-            setDefaultLevelColors();
-        } else {
-            levelColors.putAll(BerylConfiguration.LOG_LEVEL_COLORS.get());
-        }
-    }
-
-    private void setDefaultLevelColors() {
-        levelColors.put(Level.TRACE, ANSIColor.NONE);
-        levelColors.put(Level.INFO, ANSIColor.BLUE);
-        levelColors.put(Level.DEBUG, ANSIColor.GREEN);
-        levelColors.put(Level.LWJGL, ANSIColor.MAGENTA);
-        levelColors.put(Level.WARNING, ANSIColor.YELLOW);
-        levelColors.put(Level.ERROR, ANSIColor.RED);
-        levelColors.put(Level.FATAL, ANSIColor.RED_BOLD);
-    }
-
-    private void setLevelMask() {
-        if(!BerylConfiguration.LOG_LEVELS.empty()) {
-            levelMask.clear();
-            levelMask.addAll(BerylConfiguration.LOG_LEVELS.get());
-        }
     }
 
     public enum Level {

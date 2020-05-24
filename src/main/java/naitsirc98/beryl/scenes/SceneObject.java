@@ -2,7 +2,7 @@ package naitsirc98.beryl.scenes;
 
 import naitsirc98.beryl.logging.Log;
 
-import static naitsirc98.beryl.util.Asserts.ASSERTS_ENABLED;
+import static naitsirc98.beryl.core.BerylConfigConstants.ENABLE_ASSERTS;
 
 /**
  * The base class for all the objects that live in a scene
@@ -126,7 +126,7 @@ public abstract class SceneObject {
     }
 
     protected final void assertNotDeleted() {
-        if(ASSERTS_ENABLED) {
+        if(ENABLE_ASSERTS) {
             if(deleted()) {
                 Log.fatal("SceneObject " + toString() + " is deleted");
             }

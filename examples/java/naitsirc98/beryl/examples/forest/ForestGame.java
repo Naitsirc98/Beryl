@@ -6,7 +6,7 @@ import naitsirc98.beryl.audio.AudioSystem;
 import naitsirc98.beryl.core.BerylApplication;
 import naitsirc98.beryl.core.BerylConfiguration;
 import naitsirc98.beryl.core.BerylFiles;
-import naitsirc98.beryl.core.DefaultConfigurations;
+import naitsirc98.beryl.core.BerylConfigurationHelper;
 import naitsirc98.beryl.examples.common.CameraController;
 import naitsirc98.beryl.graphics.rendering.ShadingModel;
 import naitsirc98.beryl.graphics.window.Window;
@@ -39,8 +39,8 @@ public class ForestGame extends BerylApplication {
 
     public ForestGame() {
         BerylConfiguration.SHADOWS_ENABLED_ON_START.set(true);
-        BerylConfiguration.DEFAULT_SHADING_MODEL.set(ShadingModel.PHONG);
-        BerylConfiguration.SET_CONFIGURATION_METHOD.set(DefaultConfigurations.developmentConfiguration());
+        BerylConfiguration.SCENE_SHADING_MODEL.set(ShadingModel.PHONG);
+        BerylConfigurationHelper.developmentConfiguration();
     }
 
     @Override

@@ -1,7 +1,6 @@
 package naitsirc98.beryl.graphics;
 
 import naitsirc98.beryl.core.Beryl;
-import naitsirc98.beryl.core.BerylConfiguration;
 import naitsirc98.beryl.core.BerylSystem;
 import naitsirc98.beryl.core.BerylSystemManager;
 import naitsirc98.beryl.graphics.opengl.GLContext;
@@ -11,6 +10,7 @@ import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.util.types.Singleton;
 
 import static java.util.Objects.requireNonNull;
+import static naitsirc98.beryl.core.BerylConfigConstants.GRAPHICS_API;
 import static naitsirc98.beryl.graphics.GraphicsAPI.OPENGL;
 import static naitsirc98.beryl.util.types.TypeUtils.initSingleton;
 import static naitsirc98.beryl.util.types.TypeUtils.newInstance;
@@ -43,7 +43,7 @@ public final class Graphics extends BerylSystem {
     @Override
     protected void init() {
 
-        GraphicsAPI chosenGraphicsAPI = BerylConfiguration.GRAPHICS_API.getOrDefault(OPENGL);
+        GraphicsAPI chosenGraphicsAPI = GRAPHICS_API;
 
         if(chosenGraphicsAPI != OPENGL) {
             Log.fatal("Beryl does not support " + chosenGraphicsAPI + " at the moment. Use OPENGL instead");

@@ -3,7 +3,7 @@ package naitsirc98.beryl.examples.pbr;
 import naitsirc98.beryl.core.BerylApplication;
 import naitsirc98.beryl.core.BerylConfiguration;
 import naitsirc98.beryl.core.BerylFiles;
-import naitsirc98.beryl.core.DefaultConfigurations;
+import naitsirc98.beryl.core.BerylConfigurationHelper;
 import naitsirc98.beryl.examples.common.CameraController;
 import naitsirc98.beryl.examples.forest.Water;
 import naitsirc98.beryl.graphics.GraphicsFactory;
@@ -11,7 +11,6 @@ import naitsirc98.beryl.graphics.rendering.ShadingModel;
 import naitsirc98.beryl.graphics.textures.Sampler;
 import naitsirc98.beryl.graphics.textures.Texture2D;
 import naitsirc98.beryl.images.PixelFormat;
-import naitsirc98.beryl.lights.PointLight;
 import naitsirc98.beryl.materials.WaterMaterial;
 import naitsirc98.beryl.meshes.StaticMesh;
 import naitsirc98.beryl.meshes.views.WaterMeshView;
@@ -32,8 +31,8 @@ public class PBRDemo extends BerylApplication {
 
     public PBRDemo() {
         BerylConfiguration.SHADOWS_ENABLED_ON_START.set(false);
-        BerylConfiguration.DEFAULT_SHADING_MODEL.set(ShadingModel.PBR_METALLIC);
-        BerylConfiguration.SET_CONFIGURATION_METHOD.set(DefaultConfigurations.debugReleaseConfiguration());
+        BerylConfiguration.SCENE_SHADING_MODEL.set(ShadingModel.PBR_METALLIC);
+        BerylConfigurationHelper.debugReleaseConfiguration();
         BerylConfiguration.PRINT_SHADERS_SOURCE.set(false);
         BerylConfiguration.OPENGL_ENABLE_WARNINGS_UNIFORMS.set(false);
     }
