@@ -6,6 +6,7 @@ import naitsirc98.beryl.graphics.opengl.rendering.culling.GLFrustumCuller;
 import naitsirc98.beryl.graphics.opengl.rendering.renderers.data.GLRenderData;
 import naitsirc98.beryl.graphics.opengl.rendering.shadows.GLShadowsInfo;
 import naitsirc98.beryl.graphics.opengl.shaders.GLShaderProgram;
+import naitsirc98.beryl.graphics.opengl.skyboxpbr.GLSkyboxStruct;
 import naitsirc98.beryl.graphics.opengl.textures.GLTexture2D;
 import naitsirc98.beryl.graphics.rendering.Renderer;
 import naitsirc98.beryl.graphics.rendering.ShadingModel;
@@ -35,6 +36,8 @@ public abstract class GLIndirectRenderer implements Renderer {
 
     private static final String SHADOWS_ENABLED_UNIFORM_NAME = "u_ShadowsEnabled";
     private static final String DIR_SHADOW_MAPS_UNIFORM_NAME = "u_DirShadowMaps";
+
+    public static final int FIRST_SKYBOX_TEXTURE_UNIT = 10;
 
 
     protected GLRenderData renderData;
@@ -132,8 +135,9 @@ public abstract class GLIndirectRenderer implements Renderer {
 
     protected void bindShaderUniformsAndBuffers(Scene scene, GLShadingPipeline shadingPipeline) {
 
+        final ShadingModel shadingModel = shadingPipeline.getShadingModel();
         final GLBuffer lightsUniformBuffer = scene.environment().buffer();
-        MaterialStorageHandler<?> materialHandler = MaterialManager.get().getStorageHandler(shadingPipeline.getShadingModel());
+        MaterialStorageHandler<?> materialHandler = MaterialManager.get().getStorageHandler(shadingModel);
         final GLBuffer materialsBuffer = materialHandler.buffer();
         final GLBuffer cameraUniformBuffer = scene.cameraInfo().cameraBuffer();
         final Skybox skybox = scene.environment().skybox();
@@ -151,30 +155,11 @@ public abstract class GLIndirectRenderer implements Renderer {
 
         shadowsInfo.buffer().bind(GL_UNIFORM_BUFFER, 5);
 
-        if(shadingPipeline.getShadingModel() != ShadingModel.PHONG && skybox != null) {
-            bindPBRShadowTextures(shader, skybox);
+        if(shadingModel != ShadingModel.PHONG) {
+            GLSkyboxStruct.bind(skybox, shader, FIRST_SKYBOX_TEXTURE_UNIT);
         }
 
         renderData.getCommandBuffer().bind(GL_DRAW_INDIRECT_BUFFER);
-    }
-
-    private void bindPBRShadowTextures(GLShaderProgram shader, Skybox skybox) {
-
-        final String skyboxName = "u_Skybox";
-
-        final SkyboxTexture skyboxTexture = skybox.texture1();
-
-        if(skyboxTexture.irradianceMap() != null) {
-            shader.uniformSampler(uniformStructMember(skyboxName, "irradianceMap"), skyboxTexture.irradianceMap(), 10);
-        }
-
-        if(skyboxTexture.prefilterMap() != null) {
-            shader.uniformSampler(uniformStructMember(skyboxName, "prefilterMap"), skyboxTexture.prefilterMap(), 11);
-        }
-
-        if(skybox.brdfTexture() != null) {
-            shader.uniformSampler(uniformStructMember(skyboxName, "brdfMap"), skybox.brdfTexture(), 12);
-        }
     }
 
     protected void setDynamicState(GLShaderProgram shader) {

@@ -134,12 +134,14 @@ public class GLSkyboxPBRTextureFactory extends ManagedResource implements Skybox
     }
 
     @Override
-    public Cubemap createPrefilterMap(Cubemap environmentMap, int size) {
+    public Cubemap createPrefilterMap(Cubemap environmentMap, int size, float maxLOD) {
 
-        Cubemap prefilterTexture = createNewPrefilterTexture(size);
+        final int mipLevels = Math.round(maxLOD) + 1;
+
+        Cubemap prefilterTexture = createNewPrefilterTexture(size, mipLevels);
 
         // Run a quasi monte-carlo simulation on the environment lighting to create a prefilter (cube)map.
-        bakePrefilterMap(environmentMap, prefilterTexture, size);
+        bakePrefilterMap(environmentMap, prefilterTexture, size, mipLevels);
 
         return prefilterTexture;
     }
@@ -174,7 +176,7 @@ public class GLSkyboxPBRTextureFactory extends ManagedResource implements Skybox
         irradianceTexture.generateMipmaps();
     }
 
-    private void bakePrefilterMap(Cubemap environmentMap, Cubemap prefilterTexture, int size) {
+    private void bakePrefilterMap(Cubemap environmentMap, Cubemap prefilterTexture, int size, int mipLevels) {
 
         GLShaderProgram shader = prefilterShader();
 
@@ -182,7 +184,9 @@ public class GLSkyboxPBRTextureFactory extends ManagedResource implements Skybox
 
         shader.uniformSampler(ENVIRONMENT_MAP_UNIFORM_NAME, (GLTexture) environmentMap, 0);
 
-        final int minMipLevel = 4;
+        shader.uniformInt("u_Resolution", environmentMap.width());
+
+        final int minMipLevel = mipLevels - 1;
 
         for(int mipLevel = 0;mipLevel <= minMipLevel;mipLevel++) {
 
@@ -196,6 +200,7 @@ public class GLSkyboxPBRTextureFactory extends ManagedResource implements Skybox
         }
 
         // Do not generate mipmaps after render!
+        // TODO
         // prefilterTexture.generateMipmaps();
 
         shader.unbind();
@@ -319,11 +324,11 @@ public class GLSkyboxPBRTextureFactory extends ManagedResource implements Skybox
         return irradianceTexture;
     }
 
-    private Cubemap createNewPrefilterTexture(int size) {
+    private Cubemap createNewPrefilterTexture(int size, int mipLevels) {
 
         GLCubemap prefilterTexture = new GLCubemap();
 
-        prefilterTexture.allocate(5, size, size, PixelFormat.RGB16F);
+        prefilterTexture.allocate(mipLevels, size, size, PixelFormat.RGB16F);
 
         SkyboxHelper.setSkyboxTextureSamplerParameters(prefilterTexture);
 

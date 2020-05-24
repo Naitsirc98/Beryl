@@ -214,7 +214,7 @@ vec4 computeLighting() {
     float shadows = 0.0;
 
     if(u_ShadowsEnabled) {
-        // shadows = computeDirShadows();
+        shadows = computeDirShadows();
     }
 
     vec3 kS = F;
@@ -225,8 +225,8 @@ vec4 computeLighting() {
     vec3 diffuse = irradiance * info.albedo;
 
     // sample both the pre-filter map and the BRDF lut and combine them together as per the Split-Sum approximation to get the IBL specular part.
-    const float MAX_REFLECTION_LOD = 4.0;
-    vec3 prefilteredColor = textureLod(u_Skybox.prefilterMap, info.reflectDirection, info.roughness * MAX_REFLECTION_LOD).rgb;
+    float prefilterLOD = info.roughness * u_Skybox.maxPrefilterLOD + u_Skybox.prefilterLODBias;
+    vec3 prefilteredColor = textureLod(u_Skybox.prefilterMap, info.reflectDirection, prefilterLOD).rgb;
     vec2 brdf = texture(u_Skybox.brdfMap, vec2(angle, info.roughness)).rg;
     vec3 specular = prefilteredColor * (F * brdf.x + brdf.y);
 
@@ -240,7 +240,6 @@ vec4 computeLighting() {
     // Gamma correct
     color = pow(color, vec3(1.0 / 2.2));
 
-    // return vec4(info.albedo, 1.0);
     return vec4(color, 1.0);
 }
 
@@ -261,7 +260,7 @@ void main() {
     }
 
     if(u_Fog.color.a != 0.0) {
-        // fragmentColor = applyFogEffect(fragmentColor);
+        fragmentColor = applyFogEffect(fragmentColor);
     }
 
     out_FragmentColor = fragmentColor;

@@ -8,10 +8,11 @@ import static naitsirc98.beryl.util.Asserts.assertThat;
 
 public class SkyboxTexture implements Resource {
 
-    private static final int DEFAULT_IRRADIANCE_MAP_SIZE = 64;
-    private static final int DEFAULT_PREFILTER_MAP_SIZE = 128;
+    private static final int DEFAULT_IRRADIANCE_MAP_SIZE = 32;
+    private static final int DEFAULT_PREFILTER_MAP_SIZE = 2048;
 
 
+    private final Skybox skybox;
     private final SkyboxPBRTextureFactory pbrTextureFactory;
     private Cubemap environmentMap;
     private Cubemap irradianceMap;
@@ -19,7 +20,8 @@ public class SkyboxTexture implements Resource {
     private int irradianceMapSize = DEFAULT_IRRADIANCE_MAP_SIZE;
     private int prefilterMapSize = DEFAULT_PREFILTER_MAP_SIZE;
 
-    public SkyboxTexture(SkyboxPBRTextureFactory pbrTextureFactory, Cubemap environmentMap) {
+    public SkyboxTexture(Skybox skybox, SkyboxPBRTextureFactory pbrTextureFactory, Cubemap environmentMap) {
+        this.skybox = skybox;
         this.pbrTextureFactory = pbrTextureFactory;
         environmentMap(environmentMap);
     }
@@ -39,7 +41,7 @@ public class SkyboxTexture implements Resource {
 
         if(environmentMap != null) {
             irradianceMap = pbrTextureFactory.createIrradianceMap(environmentMap, irradianceMapSize);
-            prefilterMap = pbrTextureFactory.createPrefilterMap(environmentMap, prefilterMapSize);
+            prefilterMap = pbrTextureFactory.createPrefilterMap(environmentMap, prefilterMapSize, skybox.maxPrefilterLOD());
         }
 
         return this;

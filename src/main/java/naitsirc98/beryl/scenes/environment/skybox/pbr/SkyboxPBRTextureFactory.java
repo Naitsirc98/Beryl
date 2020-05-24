@@ -22,7 +22,7 @@ public interface SkyboxPBRTextureFactory {
 
     Cubemap createIrradianceMap(Cubemap environmentMap, int size);
 
-    Cubemap createPrefilterMap(Cubemap environmentMap, int size);
+    Cubemap createPrefilterMap(Cubemap environmentMap, int size, float maxLOD);
 
     Texture2D createBRDFTexture(int size);
 }

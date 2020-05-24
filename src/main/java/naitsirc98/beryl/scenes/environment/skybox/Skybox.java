@@ -15,6 +15,9 @@ public class Skybox extends ManagedResource {
 
     private static final int DEFAULT_BRDF_TEXTURE_SIZE = 512;
 
+    private static final float DEFAULT_MAX_PREFILTER_LOD = 4.0f;
+    private static final float DEFAULT_PREFILTER_LOD_BIAS = -0.5f;
+
 
     private SkyboxTexture texture1;
     private SkyboxTexture texture2;
@@ -22,11 +25,15 @@ public class Skybox extends ManagedResource {
     private int brdfTextureSize = DEFAULT_BRDF_TEXTURE_SIZE;
     private float textureBlendFactor = DEFAULT_TEXTURE_BLEND_FACTOR;
     private float rotationAngle = DEFAULT_ROTATION_ANGLE;
+    private float maxPrefilterLOD;
+    private float prefilterLODBias;
     private boolean enableHDR;
 
     Skybox(Cubemap texture1, Cubemap texture2) {
-        this.texture1 = new SkyboxTexture(SkyboxHelper.getSkyboxPBRTextureFactory(), texture1);
-        this.texture2 = new SkyboxTexture(SkyboxHelper.getSkyboxPBRTextureFactory(), texture2);
+        maxPrefilterLOD = DEFAULT_MAX_PREFILTER_LOD;
+        prefilterLODBias = DEFAULT_PREFILTER_LOD_BIAS;
+        this.texture1 = new SkyboxTexture(this, SkyboxHelper.getSkyboxPBRTextureFactory(), texture1);
+        this.texture2 = new SkyboxTexture(this, SkyboxHelper.getSkyboxPBRTextureFactory(), texture2);
         brdfTexture = SkyboxHelper.getSkyboxPBRTextureFactory().createBRDFTexture(brdfTextureSize);
     }
 
@@ -101,6 +108,24 @@ public class Skybox extends ManagedResource {
         if(brdfTexture != null) {
             Log.warning("BRDF Texture has already been created for this skybox, so setting the BRDF Texture size now has no effect.");
         }
+        return this;
+    }
+
+    public float maxPrefilterLOD() {
+        return maxPrefilterLOD;
+    }
+
+    public Skybox maxPrefilterLOD(float maxPrefilterLOD) {
+        this.maxPrefilterLOD = maxPrefilterLOD;
+        return this;
+    }
+
+    public float prefilterLODBias() {
+        return prefilterLODBias;
+    }
+
+    public Skybox prefilterLODBias(float prefilterLODBias) {
+        this.prefilterLODBias = prefilterLODBias;
         return this;
     }
 

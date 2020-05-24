@@ -156,7 +156,7 @@ public class PBRMetallicMaterial extends ManagedMaterial implements Material {
     }
 
     public Texture2D getEmissiveMap() {
-        return getMapOrDefault(albedoMap);
+        return getMapOrDefault(emissiveMap);
     }
 
     public PBRMetallicMaterial setEmissiveMap(Texture2D emissiveMap) {

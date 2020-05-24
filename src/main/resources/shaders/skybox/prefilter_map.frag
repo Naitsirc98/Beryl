@@ -4,15 +4,14 @@
 
 #define SAMPLE_COUNT 1024u
 
-// resolution of source cubemap (per face)
-#define RESOLUTION 1024 
-
 #define PI 3.1415
 
 uniform samplerCube u_EnvironmentMap;
 
 uniform float u_Roughness;
 
+// resolution of source cubemap (per face)
+uniform int u_Resolution;
 
 layout(location = 0) in vec3 frag_WorldPosition;
 
@@ -94,8 +93,8 @@ vec3 calculatePrefilteredColor(vec3 N, vec3 R, vec3 V) {
             float HdotV = max(dot(H, V), 0.0);
             float pdf = D * NdotH / (4.0 * HdotV) + 0.0001;
 
-            float saTexel  = 4.0 * PI / (6.0 * RESOLUTION * RESOLUTION);
-            float saSample = 1.0 / (float(SAMPLE_COUNT) * pdf + 0.0001);
+            float saTexel  = 4.0 * PI / (6.0 * u_Resolution * u_Resolution);
+            float saSample = 1.0 / (float(SAMPLE_COUNT) * pdf + 0.001);
 
             float mipLevel = u_Roughness == 0.0 ? 0.0 : 0.5 * log2(saSample / saTexel);
 
