@@ -10,7 +10,7 @@ import java.util.stream.Stream;
 
 import static naitsirc98.beryl.util.Asserts.assertNonNull;
 import static naitsirc98.beryl.util.types.TypeUtils.getOrElse;
-import static naitsirc98.beryl.util.types.TypeUtils.newInstanceUnsafe;
+import static naitsirc98.beryl.util.types.TypeUtils.newInstance;
 
 /**
  * An Entity is a container for {@link Component}. An entity can only have 1 component of 1 component class, but it may contain
@@ -105,7 +105,7 @@ public final class Entity extends SceneObject implements Iterable<Component> {
             return getComponent(componentClass);
         }
 
-        T component = newInstanceUnsafe(componentClass);
+        T component = newInstance(componentClass);
         component.init();
         component.entity = this;
 

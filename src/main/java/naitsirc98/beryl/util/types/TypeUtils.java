@@ -1,40 +1,41 @@
 package naitsirc98.beryl.util.types;
 
 import naitsirc98.beryl.logging.Log;
-import sun.misc.Unsafe;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.Map;
 import java.util.Optional;
+import java.util.WeakHashMap;
 import java.util.stream.Stream;
 
 import static java.util.Objects.nonNull;
 
 public final class TypeUtils {
 
-    private static final Unsafe UNSAFE;
+    private static final Map<Class<?>, Constructor<?>> CONSTRUCTORS_CACHE = new WeakHashMap<>();
 
-    public static <T> T newInstanceUnsafe(Class<T> type) {
-        try {
-            return type.cast(UNSAFE.allocateInstance(type));
-        } catch (InstantiationException e) {
-            Log.error("Cannot instantiate unsafe " + type, e);
-        }
-        return null;
-    }
-
+    @SuppressWarnings("unchecked")
     public static <T> T newInstance(Class<T> type) {
         try {
-            Constructor<T> constructor = type.getDeclaredConstructor();
-            constructor.setAccessible(true);
-            return constructor.newInstance();
+
+            Constructor<?> constructor = CONSTRUCTORS_CACHE.get(type);
+
+            if(constructor == null) {
+                constructor = type.getDeclaredConstructor();
+                constructor.setAccessible(true);
+                CONSTRUCTORS_CACHE.put(type, constructor);
+            }
+
+            return (T) constructor.newInstance();
+
         } catch (Exception e) {
             Log.error("Cannot invoke constructor for class " + type, e);
         }
+
         return null;
     }
 
@@ -117,23 +118,5 @@ public final class TypeUtils {
 
     public static <T> T getOrElse(T actual, T orElse) {
         return actual == null ? orElse : actual;
-    }
-
-    static {
-
-        Unsafe unsafe = null;
-
-        try {
-            Field field = Unsafe.class.getDeclaredField("theUnsafe");
-            field.setAccessible(true);
-            unsafe = (Unsafe) field.get(null);
-        } catch (IllegalAccessException | NoSuchFieldException e) {
-            Log.fatal("Cannot instantiate Unsafe instance", e);
-        }
-
-        UNSAFE = unsafe;
-    }
-
-    private TypeUtils() {
     }
 }
