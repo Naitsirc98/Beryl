@@ -17,24 +17,24 @@ public class PhongMaterialStorageHandler extends MaterialStorageHandler<PhongMat
 
             ByteBuffer data = stack.malloc(getMaterialSizeof());
 
-            material.getAmbientColor().getRGBA(data);
-            material.getDiffuseColor().getRGBA(data);
-            material.getSpecularColor().getRGBA(data);
-            material.getEmissiveColor().getRGBA(data);
+            material.ambientColor().getRGBA(data);
+            material.diffuseColor().getRGBA(data);
+            material.specularColor().getRGBA(data);
+            material.emissiveColor().getRGBA(data);
 
-            data.putLong(textureResidentHandle(material.getAmbientMap()));
-            data.putLong(textureResidentHandle(material.getDiffuseMap()));
-            data.putLong(textureResidentHandle(material.getSpecularMap()));
-            data.putLong(textureResidentHandle(material.getEmissiveMap()));
-            data.putLong(textureResidentHandle(material.getOcclusionMap()));
-            data.putLong(textureResidentHandle(material.getNormalMap()));
+            data.putLong(textureResidentHandle(material.ambientMap()));
+            data.putLong(textureResidentHandle(material.diffuseMap()));
+            data.putLong(textureResidentHandle(material.specularMap()));
+            data.putLong(textureResidentHandle(material.emissiveMap()));
+            data.putLong(textureResidentHandle(material.occlusionMap()));
+            data.putLong(textureResidentHandle(material.normalMap()));
 
             data.putFloat(material.tiling().x()).putFloat(material.tiling().y());
 
-            data.putFloat(material.getAlpha());
-            data.putFloat(material.getShininess());
-            data.putFloat(material.getReflectivity());
-            data.putFloat(material.getRefractiveIndex());
+            data.putFloat(material.alpha());
+            data.putFloat(material.shininess());
+            data.putFloat(material.reflectivity());
+            data.putFloat(material.refractiveIndex());
 
             data.putInt(material.flags());
 

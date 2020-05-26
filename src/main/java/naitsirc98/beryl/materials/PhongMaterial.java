@@ -6,8 +6,6 @@ import naitsirc98.beryl.util.Color;
 import naitsirc98.beryl.util.IColor;
 import naitsirc98.beryl.util.types.ByteSize;
 
-import java.util.function.Consumer;
-
 import static naitsirc98.beryl.util.types.DataType.*;
 
 @ByteSize.Static(PhongMaterial.SIZEOF)
@@ -61,110 +59,110 @@ public class PhongMaterial extends ManagedMaterial {
         return SIZEOF;
     }
 
-    public IColor getAmbientColor() {
+    public IColor ambientColor() {
         return ambientColor;
     }
 
-    public PhongMaterial setAmbientColor(IColor ambientColor) {
+    public PhongMaterial ambientColor(IColor ambientColor) {
         this.ambientColor.set(ambientColor);
         markModified();
         return this;
     }
 
-    public IColor getDiffuseColor() {
+    public IColor diffuseColor() {
         return diffuseColor;
     }
 
-    public PhongMaterial setDiffuseColor(IColor diffuseColor) {
+    public PhongMaterial diffuseColor(IColor diffuseColor) {
         this.diffuseColor.set(diffuseColor);
         markModified();
         return this;
     }
 
-    public IColor getSpecularColor() {
+    public IColor specularColor() {
         return specularColor;
     }
 
-    public PhongMaterial setSpecularColor(IColor specularColor) {
+    public PhongMaterial specularColor(IColor specularColor) {
         this.specularColor.set(specularColor);
         markModified();
         return this;
     }
 
-    public IColor getEmissiveColor() {
+    public IColor emissiveColor() {
         return emissiveColor;
     }
 
-    public PhongMaterial setEmissiveColor(IColor emissiveColor) {
+    public PhongMaterial emissiveColor(IColor emissiveColor) {
         this.emissiveColor.set(emissiveColor);
         markModified();
         return this;
     }
 
-    public Texture2D getAmbientMap() {
+    public Texture2D ambientMap() {
         return getMapOrDefault(ambientMap);
     }
 
-    public PhongMaterial setAmbientMap(Texture2D ambientMap) {
+    public PhongMaterial ambientMap(Texture2D ambientMap) {
         updateTexturesUseCount(this.ambientMap, ambientMap);
         this.ambientMap = ambientMap;
         markModified();
         return this;
     }
 
-    public Texture2D getDiffuseMap() {
+    public Texture2D diffuseMap() {
         return getMapOrDefault(diffuseMap);
     }
 
-    public PhongMaterial setDiffuseMap(Texture2D diffuseMap) {
+    public PhongMaterial diffuseMap(Texture2D diffuseMap) {
         updateTexturesUseCount(this.diffuseMap, diffuseMap);
         this.diffuseMap = diffuseMap;
         markModified();
         return this;
     }
 
-    public PhongMaterial setColorMap(Texture2D colorMap) {
-        return setAmbientMap(colorMap).setDiffuseMap(colorMap);
+    public PhongMaterial colorMap(Texture2D colorMap) {
+        return ambientMap(colorMap).diffuseMap(colorMap);
     }
 
-    public Texture2D getSpecularMap() {
+    public Texture2D specularMap() {
         return getMapOrDefault(specularMap);
     }
 
-    public PhongMaterial setSpecularMap(Texture2D specularMap) {
+    public PhongMaterial specularMap(Texture2D specularMap) {
         updateTexturesUseCount(this.specularMap, specularMap);
         this.specularMap = specularMap;
         markModified();
         return this;
     }
 
-    public Texture2D getEmissiveMap() {
+    public Texture2D emissiveMap() {
         return getMapOrDefault(emissiveMap);
     }
 
-    public PhongMaterial setEmissiveMap(Texture2D emissiveMap) {
+    public PhongMaterial emissiveMap(Texture2D emissiveMap) {
         updateTexturesUseCount(this.emissiveMap, emissiveMap);
         this.emissiveMap = emissiveMap;
         markModified();
         return this;
     }
 
-    public Texture2D getOcclusionMap() {
+    public Texture2D occlusionMap() {
         return getMapOrDefault(occlusionMap);
     }
 
-    public PhongMaterial setOcclusionMap(Texture2D occlusionMap) {
+    public PhongMaterial occlusionMap(Texture2D occlusionMap) {
         updateTexturesUseCount(this.occlusionMap, occlusionMap);
         this.occlusionMap = occlusionMap;
         markModified();
         return this;
     }
 
-    public Texture2D getNormalMap() {
+    public Texture2D normalMap() {
         return getMapOrDefault(normalMap);
     }
 
-    public PhongMaterial setNormalMap(Texture2D normalMap) {
+    public PhongMaterial normalMap(Texture2D normalMap) {
 
         updateTexturesUseCount(this.normalMap, normalMap);
 
@@ -181,44 +179,49 @@ public class PhongMaterial extends ManagedMaterial {
         return this;
     }
 
-    public float getAlpha() {
+    public float alpha() {
         return alpha;
     }
 
-    public PhongMaterial setAlpha(float alpha) {
+    public PhongMaterial alpha(float alpha) {
         this.alpha = alpha;
         markModified();
         return this;
     }
 
-    public float getShininess() {
+    public float shininess() {
         return shininess;
     }
 
-    public PhongMaterial setShininess(float shininess) {
+    public PhongMaterial shininess(float shininess) {
         this.shininess = shininess;
         markModified();
         return this;
     }
 
-    public float getReflectivity() {
+    public float reflectivity() {
         return reflectivity;
     }
 
-    public PhongMaterial setReflectivity(float reflectivity) {
+    public PhongMaterial reflectivity(float reflectivity) {
         this.reflectivity = reflectivity;
         markModified();
         return this;
     }
 
-    public float getRefractiveIndex() {
+    public float refractiveIndex() {
         return refractiveIndex;
     }
 
-    public PhongMaterial setRefractiveIndex(float refractiveIndex) {
+    public PhongMaterial refractiveIndex(float refractiveIndex) {
         this.refractiveIndex = refractiveIndex;
         markModified();
         return this;
+    }
+
+    @Override
+    public ShadingModel shadingModel() {
+        return ShadingModel.PHONG;
     }
 
     private void setupDefaults() {
@@ -232,10 +235,5 @@ public class PhongMaterial extends ManagedMaterial {
         shininess = DEFAULT_SHININESS;
         reflectivity = DEFAULT_REFLECTIVITY;
         refractiveIndex = DEFAULT_REFRACTIVE_INDEX;
-    }
-
-    @Override
-    public ShadingModel shadingModel() {
-        return ShadingModel.PHONG;
     }
 }

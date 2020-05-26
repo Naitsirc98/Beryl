@@ -58,10 +58,10 @@ public class Lamp {
         Texture2D emissiveMap = GraphicsFactory.get().newTexture2D(getTexturePath("lightning1_Emissive.tga"), PixelFormat.RGBA);
         emissiveMap.setQuality(Texture.Quality.HIGH);
 
-        return material.setColorMap(colorTexture)
-                .setNormalMap(normalMap)
-                .setEmissiveMap(emissiveMap)
-                .setEmissiveColor(Color.colorWhite());
+        return material.colorMap(colorTexture)
+                .normalMap(normalMap)
+                .emissiveMap(emissiveMap)
+                .emissiveColor(Color.colorWhite());
     }
 
     private static String getTexturePath(String name) {

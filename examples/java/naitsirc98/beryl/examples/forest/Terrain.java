@@ -44,7 +44,7 @@ public class Terrain {
 
             colorMap.setQuality(Texture.Quality.HIGH);
 
-            material.setColorMap(colorMap)
+            material.colorMap(colorMap)
                     // .setShininess(1)
                     .tiling(48, 48);
         });

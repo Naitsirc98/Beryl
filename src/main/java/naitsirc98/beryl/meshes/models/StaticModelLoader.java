@@ -56,8 +56,14 @@ public final class StaticModelLoader extends AssimpLoader {
 
         assertNonNull(handler);
 
+        if(path == null) {
+            Log.error("Model path cannot be null");
+            return null;
+        }
+
         if (Files.notExists(path)) {
-            throw new IllegalArgumentException("File " + path + " does not exists");
+            Log.error("File " + path + " does not exists");
+            return null;
         }
 
         if(cache.containsKey(path)) {

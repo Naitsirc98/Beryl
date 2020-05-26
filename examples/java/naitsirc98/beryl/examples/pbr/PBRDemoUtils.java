@@ -17,15 +17,15 @@ public class PBRDemoUtils {
 
         return PBRMetallicMaterial.getFactory().getMaterial(folder.toString(), material -> {
 
-            material.setAlbedoMap(loadTexture(folder.resolve("albedo." + extension)));
-            material.setNormalMap(loadTexture(folder.resolve("normal." + extension)));
-            material.setMetallicMap(loadTexture(folder.resolve("metallic." + extension)));
-            material.setRoughnessMap(loadTexture(folder.resolve("roughness." + extension)));
-            material.setOcclusionMap(loadTexture(folder.resolve("ao." + extension)));
-            material.setEmissiveMap(loadTexture(folder.resolve("emissive." + extension)));
+            material.albedoMap(loadTexture(folder.resolve("albedo." + extension)));
+            material.normalMap(loadTexture(folder.resolve("normal." + extension)));
+            material.metallicMap(loadTexture(folder.resolve("metallic." + extension)));
+            material.roughnessMap(loadTexture(folder.resolve("roughness." + extension)));
+            material.occlusionMap(loadTexture(folder.resolve("ao." + extension)));
+            material.emissiveMap(loadTexture(folder.resolve("emissive." + extension)));
 
             if(folder.toString().contains("mil")) {
-                material.setEmissiveColor(Color.colorWhite().intensify(50));
+                material.emissiveColor(Color.colorWhite().intensify(50));
             }
         });
     }

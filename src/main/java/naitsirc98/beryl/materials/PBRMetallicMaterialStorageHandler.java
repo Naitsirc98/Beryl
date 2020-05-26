@@ -14,23 +14,23 @@ public class PBRMetallicMaterialStorageHandler extends MaterialStorageHandler<PB
 
             ByteBuffer data = stack.malloc(getMaterialSizeof());
 
-            material.getAlbedo().getRGBA(data);
-            material.getEmissiveColor().getRGBA(data);
+            material.albedo().getRGBA(data);
+            material.emissiveColor().getRGBA(data);
 
-            data.putLong(textureResidentHandle(material.getAlbedoMap()));
-            data.putLong(textureResidentHandle(material.getMetallicMap()));
-            data.putLong(textureResidentHandle(material.getRoughnessMap()));
-            data.putLong(textureResidentHandle(material.getOcclusionMap()));
-            data.putLong(textureResidentHandle(material.getEmissiveMap()));
-            data.putLong(textureResidentHandle(material.getNormalMap()));
+            data.putLong(textureResidentHandle(material.albedoMap()));
+            data.putLong(textureResidentHandle(material.metallicMap()));
+            data.putLong(textureResidentHandle(material.roughnessMap()));
+            data.putLong(textureResidentHandle(material.occlusionMap()));
+            data.putLong(textureResidentHandle(material.emissiveMap()));
+            data.putLong(textureResidentHandle(material.normalMap()));
 
             data.putFloat(material.tiling().x()).putFloat(material.tiling().y());
 
-            data.putFloat(material.getAlpha());
-            data.putFloat(material.getMetallic());
-            data.putFloat(material.getRoughness());
-            data.putFloat(material.getOcclusion());
-            data.putFloat(material.getFresnel0());
+            data.putFloat(material.alpha());
+            data.putFloat(material.metallic());
+            data.putFloat(material.roughness());
+            data.putFloat(material.occlusion());
+            data.putFloat(material.fresnel0());
 
             data.putInt(material.flags());
 

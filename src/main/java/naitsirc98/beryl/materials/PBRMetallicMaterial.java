@@ -76,42 +76,42 @@ public class PBRMetallicMaterial extends ManagedMaterial implements Material {
         return SIZEOF;
     }
 
-    public IColor getAlbedo() {
+    public IColor albedo() {
         return albedo;
     }
 
-    public PBRMetallicMaterial setAlbedo(IColor albedo) {
+    public PBRMetallicMaterial albedo(IColor albedo) {
         this.albedo.set(albedo);
         markModified();
         return this;
     }
 
-    public IColor getEmissiveColor() {
+    public IColor emissiveColor() {
         return emissiveColor;
     }
 
-    public PBRMetallicMaterial setEmissiveColor(IColor emissiveColor) {
+    public PBRMetallicMaterial emissiveColor(IColor emissiveColor) {
         this.emissiveColor.set(emissiveColor);
         markModified();
         return this;
     }
 
-    public Texture2D getAlbedoMap() {
+    public Texture2D albedoMap() {
         return getMapOrDefault(albedoMap);
     }
 
-    public PBRMetallicMaterial setAlbedoMap(Texture2D albedoMap) {
+    public PBRMetallicMaterial albedoMap(Texture2D albedoMap) {
         updateTexturesUseCount(this.albedoMap, albedoMap);
         this.albedoMap = albedoMap;
         markModified();
         return this;
     }
 
-    public Texture2D getMetallicMap() {
+    public Texture2D metallicMap() {
         return metallicMap;
     }
 
-    public PBRMetallicMaterial setMetallicMap(Texture2D metallicMap) {
+    public PBRMetallicMaterial metallicMap(Texture2D metallicMap) {
         updateTexturesUseCount(this.metallicMap, metallicMap);
         this.metallicMap = metallicMap;
         if(metallicMap != null) {
@@ -123,11 +123,11 @@ public class PBRMetallicMaterial extends ManagedMaterial implements Material {
         return this;
     }
 
-    public Texture2D getRoughnessMap() {
+    public Texture2D roughnessMap() {
         return roughnessMap;
     }
 
-    public PBRMetallicMaterial setRoughnessMap(Texture2D roughnessMap) {
+    public PBRMetallicMaterial roughnessMap(Texture2D roughnessMap) {
         updateTexturesUseCount(this.roughnessMap, roughnessMap);
         this.roughnessMap = roughnessMap;
         if(roughnessMap != null) {
@@ -139,11 +139,11 @@ public class PBRMetallicMaterial extends ManagedMaterial implements Material {
         return this;
     }
 
-    public Texture2D getOcclusionMap() {
+    public Texture2D occlusionMap() {
         return occlusionMap;
     }
 
-    public PBRMetallicMaterial setOcclusionMap(Texture2D occlusionMap) {
+    public PBRMetallicMaterial occlusionMap(Texture2D occlusionMap) {
         updateTexturesUseCount(this.occlusionMap, occlusionMap);
         this.occlusionMap = occlusionMap;
         if(occlusionMap != null) {
@@ -155,22 +155,22 @@ public class PBRMetallicMaterial extends ManagedMaterial implements Material {
         return this;
     }
 
-    public Texture2D getEmissiveMap() {
+    public Texture2D emissiveMap() {
         return getMapOrDefault(emissiveMap);
     }
 
-    public PBRMetallicMaterial setEmissiveMap(Texture2D emissiveMap) {
+    public PBRMetallicMaterial emissiveMap(Texture2D emissiveMap) {
         updateTexturesUseCount(this.emissiveMap, emissiveMap);
         this.emissiveMap = emissiveMap;
         markModified();
         return this;
     }
 
-    public Texture2D getNormalMap() {
+    public Texture2D normalMap() {
         return normalMap;
     }
 
-    public PBRMetallicMaterial setNormalMap(Texture2D normalMap) {
+    public PBRMetallicMaterial normalMap(Texture2D normalMap) {
 
         updateTexturesUseCount(this.normalMap, normalMap);
 
@@ -187,47 +187,47 @@ public class PBRMetallicMaterial extends ManagedMaterial implements Material {
         return this;
     }
 
-    public float getAlpha() {
+    public float alpha() {
         return alpha;
     }
 
-    public PBRMetallicMaterial setAlpha(float alpha) {
+    public PBRMetallicMaterial alpha(float alpha) {
         this.alpha = alpha;
         return this;
     }
 
-    public float getMetallic() {
+    public float metallic() {
         return metallic;
     }
 
-    public PBRMetallicMaterial setMetallic(float metallic) {
+    public PBRMetallicMaterial metallic(float metallic) {
         this.metallic = metallic;
         return this;
     }
 
-    public float getRoughness() {
+    public float roughness() {
         return roughness;
     }
 
-    public PBRMetallicMaterial setRoughness(float roughness) {
+    public PBRMetallicMaterial roughness(float roughness) {
         this.roughness = roughness;
         return this;
     }
 
-    public float getOcclusion() {
+    public float occlusion() {
         return occlusion;
     }
 
-    public PBRMetallicMaterial setOcclusion(float occlusion) {
+    public PBRMetallicMaterial occlusion(float occlusion) {
         this.occlusion = occlusion;
         return this;
     }
 
-    public float getFresnel0() {
+    public float fresnel0() {
         return fresnel0;
     }
 
-    public PBRMetallicMaterial setFresnel0(float fresnel0) {
+    public PBRMetallicMaterial fresnel0(float fresnel0) {
         this.fresnel0 = fresnel0;
         return this;
     }

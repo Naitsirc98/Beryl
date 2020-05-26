@@ -22,7 +22,11 @@ public final class BerylFiles {
      * @return the url
      */
     public static URL getURL(String path) {
-       return BerylFiles.class.getResource(normalize(path));
+       URL url = BerylFiles.class.getResource(normalize(path));
+       if(url == null) {
+           Log.error("Failed to get resource " + path);
+       }
+       return url;
     }
 
     /**
@@ -32,10 +36,19 @@ public final class BerylFiles {
      * @return the string
      */
     public static String getString(String path) {
-        String newPath = getURI(path).getPath();
+
+        URI uri = getURI(path);
+
+        if(uri == null) {
+            return null;
+        }
+
+        String newPath = uri.getPath();
+
         if(newPath.charAt(0) == '/') {
             return newPath.substring(1);
         }
+
         return newPath;
     }
 
@@ -47,7 +60,8 @@ public final class BerylFiles {
      */
     public static URI getURI(String path) {
         try {
-            return getURL(path).toURI();
+            URL url = getURL(path);
+            return url == null ? null : url.toURI();
         } catch (URISyntaxException | NullPointerException e) {
             Log.error("Failed to create URI from URL", e);
         }
@@ -71,7 +85,8 @@ public final class BerylFiles {
      * @return the path
      */
     public static Path getPath(String path) {
-        return Paths.get(getURI(path));
+        URI uri = getURI(path);
+        return uri == null ? null : Paths.get(uri);
     }
 
     /**

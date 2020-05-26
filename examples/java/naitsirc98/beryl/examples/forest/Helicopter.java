@@ -116,11 +116,11 @@ public class Helicopter {
 
     private static void setupBodyMaterial(PhongMaterial material) {
         if(material.name().contains("Glass")) {
-            material.setAmbientColor(Color.colorBlack()).setDiffuseColor(Color.colorBlack());
+            material.ambientColor(Color.colorBlack()).diffuseColor(Color.colorBlack());
         } else {
             IColor color = new Color(0.294f, 0.325f, 0.125f, 1.0f).intensify(0.5f);
-            material.setAmbientColor(color).setDiffuseColor(color);
-            material.setShininess(1);
+            material.ambientColor(color).diffuseColor(color);
+            material.shininess(1);
         }
     }
 
@@ -132,8 +132,8 @@ public class Helicopter {
 
     private static void createMainRotorMaterial(PhongMaterial material) {
         IColor color = new Color(0.1f, 0.1f, 0.1f, 1.0f);
-        material.setAmbientColor(color).setDiffuseColor(color);
-        material.setShininess(1);
+        material.ambientColor(color).diffuseColor(color);
+        material.shininess(1);
     }
 
     private static StaticMeshView getTailRotorMeshView() {
@@ -144,8 +144,8 @@ public class Helicopter {
 
     private static void createTailRotorMaterial(PhongMaterial material) {
         IColor color = new Color(0.1f, 0.1f, 0.1f, 1.0f);
-        material.setAmbientColor(color).setDiffuseColor(color);
-        material.setShininess(1);
+        material.ambientColor(color).diffuseColor(color);
+        material.shininess(1);
     }
 
     private static class HelicopterController extends UpdateBehaviour {

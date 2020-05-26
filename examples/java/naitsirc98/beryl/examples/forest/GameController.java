@@ -85,7 +85,7 @@ public class GameController extends UpdateBehaviour {
         scene().environment().ambientColor().set(clamp(0.2f, 1.0f, 1.0f - time), 1.0f);
 
         PhongMaterial lampMaterial = (PhongMaterial) scene().entity(LAMP_NAME).get(StaticMeshInstance.class).meshView().material();
-        lampMaterial.setEmissiveColor(new Color().set(clamp(0.2f, 2.0f, time * 1.25f), 1.0f));
+        lampMaterial.emissiveColor(new Color().set(clamp(0.2f, 2.0f, time * 1.25f), 1.0f));
     }
 
     private void updateAudioListener() {
