@@ -46,7 +46,7 @@ public class Terrain {
 
             material.colorMap(colorMap)
                     // .setShininess(1)
-                    .tiling(48, 48);
+                    .tiling(64, 64);
         });
     }
 

@@ -9,10 +9,16 @@ import java.nio.ByteBuffer;
 import static java.util.Objects.requireNonNull;
 import static naitsirc98.beryl.util.Asserts.assertTrue;
 import static naitsirc98.beryl.util.Maths.radians;
-import static naitsirc98.beryl.util.types.DataType.FLOAT32_SIZEOF;
 
 @ByteSize.Static(Light.SIZEOF)
 public class SpotLight extends Light<SpotLight> implements IPointLight<SpotLight>, IDirectionalLight<SpotLight> {
+
+    private static final float DEFAULT_CONSTANT = 1.0f;
+    private static final float DEFAULT_LINEAR = 0.09f;
+    private static final float DEFAULT_QUADRATIC = 0.032f;
+    private static final float DEFAULT_CUTOFF = radians(12.5f);
+    private static final float DEFAULT_OUTER_CUTOFF = radians(17.0f);
+
 
     private final Vector3f position;
     private final Vector3f direction;
@@ -25,11 +31,11 @@ public class SpotLight extends Light<SpotLight> implements IPointLight<SpotLight
     public SpotLight() {
         position = new Vector3f();
         direction = new Vector3f();
-        constant = 1.0f;
-        linear = 0.09f;
-        quadratic = 0.032f;
-        cutOff = radians(12.5f);
-        outerCutOff = radians(15.0f);
+        constant = DEFAULT_CONSTANT;
+        linear = DEFAULT_LINEAR;
+        quadratic = DEFAULT_QUADRATIC;
+        cutOff = DEFAULT_CUTOFF;
+        outerCutOff = DEFAULT_OUTER_CUTOFF;
     }
 
     @Override

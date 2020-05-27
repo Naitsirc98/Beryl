@@ -1,4 +1,4 @@
-package naitsirc98.beryl.scenes;
+package naitsirc98.beryl.scenes.environment;
 
 import naitsirc98.beryl.util.Color;
 import naitsirc98.beryl.util.IColor;
@@ -15,6 +15,7 @@ public final class Fog implements ByteSize {
     public static final int SIZEOF = 20;
 
     public static final float DEFAULT_FOG_DENSITY = 0.16f;
+
 
     private final Color color;
     private float density;

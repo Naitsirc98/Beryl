@@ -13,11 +13,13 @@ import naitsirc98.beryl.graphics.window.Window;
 import naitsirc98.beryl.lights.DirectionalLight;
 import naitsirc98.beryl.lights.LightRange;
 import naitsirc98.beryl.lights.PointLight;
+import naitsirc98.beryl.lights.SpotLight;
 import naitsirc98.beryl.scenes.Camera;
 import naitsirc98.beryl.scenes.Entity;
 import naitsirc98.beryl.scenes.Scene;
 import naitsirc98.beryl.scenes.SceneManager;
 import naitsirc98.beryl.scenes.components.audio.AudioPlayer;
+import naitsirc98.beryl.scenes.components.behaviours.UpdateMutableBehaviour;
 import naitsirc98.beryl.scenes.environment.SceneEnvironment;
 import naitsirc98.beryl.scenes.environment.SceneLighting;
 import naitsirc98.beryl.scenes.environment.skybox.Skybox;
@@ -28,7 +30,7 @@ import org.joml.Vector3f;
 import java.util.Random;
 
 import static naitsirc98.beryl.examples.forest.Terrain.TERRAIN_SIZE;
-import static naitsirc98.beryl.scenes.Fog.DEFAULT_FOG_DENSITY;
+import static naitsirc98.beryl.scenes.environment.Fog.DEFAULT_FOG_DENSITY;
 
 
 public class ForestGame extends BerylApplication {
@@ -144,5 +146,17 @@ public class ForestGame extends BerylApplication {
                 .position(471.379f, 4.051f, 375.764f)
                 .color(Color.colorBlack())
                 .range(LightRange.MEDIUM));
+
+        lighting.spotLights().add(new SpotLight()
+                .position(scene.camera().position())
+                .direction(new Vector3f(scene.camera().forward()))
+                .color(Color.colorRed().intensify(1)));
+
+        Entity e = scene.newEntity();
+        e.add(UpdateMutableBehaviour.class).onUpdate(self -> {
+            SpotLight light = lighting.spotLights().get(0);
+            light.position(scene.camera().position());
+            light.direction(new Vector3f(scene.camera().forward()));
+        });
     }
 }

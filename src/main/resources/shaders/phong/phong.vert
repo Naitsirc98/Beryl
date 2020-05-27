@@ -31,13 +31,13 @@ layout(location = 2) in vec2 in_TexCoords;
 layout(location = 3) in int in_TransformIndex;
 layout(location = 4) in int in_MaterialIndex;
 
-layout(location = 0) out VertexData {
+layout(location = 0) out FragmentData {
     vec3 position;
     vec3 normal;
     vec2 texCoords;
     flat int materialIndex;
     vec4 positionDirLightSpace[MAX_SHADOW_CASCADES_COUNT];
-} vertexData;
+} fragment;
 
 
 void main() {
@@ -48,13 +48,13 @@ void main() {
 
     gl_ClipDistance[0] = dot(position, u_ClipPlane);
 
-    vertexData.position = position.xyz;
-    vertexData.normal = normalize(mat3(transform.modelMatrix) * in_Normal);
-    vertexData.texCoords = in_TexCoords;
-    vertexData.materialIndex = in_MaterialIndex;
+    fragment.position = position.xyz;
+    fragment.normal = normalize(mat3(transform.modelMatrix) * in_Normal);
+    fragment.texCoords = in_TexCoords;
+    fragment.materialIndex = in_MaterialIndex;
 
     for (int i = 0; i < MAX_SHADOW_CASCADES_COUNT; i++) {
-        vertexData.positionDirLightSpace[i] = u_DirLightMatrices[i] * position;
+        fragment.positionDirLightSpace[i] = u_DirLightMatrices[i] * position;
     }
 
     gl_Position = u_Camera.projectionViewMatrix * position;

@@ -7,7 +7,6 @@ import naitsirc98.beryl.lights.Light;
 import naitsirc98.beryl.lights.PointLight;
 import naitsirc98.beryl.lights.SpotLight;
 import naitsirc98.beryl.resources.Resource;
-import naitsirc98.beryl.scenes.Fog;
 import naitsirc98.beryl.scenes.environment.skybox.Skybox;
 import naitsirc98.beryl.util.Color;
 import naitsirc98.beryl.util.IColor;
@@ -27,12 +26,12 @@ import static org.lwjgl.system.MemoryStack.stackPush;
 public final class SceneEnvironment implements Resource {
 
     public static final int DIRECTIONAL_LIGHT_OFFSET = 0;
-    public static final int POINT_LIGHTS_OFFSET = roundUp2(Light.SIZEOF, VECTOR4_SIZEOF);
-    public static final int SPOT_LIGHTS_OFFSET = roundUp2(POINT_LIGHTS_OFFSET + Light.SIZEOF * MAX_POINT_LIGHTS, VECTOR4_SIZEOF);
-    public static final int AMBIENT_COLOR_OFFSET = roundUp2(SPOT_LIGHTS_OFFSET + Light.SIZEOF * MAX_SPOT_LIGHTS, VECTOR4_SIZEOF);
-    public static final int FOG_OFFSET = roundUp2(AMBIENT_COLOR_OFFSET + Color.SIZEOF, VECTOR4_SIZEOF);
-    public static final int POINT_LIGHTS_COUNT_OFFSET = 1728;//roundUp2(FOG_OFFSET + Fog.SIZEOF, INT32_SIZEOF);
-    public static final int SPOT_LIGHTS_COUNT_OFFSET = 1744;//roundUp2(POINT_LIGHTS_COUNT_OFFSET + INT32_SIZEOF, INT32_SIZEOF);
+    public static final int POINT_LIGHTS_OFFSET = Light.SIZEOF;
+    public static final int SPOT_LIGHTS_OFFSET = POINT_LIGHTS_OFFSET + Light.SIZEOF * MAX_POINT_LIGHTS;
+    public static final int AMBIENT_COLOR_OFFSET = SPOT_LIGHTS_OFFSET + Light.SIZEOF * MAX_SPOT_LIGHTS;
+    public static final int FOG_OFFSET = AMBIENT_COLOR_OFFSET + Color.SIZEOF;
+    public static final int POINT_LIGHTS_COUNT_OFFSET = roundUp2(FOG_OFFSET + Fog.SIZEOF, VECTOR4_SIZEOF);
+    public static final int SPOT_LIGHTS_COUNT_OFFSET = POINT_LIGHTS_COUNT_OFFSET + INT32_SIZEOF;
     public static final int LIGHTS_BUFFER_SIZE = roundUp2(SPOT_LIGHTS_COUNT_OFFSET + INT32_SIZEOF, VECTOR4_SIZEOF);
 
     public static final Color DEFAULT_AMBIENT_COLOR = new Color(0.8f, 0.8f, 0.8f);

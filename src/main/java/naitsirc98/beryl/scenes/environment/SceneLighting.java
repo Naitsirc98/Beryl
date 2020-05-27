@@ -15,6 +15,7 @@ public final class SceneLighting {
     private static final float DEFAULT_SHADOWS_MAX_DISTANCE = 1024;
     private static final int DEFAULT_SHADOW_MAP_SIZE = 2048;
 
+
     private DirectionalLight directionalLight;
     private final List<PointLight> pointLights;
     private final List<SpotLight> spotLights;

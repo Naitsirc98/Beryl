@@ -228,7 +228,7 @@ public class PhongMaterial extends ManagedMaterial {
 
         ambientColor = Color.colorWhite();
         diffuseColor = Color.colorWhite();
-        specularColor = Color.colorWhite();
+        specularColor = Color.colorBlackTransparent();
         emissiveColor = Color.colorBlackTransparent();
 
         alpha = DEFAULT_ALPHA;

@@ -40,13 +40,13 @@ uniform bool u_ShadowsEnabled;
 
 uniform sampler2D u_DirShadowMaps[MAX_SHADOW_CASCADES_COUNT];
 
-layout(location = 0) in VertexData {
+layout(location = 0) in FragmentData {
     vec3 position;
     vec3 normal;
     vec2 texCoords;
     flat int materialIndex;
     vec4 positionDirLightSpace[MAX_SHADOW_CASCADES_COUNT];
-} vertexData;
+} fragment;
 
 
 layout(location = 0) out vec4 out_FragmentColor;
@@ -73,21 +73,21 @@ vec4 applyFogEffect(vec4 fragmentColor);
 
 void main() {
 
-    cameraDirection = normalize(u_Camera.position.xyz - vertexData.position);
+    cameraDirection = normalize(u_Camera.position.xyz - fragment.position);
 
-    material = u_Materials[vertexData.materialIndex];
+    material = u_Materials[fragment.materialIndex];
 
     if(testMaterialFlag(material.flags, NORMAL_MAP_PRESENT)) {
-        fragmentNormal = texture(material.normalMap, vertexData.texCoords).rgb;
+        fragmentNormal = texture(material.normalMap, fragment.texCoords).rgb;
         fragmentNormal = vec3(fragmentNormal.r, fragmentNormal.g, fragmentNormal.b) * 2.0 - 1.0;
         fragmentNormal = normalize(fragmentNormal);
     } else {
-        fragmentNormal = normalize(vertexData.normal);
+        fragmentNormal = normalize(fragment.normal);
     }
 
-    // float lod = distance(u_Camera.position.xyz, vertexData.position) / 100.0;
+    // float lod = distance(u_Camera.position.xyz, fragment.position) / 100.0;
 
-    vec2 texCoords = vertexData.texCoords * material.tiling;
+    vec2 texCoords = fragment.texCoords * material.tiling;
 
     materialAmbientColor = material.ambientColor * texture(material.ambientMap, texCoords);
     materialDiffuseColor = material.diffuseColor * texture(material.diffuseMap, texCoords);
@@ -108,8 +108,10 @@ void main() {
     }
 
     if(u_Fog.color.a != 0.0) {
-        fragmentColor = applyFogEffect(fragmentColor);
+        // fragmentColor = applyFogEffect(fragmentColor);
     }
+
+    fragmentColor.a *= material.alpha;
 
     out_FragmentColor = fragmentColor;
 }
@@ -119,7 +121,7 @@ vec4 applyFogEffect(vec4 fragmentColor) {
 
     vec3 fogColor = u_Fog.color.rgb * (u_AmbientColor.rgb * u_DirectionalLight.color.rgb);
 
-    float distance = length(u_Camera.position.xyz - vertexData.position) / 100.0;
+    float distance = length(u_Camera.position.xyz - fragment.position) / 100.0;
 
     float exponent = distance * u_Fog.density;
 
@@ -139,7 +141,7 @@ float computeDirShadows() {
 
     int depthMapIndex = 0;
 
-    float fragmentDepth = (u_Camera.projectionViewMatrix * vec4(vertexData.position, 1.0)).z;// vertexData.position.z;//distance(u_Camera.position.xyz, vertexData.position);
+    float fragmentDepth = (u_Camera.projectionViewMatrix * vec4(fragment.position, 1.0)).z;// fragment.position.z;//distance(u_Camera.position.xyz, fragment.position);
 
     // Select the correct cascade shadow map for this fragment
     for(int i = 0; i < MAX_SHADOW_CASCADES_COUNT; i++) {
@@ -150,7 +152,7 @@ float computeDirShadows() {
     }
 
     // Transform from screen coordinates to texture coordinates
-    vec4 positionDirLightSpace = vertexData.positionDirLightSpace[depthMapIndex];
+    vec4 positionDirLightSpace = fragment.positionDirLightSpace[depthMapIndex];
 
     vec3 projCoords = positionDirLightSpace.xyz;// / positionDirLightSpace.w;
 
@@ -218,15 +220,15 @@ float computeAngle(vec3 v1, vec3 v2) {
 
 float computeAttenuation(vec3 lightPosition, float constant, float linear, float quadratic) {
 
-    float distance = length(lightPosition - vertexData.position);
+    float distance = length(lightPosition - fragment.position);
 
     return 1.0 /
         (constant + linear * distance + quadratic * (distance * distance));
 }
 
-float computeIntensity(vec3 normalizedDirection, vec3 lightDirection, float cutOff, float outerCutOff) {
+float computeIntensity(vec3 lightToFragment, vec3 lightDirection, float cutOff, float outerCutOff) {
 
-    float theta = dot(normalizedDirection, normalize(lightDirection));
+    float theta = dot(lightToFragment, normalize(-lightDirection));
 
     float epsilon = (cutOff - outerCutOff);
 
@@ -237,7 +239,7 @@ vec4 computeDiffuseColor(vec4 lightColor, vec3 lightDirection) {
 
 	float diffuse = computeAngle(fragmentNormal, lightDirection);
 
-	return vec4(vec3(lightColor * (diffuse * materialDiffuseColor)), materialDiffuseColor.a);
+	return vec4(lightColor.rgb * (diffuse * materialDiffuseColor.rgb), materialDiffuseColor.a);
 }
 
 vec4 computeSpecularColor(vec4 lightColor, vec3 lightDirection) {
@@ -245,16 +247,14 @@ vec4 computeSpecularColor(vec4 lightColor, vec3 lightDirection) {
     // Phong
 	// vec3 reflectDirection = reflect(-lightDirection, fragmentNormal);
 
-    // float specular = pow(computeAngle(cameraDirection, reflectDirection), u_Material.shininess);
+    // float specular = pow(computeAngle(cameraDirection, reflectDirection), material.shininess);
 
     // Blinn-Phong
-    vec3 reflectDirection = reflect(-lightDirection, fragmentNormal);
-
     vec3 halfwayDirection = normalize(lightDirection + cameraDirection);
 
     float specular = pow(computeAngle(fragmentNormal, halfwayDirection), material.shininess);
 
-	return vec4(vec3(lightColor * (specular * materialSpecularColor)), materialSpecularColor.a);
+	return vec4(lightColor.rgb * (specular * materialSpecularColor.rgb), materialSpecularColor.a);
 }
 
 
@@ -262,29 +262,38 @@ vec4 computeDirectionalLighting(Light light) {
 
     vec3 direction = normalize(-light.direction.xyz);
 
-    return computeDiffuseColor(light.color, direction);
-         + computeSpecularColor(light.color, direction);
+    vec4 diffuseColor = computeDiffuseColor(light.color, direction);
+
+    vec4 specularColor = computeSpecularColor(light.color, direction);
+
+    return diffuseColor + specularColor;
 }
 
 
 vec4 computePointLighting(Light light) {
 
-    vec3 direction = normalize(light.position.xyz - vertexData.position);
+    vec3 direction = normalize(light.position.xyz - fragment.position);
 
     float attenuation = computeAttenuation(light.position.xyz, light.constant, light.linear, light.quadratic);
 
-    return (computeDiffuseColor(light.color, direction)
-         + computeSpecularColor(light.color, direction)) * attenuation;
+    vec4 diffuseColor = computeDiffuseColor(light.color, direction) * attenuation;
+
+    vec4 specularColor = computeSpecularColor(light.color, direction) * attenuation;
+
+    return diffuseColor + specularColor;
 }
 
 vec4 computeSpotLighting(Light light) {
 
-    vec3 direction = normalize(light.position.xyz - vertexData.position);
+    vec3 lightToFragment = normalize(light.position.xyz - fragment.position);
 
     float attenuation = computeAttenuation(light.position.xyz, light.constant, light.linear, light.quadratic);
 
-    float intensity = computeIntensity(direction, light.direction.xyz, light.cutOff, light.outerCutOff);
+    float intensity = computeIntensity(lightToFragment, light.direction.xyz, light.cutOff, light.outerCutOff);
 
-    return (computeDiffuseColor(light.color * intensity, direction)
-         + computeSpecularColor(light.color * intensity, direction)) * attenuation;
+    vec4 diffuseColor = computeDiffuseColor(light.color, lightToFragment) * intensity * attenuation;
+
+    vec4 specularColor = computeSpecularColor(light.color, light.direction.xyz) * intensity * attenuation;
+
+    return diffuseColor + specularColor;
 }

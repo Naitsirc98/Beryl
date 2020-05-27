@@ -7,8 +7,6 @@ import naitsirc98.beryl.util.geometry.Viewport;
 import naitsirc98.beryl.util.geometry.Viewportc;
 import org.joml.*;
 
-import java.util.Vector;
-
 import static java.util.Objects.requireNonNull;
 import static naitsirc98.beryl.util.Asserts.assertNonNull;
 import static naitsirc98.beryl.util.Maths.*;
