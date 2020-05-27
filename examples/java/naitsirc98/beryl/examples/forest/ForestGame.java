@@ -19,6 +19,7 @@ import naitsirc98.beryl.scenes.Entity;
 import naitsirc98.beryl.scenes.Scene;
 import naitsirc98.beryl.scenes.SceneManager;
 import naitsirc98.beryl.scenes.components.audio.AudioPlayer;
+import naitsirc98.beryl.scenes.components.behaviours.LateMutableBehaviour;
 import naitsirc98.beryl.scenes.components.behaviours.UpdateMutableBehaviour;
 import naitsirc98.beryl.scenes.environment.SceneEnvironment;
 import naitsirc98.beryl.scenes.environment.SceneLighting;
@@ -150,10 +151,10 @@ public class ForestGame extends BerylApplication {
         lighting.spotLights().add(new SpotLight()
                 .position(scene.camera().position())
                 .direction(new Vector3f(scene.camera().forward()))
-                .color(Color.colorRed().intensify(1)));
+                .color(Color.colorRed().intensify(10)));
 
         Entity e = scene.newEntity();
-        e.add(UpdateMutableBehaviour.class).onUpdate(self -> {
+        e.add(LateMutableBehaviour.class).onLateUpdate(self -> {
             SpotLight light = lighting.spotLights().get(0);
             light.position(scene.camera().position());
             light.direction(new Vector3f(scene.camera().forward()));

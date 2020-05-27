@@ -293,7 +293,7 @@ vec4 computeSpotLighting(Light light) {
 
     vec4 diffuseColor = computeDiffuseColor(light.color, lightToFragment) * intensity * attenuation;
 
-    vec4 specularColor = computeSpecularColor(light.color, light.direction.xyz) * intensity * attenuation;
+    vec4 specularColor = computeSpecularColor(light.color, lightToFragment) * intensity * attenuation;
 
     return diffuseColor + specularColor;
 }

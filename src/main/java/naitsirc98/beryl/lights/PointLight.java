@@ -19,9 +19,9 @@ public class PointLight extends Light<PointLight> implements IPointLight<PointLi
 
     public PointLight() {
         position = new Vector3f();
-        constant = 1.0f;
-        linear = 0.09f;
-        quadratic = 0.032f;
+        constant = DEFAULT_CONSTANT;
+        linear = DEFAULT_LINEAR;
+        quadratic = DEFAULT_QUADRATIC;
     }
 
     @Override

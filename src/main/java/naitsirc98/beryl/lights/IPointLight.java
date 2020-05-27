@@ -8,6 +8,10 @@ import static org.joml.Math.*;
 public interface IPointLight<SELF extends IPointLight<SELF>> {
 
     float ATTENUATION_THRESHOLD = 0.01f;
+    float DEFAULT_CONSTANT = 1.0f;
+    float DEFAULT_LINEAR = 0.09f;
+    float DEFAULT_QUADRATIC = 0.032f;
+
 
     default SELF range(LightRange range) {
         return constant(range.constant())
