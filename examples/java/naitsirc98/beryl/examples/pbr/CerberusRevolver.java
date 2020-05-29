@@ -1,7 +1,6 @@
 package naitsirc98.beryl.examples.pbr;
 
 import naitsirc98.beryl.core.BerylFiles;
-import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.meshes.models.StaticModel;
 import naitsirc98.beryl.meshes.models.StaticModelLoader;
 import naitsirc98.beryl.meshes.views.StaticMeshView;
@@ -13,6 +12,7 @@ import org.joml.Vector3fc;
 
 import java.nio.file.Path;
 
+import static java.util.Objects.requireNonNull;
 import static naitsirc98.beryl.util.Maths.radians;
 
 public class CerberusRevolver {
@@ -21,7 +21,7 @@ public class CerberusRevolver {
 
     static {
 
-        Path modelPath = BerylFiles.getPath("modelse/Cerberus_by_Andrew_Maximov/Cerberus_LP.FBX");
+        Path modelPath = BerylFiles.getPath("models/Cerberus_by_Andrew_Maximov/Cerberus_LP.FBX");
 
         if(modelPath != null) {
             cerberusModel = new StaticModelLoader().load(modelPath);
@@ -43,7 +43,7 @@ public class CerberusRevolver {
     private static StaticMeshView getMeshView() {
         return new StaticMeshView(cerberusModel.mesh(0),
                 PBRDemoUtils.getPBRMetallicMaterialFromFolder(
-                        BerylFiles.getPath("textures/Cerberus_by_Andrew_Maximov"), "tga"));
+                        requireNonNull(BerylFiles.getPath("textures/Cerberus_by_Andrew_Maximov")), "tga"));
     }
 
 }

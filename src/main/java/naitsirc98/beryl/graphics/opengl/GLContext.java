@@ -2,7 +2,9 @@ package naitsirc98.beryl.graphics.opengl;
 
 import naitsirc98.beryl.graphics.GraphicsContext;
 import naitsirc98.beryl.graphics.GraphicsFactory;
+import naitsirc98.beryl.graphics.opengl.skyboxpbr.GLSkyboxPBRTextureFactory;
 import naitsirc98.beryl.graphics.window.Window;
+import naitsirc98.beryl.scenes.environment.skybox.pbr.SkyboxPBRTextureFactory;
 import naitsirc98.beryl.util.handles.LongHandle;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GLCapabilities;
@@ -22,6 +24,7 @@ public class GLContext implements GraphicsContext, LongHandle {
     private GLDebugMessenger debugMessenger;
     private GLCapabilities capabilities;
     private GLGraphicsFactory graphicsFactory;
+    private GLSkyboxPBRTextureFactory skyboxPBRTextureFactory;
     private GLMapper mapper;
     private boolean vsync;
 
@@ -37,7 +40,8 @@ public class GLContext implements GraphicsContext, LongHandle {
 
         capabilities = GL.createCapabilities();
         debugMessenger = newGLDebugMessenger();
-        graphicsFactory = new GLGraphicsFactory();
+        graphicsFactory = new GLGraphicsFactory(this);
+        skyboxPBRTextureFactory = new GLSkyboxPBRTextureFactory(this);
         mapper = new GLMapper();
 
         glfwSwapInterval(VSYNC ? 1 : 0);
@@ -68,6 +72,11 @@ public class GLContext implements GraphicsContext, LongHandle {
     @Override
     public GraphicsFactory graphicsFactory() {
         return graphicsFactory;
+    }
+
+    @Override
+    public SkyboxPBRTextureFactory skyboxPBRTextureFactory() {
+        return skyboxPBRTextureFactory;
     }
 
     @Override

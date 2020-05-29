@@ -1,20 +1,19 @@
 package naitsirc98.beryl.graphics.opengl.swapchain;
 
+import naitsirc98.beryl.graphics.opengl.GLContext;
 import naitsirc98.beryl.graphics.opengl.GLObject;
 
 import static org.lwjgl.opengl.GL30C.glDeleteRenderbuffers;
 import static org.lwjgl.opengl.GL45C.*;
 
-public class GLRenderbuffer implements GLObject {
+public class GLRenderbuffer extends GLObject {
 
-    private final int handle;
-
-    public GLRenderbuffer() {
-        handle = glCreateRenderbuffers();
+    public GLRenderbuffer(GLContext context) {
+        super(context, glCreateRenderbuffers());
     }
 
     public void bind() {
-        glBindRenderbuffer(GL_RENDERBUFFER, handle);
+        glBindRenderbuffer(GL_RENDERBUFFER, handle());
     }
 
     public void unbind() {
@@ -22,15 +21,15 @@ public class GLRenderbuffer implements GLObject {
     }
 
     public void storage(int width, int height, int internalFormat) {
-        glNamedRenderbufferStorage(handle, internalFormat, width, height);
+        glNamedRenderbufferStorage(handle(), internalFormat, width, height);
     }
 
     public void storageMultisample(int width, int height, int internalFormat, int samples) {
-        glNamedRenderbufferStorageMultisample(handle, samples, internalFormat, width, height);
+        glNamedRenderbufferStorageMultisample(handle(), samples, internalFormat, width, height);
     }
 
     public int samples() {
-        return glGetNamedRenderbufferParameteri(handle, GL_SAMPLES);
+        return glGetNamedRenderbufferParameteri(handle(), GL_SAMPLES);
     }
 
     public boolean multisampled() {
@@ -38,12 +37,8 @@ public class GLRenderbuffer implements GLObject {
     }
 
     @Override
-    public int handle() {
-        return handle;
-    }
-
-    @Override
-    public void release() {
-        glDeleteRenderbuffers(handle);
+    public void free() {
+        glDeleteRenderbuffers(handle());
+        setHandle(NULL);
     }
 }

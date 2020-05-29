@@ -45,7 +45,7 @@ public class CameraController extends LateBehaviour {
 
         if(Input.isKeyTyped(KEY_U)) {
             SceneRenderInfo renderInfo = scene().renderInfo();
-            renderInfo.setShadowsEnabled(!renderInfo.areShadowsEnabled());
+            renderInfo.shadowsEnabled(!renderInfo.shadowsEnabled());
         }
 
         checkMouseLookAt();
@@ -67,7 +67,8 @@ public class CameraController extends LateBehaviour {
         }
 
         if(isKeyTyped(KEY_V)) {
-            Graphics.get().vsync(!Graphics.get().vsync());
+            final boolean vsync = !scene().renderInfo().vsync();
+            scene().renderInfo().vsync(vsync);
         }
 
         // Window.get().focus();

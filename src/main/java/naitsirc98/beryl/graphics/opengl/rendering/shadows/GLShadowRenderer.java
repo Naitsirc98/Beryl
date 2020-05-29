@@ -1,9 +1,10 @@
 package naitsirc98.beryl.graphics.opengl.rendering.shadows;
 
+import naitsirc98.beryl.graphics.opengl.GLContext;
 import naitsirc98.beryl.graphics.opengl.buffers.GLBuffer;
 import naitsirc98.beryl.graphics.opengl.rendering.renderers.GLMeshRenderer;
+import naitsirc98.beryl.graphics.opengl.rendering.renderers.GLRenderer;
 import naitsirc98.beryl.graphics.opengl.textures.GLTexture2D;
-import naitsirc98.beryl.graphics.rendering.Renderer;
 import naitsirc98.beryl.graphics.rendering.shadows.ShadowCascade;
 import naitsirc98.beryl.scenes.Scene;
 import org.joml.Matrix4fc;
@@ -14,18 +15,19 @@ import java.nio.ByteBuffer;
 import static naitsirc98.beryl.util.types.DataType.MATRIX4_SIZEOF;
 import static naitsirc98.beryl.util.types.DataType.VECTOR4_SIZEOF;
 
-public class GLShadowRenderer implements GLShadowsInfo, Renderer {
+public class GLShadowRenderer extends GLRenderer implements GLShadowsInfo {
 
     private GLDirectionalShadowRenderer directionalShadowRenderer;
     private GLBuffer shadowsBuffer;
 
-    public GLShadowRenderer() {
+    public GLShadowRenderer(GLContext context) {
+        super(context);
     }
 
     @Override
     public void init() {
-        directionalShadowRenderer = new GLDirectionalShadowRenderer();
-        shadowsBuffer = new GLBuffer();
+        directionalShadowRenderer = new GLDirectionalShadowRenderer(context());
+        shadowsBuffer = new GLBuffer(context()).name("SHADOWS BUFFER");
         shadowsBuffer.allocate(SHADOWS_BUFFER_SIZE);
         shadowsBuffer.mapMemory();
     }

@@ -7,7 +7,7 @@ import java.util.function.Consumer;
 
 import static java.util.Objects.requireNonNull;
 
-public class BerylApplication {
+public abstract class BerylApplication {
 
     // Application instance used by Beryl
     @Singleton
@@ -30,9 +30,7 @@ public class BerylApplication {
 
     }
 
-    protected void onStart() {
-
-    }
+    protected abstract void onStart();
 
     protected void onUpdate() {
 

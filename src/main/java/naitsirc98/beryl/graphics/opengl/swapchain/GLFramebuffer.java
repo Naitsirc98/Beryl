@@ -1,5 +1,6 @@
 package naitsirc98.beryl.graphics.opengl.swapchain;
 
+import naitsirc98.beryl.graphics.opengl.GLContext;
 import naitsirc98.beryl.graphics.opengl.GLDebugMessenger;
 import naitsirc98.beryl.graphics.opengl.GLObject;
 import naitsirc98.beryl.graphics.opengl.textures.GLCubemap;
@@ -13,7 +14,7 @@ import java.util.Map;
 import static org.lwjgl.opengl.GL11C.GL_NONE;
 import static org.lwjgl.opengl.GL45.*;
 
-public class GLFramebuffer implements GLObject {
+public class GLFramebuffer extends GLObject {
 
     public static final int DEFAULT_FRAMEBUFFER = 0;
 
@@ -34,12 +35,11 @@ public class GLFramebuffer implements GLObject {
     }
 
 
-    private final int handle;
     private final Map<Integer, GLObject> attachments;
     private boolean freeAttachmentsOnRelease;
 
-    public GLFramebuffer() {
-        handle = glCreateFramebuffers();
+    public GLFramebuffer(GLContext context) {
+        super(context, glCreateFramebuffers());
         attachments = new HashMap<>();
         freeAttachmentsOnRelease = false;
     }
@@ -53,7 +53,7 @@ public class GLFramebuffer implements GLObject {
     }
 
     public void bind() {
-        glBindFramebuffer(GL_FRAMEBUFFER, handle);
+        glBindFramebuffer(GL_FRAMEBUFFER, handle());
     }
 
     public void unbind() {
@@ -61,27 +61,27 @@ public class GLFramebuffer implements GLObject {
     }
 
     public void ensureComplete() {
-        final int status = glCheckNamedFramebufferStatus(handle, GL_FRAMEBUFFER);
+        final int status = glCheckNamedFramebufferStatus(handle(), GL_FRAMEBUFFER);
         if(status != GL_FRAMEBUFFER_COMPLETE) {
             throw new IllegalStateException("Framebuffer is not complete: " + GLDebugMessenger.getGLErrorName(status));
         }
     }
 
     public void attach(int attachment, GLRenderbuffer renderbuffer) {
-        glNamedFramebufferRenderbuffer(handle, attachment, GL_RENDERBUFFER, renderbuffer.handle());
+        glNamedFramebufferRenderbuffer(handle(), attachment, GL_RENDERBUFFER, renderbuffer.handle());
         attachments.put(attachment, renderbuffer);
     }
 
     public void attach(int attachment, GLTexture texture, int level) {
-        glNamedFramebufferTexture(handle, attachment, texture.handle(), level);
+        glNamedFramebufferTexture(handle(), attachment, texture.handle(), level);
         attachments.put(attachment, texture);
     }
 
     public void attach(int attachment, GLCubemap cubemap, Cubemap.Face face, int level) {
         bind();
-        // glBindTexture(GL_TEXTURE_CUBE_MAP, cubemap.handle());
+        // glBindTexture(GL_TEXTURE_CUBE_MAP, cubemap.handle()());
         glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, mapToAPI(face), cubemap.handle(), level);
-        // glNamedFramebufferTextureLayer(handle, attachment, cubemap.handle(), level, face.ordinal());
+        // glNamedFramebufferTextureLayer(handle(), attachment, cubemap.handle()(), level, face.ordinal());
         attachments.put(attachment, cubemap);
     }
 
@@ -90,29 +90,24 @@ public class GLFramebuffer implements GLObject {
     }
 
     public void drawBuffer(int drawBuffer) {
-        glNamedFramebufferDrawBuffer(handle, drawBuffer);
+        glNamedFramebufferDrawBuffer(handle(), drawBuffer);
     }
 
     public void drawBuffers(IntBuffer drawBuffers) {
-        glNamedFramebufferDrawBuffers(handle, drawBuffers);
+        glNamedFramebufferDrawBuffers(handle(), drawBuffers);
     }
 
     public void drawBuffers(int... drawBuffers) {
-        glNamedFramebufferDrawBuffers(handle, drawBuffers);
+        glNamedFramebufferDrawBuffers(handle(), drawBuffers);
     }
 
     public void readBuffer(int readBuffer) {
-        glNamedFramebufferReadBuffer(handle, readBuffer);
+        glNamedFramebufferReadBuffer(handle(), readBuffer);
     }
 
     @SuppressWarnings("unchecked")
     public <T> T get(int attachment) {
         return (T) attachments.get(attachment);
-    }
-
-    @Override
-    public int handle() {
-        return handle;
     }
 
     public void setAsDepthOnlyFramebuffer() {
@@ -121,11 +116,12 @@ public class GLFramebuffer implements GLObject {
     }
 
     @Override
-    public void release() {
+    public void free() {
         if(freeAttachmentsOnRelease) {
             attachments.values().forEach(GLObject::release);
         }
         attachments.clear();
-        glDeleteFramebuffers(handle);
+        glDeleteFramebuffers(handle());
+        setHandle(NULL);
     }
 }

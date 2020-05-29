@@ -1,6 +1,7 @@
 package naitsirc98.beryl.graphics.opengl.buffers;
 
 import naitsirc98.beryl.graphics.buffers.*;
+import naitsirc98.beryl.graphics.opengl.GLContext;
 import naitsirc98.beryl.graphics.opengl.GLObject;
 import naitsirc98.beryl.logging.Log;
 
@@ -11,36 +12,18 @@ import java.nio.IntBuffer;
 import static java.lang.Math.min;
 import static naitsirc98.beryl.util.types.DataType.FLOAT32_SIZEOF;
 import static naitsirc98.beryl.util.types.DataType.INT32_SIZEOF;
-import static naitsirc98.beryl.util.types.TypeUtils.getOrElse;
 import static org.lwjgl.opengl.GL15.glDeleteBuffers;
 import static org.lwjgl.opengl.GL45.*;
 import static org.lwjgl.system.libc.LibCString.nmemcpy;
 import static org.lwjgl.system.libc.LibCString.nmemset;
 
-public class GLBuffer implements GLObject, MappedGraphicsBuffer, VertexBuffer, IndexBuffer, StorageBuffer, UniformBuffer {
+public class GLBuffer extends GLObject implements MappedGraphicsBuffer, VertexBuffer, IndexBuffer, StorageBuffer, UniformBuffer {
 
-    private final String name;
-    private int handle;
     private long size;
     private long memoryPtr;
 
-    public GLBuffer(String name) {
-        this.name = getOrElse(name, "UNNAMED_GL_BUFFER");
-        handle = glCreateBuffers();
-    }
-
-    public GLBuffer() {
-        this(null);
-    }
-
-    @Override
-    public String name() {
-        return name;
-    }
-
-    @Override
-    public int handle() {
-        return handle;
+    public GLBuffer(GLContext context) {
+        super(context, glCreateBuffers());
     }
 
     @Override
@@ -53,15 +36,15 @@ public class GLBuffer implements GLObject, MappedGraphicsBuffer, VertexBuffer, I
     }
 
     public void bind(int target) {
-        glBindBuffer(target, handle);
+        glBindBuffer(target, handle());
     }
 
     public void bind(int target, int binding) {
-        glBindBufferBase(target, binding, handle);
+        glBindBufferBase(target, binding, handle());
     }
 
     public void bind(int target, int binding, long offset, long size) {
-        glBindBufferRange(target, binding, handle, offset, size);
+        glBindBufferRange(target, binding, handle(), offset, size);
     }
 
     public void unbind(int target, int index) {
@@ -78,7 +61,7 @@ public class GLBuffer implements GLObject, MappedGraphicsBuffer, VertexBuffer, I
             Log.fatal("This buffer is already allocated. Use reallocate instead");
             return;
         }
-        glNamedBufferStorage(handle, size, storageFlags());
+        glNamedBufferStorage(handle(), size, storageFlags());
         this.size = size;
     }
 
@@ -105,7 +88,7 @@ public class GLBuffer implements GLObject, MappedGraphicsBuffer, VertexBuffer, I
 
         unmapMemory();
 
-        final int srcBuffer = handle;
+        final int srcBuffer = handle();
         final long oldSize = size;
 
         final int destBuffer = newBuffer(newSize);
@@ -116,7 +99,7 @@ public class GLBuffer implements GLObject, MappedGraphicsBuffer, VertexBuffer, I
 
         release();
 
-        handle = destBuffer;
+        setHandle(destBuffer);
         size = newSize;
 
         if(wasMapped) {
@@ -126,19 +109,19 @@ public class GLBuffer implements GLObject, MappedGraphicsBuffer, VertexBuffer, I
 
     @Override
     public void data(ByteBuffer data) {
-        glNamedBufferStorage(handle, data, storageFlags());
+        glNamedBufferStorage(handle(), data, storageFlags());
         this.size = data.remaining();
     }
 
     @Override
     public void data(FloatBuffer data) {
-        glNamedBufferStorage(handle, data, storageFlags());
+        glNamedBufferStorage(handle(), data, storageFlags());
         this.size = data.remaining() * FLOAT32_SIZEOF;
     }
 
     @Override
     public void data(IntBuffer data) {
-        glNamedBufferStorage(handle, data, storageFlags());
+        glNamedBufferStorage(handle(), data, storageFlags());
         this.size = data.remaining() * INT32_SIZEOF;
     }
 
@@ -155,23 +138,23 @@ public class GLBuffer implements GLObject, MappedGraphicsBuffer, VertexBuffer, I
 
     @Override
     public void update(long offset, ByteBuffer data) {
-        glNamedBufferSubData(handle, offset, data);
+        glNamedBufferSubData(handle(), offset, data);
     }
 
     @Override
     public void update(long offset, FloatBuffer data) {
-        glNamedBufferSubData(handle, offset, data);
+        glNamedBufferSubData(handle(), offset, data);
     }
 
     @Override
     public ByteBuffer get(long offset, ByteBuffer buffer) {
-        glGetNamedBufferSubData(handle, offset, buffer);
+        glGetNamedBufferSubData(handle(), offset, buffer);
         return buffer;
     }
 
     @Override
     public void update(long offset, IntBuffer data) {
-        glNamedBufferSubData(handle, offset, data);
+        glNamedBufferSubData(handle(), offset, data);
     }
 
     @Override
@@ -190,7 +173,7 @@ public class GLBuffer implements GLObject, MappedGraphicsBuffer, VertexBuffer, I
             return;
         }
 
-        memoryPtr = nglMapNamedBufferRange(handle, offset, size, mapFlags());
+        memoryPtr = nglMapNamedBufferRange(handle(), offset, size, mapFlags());
     }
 
     @Override
@@ -216,16 +199,16 @@ public class GLBuffer implements GLObject, MappedGraphicsBuffer, VertexBuffer, I
     @Override
     public void unmapMemory() {
         if(mapped()) {
-           glUnmapNamedBuffer(handle);
+           glUnmapNamedBuffer(handle());
            memoryPtr = NULL;
         }
     }
 
     @Override
-    public void release() {
+    public void free() {
         unmapMemory();
-        glDeleteBuffers(handle);
-        handle = NULL;
+        glDeleteBuffers(handle());
+        setHandle(NULL);
         size = 0;
     }
 
@@ -238,8 +221,8 @@ public class GLBuffer implements GLObject, MappedGraphicsBuffer, VertexBuffer, I
     }
 
     protected void recreate() {
-        release();
-        handle = glCreateBuffers();
+        free();
+        setHandle(glCreateBuffers());
     }
 
     private int newBuffer(long size) {
@@ -276,10 +259,10 @@ public class GLBuffer implements GLObject, MappedGraphicsBuffer, VertexBuffer, I
     @Override
     public String toString() {
         return "GLBuffer{" +
-                "name='" + name + '\'' +
-                ", handle=" + handle +
+                "name=" + name() +
+                ", handle=" + handle() +
                 ", size=" + size +
-                ", memoryPtr=" + (memoryPtr == 0 ? "NULL" : memoryPtr) +
+                ", memoryPtr=" + memoryPtr +
                 '}';
     }
 }

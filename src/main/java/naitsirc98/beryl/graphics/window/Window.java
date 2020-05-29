@@ -1,6 +1,5 @@
 package naitsirc98.beryl.graphics.window;
 
-import naitsirc98.beryl.graphics.Graphics;
 import naitsirc98.beryl.images.Image;
 import naitsirc98.beryl.images.PixelFormat;
 import naitsirc98.beryl.util.geometry.Rect;
@@ -522,8 +521,6 @@ public final class Window implements LongHandle {
                 width,
                 height,
                 refreshRate);
-
-        Graphics.get().vsync(Graphics.get().vsync());
 
         return this;
     }

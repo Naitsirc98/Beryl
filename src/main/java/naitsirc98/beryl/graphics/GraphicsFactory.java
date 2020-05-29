@@ -9,11 +9,12 @@ import naitsirc98.beryl.graphics.textures.Texture2D;
 import naitsirc98.beryl.graphics.textures.Texture2DMSAA;
 import naitsirc98.beryl.images.PixelFormat;
 import naitsirc98.beryl.resources.Resource;
+import naitsirc98.beryl.scenes.environment.skybox.pbr.SkyboxPBRTextureFactory;
 
 public interface GraphicsFactory extends Resource {
 
     static GraphicsFactory get() {
-        return Graphics.get().graphicsFactory();
+        return Graphics.graphicsContext().graphicsFactory();
     }
 
     Texture2D newTexture2D();

@@ -1,5 +1,6 @@
 package naitsirc98.beryl.graphics.opengl.rendering.shadows;
 
+import naitsirc98.beryl.graphics.opengl.GLContext;
 import naitsirc98.beryl.graphics.opengl.rendering.GLShadingPipeline;
 import naitsirc98.beryl.graphics.rendering.culling.FrustumCuller;
 import naitsirc98.beryl.graphics.rendering.culling.FrustumCullingPreConditionState;
@@ -20,6 +21,7 @@ import org.lwjgl.system.MemoryStack;
 import java.nio.FloatBuffer;
 
 import static java.lang.Math.max;
+import static java.util.Objects.requireNonNull;
 import static naitsirc98.beryl.graphics.rendering.culling.FrustumCullingPreConditionState.*;
 import static org.lwjgl.opengl.GL11C.*;
 import static org.lwjgl.opengl.GL14C.GL_DEPTH_COMPONENT32;
@@ -27,16 +29,22 @@ import static org.lwjgl.opengl.GL30C.GL_DEPTH_ATTACHMENT;
 
 public class GLShadowCascadeRenderer {
 
+    private final GLContext context;
     private final GLTexture2D depthTexture;
     private final GLFramebuffer framebuffer;
     private final ShadowCascade shadowCascade;
     private final GLShadingPipeline depthShadingPipeline;
 
-    GLShadowCascadeRenderer(GLShadingPipeline depthShadingPipeline) {
+    GLShadowCascadeRenderer(GLContext context, GLShadingPipeline depthShadingPipeline) {
+
+        this.context = requireNonNull(context);
         this.depthShadingPipeline = depthShadingPipeline;
-        depthTexture = new GLTexture2D();
-        framebuffer = new GLFramebuffer();
+
+        depthTexture = new GLTexture2D(context);
+
+        framebuffer = new GLFramebuffer(context);
         framebuffer.setAsDepthOnlyFramebuffer();
+
         shadowCascade = new ShadowCascade();
     }
 

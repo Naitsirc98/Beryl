@@ -54,15 +54,14 @@ public class SimpleSkyboxTextureLoader extends AbstractSkyboxTextureLoader {
 
             try(Image image = ImageFactory.newImage(folder.resolve(faceName).toString(), pixelFormat)) {
 
-                final int width = image.width();
-                final int height = image.height();
+                final int size = image.width();
 
                 if(notAllocated) {
-                    cubemap.allocate(1, width, height, pixelFormat);
+                    cubemap.allocate(1, size, pixelFormat);
                     notAllocated = false;
                 }
 
-                cubemap.update(face, 0, 0, 0, width, height, pixelFormat, image.pixels());
+                cubemap.update(face, 0, 0, 0, size, pixelFormat, image.pixels());
             }
         }
 

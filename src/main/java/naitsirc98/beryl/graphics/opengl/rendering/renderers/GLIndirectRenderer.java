@@ -1,5 +1,6 @@
 package naitsirc98.beryl.graphics.opengl.rendering.renderers;
 
+import naitsirc98.beryl.graphics.opengl.GLContext;
 import naitsirc98.beryl.graphics.opengl.buffers.GLBuffer;
 import naitsirc98.beryl.graphics.opengl.rendering.GLShadingPipeline;
 import naitsirc98.beryl.graphics.opengl.rendering.culling.GLFrustumCuller;
@@ -32,7 +33,7 @@ import static org.lwjgl.opengl.GL11.GL_TRIANGLES;
 import static org.lwjgl.opengl.GL45.*;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
-public abstract class GLIndirectRenderer implements Renderer {
+public abstract class GLIndirectRenderer extends GLRenderer {
 
     private static final String SHADOWS_ENABLED_UNIFORM_NAME = "u_ShadowsEnabled";
     private static final String DIR_SHADOW_MAPS_UNIFORM_NAME = "u_DirShadowMaps";
@@ -46,7 +47,8 @@ public abstract class GLIndirectRenderer implements Renderer {
     private final GLShadowsInfo shadowsInfo;
     private int visibleObjects;
 
-    public GLIndirectRenderer(GLShadowsInfo shadowsInfo) {
+    public GLIndirectRenderer(GLContext context, GLShadowsInfo shadowsInfo) {
+        super(context);
         this.shadowsInfo = shadowsInfo;
     }
 

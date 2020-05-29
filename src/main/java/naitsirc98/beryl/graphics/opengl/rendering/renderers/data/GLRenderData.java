@@ -1,6 +1,7 @@
 package naitsirc98.beryl.graphics.opengl.rendering.renderers.data;
 
 import naitsirc98.beryl.graphics.buffers.MappedGraphicsBuffer;
+import naitsirc98.beryl.graphics.opengl.GLContext;
 import naitsirc98.beryl.graphics.opengl.buffers.GLBuffer;
 import naitsirc98.beryl.graphics.opengl.commands.GLDrawElementsCommand;
 import naitsirc98.beryl.graphics.opengl.vertex.GLVertexArray;
@@ -8,6 +9,7 @@ import naitsirc98.beryl.resources.Resource;
 import naitsirc98.beryl.scenes.Scene;
 import naitsirc98.beryl.scenes.components.meshes.MeshInstanceList;
 
+import static java.util.Objects.requireNonNull;
 import static naitsirc98.beryl.util.types.DataType.INT32_SIZEOF;
 import static naitsirc98.beryl.util.types.DataType.MATRIX4_SIZEOF;
 
@@ -20,6 +22,8 @@ public abstract class GLRenderData implements Resource {
     private static final int TRANSFORMS_BUFFER_MIN_SIZE = MATRIX4_SIZEOF * 2;
 
 
+    private final GLContext context;
+
     private GLVertexArray vertexArray;
 
     private GLBuffer instanceBuffer; // model matrix + material
@@ -29,14 +33,22 @@ public abstract class GLRenderData implements Resource {
     private GLBuffer vertexBuffer;
     private GLBuffer indexBuffer;
 
-    public GLRenderData() {
-        transformsBuffer = new GLBuffer("TRANSFORMS_STORAGE_BUFFER");
-        commandBuffer = new GLBuffer("INSTANCE_COMMAND_BUFFER");
-        meshIndicesBuffer = new GLBuffer("MESH_INDICES_STORAGE_BUFFER");
+    public GLRenderData(GLContext context) {
+
+        this.context = requireNonNull(context);
+
+        transformsBuffer = new GLBuffer(context).name("TRANSFORMS_STORAGE_BUFFER");
+        commandBuffer = new GLBuffer(context).name("INSTANCE_COMMAND_BUFFER");
+        meshIndicesBuffer = new GLBuffer(context).name("MESH_INDICES_STORAGE_BUFFER");
+
         vertexArray = initVertexArray();
         instanceBuffer = initInstanceBuffer();
         vertexBuffer = initVertexBuffer();
         indexBuffer = initIndexBuffer();
+    }
+
+    protected final GLContext context() {
+        return context;
     }
 
     @Override

@@ -1,5 +1,6 @@
 package naitsirc98.beryl.graphics.opengl.shaders;
 
+import naitsirc98.beryl.graphics.opengl.GLContext;
 import naitsirc98.beryl.graphics.opengl.GLObject;
 import naitsirc98.beryl.graphics.opengl.textures.GLTexture;
 import naitsirc98.beryl.logging.Log;
@@ -18,54 +19,38 @@ import static naitsirc98.beryl.core.BerylConfigConstants.OPENGL_ENABLE_WARNINGS_
 import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.system.MemoryStack.stackPush;
 
-public final class GLShaderProgram implements GLObject {
+public final class GLShaderProgram extends GLObject {
 
     private static final int INVALID_UNIFORM_LOCATION = -1;
 
 
-    private final int handle;
-    private final String name;
     private Set<GLShader> shaders;
     private Map<String, Integer> uniformLocations;
     private Map<Integer, GLTexture> boundTextures;
 
-    public GLShaderProgram(String name) {
-        handle = glCreateProgram();
+    public GLShaderProgram(GLContext context) {
+        super(context, glCreateProgram());
         shaders = new HashSet<>();
         uniformLocations = new WeakHashMap<>();
         boundTextures = new HashMap<>();
-        this.name = name;
-    }
-
-    public GLShaderProgram() {
-        this("");
-    }
-
-    @Override
-    public int handle() {
-        return handle;
-    }
-
-    public String name() {
-        return name;
     }
 
     public GLShaderProgram attach(GLShader shader) {
         if(shaders.add(shader)) {
-            glAttachShader(handle, shader.handle());
+            glAttachShader(handle(), shader.handle());
         }
         return this;
     }
 
     public GLShaderProgram link() {
-        glLinkProgram(handle);
+        glLinkProgram(handle());
         checkLinkStatus();
         deleteShaders();
         return this;
     }
 
     public void bind() {
-        glUseProgram(handle);
+        glUseProgram(handle());
     }
 
     public void unbind() {
@@ -75,22 +60,22 @@ public final class GLShaderProgram implements GLObject {
 
     public void deleteShaders() {
         for(GLShader shader : shaders) {
-            glDetachShader(handle, shader.handle());
+            glDetachShader(handle(), shader.handle());
             shader.release();
         }
         shaders.clear();
     }
 
     private void checkLinkStatus() {
-        if(glGetProgrami(handle, GL_LINK_STATUS) != GL_TRUE) {
+        if(glGetProgrami(handle(), GL_LINK_STATUS) != GL_TRUE) {
             Log.fatal("Failed to compile OpenGL shader program: " + this + "\n"
-                    + glGetProgramInfoLog(handle));
+                    + glGetProgramInfoLog(handle()));
         }
     }
 
     public int uniformLocation(String name) {
 
-        int location = uniformLocations.computeIfAbsent(name, n -> glGetUniformLocation(handle, name));
+        int location = uniformLocations.computeIfAbsent(name, this::queryGLUniformLocation);
 
         if(location == INVALID_UNIFORM_LOCATION && OPENGL_ENABLE_WARNINGS_UNIFORMS) {
             Log.warning("Uniform " + name + " does not exists or is not used in shader " + this);
@@ -218,17 +203,13 @@ public final class GLShaderProgram implements GLObject {
     }
 
     @Override
-    public void release() {
-        glDeleteProgram(handle);
+    public void free() {
+        glDeleteProgram(handle());
         shaders = null;
         uniformLocations = null;
     }
 
-    @Override
-    public String toString() {
-        return "GLShaderProgram{" +
-                "handle=" + handle +
-                ", name='" + name + '\'' +
-                '}';
+    private int queryGLUniformLocation(String uniformName) {
+        return glGetUniformLocation(handle(), uniformName);
     }
 }

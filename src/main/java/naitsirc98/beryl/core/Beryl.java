@@ -31,10 +31,6 @@ public final class Beryl {
 
     public static final AtomicBoolean LAUNCHED = new AtomicBoolean(false);
 
-    public static synchronized void launch() {
-        launch(new BerylApplication());
-    }
-
     public static synchronized void launch(BerylApplication application) {
 
         if(!LAUNCHED.compareAndSet(false, true)) {

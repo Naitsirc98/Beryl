@@ -1,5 +1,6 @@
 package naitsirc98.beryl.graphics.opengl.rendering.renderers.data;
 
+import naitsirc98.beryl.graphics.opengl.GLContext;
 import naitsirc98.beryl.graphics.opengl.buffers.GLBuffer;
 import naitsirc98.beryl.graphics.opengl.vertex.GLVertexArray;
 import naitsirc98.beryl.meshes.MeshManager;
@@ -9,6 +10,10 @@ import naitsirc98.beryl.meshes.vertices.VertexLayout;
 import static naitsirc98.beryl.meshes.vertices.VertexLayouts.VERTEX_LAYOUT_3D_INDIRECT;
 
 public class GLStaticRenderData extends GLRenderData {
+
+    public GLStaticRenderData(GLContext context) {
+        super(context);
+    }
 
     @Override
     protected GLBuffer initVertexBuffer() {
@@ -28,7 +33,7 @@ public class GLStaticRenderData extends GLRenderData {
     @Override
     protected GLVertexArray initVertexArray() {
 
-        GLVertexArray vertexArray = new GLVertexArray();
+        GLVertexArray vertexArray = new GLVertexArray(context());
 
         VertexLayout vertexLayout = VERTEX_LAYOUT_3D_INDIRECT;
 
@@ -41,6 +46,6 @@ public class GLStaticRenderData extends GLRenderData {
 
     @Override
     protected GLBuffer initInstanceBuffer() {
-        return new GLBuffer("INSTANCE VERTEX BUFFER");
+        return new GLBuffer(context()).name("INSTANCE VERTEX BUFFER");
     }
 }

@@ -1,16 +1,18 @@
 package naitsirc98.beryl.graphics.opengl.rendering.renderers;
 
+import naitsirc98.beryl.graphics.opengl.GLContext;
 import naitsirc98.beryl.graphics.opengl.rendering.GLShadingPipeline;
 import naitsirc98.beryl.graphics.opengl.rendering.shadows.GLShadowsInfo;
 import naitsirc98.beryl.graphics.rendering.Renderer;
 import naitsirc98.beryl.scenes.Scene;
 
-public class GLMeshRenderer implements Renderer {
+public class GLMeshRenderer extends GLRenderer {
 
     private final GLStaticMeshRenderer staticMeshRenderer;
 
-    public GLMeshRenderer(GLShadowsInfo shadowsInfo) {
-        this.staticMeshRenderer = new GLStaticMeshRenderer(shadowsInfo);
+    public GLMeshRenderer(GLContext context, GLShadowsInfo shadowsInfo) {
+        super(context);
+        this.staticMeshRenderer = new GLStaticMeshRenderer(context, shadowsInfo);
     }
 
     @Override

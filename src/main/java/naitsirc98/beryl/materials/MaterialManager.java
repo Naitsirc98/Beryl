@@ -99,7 +99,7 @@ public final class MaterialManager implements AssetManager<Material> {
 
     @Override
     public void terminate() {
-        destroyAll();
+        // destroyAll();
         storageHandlers.values().forEach(MaterialStorageHandler::terminate);
     }
 

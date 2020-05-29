@@ -1,5 +1,6 @@
 package naitsirc98.beryl.scenes.environment.skybox;
 
+import naitsirc98.beryl.graphics.Graphics;
 import naitsirc98.beryl.graphics.textures.Cubemap;
 import naitsirc98.beryl.graphics.textures.Texture2D;
 import naitsirc98.beryl.logging.Log;
@@ -32,9 +33,9 @@ public class Skybox extends ManagedResource {
     Skybox(Cubemap texture1, Cubemap texture2) {
         maxPrefilterLOD = DEFAULT_MAX_PREFILTER_LOD;
         prefilterLODBias = DEFAULT_PREFILTER_LOD_BIAS;
-        this.texture1 = new SkyboxTexture(this, SkyboxHelper.getSkyboxPBRTextureFactory(), texture1);
-        this.texture2 = new SkyboxTexture(this, SkyboxHelper.getSkyboxPBRTextureFactory(), texture2);
-        brdfTexture = SkyboxHelper.getSkyboxPBRTextureFactory().createBRDFTexture(brdfTextureSize);
+        this.texture1 = new SkyboxTexture(this, texture1);
+        this.texture2 = new SkyboxTexture(this, texture2);
+        brdfTexture = Graphics.graphicsContext().skyboxPBRTextureFactory().createBRDFTexture(brdfTextureSize);
     }
 
     public SkyboxTexture texture1() {

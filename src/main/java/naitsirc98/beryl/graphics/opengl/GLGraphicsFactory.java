@@ -6,6 +6,7 @@ import naitsirc98.beryl.graphics.buffers.StorageBuffer;
 import naitsirc98.beryl.graphics.buffers.UniformBuffer;
 import naitsirc98.beryl.graphics.buffers.VertexBuffer;
 import naitsirc98.beryl.graphics.opengl.buffers.GLBuffer;
+import naitsirc98.beryl.graphics.opengl.skyboxpbr.GLSkyboxPBRTextureFactory;
 import naitsirc98.beryl.graphics.opengl.textures.GLCubemap;
 import naitsirc98.beryl.graphics.opengl.textures.GLTexture2D;
 import naitsirc98.beryl.graphics.opengl.textures.GLTexture2DMSAA;
@@ -16,6 +17,7 @@ import naitsirc98.beryl.images.Image;
 import naitsirc98.beryl.images.ImageFactory;
 import naitsirc98.beryl.images.PixelFormat;
 import naitsirc98.beryl.logging.Log;
+import naitsirc98.beryl.scenes.environment.skybox.pbr.SkyboxPBRTextureFactory;
 import org.lwjgl.system.MemoryStack;
 
 import java.nio.FloatBuffer;
@@ -32,12 +34,17 @@ import static org.lwjgl.system.MemoryUtil.memByteBuffer;
 
 public class GLGraphicsFactory implements GraphicsFactory {
 
+    private final GLContext context;
     private Texture2D whiteTexture2D;
     private Texture2D blackTexture2D;
 
+    public GLGraphicsFactory(GLContext context) {
+        this.context = requireNonNull(context);
+    }
+
     @Override
     public Texture2D newTexture2D() {
-        return new GLTexture2D();
+        return new GLTexture2D(context);
     }
 
     @Override
@@ -59,7 +66,7 @@ public class GLGraphicsFactory implements GraphicsFactory {
     @Override
     public Texture2D newTexture2D(String imagePath, PixelFormat pixelFormat) {
 
-        GLTexture2D texture = new GLTexture2D();
+        GLTexture2D texture = new GLTexture2D(context);
 
         try(Image image = ImageFactory.newImage(imagePath, pixelFormat)) {
             texture.pixels(requireNonNull(image));
@@ -73,7 +80,7 @@ public class GLGraphicsFactory implements GraphicsFactory {
     @Override
     public Texture2D newTexture2DFloat(String imagePath, PixelFormat pixelFormat) {
 
-        GLTexture2D texture = new GLTexture2D();
+        GLTexture2D texture = new GLTexture2D(context);
 
         try(MemoryStack stack = stackPush()) {
 
@@ -108,32 +115,32 @@ public class GLGraphicsFactory implements GraphicsFactory {
 
     @Override
     public Texture2DMSAA newTexture2DMSAA() {
-        return new GLTexture2DMSAA();
+        return new GLTexture2DMSAA(context);
     }
 
     @Override
     public Cubemap newCubemap() {
-        return new GLCubemap();
+        return new GLCubemap(context);
     }
 
     @Override
     public StorageBuffer newStorageBuffer() {
-        return new GLBuffer();
+        return new GLBuffer(context);
     }
 
     @Override
     public VertexBuffer newVertexBuffer() {
-        return new GLBuffer();
+        return new GLBuffer(context);
     }
 
     @Override
     public IndexBuffer newIndexBuffer() {
-        return new GLBuffer();
+        return new GLBuffer(context);
     }
 
     @Override
     public UniformBuffer newUniformBuffer() {
-        return new GLBuffer();
+        return new GLBuffer(context);
     }
 
     private Texture2D newWhiteTexture2D() {

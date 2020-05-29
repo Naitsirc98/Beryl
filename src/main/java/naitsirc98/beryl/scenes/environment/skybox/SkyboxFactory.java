@@ -1,6 +1,8 @@
 package naitsirc98.beryl.scenes.environment.skybox;
 
+import naitsirc98.beryl.graphics.Graphics;
 import naitsirc98.beryl.graphics.textures.Cubemap;
+import naitsirc98.beryl.scenes.environment.skybox.pbr.SkyboxPBRTextureFactory;
 
 public class SkyboxFactory {
 
@@ -33,7 +35,9 @@ public class SkyboxFactory {
 
     public static Skybox newSkyboxHDR(String hdrTexturePath1, int size) {
 
-        Cubemap environmentMap = SkyboxHelper.getSkyboxPBRTextureFactory().createEnvironmentMap(hdrTexturePath1, size);
+        SkyboxPBRTextureFactory skyboxPBRTextureFactory = Graphics.graphicsContext().skyboxPBRTextureFactory();
+
+        Cubemap environmentMap = skyboxPBRTextureFactory.createEnvironmentMap(hdrTexturePath1, size);
 
         return new Skybox(environmentMap, null).enableHDR(true);
     }
@@ -44,9 +48,11 @@ public class SkyboxFactory {
 
     public static Skybox newSkyboxHDR(String hdrTexturePath1, String hdrTexturePath2, int size) {
 
-        Cubemap environmentMap1 = SkyboxHelper.getSkyboxPBRTextureFactory().createEnvironmentMap(hdrTexturePath1, size);
+        SkyboxPBRTextureFactory skyboxPBRTextureFactory = Graphics.graphicsContext().skyboxPBRTextureFactory();
 
-        Cubemap environmentMap2 = SkyboxHelper.getSkyboxPBRTextureFactory().createEnvironmentMap(hdrTexturePath2, size);
+        Cubemap environmentMap1 = skyboxPBRTextureFactory.createEnvironmentMap(hdrTexturePath1, size);
+
+        Cubemap environmentMap2 = skyboxPBRTextureFactory.createEnvironmentMap(hdrTexturePath2, size);
 
         return new Skybox(environmentMap1, environmentMap2).enableHDR(true);
     }

@@ -1,6 +1,7 @@
 package naitsirc98.beryl.graphics.opengl.rendering.renderers;
 
 import naitsirc98.beryl.core.BerylFiles;
+import naitsirc98.beryl.graphics.opengl.GLContext;
 import naitsirc98.beryl.graphics.opengl.buffers.GLBuffer;
 import naitsirc98.beryl.graphics.opengl.shaders.GLShader;
 import naitsirc98.beryl.graphics.opengl.shaders.GLShaderProgram;
@@ -28,7 +29,7 @@ import static org.lwjgl.opengl.GL31C.GL_UNIFORM_BUFFER;
 import static org.lwjgl.opengl.GL32.GL_TEXTURE_CUBE_MAP_SEAMLESS;
 import static org.lwjgl.system.MemoryStack.stackPush;
 
-public class GLSkyboxRenderer implements Renderer {
+public class GLSkyboxRenderer extends GLRenderer {
 
     private static final int MATRICES_BUFFER_SIZE = MATRIX4_SIZEOF * 2;
     private static final int PROJECTION_MATRIX_OFFSET = 0;
@@ -50,7 +51,8 @@ public class GLSkyboxRenderer implements Renderer {
 
     private Matrix4f viewMatrix;
 
-    public GLSkyboxRenderer() {
+    public GLSkyboxRenderer(GLContext context) {
+        super(context);
     }
 
     @Override
@@ -60,19 +62,19 @@ public class GLSkyboxRenderer implements Renderer {
 
         Mesh cubeMesh = StaticMesh.cube();
 
-        vertexArray = new GLVertexArray();
+        vertexArray = new GLVertexArray(context());
 
-        vertexBuffer = new GLBuffer();
+        vertexBuffer = new GLBuffer(context()).name("SKYBOX VERTEX BUFFER");
         vertexBuffer.data(cubeMesh.vertexData());
 
-        indexBuffer = new GLBuffer();
+        indexBuffer = new GLBuffer(context()).name("SKYBOX INDEX BUFFER");
         indexBuffer.data(cubeMesh.indexData());
 
         vertexArray.addVertexBuffer(0, VERTEX_LAYOUT_3D.attributeList(0), vertexBuffer);
 
         vertexArray.setIndexBuffer(indexBuffer);
 
-        matricesUniformBuffer = new GLBuffer();
+        matricesUniformBuffer = new GLBuffer(context()).name("SKYBOX MATRICES BUFFER");
         matricesUniformBuffer.allocate(MATRICES_BUFFER_SIZE);
         matricesUniformBuffer.mapMemory();
 
@@ -151,10 +153,10 @@ public class GLSkyboxRenderer implements Renderer {
     }
 
     private GLShaderProgram createShader() {
-        return new GLShaderProgram("OpenGL Skybox shader")
-                .attach(new GLShader(VERTEX_STAGE).source(SKYBOX_VERTEX_SHADER_PATH))
-                .attach(new GLShader(FRAGMENT_STAGE).source(SKYBOX_FRAGMENT_SHADER_PATH))
-                .link();
+        return new GLShaderProgram(context())
+                .attach(new GLShader(context(), VERTEX_STAGE).source(SKYBOX_VERTEX_SHADER_PATH))
+                .attach(new GLShader(context(), FRAGMENT_STAGE).source(SKYBOX_FRAGMENT_SHADER_PATH))
+                .link().name("OpenGL Skybox shader");
     }
 
 }

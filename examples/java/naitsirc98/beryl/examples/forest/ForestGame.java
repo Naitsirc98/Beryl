@@ -147,17 +147,5 @@ public class ForestGame extends BerylApplication {
                 .position(471.379f, 4.051f, 375.764f)
                 .color(Color.colorBlack())
                 .range(LightRange.MEDIUM));
-
-        lighting.spotLights().add(new SpotLight()
-                .position(scene.camera().position())
-                .direction(new Vector3f(scene.camera().forward()))
-                .color(Color.colorRed().intensify(10)));
-
-        Entity e = scene.newEntity();
-        e.add(LateMutableBehaviour.class).onLateUpdate(self -> {
-            SpotLight light = lighting.spotLights().get(0);
-            light.position(scene.camera().position());
-            light.direction(new Vector3f(scene.camera().forward()));
-        });
     }
 }

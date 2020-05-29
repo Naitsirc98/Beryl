@@ -1,6 +1,6 @@
 package naitsirc98.beryl.graphics.opengl.textures;
 
-import naitsirc98.beryl.graphics.opengl.GLObject;
+import naitsirc98.beryl.graphics.opengl.GLContext;
 import naitsirc98.beryl.graphics.textures.Cubemap;
 import naitsirc98.beryl.images.PixelFormat;
 
@@ -8,37 +8,27 @@ import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 
 import static naitsirc98.beryl.core.BerylConfigConstants.DEBUG;
-import static naitsirc98.beryl.graphics.Graphics.opengl;
 import static naitsirc98.beryl.util.Asserts.assertTrue;
-import static org.lwjgl.opengl.GL11C.GL_TEXTURE_HEIGHT;
 import static org.lwjgl.opengl.GL11C.GL_TEXTURE_INTERNAL_FORMAT;
-import static org.lwjgl.opengl.GL11C.GL_TEXTURE_WIDTH;
-import static org.lwjgl.opengl.GL45.glBindTexture;
-import static org.lwjgl.opengl.GL45.glTexSubImage2D;
 import static org.lwjgl.opengl.GL45.*;
 import static org.lwjgl.opengl.GL45C.glGetTextureLevelParameteri;
 
-public class GLCubemap extends GLTexture implements GLObject, Cubemap {
+public class GLCubemap extends GLTexture implements Cubemap {
 
     private PixelFormat imageFormat;
 
-    public GLCubemap() {
-        super(GL_TEXTURE_CUBE_MAP);
+    public GLCubemap(GLContext context) {
+        super(context, GL_TEXTURE_CUBE_MAP);
     }
 
     @Override
-    public int width() {
-        return glGetTextureLevelParameteri(handle, 0, GL_TEXTURE_WIDTH);
-    }
-
-    @Override
-    public int height() {
-        return glGetTextureLevelParameteri(handle, 0, GL_TEXTURE_HEIGHT);
+    public int faceSize() {
+        return width();
     }
 
     @Override
     public PixelFormat internalFormat() {
-        return mapFromAPI(PixelFormat.class, glGetTextureLevelParameteri(handle, 0, GL_TEXTURE_INTERNAL_FORMAT));
+        return mapFromAPI(PixelFormat.class, glGetTextureLevelParameteri(handle(), 0, GL_TEXTURE_INTERNAL_FORMAT));
     }
 
     @Override
@@ -47,31 +37,31 @@ public class GLCubemap extends GLTexture implements GLObject, Cubemap {
     }
 
     @Override
-    public void allocate(int mipLevels, int width, int height, PixelFormat internalFormat) {
-        glTextureStorage2D(handle, mipLevels, opengl().mapper().mapToSizedInternalFormat(internalFormat), width, height);
+    public void allocate(int mipLevels, int size, PixelFormat internalFormat) {
+        glTextureStorage2D(handle(), mipLevels, context().mapper().mapToSizedInternalFormat(internalFormat), size, size);
     }
 
     @Override
-    public void pixels(int mipLevels, int width, int height, PixelFormat format, ByteBuffer pixels) {
-        allocate(mipLevels, width, height, format);
-        update(0, 0, 0, width, height, format, pixels);
+    public void pixels(int mipLevels, int size, PixelFormat format, ByteBuffer pixels) {
+        allocate(mipLevels, size, format);
+        update(0, 0, 0, size, format, pixels);
     }
 
     @Override
-    public void pixels(int mipLevels, int width, int height, PixelFormat format, FloatBuffer pixels) {
-        allocate(mipLevels, width, height, format);
-        update(0, 0, 0, width, height, format, pixels);
+    public void pixels(int mipLevels, int size, PixelFormat format, FloatBuffer pixels) {
+        allocate(mipLevels, size, format);
+        update(0, 0, 0, size, format, pixels);
     }
 
     @Override
-    public void update(int mipLevel, int xOffset, int yOffset, int width, int height, PixelFormat format, ByteBuffer pixels) {
+    public void update(int mipLevel, int xOffset, int yOffset, int size, PixelFormat format, ByteBuffer pixels) {
 
         bind();
 
         final int lastFace = GL_TEXTURE_CUBE_MAP_POSITIVE_X + 6;
 
         for(int face = GL_TEXTURE_CUBE_MAP_POSITIVE_X;face < lastFace;face++) {
-            glTexSubImage2D(face, mipLevel, xOffset, yOffset, width, height, mapToAPI(format), mapToAPI(format.dataType()), pixels);
+            glTexSubImage2D(face, mipLevel, xOffset, yOffset, size, size, mapToAPI(format), mapToAPI(format.dataType()), pixels);
         }
 
         this.imageFormat = format;
@@ -80,14 +70,14 @@ public class GLCubemap extends GLTexture implements GLObject, Cubemap {
     }
 
     @Override
-    public void update(int mipLevel, int xOffset, int yOffset, int width, int height, PixelFormat format, FloatBuffer pixels) {
+    public void update(int mipLevel, int xOffset, int yOffset, int size, PixelFormat format, FloatBuffer pixels) {
 
         bind();
 
         final int lastFace = GL_TEXTURE_CUBE_MAP_POSITIVE_X + 6;
 
         for(int face = GL_TEXTURE_CUBE_MAP_POSITIVE_X;face < lastFace;face++) {
-            glTexSubImage2D(face, mipLevel, xOffset, yOffset, width, height, mapToAPI(format), mapToAPI(format.dataType()), pixels);
+            glTexSubImage2D(face, mipLevel, xOffset, yOffset, size, size, mapToAPI(format), mapToAPI(format.dataType()), pixels);
         }
 
         this.imageFormat = format;
@@ -96,11 +86,11 @@ public class GLCubemap extends GLTexture implements GLObject, Cubemap {
     }
 
     @Override
-    public void update(Face face, int mipLevel, int xOffset, int yOffset, int width, int height, PixelFormat format, ByteBuffer pixels) {
+    public void update(Face face, int mipLevel, int xOffset, int yOffset, int size, PixelFormat format, ByteBuffer pixels) {
 
         bind();
 
-        glTexSubImage2D(mapToAPI(face), mipLevel, xOffset, yOffset, width, height, mapToAPI(format), mapToAPI(format.dataType()), pixels);
+        glTexSubImage2D(mapToAPI(face), mipLevel, xOffset, yOffset, size, size, mapToAPI(format), mapToAPI(format.dataType()), pixels);
 
         this.imageFormat = format;
 
@@ -108,11 +98,11 @@ public class GLCubemap extends GLTexture implements GLObject, Cubemap {
     }
 
     @Override
-    public void update(Face face, int mipLevel, int xOffset, int yOffset, int width, int height, PixelFormat format, FloatBuffer pixels) {
+    public void update(Face face, int mipLevel, int xOffset, int yOffset, int size, PixelFormat format, FloatBuffer pixels) {
 
         bind();
 
-        glTexSubImage2D(mapToAPI(face), mipLevel, xOffset, yOffset, width, height, mapToAPI(format), mapToAPI(format.dataType()), pixels);
+        glTexSubImage2D(mapToAPI(face), mipLevel, xOffset, yOffset, size, size, mapToAPI(format), mapToAPI(format.dataType()), pixels);
 
         this.imageFormat = format;
 
@@ -132,7 +122,7 @@ public class GLCubemap extends GLTexture implements GLObject, Cubemap {
     }
 
     public void bind() {
-        glBindTexture(GL_TEXTURE_CUBE_MAP, handle);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, handle());
     }
 
     public void unbind() {

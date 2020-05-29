@@ -3,6 +3,7 @@ package naitsirc98.beryl.graphics.opengl.rendering.renderers;
 import naitsirc98.beryl.core.BerylFiles;
 import naitsirc98.beryl.events.EventManager;
 import naitsirc98.beryl.events.window.WindowResizedEvent;
+import naitsirc98.beryl.graphics.opengl.GLContext;
 import naitsirc98.beryl.graphics.opengl.buffers.GLBuffer;
 import naitsirc98.beryl.graphics.opengl.rendering.GLShadingPipeline;
 import naitsirc98.beryl.graphics.opengl.shaders.GLShader;
@@ -43,7 +44,7 @@ import static org.lwjgl.opengl.GL30.*;
 import static org.lwjgl.opengl.GL31C.GL_UNIFORM_BUFFER;
 import static org.lwjgl.system.MemoryStack.stackPush;
 
-public class GLWaterRenderer implements Renderer {
+public class GLWaterRenderer extends GLRenderer {
 
     public static final int QUAD_INDEX_COUNT = 6;
 
@@ -66,7 +67,8 @@ public class GLWaterRenderer implements Renderer {
     private final GLMeshRenderer meshRenderer;
     private final GLSkyboxRenderer skyboxRenderer;
 
-    public GLWaterRenderer(GLMeshRenderer meshRenderer, GLSkyboxRenderer skyboxRenderer) {
+    public GLWaterRenderer(GLContext context, GLMeshRenderer meshRenderer, GLSkyboxRenderer skyboxRenderer) {
+        super(context);
         this.meshRenderer = meshRenderer;
         this.skyboxRenderer = skyboxRenderer;
     }
@@ -82,12 +84,12 @@ public class GLWaterRenderer implements Renderer {
 
         quadMesh = StaticMesh.quad();
 
-        vertexArray = new GLVertexArray();
+        vertexArray = new GLVertexArray(context());
 
-        vertexBuffer = new GLBuffer();
+        vertexBuffer = new GLBuffer(context()).name("WATER VERTEX BUFFER");
         vertexBuffer.data(quadMesh.vertexData());
 
-        indexBuffer = new GLBuffer();
+        indexBuffer = new GLBuffer(context()).name("WATER INDEX BUFFER");
         indexBuffer.data(quadMesh.indexData());
 
         vertexArray.addVertexBuffer(0, VERTEX_LAYOUT_3D.attributeList(0), vertexBuffer);
@@ -370,13 +372,13 @@ public class GLWaterRenderer implements Renderer {
     }
 
     private void createDepthTexture(int width, int height) {
-        depthTexture = new GLTexture2D();
+        depthTexture = new GLTexture2D(context());
         depthTexture.reallocate(1, width, height, GL_DEPTH_COMPONENT24);
     }
 
     private GLFramebuffer createFramebuffer() {
 
-        GLFramebuffer framebuffer = new GLFramebuffer();
+        GLFramebuffer framebuffer = new GLFramebuffer(context());
 
         framebuffer.attach(GL_DEPTH_ATTACHMENT, depthTexture, 0);
 
@@ -388,9 +390,9 @@ public class GLWaterRenderer implements Renderer {
     }
 
     private GLShaderProgram createShader() {
-        return new GLShaderProgram("OpenGL Water shader")
-                .attach(new GLShader(VERTEX_STAGE).source(BerylFiles.getPath("shaders/water/water.vert")))
-                .attach(new GLShader(FRAGMENT_STAGE).source(BerylFiles.getPath("shaders/water/water.frag")))
-                .link();
+        return new GLShaderProgram(context())
+                .attach(new GLShader(context(), VERTEX_STAGE).source(BerylFiles.getPath("shaders/water/water.vert")))
+                .attach(new GLShader(context(), FRAGMENT_STAGE).source(BerylFiles.getPath("shaders/water/water.frag")))
+                .link().name("OpenGL Water shader");
     }
 }

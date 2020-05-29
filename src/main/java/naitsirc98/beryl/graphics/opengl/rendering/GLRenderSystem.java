@@ -2,6 +2,8 @@ package naitsirc98.beryl.graphics.opengl.rendering;
 
 import naitsirc98.beryl.events.EventManager;
 import naitsirc98.beryl.events.window.WindowResizedEvent;
+import naitsirc98.beryl.graphics.Graphics;
+import naitsirc98.beryl.graphics.opengl.GLContext;
 import naitsirc98.beryl.graphics.opengl.GLShadingPipelineManager;
 import naitsirc98.beryl.graphics.opengl.rendering.renderers.GLMeshRenderer;
 import naitsirc98.beryl.graphics.opengl.rendering.renderers.GLSkyboxRenderer;
@@ -20,9 +22,10 @@ import naitsirc98.beryl.util.Color;
 import naitsirc98.beryl.util.geometry.Sizec;
 
 import static java.lang.StrictMath.max;
+import static java.util.Objects.requireNonNull;
 import static naitsirc98.beryl.core.BerylConfiguration.MSAA_SAMPLES;
-import static naitsirc98.beryl.graphics.Graphics.opengl;
 import static org.lwjgl.glfw.GLFW.glfwSwapBuffers;
+import static org.lwjgl.glfw.GLFW.glfwSwapInterval;
 import static org.lwjgl.opengl.GL11.glFinish;
 import static org.lwjgl.opengl.GL11.glViewport;
 import static org.lwjgl.opengl.GL11C.GL_COLOR_BUFFER_BIT;
@@ -33,7 +36,7 @@ public final class GLRenderSystem implements APIRenderSystem {
 
     private static final int DEFAULT_FRAMEBUFFER = 0;
 
-    private final long glContext;
+    private final GLContext context;
 
     private GLFramebuffer mainFramebuffer;
 
@@ -48,16 +51,16 @@ public final class GLRenderSystem implements APIRenderSystem {
 
     private GLRenderSystem() {
 
-        glContext = opengl().handle();
+        this.context = (GLContext) requireNonNull(Graphics.graphicsContext());
 
         createMainFramebuffer();
 
-        skyboxRenderer = new GLSkyboxRenderer();
-        shadowRenderer = new GLShadowRenderer();
-        meshRenderer = new GLMeshRenderer(shadowRenderer);
-        waterRenderer = new GLWaterRenderer(meshRenderer, skyboxRenderer);
+        skyboxRenderer = new GLSkyboxRenderer(context);
+        shadowRenderer = new GLShadowRenderer(context);
+        meshRenderer = new GLMeshRenderer(context, shadowRenderer);
+        waterRenderer = new GLWaterRenderer(context, meshRenderer, skyboxRenderer);
 
-        shadingPipelineManager = new GLShadingPipelineManager();
+        shadingPipelineManager = new GLShadingPipelineManager(context);
 
         EventManager.addEventCallback(WindowResizedEvent.class, this::recreateFramebuffer);
     }
@@ -93,6 +96,8 @@ public final class GLRenderSystem implements APIRenderSystem {
     @Override
     public void prepare(Scene scene) {
 
+        setVsync(scene.renderInfo().vsync());
+
         currentShadingPipeline = getCurrentShadingPipeline(scene.renderInfo());
 
         meshRenderer.prepare(scene);
@@ -126,12 +131,9 @@ public final class GLRenderSystem implements APIRenderSystem {
 
     @Override
     public void end() {
-
         glFinish();
-
         copyFramebufferToScreen();
-
-        glfwSwapBuffers(glContext);
+        glfwSwapBuffers(context.handle());
     }
 
     private void clear(Color color) {
@@ -151,12 +153,12 @@ public final class GLRenderSystem implements APIRenderSystem {
         final int width = max(Window.get().width(), 1);
         final int height = max(Window.get().height(), 1);
 
-        mainFramebuffer = new GLFramebuffer();
+        mainFramebuffer = new GLFramebuffer(context);
 
-        GLTexture2DMSAA colorBuffer = new GLTexture2DMSAA();
+        GLTexture2DMSAA colorBuffer = new GLTexture2DMSAA(context);
         colorBuffer.allocate(MSAA_SAMPLES.get(), width, height, PixelFormat.RGBA);
 
-        GLRenderbuffer depthStencilBuffer = new GLRenderbuffer();
+        GLRenderbuffer depthStencilBuffer = new GLRenderbuffer(context);
         depthStencilBuffer.storageMultisample(width, height, GL_DEPTH24_STENCIL8, MSAA_SAMPLES.get());
 
         mainFramebuffer.attach(GL_COLOR_ATTACHMENT0, colorBuffer, 0);
@@ -176,5 +178,9 @@ public final class GLRenderSystem implements APIRenderSystem {
 
     private GLShadingPipeline getCurrentShadingPipeline(SceneRenderInfo renderInfo) {
         return shadingPipelineManager.getShadingPipeline(renderInfo);
+    }
+
+    private void setVsync(boolean vsync) {
+        glfwSwapInterval(vsync ? 1 : 0);
     }
 }

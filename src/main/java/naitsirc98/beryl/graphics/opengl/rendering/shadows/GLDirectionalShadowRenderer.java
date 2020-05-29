@@ -1,8 +1,10 @@
 package naitsirc98.beryl.graphics.opengl.rendering.shadows;
 
 import naitsirc98.beryl.core.BerylFiles;
+import naitsirc98.beryl.graphics.opengl.GLContext;
 import naitsirc98.beryl.graphics.opengl.rendering.renderers.GLMeshRenderer;
 import naitsirc98.beryl.graphics.opengl.rendering.GLShadingPipeline;
+import naitsirc98.beryl.graphics.opengl.rendering.renderers.GLRenderer;
 import naitsirc98.beryl.graphics.opengl.shaders.GLShader;
 import naitsirc98.beryl.graphics.opengl.shaders.GLShaderProgram;
 import naitsirc98.beryl.graphics.opengl.textures.GLTexture2D;
@@ -15,6 +17,7 @@ import java.util.Arrays;
 
 import static java.lang.Math.min;
 import static java.lang.Math.pow;
+import static java.util.Objects.requireNonNull;
 import static naitsirc98.beryl.graphics.ShaderStage.FRAGMENT_STAGE;
 import static naitsirc98.beryl.graphics.ShaderStage.VERTEX_STAGE;
 import static naitsirc98.beryl.graphics.opengl.rendering.shadows.GLShadowsInfo.MAX_SHADOW_CASCADES_COUNT;
@@ -22,12 +25,16 @@ import static naitsirc98.beryl.util.Maths.lerp;
 
 public class GLDirectionalShadowRenderer {
 
+    private final GLContext context;
     private final GLShadingPipeline shadingPipeline;
     private final GLShadowCascadeRenderer[] shadowCascadeRenderers;
     private GLTexture2D[] directionalDepthTextures;
     private ShadowCascade[] shadowCascades;
 
-    public GLDirectionalShadowRenderer() {
+    public GLDirectionalShadowRenderer(GLContext context) {
+
+        this.context = requireNonNull(context);
+
         shadingPipeline = createShadingPipeline();
         shadowCascadeRenderers = createShadowCascadeRenderers();
         directionalDepthTextures = getDirectionalDepthTextures();
@@ -55,7 +62,7 @@ public class GLDirectionalShadowRenderer {
 
     public void bakeDirectionalShadows(Scene scene, GLMeshRenderer meshRenderer) {
 
-        shadingPipeline.setShadingModel(scene.renderInfo().getShadingModel());
+        shadingPipeline.setShadingModel(scene.renderInfo().shadingModel());
 
         DirectionalLight light = scene.environment().lighting().directionalLight();
 
@@ -110,7 +117,7 @@ public class GLDirectionalShadowRenderer {
         GLShadowCascadeRenderer[] shadowCascadeRenderers = new GLShadowCascadeRenderer[MAX_SHADOW_CASCADES_COUNT];
 
         for(int i = 0;i < MAX_SHADOW_CASCADES_COUNT;i++) {
-            shadowCascadeRenderers[i] = new GLShadowCascadeRenderer(shadingPipeline);
+            shadowCascadeRenderers[i] = new GLShadowCascadeRenderer(context, shadingPipeline);
         }
 
         return shadowCascadeRenderers;
@@ -136,9 +143,9 @@ public class GLDirectionalShadowRenderer {
     }
 
     private GLShaderProgram createShader() {
-        return new GLShaderProgram("OpenGL dir shadows shader")
-                .attach(new GLShader(VERTEX_STAGE).source(BerylFiles.getPath("shaders/depth/directional_depth.vert")))
-                .attach(new GLShader(FRAGMENT_STAGE).source(BerylFiles.getPath("shaders/depth/depth.frag")))
-                .link();
+        return new GLShaderProgram(context)
+                .attach(new GLShader(context, VERTEX_STAGE).source(BerylFiles.getPath("shaders/depth/directional_depth.vert")))
+                .attach(new GLShader(context, FRAGMENT_STAGE).source(BerylFiles.getPath("shaders/depth/depth.frag")))
+                .link().name("OpenGL dir shadows shader");
     }
 }

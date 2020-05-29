@@ -1,5 +1,6 @@
 package naitsirc98.beryl.graphics.opengl.textures;
 
+import naitsirc98.beryl.graphics.opengl.GLContext;
 import naitsirc98.beryl.graphics.textures.Texture2D;
 import naitsirc98.beryl.images.PixelFormat;
 import naitsirc98.beryl.logging.Log;
@@ -12,8 +13,8 @@ import static org.lwjgl.opengl.GL45C.*;
 
 public final class GLTexture2D extends GLTexture implements Texture2D {
 
-    public GLTexture2D() {
-        super(GL_TEXTURE_2D);
+    public GLTexture2D(GLContext context) {
+        super(context, GL_TEXTURE_2D);
         setDefaultSamplerState();
     }
 
@@ -22,7 +23,7 @@ public final class GLTexture2D extends GLTexture implements Texture2D {
             Log.fatal("Texture has been already allocated. Use reallocate instead");
             return;
         }
-        glTextureStorage2D(handle, mipLevels, internalFormat, width, height);
+        glTextureStorage2D(handle(), mipLevels, internalFormat, width, height);
         allocated = true;
     }
 
@@ -32,25 +33,21 @@ public final class GLTexture2D extends GLTexture implements Texture2D {
             Log.fatal("Texture has been already allocated. Use reallocate instead");
             return;
         }
-        glTextureStorage2D(handle, mipLevels, mapper().mapToSizedInternalFormat(internalFormat), width, height);
+        glTextureStorage2D(handle(), mipLevels, mapper().mapToSizedInternalFormat(internalFormat), width, height);
         allocated = true;
     }
 
     public void reallocate(int mipLevels, int width, int height, int internalPixelFormat) {
         if(allocated) {
             free();
-            handle = glCreateTextures(target);
+            setHandle(glCreateTextures(target));
         }
         allocate(mipLevels, width, height, internalPixelFormat);
     }
 
     @Override
     public void reallocate(int mipLevels, int width, int height, PixelFormat internalPixelFormat) {
-        if(allocated) {
-            free();
-            handle = glCreateTextures(target);
-        }
-        allocate(mipLevels, width, height, internalPixelFormat);
+        reallocate(mipLevels, width, height, mapper().mapToSizedInternalFormat(internalPixelFormat));
     }
 
     @Override
@@ -67,13 +64,13 @@ public final class GLTexture2D extends GLTexture implements Texture2D {
 
     @Override
     public void update(int mipLevel, int xOffset, int yOffset, int width, int height, PixelFormat format, ByteBuffer pixels) {
-        glTextureSubImage2D(handle, mipLevel, xOffset, yOffset, width, height, mapper().mapToFormat(format), mapToAPI(format.dataType()), pixels);
+        glTextureSubImage2D(handle(), mipLevel, xOffset, yOffset, width, height, mapper().mapToFormat(format), mapToAPI(format.dataType()), pixels);
         this.imageFormat = format;
     }
 
     @Override
     public void update(int mipLevel, int xOffset, int yOffset, int width, int height, PixelFormat format, FloatBuffer pixels) {
-        glTextureSubImage2D(handle, mipLevel, xOffset, yOffset, width, height, mapper().mapToFormat(format), mapToAPI(format.dataType()), pixels);
+        glTextureSubImage2D(handle(), mipLevel, xOffset, yOffset, width, height, mapper().mapToFormat(format), mapToAPI(format.dataType()), pixels);
         this.imageFormat = format;
     }
 

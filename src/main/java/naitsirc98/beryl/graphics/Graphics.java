@@ -1,6 +1,5 @@
 package naitsirc98.beryl.graphics;
 
-import naitsirc98.beryl.core.Beryl;
 import naitsirc98.beryl.core.BerylSystem;
 import naitsirc98.beryl.core.BerylSystemManager;
 import naitsirc98.beryl.graphics.opengl.GLContext;
@@ -20,16 +19,8 @@ public final class Graphics extends BerylSystem {
     @Singleton
     private static Graphics instance;
 
-    public static GraphicsContext get() {
+    public static GraphicsContext graphicsContext() {
         return instance.graphicsContext;
-    }
-
-    public static GLContext opengl() {
-        return (GLContext) instance.graphicsContext;
-    }
-
-    public static boolean isGraphicsThread() {
-        return Thread.currentThread().getName().equals(Beryl.GRAPHICS_THREAD_NAME);
     }
 
 
