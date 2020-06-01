@@ -38,6 +38,7 @@ layout(std140, binding = 5) uniform ShadowsInfo {
 
 layout(std140, binding = 6) uniform SkyboxInfo {
     Skybox u_Skybox;
+    bool u_SkyboxPresent;
 };
 
 layout(location = 0) in FragmentData {
@@ -80,7 +81,6 @@ vec3 computePointLights() {
 
     vec3 L0 = vec3(0.0);
 
-    // TODO: use u_PointLightCount
     for(int i = 0; i < u_PointLightsCount; ++i) {
 
         Light light = u_PointLights[i];
@@ -130,6 +130,18 @@ vec4 applyFogEffect(vec4 fragmentColor) {
     return vec4(finalColor, fragmentColor.a);
 }
 
+vec3 getDiffuseIBL() {
+    return info.albedo * texture(u_Skybox.irradianceMap, info.normal).rgb;
+}
+
+vec3 getSpecularIBL(vec3 F, float angle) {
+    // Sample both the pre-filter map and the BRDF lut and combine them together as per the Split-Sum approximation to get the IBL specular part.
+    float prefilterLOD = info.roughness * u_Skybox.maxPrefilterLOD + u_Skybox.prefilterLODBias;
+    vec3 prefilteredColor = textureLod(u_Skybox.prefilterMap, info.reflectDirection, prefilterLOD).rgb;
+    vec2 brdf = texture(u_Skybox.brdfMap, vec2(angle, info.roughness)).rg;
+    return prefilteredColor * (F * brdf.x + brdf.y);    
+}
+
 vec4 computeLighting() {
 
     vec2 texCoords = fragment.texCoords * material.tiling;
@@ -165,16 +177,14 @@ vec4 computeLighting() {
     vec3 kD = 1.0 - kS;
     kD = kD * (1.0 - shadows) * (1.0 - info.metallic);
 
-    vec3 irradiance = texture(u_Skybox.irradianceMap, info.normal).rgb;
-    vec3 diffuse = irradiance * info.albedo;
+    vec3 ambient;
 
-    // sample both the pre-filter map and the BRDF lut and combine them together as per the Split-Sum approximation to get the IBL specular part.
-    float prefilterLOD = info.roughness * u_Skybox.maxPrefilterLOD + u_Skybox.prefilterLODBias;
-    vec3 prefilteredColor = textureLod(u_Skybox.prefilterMap, info.reflectDirection, prefilterLOD).rgb;
-    vec2 brdf = texture(u_Skybox.brdfMap, vec2(angle, info.roughness)).rg;
-    vec3 specular = prefilteredColor * (F * brdf.x + brdf.y);
-
-    vec3 ambient = (kD * diffuse + specular) * info.occlusion;
+    if(u_SkyboxPresent) {
+        // If skybox is present, then apply Image Based Lighting (IBL)
+        ambient = (kD * getDiffuseIBL() + getSpecularIBL(F, angle)) * info.occlusion;
+    } else {
+        ambient = kD * u_AmbientColor.rgb * info.albedo * info.occlusion;
+    }
 
     vec3 color = ambient + L0;
 

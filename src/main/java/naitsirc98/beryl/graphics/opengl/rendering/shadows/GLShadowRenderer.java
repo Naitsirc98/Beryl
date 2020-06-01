@@ -7,6 +7,7 @@ import naitsirc98.beryl.graphics.opengl.rendering.renderers.GLRenderer;
 import naitsirc98.beryl.graphics.opengl.textures.GLTexture2D;
 import naitsirc98.beryl.graphics.rendering.shadows.ShadowCascade;
 import naitsirc98.beryl.scenes.Scene;
+import naitsirc98.beryl.scenes.environment.SceneLighting;
 import org.lwjgl.system.MemoryStack;
 
 import java.nio.ByteBuffer;
@@ -32,7 +33,15 @@ public class GLShadowRenderer extends GLRenderer implements GLShadowsInfo {
     }
 
     public void render(Scene scene, GLMeshRenderer meshRenderer) {
+
+        SceneLighting lighting = scene.environment().lighting();
+
+        if(lighting.directionalLight() == null) {
+            return;
+        }
+
         directionalShadowRenderer.bakeDirectionalShadows(scene, meshRenderer);
+
         updateShadowsBuffer(scene);
     }
 

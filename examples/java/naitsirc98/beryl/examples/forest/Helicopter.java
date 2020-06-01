@@ -3,6 +3,8 @@ package naitsirc98.beryl.examples.forest;
 import naitsirc98.beryl.audio.AudioClip;
 import naitsirc98.beryl.core.BerylFiles;
 import naitsirc98.beryl.core.Time;
+import naitsirc98.beryl.lights.LightRange;
+import naitsirc98.beryl.lights.SpotLight;
 import naitsirc98.beryl.materials.Material;
 import naitsirc98.beryl.materials.PhongMaterial;
 import naitsirc98.beryl.meshes.StaticMesh;

@@ -8,6 +8,7 @@ import naitsirc98.beryl.graphics.window.Window;
 import naitsirc98.beryl.input.Input;
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.materials.MaterialManager;
+import naitsirc98.beryl.scenes.Scene;
 import naitsirc98.beryl.scenes.SceneManager;
 import naitsirc98.beryl.tasks.TaskManager;
 import naitsirc98.beryl.util.Version;
@@ -80,7 +81,7 @@ public final class Beryl {
 
         Log.info("Starting Application...");
 
-        application.start();
+        application.start(getFirstScene());
 
         renderSystem = systems.getRenderSystem().getAPIRenderSystem();
         audioSystem = systems.getAudioSystem();
@@ -116,6 +117,19 @@ public final class Beryl {
                 lastDebugReport = Time.time();
             }
         }
+    }
+
+    private Scene getFirstScene() {
+
+        if(FIRST_SCENE_NAME == null) {
+            return null;
+        }
+
+        Scene scene = SceneManager.newScene(FIRST_SCENE_NAME);
+
+        SceneManager.setScene(scene);
+
+        return scene;
     }
 
     private void setup() {

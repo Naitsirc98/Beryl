@@ -112,7 +112,11 @@ void main() {
 
 vec4 applyFogEffect(vec4 fragmentColor) {
 
-    vec3 fogColor = u_Fog.color.rgb * (u_AmbientColor.rgb * u_DirectionalLight.color.rgb);
+    vec3 fogColor = u_Fog.color.rgb * u_AmbientColor.rgb;
+
+    if(u_DirectionalLight.type != NULL) {
+        fogColor *= u_DirectionalLight.color.rgb;
+    }
 
     float distance = length(u_Camera.position.xyz - fragment.position) / 100.0;
 

@@ -33,26 +33,24 @@ public class SolarSystem extends BerylApplication {
     public SolarSystem() {
         BerylConfiguration.SHADOWS_ENABLED_ON_START.set(false);
         BerylConfiguration.SCENE_SHADING_MODEL.set(ShadingModel.PHONG);
+        BerylConfiguration.FIRST_SCENE_NAME.set("Solar System");
         BerylConfigurationHelper.debugConfiguration();
     }
 
     @Override
-    protected void onStart() {
-
-        Scene scene = SceneManager.newScene("Solar System");
+    protected void onStart(Scene scene) {
 
         setPlanetsAndSun(scene);
 
         setEnvironment(scene);
 
         setCamera(scene);
-
-        SceneManager.setScene(scene);
     }
 
     private void setCamera(Scene scene) {
         Entity cameraController = scene.newEntity();
         cameraController.add(CameraController.class);
+        scene.camera().position(90.476f, 1.485f, -1.656f).lookAt(700, 0);
     }
 
     private void setPlanetsAndSun(Scene scene) {

@@ -49,6 +49,7 @@ public class StressTest extends BerylApplication {
         BerylConfiguration.SHADOWS_ENABLED_ON_START.set(false);
         BerylConfiguration.SCENE_SHADING_MODEL.set(ShadingModel.PHONG);
         BerylConfiguration.GRAPHICS_MULTITHREADING_ENABLED.set(true);
+        BerylConfiguration.FIRST_SCENE_NAME.set("Stress Test");
         BerylConfigurationHelper.developmentConfiguration();
 
         try {
@@ -63,9 +64,7 @@ public class StressTest extends BerylApplication {
     }
 
     @Override
-    protected void onStart() {
-
-        Scene scene = SceneManager.newScene("Stress");
+    protected void onStart(Scene scene) {
 
         Entity cameraController = scene.newEntity();
         cameraController.add(CameraController.class);
@@ -89,8 +88,6 @@ public class StressTest extends BerylApplication {
         scene.environment().lighting().directionalLight(new DirectionalLight().direction(0, 0, -1));
 
         createAndDestroyObjects(scene, rand, cubeMesh);
-
-        SceneManager.setScene(scene);
     }
 
     private void createAndDestroyObjects(Scene scene, Random rand, StaticMesh cubeMesh) {

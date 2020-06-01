@@ -1,11 +1,8 @@
 package naitsirc98.beryl.core;
 
 import naitsirc98.beryl.logging.Log;
+import naitsirc98.beryl.scenes.Scene;
 import naitsirc98.beryl.util.types.Singleton;
-
-import java.util.function.Consumer;
-
-import static java.util.Objects.requireNonNull;
 
 public abstract class BerylApplication {
 
@@ -30,7 +27,7 @@ public abstract class BerylApplication {
 
     }
 
-    protected abstract void onStart();
+    protected abstract void onStart(Scene scene);
 
     protected void onUpdate() {
 
@@ -57,93 +54,9 @@ public abstract class BerylApplication {
 
     }
 
-    void start() {
+    void start(Scene scene) {
         running = true;
-        onStart();
-    }
-
-    public static final class Builder {
-
-        private Runnable onInit = () -> {};
-        private Runnable onStart = () -> {};
-        private Runnable onUpdate = () -> {};
-        private Runnable onRenderBegin = () -> {};
-        private Runnable onRenderEnd = () -> {};
-        private Consumer<Throwable> onError = e -> {};
-        private Runnable onTerminate = () -> {};
-
-        public Builder() {
-        }
-
-        public Builder onInit(Runnable onInit) {
-            this.onInit = requireNonNull(onInit);
-            return this;
-        }
-
-        public Builder onStart(Runnable onStart) {
-            this.onStart = requireNonNull(onStart);
-            return this;
-        }
-
-        public Builder onUpdate(Runnable onUpdate) {
-            this.onUpdate = requireNonNull(onUpdate);
-            return this;
-        }
-
-        public Builder onRenderBegin(Runnable onRender) {
-            this.onRenderBegin = requireNonNull(onRender);
-            return this;
-        }
-
-        public Builder onRenderEnd(Runnable onRender) {
-            this.onRenderEnd = requireNonNull(onRender);
-            return this;
-        }
-
-        public Builder onError(Consumer<Throwable> onError) {
-            this.onError = requireNonNull(onError);
-            return this;
-        }
-
-        public Builder onTerminate(Runnable onTerminate) {
-            this.onTerminate = requireNonNull(onTerminate);
-            return this;
-        }
-
-        public BerylApplication build() {
-            return new BerylApplication() {
-
-                @Override
-                protected void onInit() {
-                    onInit.run();
-                }
-
-                @Override
-                protected void onStart() {
-                    onStart.run();
-                }
-
-                @Override
-                protected void onUpdate() {
-                    onUpdate.run();
-                }
-
-                @Override
-                protected void onRenderBegin() {
-                    onRenderBegin.run();
-                }
-
-                @Override
-                protected void onError(Throwable error) {
-                    onError.accept(error);
-                }
-
-                @Override
-                protected void onTerminate() {
-                    onTerminate.run();
-                }
-            };
-        }
+        onStart(scene);
     }
 
 }

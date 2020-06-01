@@ -91,6 +91,8 @@ public final class Camera {
 		sensitivity = DEFAULT_SENSITIVITY;
 		exposure = DEFAULT_EXPOSURE;
 
+		lastX = lastY = Float.MIN_VALUE;
+
 		viewMatrix = new Matrix4f();
 		projectionMatrix = new Matrix4f();
 		projectionViewMatrix = new Matrix4f();
@@ -136,14 +138,6 @@ public final class Camera {
 		modify();
 
 		return this;
-	}
-
-	public float lastLookAtX() {
-		return lastX;
-	}
-
-	public float lastLookAtY() {
-		return lastY;
 	}
 	
 	public void move(Direction direction, float amount) {

@@ -96,6 +96,8 @@ class DefaultBerylConfigurations {
 
     static final boolean DEFAULT_GRAPHICS_MULTITHREADING_ENABLED = true;
 
+    static final String DEFAULT_FIRST_SCENE_NAME = "__Unnamed Scene";
+
     static void ensureDefaultConfigurationsClassIsLoaded() {
     }
 }

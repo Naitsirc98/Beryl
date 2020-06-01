@@ -7,6 +7,9 @@ import naitsirc98.beryl.lights.SpotLight;
 import java.util.ArrayList;
 import java.util.List;
 
+import static java.lang.StrictMath.max;
+import static java.lang.StrictMath.min;
+
 public final class SceneLighting {
 
     public static final int MAX_POINT_LIGHTS = 10;
@@ -27,6 +30,13 @@ public final class SceneLighting {
         spotLights = new ArrayList<>();
         shadowsMaxDistance = DEFAULT_SHADOWS_MAX_DISTANCE;
         shadowMapSize = DEFAULT_SHADOW_MAP_SIZE;
+    }
+
+    public int lightsCount() {
+        int count = directionalLight == null ? 0 : 1;
+        count += min(pointLights.size(), 10);
+        count += min(spotLights.size(), 10);
+        return count;
     }
 
     public DirectionalLight directionalLight() {

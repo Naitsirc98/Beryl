@@ -37,7 +37,7 @@ layout(location = 0) in FragmentData {
     vec3 position;
     vec3 normal;
     vec2 textureCoords;
-} fragmentData;
+} fragment;
 
 
 layout(location = 0) out vec4 out_FragmentColor;
@@ -59,7 +59,7 @@ float computeAngle(vec3 v1, vec3 v2) {
 
 float computeAttenuation(vec3 lightPosition, float constant, float linear, float quadratic) {
 
-    float distance = length(lightPosition - fragmentData.position);
+    float distance = length(lightPosition - fragment.position);
 
     return 1.0 /
         (constant + linear * distance + quadratic * (distance * distance));
@@ -94,7 +94,7 @@ vec3 computeDirectionalLight(Light light) {
 
 vec3 computePointLight(Light light) {
 
-    vec3 direction = normalize(light.position.xyz - fragmentData.position);
+    vec3 direction = normalize(light.position.xyz - fragment.position);
 
     float attenuation = computeAttenuation(light.position.xyz, light.constant, light.linear, light.quadratic);
 
@@ -103,7 +103,7 @@ vec3 computePointLight(Light light) {
 
 vec3 computeSpotLight(Light light) {
 
-    vec3 direction = normalize(light.position.xyz - fragmentData.position);
+    vec3 direction = normalize(light.position.xyz - fragment.position);
 
     float attenuation = computeAttenuation(light.position.xyz, light.constant, light.linear, light.quadratic);
 
@@ -147,7 +147,7 @@ float getWaterDistance(vec2 depthCoords) {
 
 void main() {
 
-    vec2 ndc = (fragmentData.clipSpace.xy / fragmentData.clipSpace.w) / 2.0 + 0.5;
+    vec2 ndc = (fragment.clipSpace.xy / fragment.clipSpace.w) / 2.0 + 0.5;
 
     vec2 reflectionTexCoords = vec2(ndc.x, -ndc.y);
     vec2 refractionTexCoords = ndc;
@@ -161,7 +161,7 @@ void main() {
 
     if(testMaterialFlag(u_Material.flags, DUDV_MAP_PRESENT)) {
 
-        vec2 texCoords = fragmentData.textureCoords;
+        vec2 texCoords = fragment.textureCoords;
 
         distortionTexCoords = texture(u_Material.dudvMap, vec2(texCoords.x + textureOffset, texCoords.y)).rg * 0.1;
         distortionTexCoords = texCoords + vec2(distortionTexCoords.x, distortionTexCoords.y + textureOffset);
@@ -181,7 +181,7 @@ void main() {
         fragmentNormal = normalize(fragmentNormal);
 
     } else {
-        fragmentNormal = normalize(fragmentData.normal);
+        fragmentNormal = normalize(fragment.normal);
     }
 
     reflectionTexCoords += distortion;
@@ -194,10 +194,10 @@ void main() {
     vec4 reflectionColor = texture(u_Material.reflectionMap, reflectionTexCoords);
     vec4 refractionColor = texture(u_Material.refractionMap, refractionTexCoords);
 
-    viewDirection = normalize(u_Camera.position.xyz - fragmentData.position);
+    viewDirection = normalize(u_Camera.position.xyz - fragment.position);
     float reflectionFactor = dot(viewDirection, fragmentNormal);
 
-    bool underWater = u_Camera.position.y - fragmentData.position.y < 0.0;
+    bool underWater = u_Camera.position.y - fragment.position.y < 0.0;
 
     vec4 environmentColor = underWater ? refractionColor : mix(reflectionColor, refractionColor, reflectionFactor);
 

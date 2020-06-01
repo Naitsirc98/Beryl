@@ -2,6 +2,7 @@ package naitsirc98.beryl.examples.forest;
 
 import naitsirc98.beryl.audio.AudioListener;
 import naitsirc98.beryl.core.Time;
+import naitsirc98.beryl.examples.forest.day.ForestDay;
 import naitsirc98.beryl.input.Input;
 import naitsirc98.beryl.input.Key;
 import naitsirc98.beryl.lights.DirectionalLight;
@@ -18,13 +19,12 @@ import naitsirc98.beryl.tasks.TaskManager;
 import naitsirc98.beryl.util.Color;
 import org.joml.Vector3f;
 
-import static naitsirc98.beryl.examples.forest.ForestGame.FOREST_DAY_SOUND;
-import static naitsirc98.beryl.examples.forest.ForestGame.FOREST_NIGHT_SOUND;
+import static naitsirc98.beryl.examples.forest.day.ForestDay.FOREST_DAY_SOUND;
+import static naitsirc98.beryl.examples.forest.day.ForestDay.FOREST_NIGHT_SOUND;
 import static naitsirc98.beryl.examples.forest.Lamp.LAMP_NAME;
 import static naitsirc98.beryl.util.Maths.*;
 
 public class GameController extends UpdateBehaviour {
-
 
     public static Entity create(Scene scene) {
         Entity entity = scene.newEntity();
@@ -104,9 +104,9 @@ public class GameController extends UpdateBehaviour {
         AudioListener.get().velocity(lastPosition.sub(camera.position()).negate());
 
         if(camera.position().y() < -4.0f) {
-            scene().entity(ForestGame.FOREST_DAY_SOUND).get(AudioPlayer.class).source().pitch(0.5f);
+            scene().entity(ForestDay.FOREST_DAY_SOUND).get(AudioPlayer.class).source().pitch(0.5f);
         } else {
-            scene().entity(ForestGame.FOREST_DAY_SOUND).get(AudioPlayer.class).source().pitch(1.0f);
+            scene().entity(ForestDay.FOREST_DAY_SOUND).get(AudioPlayer.class).source().pitch(1.0f);
         }
 
         lastPosition.set(camera.position());

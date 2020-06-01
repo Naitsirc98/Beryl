@@ -13,6 +13,7 @@ import java.nio.ByteBuffer;
 
 import static naitsirc98.beryl.graphics.textures.Texture.makeResident;
 import static naitsirc98.beryl.util.handles.LongHandle.NULL;
+import static naitsirc98.beryl.util.types.DataType.INT32_SIZEOF;
 import static org.lwjgl.opengl.GL31C.GL_UNIFORM_BUFFER;
 
 /*
@@ -31,32 +32,39 @@ public final class GLSkyboxStruct implements Resource {
 
     public static final int SIZEOF = 32;
 
+    private static final int SKYBOX_PRESENT_OFFSET = SIZEOF;
+
+    private static final int SKYBOX_UNIFORM_BUFFER_SIZE = SIZEOF + INT32_SIZEOF;
+
 
     private GLBuffer uniformBuffer;
 
     public GLSkyboxStruct(GLContext context) {
         this.uniformBuffer = new GLBuffer(context).name("Skybox Struct Uniform Buffer");
-        uniformBuffer.allocate(SIZEOF);
+        uniformBuffer.allocate(SKYBOX_UNIFORM_BUFFER_SIZE);
         uniformBuffer.mapMemory();
     }
 
     public GLSkyboxStruct update(Skybox skybox) {
 
-        if(skybox == null) {
-            return this;
-        }
-
-        final SkyboxTexture skyboxTexture = skybox.texture1();
-
         try(MemoryStack stack = MemoryStack.stackPush()) {
 
-            ByteBuffer buffer = stack.malloc(SIZEOF);
+            ByteBuffer buffer = stack.calloc(SKYBOX_UNIFORM_BUFFER_SIZE);
 
-            buffer.putLong(makeResident(skyboxTexture.irradianceMap()))
-                    .putLong(makeResident(skyboxTexture.prefilterMap()))
-                    .putLong(makeResident(skybox.brdfTexture()))
-                    .putFloat(skybox.maxPrefilterLOD())
-                    .putFloat(skybox.prefilterLODBias());
+            final boolean skyboxPresent = skybox != null;
+
+            if(skyboxPresent) {
+
+                final SkyboxTexture skyboxTexture = skybox.texture1();
+
+                buffer.putLong(makeResident(skyboxTexture.irradianceMap()))
+                        .putLong(makeResident(skyboxTexture.prefilterMap()))
+                        .putLong(makeResident(skybox.brdfTexture()))
+                        .putFloat(skybox.maxPrefilterLOD())
+                        .putFloat(skybox.prefilterLODBias());
+            }
+
+            buffer.putInt(SKYBOX_PRESENT_OFFSET, skyboxPresent ? 1 : 0);
 
             uniformBuffer.copy(0, buffer.rewind());
         }

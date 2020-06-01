@@ -89,7 +89,11 @@ public final class BerylConfigConstants {
 
     public static final boolean GRAPHICS_MULTITHREADING_ENABLED = BerylConfiguration.GRAPHICS_MULTITHREADING_ENABLED.get();
 
+    public static final String FIRST_SCENE_NAME = BerylConfiguration.FIRST_SCENE_NAME.get();
+
     static void ensureLoaded() {
+        setLWJGLConfiguration();
+        setJOMLConfiguration();
     }
 
     private static void setLWJGLConfiguration() {

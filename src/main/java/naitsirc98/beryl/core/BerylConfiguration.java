@@ -99,6 +99,8 @@ public final class BerylConfiguration<T> {
 
     public static final BerylConfiguration<Boolean> GRAPHICS_MULTITHREADING_ENABLED = new BerylConfiguration<>(DEFAULT_GRAPHICS_MULTITHREADING_ENABLED);
 
+    public static final BerylConfiguration<String> FIRST_SCENE_NAME = new BerylConfiguration<>(DEFAULT_FIRST_SCENE_NAME);
+
     static void ensureLoaded() {
     }
 

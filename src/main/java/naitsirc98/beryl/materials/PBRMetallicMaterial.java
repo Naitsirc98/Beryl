@@ -15,8 +15,8 @@ public class PBRMetallicMaterial extends ManagedMaterial implements Material {
 
     private static final float DEFAULT_ALPHA = 1.0f;
     private static final float DEFAULT_METALLIC = 0.0f;
-    private static final float DEFAULT_ROUGHNESS = 0.0f;
-    private static final float DEFAULT_OCCLUSION = 0.0f;
+    private static final float DEFAULT_ROUGHNESS = 0.85f;
+    private static final float DEFAULT_OCCLUSION = 1.0f;
     private static final float DEFAULT_FRESNEL0 = 0.04f;
 
     // FLAGS

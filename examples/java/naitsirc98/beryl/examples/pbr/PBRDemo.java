@@ -6,6 +6,7 @@ import naitsirc98.beryl.core.BerylFiles;
 import naitsirc98.beryl.core.BerylConfigurationHelper;
 import naitsirc98.beryl.examples.common.CameraController;
 import naitsirc98.beryl.examples.forest.Water;
+import naitsirc98.beryl.examples.pbr.revolver.CerberusRevolver;
 import naitsirc98.beryl.graphics.GraphicsFactory;
 import naitsirc98.beryl.graphics.rendering.ShadingModel;
 import naitsirc98.beryl.graphics.textures.Sampler;
@@ -16,7 +17,6 @@ import naitsirc98.beryl.meshes.StaticMesh;
 import naitsirc98.beryl.meshes.views.WaterMeshView;
 import naitsirc98.beryl.scenes.Entity;
 import naitsirc98.beryl.scenes.Scene;
-import naitsirc98.beryl.scenes.SceneManager;
 import naitsirc98.beryl.scenes.components.math.Transform;
 import naitsirc98.beryl.scenes.components.meshes.WaterMeshInstance;
 import naitsirc98.beryl.scenes.environment.SceneEnvironment;
@@ -27,7 +27,7 @@ import org.joml.Vector3f;
 
 import static naitsirc98.beryl.util.Maths.radians;
 
-public class PBRDemo extends BerylApplication {
+public abstract class PBRDemo extends BerylApplication {
 
     public PBRDemo() {
         BerylConfiguration.SHADOWS_ENABLED_ON_START.set(false);
@@ -35,30 +35,20 @@ public class PBRDemo extends BerylApplication {
         BerylConfigurationHelper.debugReleaseConfiguration();
         BerylConfiguration.PRINT_SHADERS_SOURCE.set(false);
         BerylConfiguration.OPENGL_ENABLE_WARNINGS_UNIFORMS.set(false);
+        BerylConfiguration.FIRST_SCENE_NAME.set(getClass().getSimpleName());
     }
 
     @Override
-    protected void onStart() {
-
-        Scene scene = SceneManager.newScene("PBR Demo");
+    protected void onStart(Scene scene) {
 
         setupCamera(scene);
 
         setSceneEnvironment(scene);
         
         setSceneObjects(scene);
-
-        SceneManager.setScene(scene);
     }
 
-    private void setSceneObjects(Scene scene) {
-
-        PBRSphere.create(scene, 0, 0, 0, BerylFiles.getPath("textures/rusted_iron"));
-
-        PBRSphere.create(scene, 60, 0, 0, BerylFiles.getPath("textures/gold"));
-
-        CerberusRevolver.create(scene, new Vector3f(150, 0, 0), 0.85f);
-    }
+    protected abstract void setSceneObjects(Scene scene);
 
     private void setupCamera(Scene scene) {
 
@@ -69,14 +59,7 @@ public class PBRDemo extends BerylApplication {
         cameraController.add(CameraController.class);
     }
 
-    private void setSceneEnvironment(Scene scene) {
-
-        SceneEnvironment environment = scene.environment();
-
-        Skybox skybox = SkyboxFactory.newSkyboxHDR(BerylFiles.getString("textures/skybox/hdr/sunrise_beach_2k.hdr"));
-
-        environment.skybox(skybox);
-    }
+    protected abstract void setSceneEnvironment(Scene scene);
 
     public static Entity create(Scene scene, float x, float y, float z, float scale) {
 
