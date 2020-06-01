@@ -28,11 +28,12 @@ public final class GLShaderProgram extends GLObject {
     private Map<String, Integer> uniformLocations;
     private Map<Integer, GLTexture> boundTextures;
 
-    public GLShaderProgram(GLContext context) {
+    public GLShaderProgram(GLContext context, String name) {
         super(context, glCreateProgram());
         shaders = new HashSet<>();
         uniformLocations = new WeakHashMap<>();
         boundTextures = new HashMap<>();
+        name(name);
     }
 
     public GLShaderProgram attach(GLShader shader) {

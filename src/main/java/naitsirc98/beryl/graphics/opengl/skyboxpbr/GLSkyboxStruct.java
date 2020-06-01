@@ -1,54 +1,75 @@
 package naitsirc98.beryl.graphics.opengl.skyboxpbr;
 
-import naitsirc98.beryl.graphics.opengl.shaders.GLShaderProgram;
+import naitsirc98.beryl.graphics.opengl.GLContext;
+import naitsirc98.beryl.graphics.opengl.buffers.GLBuffer;
+import naitsirc98.beryl.graphics.textures.Texture;
+import naitsirc98.beryl.resources.Resource;
 import naitsirc98.beryl.scenes.environment.skybox.Skybox;
 import naitsirc98.beryl.scenes.environment.skybox.SkyboxTexture;
+import naitsirc98.beryl.util.types.StaticByteSize;
+import org.lwjgl.system.MemoryStack;
+
+import java.nio.ByteBuffer;
+
+import static naitsirc98.beryl.graphics.textures.Texture.makeResident;
+import static naitsirc98.beryl.util.handles.LongHandle.NULL;
+import static org.lwjgl.opengl.GL31C.GL_UNIFORM_BUFFER;
 
 /*
  * struct Skybox {
  *
- *     samplerCube irradianceMap;
- *     samplerCube prefilterMap;
- *     sampler2D brdfMap;
+ *     layout(bindless_sampler) samplerCube irradianceMap;
+ *     layout(bindless_sampler) samplerCube prefilterMap;
+ *     layout(bindless_sampler) sampler2D brdfMap;
  *
  *     float maxPrefilterLOD;
  *     float prefilterLODBias;
  * };
  * */
-public final class GLSkyboxStruct {
+@StaticByteSize(sizeof = GLSkyboxStruct.SIZEOF)
+public final class GLSkyboxStruct implements Resource {
 
-    private static final String SKYBOX_UNIFORM_NAME = "u_Skybox";
-    private static final String IRRADIANCE_MAP_UNIFORM_NAME = SKYBOX_UNIFORM_NAME + ".irradianceMap";
-    private static final String PREFILTER_MAP_UNIFORM_NAME = SKYBOX_UNIFORM_NAME + ".prefilterMap";
-    private static final String BRDF_MAP_UNIFORM_NAME = SKYBOX_UNIFORM_NAME + ".brdfMap";
-    private static final String MAX_PREFILTER_LOD_UNIFORM_NAME = SKYBOX_UNIFORM_NAME + ".maxPrefilterLOD";
-    private static final String PREFILTER_LOD_BIAS_UNIFORM_NAME = SKYBOX_UNIFORM_NAME + ".prefilterLODBias";
+    public static final int SIZEOF = 32;
 
 
-    public static void bind(Skybox skybox, GLShaderProgram shader, int firstTextureUnit) {
+    private GLBuffer uniformBuffer;
+
+    public GLSkyboxStruct(GLContext context) {
+        this.uniformBuffer = new GLBuffer(context).name("Skybox Struct Uniform Buffer");
+        uniformBuffer.allocate(SIZEOF);
+        uniformBuffer.mapMemory();
+    }
+
+    public GLSkyboxStruct update(Skybox skybox) {
 
         if(skybox == null) {
-            return;
+            return this;
         }
 
         final SkyboxTexture skyboxTexture = skybox.texture1();
 
-        if(skyboxTexture.irradianceMap() != null) {
-            shader.uniformSampler(IRRADIANCE_MAP_UNIFORM_NAME, skyboxTexture.irradianceMap(), firstTextureUnit);
+        try(MemoryStack stack = MemoryStack.stackPush()) {
+
+            ByteBuffer buffer = stack.malloc(SIZEOF);
+
+            buffer.putLong(makeResident(skyboxTexture.irradianceMap()))
+                    .putLong(makeResident(skyboxTexture.prefilterMap()))
+                    .putLong(makeResident(skybox.brdfTexture()))
+                    .putFloat(skybox.maxPrefilterLOD())
+                    .putFloat(skybox.prefilterLODBias());
+
+            uniformBuffer.copy(0, buffer.rewind());
         }
 
-        if(skyboxTexture.prefilterMap() != null) {
-            shader.uniformSampler(PREFILTER_MAP_UNIFORM_NAME, skyboxTexture.prefilterMap(), firstTextureUnit + 1);
-        }
-
-        if(skybox.brdfTexture() != null) {
-            shader.uniformSampler(BRDF_MAP_UNIFORM_NAME, skybox.brdfTexture(), firstTextureUnit + 2);
-        }
-
-        shader.uniformFloat(MAX_PREFILTER_LOD_UNIFORM_NAME, skybox.maxPrefilterLOD());
-
-        shader.uniformFloat(PREFILTER_LOD_BIAS_UNIFORM_NAME, skybox.prefilterLODBias());
+        return this;
     }
 
-    private GLSkyboxStruct() {}
+    public void bind(int binding) {
+        uniformBuffer.bind(GL_UNIFORM_BUFFER, binding);
+    }
+
+    @Override
+    public void release() {
+        uniformBuffer.release();
+    }
 }

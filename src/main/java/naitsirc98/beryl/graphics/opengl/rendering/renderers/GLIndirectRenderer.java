@@ -45,11 +45,13 @@ public abstract class GLIndirectRenderer extends GLRenderer {
     protected FrustumCuller frustumCuller;
     private Queue<Consumer<GLShaderProgram>> dynamicState;
     private final GLShadowsInfo shadowsInfo;
+    private final GLSkyboxStruct skyboxStruct;
     private int visibleObjects;
 
     public GLIndirectRenderer(GLContext context, GLShadowsInfo shadowsInfo) {
         super(context);
         this.shadowsInfo = shadowsInfo;
+        skyboxStruct = new GLSkyboxStruct(context());
     }
 
     @Override
@@ -65,6 +67,7 @@ public abstract class GLIndirectRenderer extends GLRenderer {
     public void terminate() {
         renderData.release();
         frustumCuller.terminate();
+        skyboxStruct.release();
     }
 
     public FrustumCuller frustumCuller() {
@@ -104,17 +107,11 @@ public abstract class GLIndirectRenderer extends GLRenderer {
 
         final GLShaderProgram shader = shadingPipeline.getShader();
 
-        final boolean shadowsEnabled = shadingPipeline.areShadowsEnabled();
-
         shader.bind();
 
         setOpenGLState();
 
         bindShaderUniformsAndBuffers(scene, shadingPipeline);
-
-        if(shadowsEnabled) {
-            bindShadowTextures(shader);
-        }
 
         setDynamicState(shader);
 
@@ -143,9 +140,6 @@ public abstract class GLIndirectRenderer extends GLRenderer {
         final GLBuffer materialsBuffer = materialHandler.buffer();
         final GLBuffer cameraUniformBuffer = scene.cameraInfo().cameraBuffer();
         final Skybox skybox = scene.environment().skybox();
-        final GLShaderProgram shader = shadingPipeline.getShader();
-
-        shader.uniformBool(SHADOWS_ENABLED_UNIFORM_NAME, shadingPipeline.areShadowsEnabled());
 
         cameraUniformBuffer.bind(GL_UNIFORM_BUFFER, 0);
 
@@ -158,7 +152,7 @@ public abstract class GLIndirectRenderer extends GLRenderer {
         shadowsInfo.buffer().bind(GL_UNIFORM_BUFFER, 5);
 
         if(shadingModel != ShadingModel.PHONG) {
-            GLSkyboxStruct.bind(skybox, shader, FIRST_SKYBOX_TEXTURE_UNIT);
+            skyboxStruct.update(skybox).bind(6);
         }
 
         renderData.getCommandBuffer().bind(GL_DRAW_INDIRECT_BUFFER);
@@ -173,14 +167,5 @@ public abstract class GLIndirectRenderer extends GLRenderer {
     private int performFrustumCullingCPU(Scene scene, FrustumCullingPreCondition preCondition) {
         final FrustumIntersection frustum = scene.camera().frustum();
         return frustumCuller.performCullingCPU(frustum, getInstances(scene), preCondition);
-    }
-
-    private void bindShadowTextures(GLShaderProgram shader) {
-
-        GLTexture2D[] dirShadowMaps = shadowsInfo.dirShadowMaps();
-
-        for(int i = 0;i < dirShadowMaps.length;i++) {
-            shader.uniformSampler(uniformArrayElement(DIR_SHADOW_MAPS_UNIFORM_NAME, i), dirShadowMaps[i], i + 5);
-        }
     }
 }

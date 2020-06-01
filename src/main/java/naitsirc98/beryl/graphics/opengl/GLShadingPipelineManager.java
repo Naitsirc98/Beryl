@@ -50,17 +50,17 @@ public class GLShadingPipelineManager implements Resource {
     }
 
     private GLShadingPipeline createPhongShadingPipeline() {
-        return new GLShadingPipeline(new GLShaderProgram(context)
+        return new GLShadingPipeline(new GLShaderProgram(context, "OpenGL Phong shader")
                 .attach(new GLShader(context, VERTEX_STAGE).source(PHONG_VERTEX_SHADER_PATH))
                 .attach(new GLShader(context, FRAGMENT_STAGE).source(PHONG_FRAGMENT_SHADER_PATH))
-                .link().name("OpenGL Phong shader"), ShadingModel.PHONG);
+                .link(), ShadingModel.PHONG);
     }
 
     private GLShadingPipeline createPBRMetallicShadingPipeline() {
-        return new GLShadingPipeline(new GLShaderProgram(context)
+        return new GLShadingPipeline(new GLShaderProgram(context, "OpenGL PBR Metallic shader")
                 .attach(new GLShader(context, VERTEX_STAGE).source(PBR_METALLIC_VERTEX_SHADER_PATH))
                 .attach(new GLShader(context, FRAGMENT_STAGE).source(PBR_METALLIC_FRAGMENT_SHADER_PATH))
-                .link().name("OpenGL PBR Metallic shader"), ShadingModel.PBR_METALLIC);
+                .link(), ShadingModel.PBR_METALLIC);
     }
 
 }

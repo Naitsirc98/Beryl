@@ -10,6 +10,7 @@ import static naitsirc98.beryl.graphics.textures.Sampler.MagFilter.LINEAR;
 import static naitsirc98.beryl.graphics.textures.Sampler.MagFilter.NEAREST;
 import static naitsirc98.beryl.graphics.textures.Sampler.MinFilter.*;
 import static naitsirc98.beryl.util.Maths.log2;
+import static naitsirc98.beryl.util.handles.LongHandle.NULL;
 import static naitsirc98.beryl.util.types.DataType.UINT64_SIZEOF;
 
 @ByteSize.Static(Texture.SIZEOF)
@@ -17,6 +18,10 @@ public interface Texture extends Resource {
 
     static int calculateMipLevels(int width, int height) {
         return log2(max(width, height) + 1);
+    }
+
+    static long makeResident(Texture texture) {
+        return texture == null ? NULL : texture.makeResident();
     }
 
     /**

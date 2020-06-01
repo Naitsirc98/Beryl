@@ -153,10 +153,10 @@ public class GLSkyboxRenderer extends GLRenderer {
     }
 
     private GLShaderProgram createShader() {
-        return new GLShaderProgram(context())
+        return new GLShaderProgram(context(), "OpenGL Skybox shader")
                 .attach(new GLShader(context(), VERTEX_STAGE).source(SKYBOX_VERTEX_SHADER_PATH))
                 .attach(new GLShader(context(), FRAGMENT_STAGE).source(SKYBOX_FRAGMENT_SHADER_PATH))
-                .link().name("OpenGL Skybox shader");
+                .link();
     }
 
 }

@@ -29,6 +29,9 @@ import static org.lwjgl.opengl.GL30C.GL_DEPTH_ATTACHMENT;
 
 public class GLShadowCascadeRenderer {
 
+    private static final String LIGHT_MATRIX_UNIFORM_NAME = "u_LightProjectionViewMatrix";
+
+
     private final GLContext context;
     private final GLTexture2D depthTexture;
     private final GLFramebuffer framebuffer;
@@ -87,7 +90,7 @@ public class GLShadowCascadeRenderer {
     private void setOpenGLStateAndUniforms(GLShaderProgram shader) {
         try(MemoryStack stack = MemoryStack.stackPush()) {
             FloatBuffer buffer = stack.mallocFloat(16);
-            shader.uniformMatrix4f("u_LightProjectionViewMatrix", false, shadowCascade.lightProjectionViewMatrix().get(buffer));
+            shader.uniformMatrix4f(LIGHT_MATRIX_UNIFORM_NAME, false, shadowCascade.lightProjectionViewMatrix().get(buffer));
         }
     }
 

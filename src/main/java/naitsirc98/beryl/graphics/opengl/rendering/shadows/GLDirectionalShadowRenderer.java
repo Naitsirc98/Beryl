@@ -143,9 +143,9 @@ public class GLDirectionalShadowRenderer {
     }
 
     private GLShaderProgram createShader() {
-        return new GLShaderProgram(context)
+        return new GLShaderProgram(context, "OpenGL dir shadows shader")
                 .attach(new GLShader(context, VERTEX_STAGE).source(BerylFiles.getPath("shaders/depth/directional_depth.vert")))
                 .attach(new GLShader(context, FRAGMENT_STAGE).source(BerylFiles.getPath("shaders/depth/depth.frag")))
-                .link().name("OpenGL dir shadows shader");
+                .link();
     }
 }

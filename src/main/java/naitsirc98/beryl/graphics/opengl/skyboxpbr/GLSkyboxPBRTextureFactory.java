@@ -7,7 +7,6 @@ import naitsirc98.beryl.graphics.opengl.buffers.GLBuffer;
 import naitsirc98.beryl.graphics.opengl.shaders.GLShader;
 import naitsirc98.beryl.graphics.opengl.shaders.GLShaderProgram;
 import naitsirc98.beryl.graphics.opengl.swapchain.GLFramebuffer;
-import naitsirc98.beryl.graphics.opengl.swapchain.GLRenderbuffer;
 import naitsirc98.beryl.graphics.opengl.textures.GLCubemap;
 import naitsirc98.beryl.graphics.opengl.textures.GLTexture;
 import naitsirc98.beryl.graphics.opengl.textures.GLTexture2D;
@@ -26,8 +25,6 @@ import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
 
 import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.Map;
 
 import static java.lang.Math.pow;
 import static java.util.Objects.requireNonNull;
@@ -76,18 +73,13 @@ public class GLSkyboxPBRTextureFactory extends ManagedResource implements Skybox
     private GLVertexArray cubeVAO;
     private GLBuffer cubeVertexBuffer;
     private GLBuffer cubeIndexBuffer;
-    // Depth buffers
-    @Deprecated
-    private final Map<Integer, GLRenderbuffer> depthBuffers;
 
     public GLSkyboxPBRTextureFactory(GLContext context) {
         this.context = requireNonNull(context);
-        depthBuffers = new HashMap<>();
     }
 
     @Override
     protected void free() {
-
         Resource.release(framebuffer);
         Resource.release(brdfShader);
         Resource.release(irradianceShader);
@@ -97,9 +89,6 @@ public class GLSkyboxPBRTextureFactory extends ManagedResource implements Skybox
         Resource.release(cubeVAO);
         Resource.release(cubeVertexBuffer);
         Resource.release(cubeIndexBuffer);
-
-        depthBuffers.values().forEach(GLRenderbuffer::release);
-        depthBuffers.clear();
     }
 
     @Override
@@ -357,10 +346,10 @@ public class GLSkyboxPBRTextureFactory extends ManagedResource implements Skybox
     }
 
     private GLShaderProgram createEnvironmentMapShader() {
-        return new GLShaderProgram(context)
+        return new GLShaderProgram(context, "Equirectangular to cubemap Shader")
                 .attach(new GLShader(context, VERTEX_STAGE).source(ENVIRONMENT_VERTEX_SHADER_PATH))
                 .attach(new GLShader(context, FRAGMENT_STAGE).source(ENVIRONMENT_FRAGMENT_SHADER_PATH))
-                .link().name("Equirectangular to cubemap Shader");
+                .link();
     }
 
     private GLShaderProgram irradianceShader() {
@@ -371,10 +360,10 @@ public class GLSkyboxPBRTextureFactory extends ManagedResource implements Skybox
     }
 
     private GLShaderProgram createIrradianceShader() {
-        return new GLShaderProgram(context)
+        return new GLShaderProgram(context, "Irradiance Shader")
                 .attach(new GLShader(context, VERTEX_STAGE).source(IRRADIANCE_VERTEX_SHADER_PATH))
                 .attach(new GLShader(context, FRAGMENT_STAGE).source(IRRADIANCE_FRAGMENT_SHADER_PATH))
-                .link().name("Irradiance Shader");
+                .link();
     }
 
     private GLShaderProgram prefilterShader() {
@@ -385,10 +374,10 @@ public class GLSkyboxPBRTextureFactory extends ManagedResource implements Skybox
     }
 
     private GLShaderProgram createPrefilterShader() {
-        return new GLShaderProgram(context)
+        return new GLShaderProgram(context, "Prefilter Shader")
                 .attach(new GLShader(context, VERTEX_STAGE).source(PREFILTER_VERTEX_SHADER_PATH))
                 .attach(new GLShader(context, FRAGMENT_STAGE).source(PREFILTER_FRAGMENT_SHADER_PATH))
-                .link().name("Prefilter Shader");
+                .link();
     }
 
     private GLShaderProgram brdfShader() {
@@ -399,10 +388,10 @@ public class GLSkyboxPBRTextureFactory extends ManagedResource implements Skybox
     }
 
     private GLShaderProgram createBRDFShaderProgram() {
-        return new GLShaderProgram(context)
+        return new GLShaderProgram(context, "BRDF Shader")
                 .attach(new GLShader(context, VERTEX_STAGE).source(BRDF_VERTEX_SHADER_PATH))
                 .attach(new GLShader(context, FRAGMENT_STAGE).source(BRDF_FRAGMENT_SHADER_PATH))
-                .link().name("BRDF Shader");
+                .link();
     }
 
     private GLVertexArray cubeVAO() {
@@ -460,20 +449,5 @@ public class GLSkyboxPBRTextureFactory extends ManagedResource implements Skybox
         framebuffer.freeAttachmentsOnRelease(true);
 
         return framebuffer;
-    }
-
-    private GLRenderbuffer getDepthBuffer(int size) {
-
-        if(depthBuffers.containsKey(size)) {
-            return depthBuffers.get(size);
-        }
-
-        GLRenderbuffer depthBuffer = new GLRenderbuffer(context);
-
-        depthBuffer.storage(size, size, GL_DEPTH_COMPONENT16);
-
-        depthBuffers.put(size, depthBuffer);
-
-        return depthBuffer;
     }
 }

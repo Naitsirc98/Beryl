@@ -390,9 +390,9 @@ public class GLWaterRenderer extends GLRenderer {
     }
 
     private GLShaderProgram createShader() {
-        return new GLShaderProgram(context())
+        return new GLShaderProgram(context(), "OpenGL Water shader")
                 .attach(new GLShader(context(), VERTEX_STAGE).source(BerylFiles.getPath("shaders/water/water.vert")))
                 .attach(new GLShader(context(), FRAGMENT_STAGE).source(BerylFiles.getPath("shaders/water/water.frag")))
-                .link().name("OpenGL Water shader");
+                .link();
     }
 }

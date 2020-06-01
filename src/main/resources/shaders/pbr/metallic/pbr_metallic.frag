@@ -1,15 +1,14 @@
 #version 450 core
 
-#extension GL_KHR_vulkan_glsl: require
 #extension GL_ARB_bindless_texture: require
 
-#define MAX_SHADOW_CASCADES_COUNT 3
 #define MAX_POINT_LIGHTS 10
 #define MAX_SPOT_LIGHTS 10
 
 @include "structs/lights.glsl"
 @include "structs/metallic_material.glsl"
 @include "structs/fog.glsl"
+@include "structs/shadow_cascade.glsl"
 @include "structs/skybox_pbr.glsl"
 
 layout(std140, binding = 0) uniform Camera {
@@ -33,16 +32,13 @@ layout(std430, binding = 3) readonly buffer Materials {
 };
 
 layout(std140, binding = 5) uniform ShadowsInfo {
-    mat4 u_DirLightMatrices[MAX_SHADOW_CASCADES_COUNT];
-    float u_CascadeFarPlanes[MAX_SHADOW_CASCADES_COUNT]; 
+    ShadowCascade u_ShadowCascades[MAX_SHADOW_CASCADES_COUNT];
+    bool u_ShadowsEnabled;
 };
 
-uniform bool u_ShadowsEnabled;
-
-uniform sampler2D u_DirShadowMaps[MAX_SHADOW_CASCADES_COUNT];
-
-uniform Skybox u_Skybox;
-
+layout(std140, binding = 6) uniform SkyboxInfo {
+    Skybox u_Skybox;
+};
 
 layout(location = 0) in FragmentData {
     vec3 position;
@@ -104,65 +100,13 @@ vec3 computePointLights() {
 
 vec3 reflectanceEquation() {
 
-    // vec3 dirLighting = computeDirLights();
+    vec3 dirLighting = computeDirLights();
     
     vec3 pointLighting = computePointLights();
           
-    vec3 lighting = /*dirLighting +*/ pointLighting;
+    vec3 lighting = dirLighting + pointLighting;
 
     return lighting;
-}
-
-float computeDirShadows() {
-
-    int depthMapIndex = 0;
-
-    float fragmentDepth = (u_Camera.projectionViewMatrix * vec4(fragment.position, 1.0)).z;
-
-    // Select the correct cascade shadow map for this fragment
-    for(int i = 0; i < MAX_SHADOW_CASCADES_COUNT; i++) {
-        if(fragmentDepth < u_CascadeFarPlanes[i]) {
-            depthMapIndex = i;
-            break;
-        }
-    }
-
-    // Transform from screen coordinates to texture coordinates
-    vec4 positionDirLightSpace = fragment.positionDirLightSpace[depthMapIndex];
-
-    vec3 projCoords = positionDirLightSpace.xyz;// / positionDirLightSpace.w;
-
-    projCoords = projCoords * 0.5 + 0.5;
-
-    if(projCoords.z > 1.0) {
-        return 0.0;
-    }
-
-    float bias = 0.005; //max(0.05 * (1.0 - dot(fragmentNormal, u_DirectionalLight.direction.xyz)), 0.005);
-
-    float shadow = 0.0;
-
-    float numberOfSamples = 9.0;
-
-    sampler2D depthMap = u_DirShadowMaps[depthMapIndex];
-
-    vec2 inc = 1.0 / textureSize(depthMap, 0);
-
-    for(int row = -1; row <= 1; ++row) {
-
-        for(int col = -1; col <= 1; ++col) {
-
-            vec2 shadowSampleCoords = projCoords.xy + vec2(row, col) * inc;
-
-            float textDepth = texture(depthMap, shadowSampleCoords).r;
-
-            shadow += projCoords.z - bias > textDepth ? 1.0 : 0.0;
-        }
-    }
-
-    shadow /= numberOfSamples;
-
-    return shadow;
 }
 
 vec4 applyFogEffect(vec4 fragmentColor) {
@@ -214,7 +158,7 @@ vec4 computeLighting() {
     float shadows = 0.0;
 
     if(u_ShadowsEnabled) {
-        shadows = computeDirShadows();
+        shadows = computeDirShadows(u_Camera.projectionViewMatrix, fragment.position, fragment.positionDirLightSpace, u_ShadowCascades);
     }
 
     vec3 kS = F;

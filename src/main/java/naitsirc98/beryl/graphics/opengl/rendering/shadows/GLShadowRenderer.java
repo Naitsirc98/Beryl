@@ -7,13 +7,12 @@ import naitsirc98.beryl.graphics.opengl.rendering.renderers.GLRenderer;
 import naitsirc98.beryl.graphics.opengl.textures.GLTexture2D;
 import naitsirc98.beryl.graphics.rendering.shadows.ShadowCascade;
 import naitsirc98.beryl.scenes.Scene;
-import org.joml.Matrix4fc;
 import org.lwjgl.system.MemoryStack;
 
 import java.nio.ByteBuffer;
 
+import static naitsirc98.beryl.graphics.textures.Texture.makeResident;
 import static naitsirc98.beryl.util.types.DataType.MATRIX4_SIZEOF;
-import static naitsirc98.beryl.util.types.DataType.VECTOR4_SIZEOF;
 
 public class GLShadowRenderer extends GLRenderer implements GLShadowsInfo {
 
@@ -34,7 +33,7 @@ public class GLShadowRenderer extends GLRenderer implements GLShadowsInfo {
 
     public void render(Scene scene, GLMeshRenderer meshRenderer) {
         directionalShadowRenderer.bakeDirectionalShadows(scene, meshRenderer);
-        updateShadowsBuffer();
+        updateShadowsBuffer(scene);
     }
 
     @Override
@@ -53,42 +52,33 @@ public class GLShadowRenderer extends GLRenderer implements GLShadowsInfo {
         return directionalShadowRenderer.dirShadowMaps();
     }
 
-    private void updateShadowsBuffer() {
-
-        // CHECK ALIGNMENT
+    private void updateShadowsBuffer(Scene scene) {
 
         try(MemoryStack stack = MemoryStack.stackPush()) {
 
-            ByteBuffer shadowInfo = stack.calloc(SHADOWS_BUFFER_SIZE);
+            ByteBuffer buffer = stack.calloc(SHADOWS_BUFFER_SIZE);
 
-            getDirLightMatrices(shadowInfo);
-            getCascadeFarPlanes(shadowInfo);
+            final boolean shadowsEnabled = scene.renderInfo().shadowsEnabled();
 
-            shadowsBuffer.copy(0, shadowInfo);
+            if(shadowsEnabled) {
+                for(int i = 0;i < MAX_SHADOW_CASCADES_COUNT;i++) {
+                    putShadowCascadeInfo(i, buffer);
+                }
+            }
+
+            buffer.putInt(SHADOWS_ENABLED_OFFSET, scene.renderInfo().shadowsEnabled() ? 1 : 0);
+
+            shadowsBuffer.copy(0, buffer.rewind());
         }
     }
 
-    private void getDirLightMatrices(ByteBuffer shadowInfo) {
+    private void putShadowCascadeInfo(int index, ByteBuffer buffer) {
 
-        ShadowCascade[] shadowCascades = directionalShadowRenderer.shadowCascades();
+        final ShadowCascade shadowCascade = directionalShadowRenderer.shadowCascades()[index];
 
-        for(int i = 0;i < MAX_SHADOW_CASCADES_COUNT;i++) {
-
-            Matrix4fc cascadeProjectionViewMatrix = shadowCascades[i].lightProjectionViewMatrix();
-
-            cascadeProjectionViewMatrix.get(SHADOWS_BUFFER_DIR_MATRICES_OFFSET + i * MATRIX4_SIZEOF, shadowInfo);
-        }
-    }
-
-    private void getCascadeFarPlanes(ByteBuffer shadowInfo) {
-
-        ShadowCascade[] shadowCascades = directionalShadowRenderer.shadowCascades();
-
-        for(int i = 0;i < MAX_SHADOW_CASCADES_COUNT;i++) {
-
-            final float farPlane = shadowCascades[i].farPlane();
-
-            shadowInfo.putFloat(SHADOWS_BUFFER_CASCADE_FAR_PLANES_OFFSET + i * VECTOR4_SIZEOF, farPlane);
-        }
+        shadowCascade.lightProjectionViewMatrix().get(buffer).position(buffer.position() + MATRIX4_SIZEOF);
+        buffer.putLong(makeResident(directionalShadowRenderer.dirShadowMaps()[index]))
+                .putFloat(shadowCascade.farPlane())
+                .putFloat(0.0f); // Padding
     }
 }

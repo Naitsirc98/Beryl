@@ -1,8 +1,9 @@
 #version 450 core
 
-#define MAX_SHADOW_CASCADES_COUNT 3
+#extension GL_ARB_bindless_texture : enable
 
 @include "structs/transform.glsl"
+@include "structs/shadow_cascade.glsl"
 
 
 layout(std140, set = 0, binding = 0) uniform Camera {
@@ -15,8 +16,8 @@ layout(std430, binding = 2) readonly buffer Transforms {
 };
 
 layout(std140, binding = 5) uniform ShadowsInfo {
-    mat4 u_DirLightMatrices[MAX_SHADOW_CASCADES_COUNT]; 
-    float u_CascadeFarPlanes[MAX_SHADOW_CASCADES_COUNT]; 
+    ShadowCascade u_ShadowCascades[MAX_SHADOW_CASCADES_COUNT];
+    bool u_ShadowsEnabled; 
 };
 
 @include "structs/clip_plane.glsl"
@@ -53,7 +54,7 @@ void main() {
     fragment.materialIndex = in_MaterialIndex;
 
     for (int i = 0; i < MAX_SHADOW_CASCADES_COUNT; i++) {
-        fragment.positionDirLightSpace[i] = u_DirLightMatrices[i] * position;
+        fragment.positionDirLightSpace[i] = u_ShadowCascades[i].lightMatrix * position;
     }
 
     gl_Position = u_Camera.projectionViewMatrix * position;
