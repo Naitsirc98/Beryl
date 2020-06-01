@@ -1,7 +1,6 @@
 package naitsirc98.beryl.scenes;
 
 import naitsirc98.beryl.graphics.rendering.APIRenderSystem;
-import naitsirc98.beryl.graphics.rendering.RenderSystem;
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.scenes.components.audio.AudioPlayer;
 import naitsirc98.beryl.scenes.components.audio.AudioPlayerManager;
@@ -122,7 +121,8 @@ public final class Scene {
 
     void processTasks() {
         while(!taskQueue.isEmpty()) {
-            taskQueue.poll().run();
+            Runnable task = taskQueue.poll();
+            task.run();
         }
     }
 

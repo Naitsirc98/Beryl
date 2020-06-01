@@ -59,6 +59,10 @@ public class PhongMaterial extends ManagedMaterial {
         return SIZEOF;
     }
 
+    public PhongMaterial color(IColor color) {
+        return ambientColor(color).diffuseColor(color).specularColor(color);
+    }
+
     public IColor ambientColor() {
         return ambientColor;
     }

@@ -1,13 +1,13 @@
 package naitsirc98.beryl.util;
 
+import org.joml.*;
 import org.joml.Math;
-import org.joml.Quaternionf;
-import org.joml.Vector2f;
-import org.joml.Vector3f;
 
 import static naitsirc98.beryl.util.Asserts.assertTrue;
 
 public class Maths {
+
+    private static final Random RANDOM = new Random(System.nanoTime());
 
     public static int clamp(int min, int max, int value) {
         return Math.max(min, Math.min(max, value));
@@ -43,6 +43,14 @@ public class Maths {
 
     public static float acos(float radians) {
         return (float) Math.acos(radians);
+    }
+
+    public static float randomFloat() {
+        return RANDOM.nextFloat();
+    }
+
+    public static int randomInt(int limit) {
+        return RANDOM.nextInt(limit);
     }
 
     public static int roundUp(int number, int multiple) {

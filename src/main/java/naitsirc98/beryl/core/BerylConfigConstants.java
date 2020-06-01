@@ -87,8 +87,9 @@ public final class BerylConfigConstants {
 
     public static final boolean PRINT_SHADERS_SOURCE = BerylConfiguration.PRINT_SHADERS_SOURCE.get();
 
-    static void ensureLoaded() {
+    public static final boolean GRAPHICS_MULTITHREADING_ENABLED = BerylConfiguration.GRAPHICS_MULTITHREADING_ENABLED.get();
 
+    static void ensureLoaded() {
     }
 
     private static void setLWJGLConfiguration() {

@@ -76,7 +76,7 @@ public final class SceneEnvironment implements Resource {
         return clearColor;
     }
 
-    public SceneEnvironment clearColor(Color clearColor) {
+    public SceneEnvironment clearColor(IColor clearColor) {
         this.clearColor.set(requireNonNull(clearColor));
         fog.color(clearColor);
         return this;

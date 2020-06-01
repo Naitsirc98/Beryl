@@ -2,9 +2,13 @@ package naitsirc98.beryl.tasks;
 
 import naitsirc98.beryl.core.BerylSystem;
 import naitsirc98.beryl.core.BerylSystemManager;
+import naitsirc98.beryl.examples.forest.Helicopter;
+import naitsirc98.beryl.graphics.Graphics;
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.util.types.Singleton;
 
+import java.util.ArrayDeque;
+import java.util.Queue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -28,6 +32,25 @@ public final class TaskManager extends BerylSystem {
 
 
     /**
+     * Execute in graphics thread.
+     *
+     * @param task the task
+     */
+    public static void submitGraphicsTask(Task task) {
+
+        if(task == null) {
+            Log.error("Task cannot be null", new NullPointerException());
+            return;
+        }
+
+        if(Graphics.isGraphicsThread()) {
+            task.perform();
+        } else {
+            instance.graphicsTaskQueue.add(task);
+        }
+    }
+
+    /**
      * Submit a task to be executed in the future.
      *
      * @param task the task
@@ -48,6 +71,7 @@ public final class TaskManager extends BerylSystem {
 
     private final AtomicBoolean running;
     private final BlockingQueue<Task> taskQueue;
+    private final Queue<Task> graphicsTaskQueue;
     private final ExecutorService taskThread;
     private final TaskProcessor taskProcessor;
 
@@ -56,6 +80,7 @@ public final class TaskManager extends BerylSystem {
 
         running = new AtomicBoolean(false);
         taskQueue = new PriorityBlockingQueue<>();
+        graphicsTaskQueue = new ArrayDeque<>();
 
         taskThread = newSingleThreadExecutor(runnable -> {
             Thread thread = Executors.defaultThreadFactory().newThread(runnable);
@@ -90,6 +115,18 @@ public final class TaskManager extends BerylSystem {
         }
     }
 
+    public void executeGraphicsTasks() {
+
+        while(!graphicsTaskQueue.isEmpty()) {
+
+            Task task = graphicsTaskQueue.poll();
+
+            if(task.state() != Task.State.CANCELED) {
+                task.perform();
+            }
+        }
+    }
+
     private void submit(Task task) {
 
         if(task == null) {
@@ -108,17 +145,14 @@ public final class TaskManager extends BerylSystem {
 
         while(running.get()) {
 
-            while(!taskQueue.isEmpty()) {
+            final Task task = popTask();
 
-                final Task task = popTask();
+            if(task == TERMINATION_TASK) {
+                return;
+            }
 
-                if(task == TERMINATION_TASK) {
-                    return;
-                }
-
-                if(task != null && task.state() != Task.State.CANCELED) {
-                    taskProcessor.submit(task);
-                }
+            if(task != null && task.state() != Task.State.CANCELED) {
+                taskProcessor.submit(task);
             }
         }
     }

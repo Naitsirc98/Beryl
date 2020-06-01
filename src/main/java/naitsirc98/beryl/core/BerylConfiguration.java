@@ -97,6 +97,7 @@ public final class BerylConfiguration<T> {
 
     public static final BerylConfiguration<Boolean> PRINT_SHADERS_SOURCE = new BerylConfiguration<>(DEFAULT_PRINT_SHADERS_SOURCE);
 
+    public static final BerylConfiguration<Boolean> GRAPHICS_MULTITHREADING_ENABLED = new BerylConfiguration<>(DEFAULT_GRAPHICS_MULTITHREADING_ENABLED);
 
     static void ensureLoaded() {
     }

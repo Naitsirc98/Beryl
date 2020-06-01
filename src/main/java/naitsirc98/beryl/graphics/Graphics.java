@@ -19,8 +19,14 @@ public final class Graphics extends BerylSystem {
     @Singleton
     private static Graphics instance;
 
+    private static Thread graphicsThread;
+
     public static GraphicsContext graphicsContext() {
         return instance.graphicsContext;
+    }
+
+    public static boolean isGraphicsThread() {
+        return Thread.currentThread() == graphicsThread;
     }
 
 
@@ -33,6 +39,8 @@ public final class Graphics extends BerylSystem {
 
     @Override
     protected void init() {
+
+        graphicsThread = Thread.currentThread();
 
         GraphicsAPI chosenGraphicsAPI = GRAPHICS_API;
 

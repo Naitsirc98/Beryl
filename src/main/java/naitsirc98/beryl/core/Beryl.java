@@ -9,6 +9,7 @@ import naitsirc98.beryl.input.Input;
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.materials.MaterialManager;
 import naitsirc98.beryl.scenes.SceneManager;
+import naitsirc98.beryl.tasks.TaskManager;
 import naitsirc98.beryl.util.Version;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -135,6 +136,7 @@ public final class Beryl {
         final SceneManager sceneManager = systems.getSceneManager();
         final AudioSystem audio = audioSystem;
         final MaterialManager materials = MaterialManager.get();
+        final TaskManager taskManager = systems.getTaskManager();
 
         updateDelay += deltaTime;
 
@@ -165,6 +167,8 @@ public final class Beryl {
             materials.update();
             sceneManager.endUpdate();
         }
+
+        taskManager.executeGraphicsTasks();
     }
 
     private void render() {
@@ -225,7 +229,7 @@ public final class Beryl {
         }
 
         if(SCENES_DEBUG_REPORT) {
-            builder.append("[SCENE-MANAGER]: ").append(systems.getEventManager().debugReport());
+            builder.append("[SCENE-MANAGER]: ").append(systems.getSceneManager().debugReport());
         }
 
         return builder.toString();

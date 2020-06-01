@@ -3,22 +3,22 @@ package naitsirc98.beryl.util.collections;
 import java.util.*;
 import java.util.stream.Stream;
 
-public class OptimizedArray<T> implements Set<T> {
+public class FastIterableSet<T> implements Set<T> {
 
-    private T[] array;
+    private T[] data;
     private final Queue<Integer> freeIndices;
     private final Map<Object, Integer> indexTable;
     private int size;
 
-    public OptimizedArray() {
+    public FastIterableSet() {
         this(16);
     }
 
     @SuppressWarnings("unchecked")
-    public OptimizedArray(int initialCapacity) {
-        array = (T[]) new Object[initialCapacity];
-        freeIndices = new ArrayDeque<>();
-        indexTable = new HashMap<>();
+    public FastIterableSet(int initialCapacity) {
+        data = (T[]) new Object[initialCapacity];
+        freeIndices = new ArrayDeque<>(initialCapacity);
+        indexTable = new HashMap<>(initialCapacity);
     }
 
     @Override
@@ -38,13 +38,13 @@ public class OptimizedArray<T> implements Set<T> {
 
     @Override
     public Object[] toArray() {
-        return array;
+        return data;
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public <T1> T1[] toArray(T1[] a) {
-        System.arraycopy((T1[])array, 0, a, 0, a.length);
+        System.arraycopy((T1[]) data, 0, a, 0, a.length);
         return a;
     }
 
@@ -58,17 +58,17 @@ public class OptimizedArray<T> implements Set<T> {
         if(!freeIndices.isEmpty()) {
 
             final int index = freeIndices.poll();
-            array[index] = t;
+            data[index] = t;
             indexTable.put(t, index);
 
         } else {
 
-            if(size >= array.length) {
-                array = Arrays.copyOf(array, Math.round(size * 1.5f));
+            if(size >= data.length) {
+                data = Arrays.copyOf(data, Math.round(size * 1.5f));
             }
 
             indexTable.put(t, size);
-            array[size] = t;
+            data[size] = t;
         }
 
         ++size;
@@ -84,7 +84,7 @@ public class OptimizedArray<T> implements Set<T> {
         }
 
         final int index = indexTable.get(o);
-        array[index] = null;
+        data[index] = null;
         freeIndices.add(index);
         indexTable.remove(o);
 
@@ -93,18 +93,10 @@ public class OptimizedArray<T> implements Set<T> {
         return true;
     }
 
-    public void trim(int newSize) {
-        if(size == newSize) {
-            return;
-        }
-        array = Arrays.copyOf(array, newSize);
-        size = Math.min(newSize, size);
-    }
-
     @Override
     public void clear() {
         size = 0;
-        Arrays.fill(array, null);
+        Arrays.fill(data, null);
         freeIndices.clear();
         indexTable.clear();
     }
@@ -153,30 +145,30 @@ public class OptimizedArray<T> implements Set<T> {
 
     @Override
     public Stream<T> stream() {
-        return Arrays.stream(array).unordered().filter(Objects::nonNull);
+        return Arrays.stream(data).unordered().filter(Objects::nonNull);
     }
 
     @Override
     public Stream<T> parallelStream() {
-        return Arrays.stream(array).parallel().unordered().filter(Objects::nonNull);
+        return Arrays.stream(data).parallel().unordered().filter(Objects::nonNull);
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        OptimizedArray<?> that = (OptimizedArray<?>) o;
-        return Arrays.equals(array, that.array) &&
+        FastIterableSet<?> that = (FastIterableSet<?>) o;
+        return Arrays.equals(data, that.data) &&
                 Objects.equals(freeIndices, that.freeIndices);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(array, freeIndices);
+        return Objects.hash(data, freeIndices);
     }
 
     @Override
     public String toString() {
-        return Arrays.toString(array);
+        return Arrays.toString(data);
     }
 }

@@ -22,14 +22,16 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static java.lang.Math.min;
+import static naitsirc98.beryl.core.BerylConfigConstants.GRAPHICS_MULTITHREADING_ENABLED;
 import static naitsirc98.beryl.graphics.rendering.culling.FrustumCullingPreConditionState.*;
 import static org.lwjgl.system.MemoryStack.stackPush;
 
 public class GLFrustumCuller implements FrustumCuller {
 
-    private static final int MAX_BATCH_SIZE = 32;
+    private static final int MAX_NUM_BATCHES = 64;
 
 
     private final ExecutorService executor;
@@ -81,12 +83,20 @@ public class GLFrustumCuller implements FrustumCuller {
     }
 
     private void runFrustumCullingCPU() {
+        if(GRAPHICS_MULTITHREADING_ENABLED) {
+            runFrustumCullingCPUInParallel();
+        } else {
+            runFrustumCullingCPUSingleThread();
+        }
+    }
 
-        final int batchSize = (int) Math.ceil((float) instances.size() / (float) MAX_BATCH_SIZE);
+    private void runFrustumCullingCPUInParallel() {
 
-        final CountDownLatch countDownLatch = new CountDownLatch(MAX_BATCH_SIZE);
+        final int batchSize = (int) Math.ceil((float) instances.size() / (float) MAX_NUM_BATCHES);
 
-        for(int i = 0;i < MAX_BATCH_SIZE;i++) {
+        final CountDownLatch countDownLatch = new CountDownLatch(MAX_NUM_BATCHES);
+
+        for(int i = 0; i < MAX_NUM_BATCHES; i++) {
 
             final int batchBegin = i * batchSize;
             final int batchEnd = min(batchBegin + batchSize, instances.size());
@@ -97,7 +107,16 @@ public class GLFrustumCuller implements FrustumCuller {
         waitForFrustumCulling(countDownLatch);
     }
 
+    private void runFrustumCullingCPUSingleThread() {
+        performFrustumCullingCPURange(0, instances.size());
+    }
+
     private void performCullingBatch(CountDownLatch countDownLatch, int batchBegin, int batchEnd) {
+        performFrustumCullingCPURange(batchBegin, batchEnd);
+        countDownLatch.countDown();
+    }
+
+    private void performFrustumCullingCPURange(int beginIndex, int endIndex) {
 
         try(MemoryStack stack = stackPush()) {
 
@@ -105,7 +124,7 @@ public class GLFrustumCuller implements FrustumCuller {
 
             GLDrawElementsCommand command = GLDrawElementsCommand.callocStack(stack);
 
-            for(int index = batchBegin;index < batchEnd;index++) {
+            for(int index = beginIndex;index < endIndex;index++) {
 
                 MeshInstance<?> instance = instances.get(index);
 
@@ -118,8 +137,6 @@ public class GLFrustumCuller implements FrustumCuller {
                 performFrustumCullingCPU(instance, command, sphereCenter, modelMatrix, index, maxScale);
             }
         }
-
-        countDownLatch.countDown();
     }
 
     private void performFrustumCullingCPU(MeshInstance<?> instance, GLDrawElementsCommand command,

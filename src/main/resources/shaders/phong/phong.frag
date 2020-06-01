@@ -108,7 +108,7 @@ void main() {
     }
 
     if(u_Fog.color.a != 0.0) {
-        // fragmentColor = applyFogEffect(fragmentColor);
+        fragmentColor = applyFogEffect(fragmentColor);
     }
 
     fragmentColor.a *= material.alpha;

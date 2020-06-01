@@ -1,6 +1,8 @@
 package naitsirc98.beryl.materials;
 
 import naitsirc98.beryl.logging.Log;
+import naitsirc98.beryl.tasks.Task;
+import naitsirc98.beryl.tasks.TaskManager;
 import naitsirc98.beryl.util.types.TypeUtils;
 
 import java.util.function.Consumer;

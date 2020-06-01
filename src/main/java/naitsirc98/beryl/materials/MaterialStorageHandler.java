@@ -3,10 +3,14 @@ package naitsirc98.beryl.materials;
 import naitsirc98.beryl.graphics.GraphicsFactory;
 import naitsirc98.beryl.graphics.buffers.StorageBuffer;
 import naitsirc98.beryl.graphics.textures.Texture;
+import naitsirc98.beryl.tasks.Task;
+import naitsirc98.beryl.tasks.TaskManager;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import static java.lang.StrictMath.ceil;
+import static java.lang.StrictMath.round;
 import static naitsirc98.beryl.util.Asserts.assertTrue;
 import static naitsirc98.beryl.util.handles.LongHandle.NULL;
 
@@ -94,13 +98,14 @@ public abstract class MaterialStorageHandler<T extends ManagedMaterial> {
         final long size = buffer.size();
 
         if(offset >= size) {
-            buffer.resize(size + getMaterialSizeof());
+            buffer.resize(size * 2);
         }
     }
 
     protected StorageBuffer createStorageBuffer() {
         StorageBuffer buffer = GraphicsFactory.get().newStorageBuffer();
         buffer.allocate(getMaterialSizeof());
+        buffer.mapMemory();
         offset = 0;
         return buffer;
     }

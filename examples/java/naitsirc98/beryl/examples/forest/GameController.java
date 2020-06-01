@@ -13,6 +13,8 @@ import naitsirc98.beryl.scenes.environment.skybox.Skybox;
 import naitsirc98.beryl.scenes.components.audio.AudioPlayer;
 import naitsirc98.beryl.scenes.components.behaviours.UpdateBehaviour;
 import naitsirc98.beryl.scenes.components.meshes.StaticMeshInstance;
+import naitsirc98.beryl.tasks.Task;
+import naitsirc98.beryl.tasks.TaskManager;
 import naitsirc98.beryl.util.Color;
 import org.joml.Vector3f;
 
@@ -56,7 +58,12 @@ public class GameController extends UpdateBehaviour {
         updateAudioListener();
 
         if(!helicopterSpawned && Input.isKeyTyped(Key.KEY_H)) {
-            Helicopter.create(scene());
+            TaskManager.submitGraphicsTask(new Task() {
+                @Override
+                protected void perform() {
+                    Helicopter.create(scene());
+                }
+            });
             // helicopterSpawned = true;
         }
 

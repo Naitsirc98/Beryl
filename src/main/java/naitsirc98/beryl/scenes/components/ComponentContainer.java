@@ -1,8 +1,8 @@
 package naitsirc98.beryl.scenes.components;
 
 import naitsirc98.beryl.scenes.Component;
+import naitsirc98.beryl.util.collections.FastIterableSet;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 
@@ -61,10 +61,10 @@ public class ComponentContainer<T extends Component, EnabledContainer extends Co
         return disabledComponents;
     }
 
-    public static class Default<T extends Component> extends ComponentContainer<T, ArrayList<T>, HashSet<T>> {
+    public static class Default<T extends Component> extends ComponentContainer<T, FastIterableSet<T>, HashSet<T>> {
 
         public Default() {
-            super(new ArrayList<>(), new HashSet<>());
+            super(new FastIterableSet<>(), new HashSet<>());
         }
     }
 

@@ -4,6 +4,8 @@ import naitsirc98.beryl.util.types.ByteSize;
 
 import java.nio.ByteBuffer;
 
+import static naitsirc98.beryl.util.Maths.randomFloat;
+
 @ByteSize.Static(IColor.SIZEOF)
 public final class Color implements IColor {
 
@@ -33,6 +35,10 @@ public final class Color implements IColor {
 
     public static Color colorBlue() {
         return new Color(0.0f, 0.0f, 1.0f);
+    }
+
+    public static Color colorRandom() {
+        return new Color(randomFloat(), randomFloat(), randomFloat());
     }
 
 

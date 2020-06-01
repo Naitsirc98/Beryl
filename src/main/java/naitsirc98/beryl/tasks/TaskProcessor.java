@@ -7,7 +7,7 @@ import java.util.concurrent.Executors;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
-class TaskProcessor {
+public class TaskProcessor {
 
     private final ExecutorService threadPool;
 

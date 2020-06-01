@@ -2,35 +2,28 @@ package naitsirc98.beryl.scenes.components.behaviours;
 
 import naitsirc98.beryl.scenes.ComponentManager;
 import naitsirc98.beryl.scenes.Scene;
-import naitsirc98.beryl.util.collections.OptimizedArray;
-
-import java.util.HashSet;
-import java.util.Set;
+import naitsirc98.beryl.util.collections.FastIterableSet;
 
 /**
  * The Behaviour Manager updates the {@link AbstractBehaviour} instances of a scene
  */
 public class BehaviourManager extends ComponentManager<AbstractBehaviour> {
 
-    private final OptimizedArray<IUpdateBehaviour> updateBehaviours;
-    private final OptimizedArray<ILateBehaviour> lateBehaviours;
-    private final Set<AbstractBehaviour> disabledBehaviours;
+    private final FastIterableSet<IUpdateBehaviour> updateBehaviours;
+    private final FastIterableSet<ILateBehaviour> lateBehaviours;
     private int size;
 
     private BehaviourManager(Scene scene) {
         super(scene);
-        updateBehaviours = new OptimizedArray<>();
-        lateBehaviours = new OptimizedArray<>();
-        disabledBehaviours = new HashSet<>();
+        updateBehaviours = new FastIterableSet<>();
+        lateBehaviours = new FastIterableSet<>();
     }
 
     /**
      * Performs the update pass
      */
     public void update() {
-        for(IUpdateBehaviour behaviour : updateBehaviours) {
-            behaviour.onUpdate();
-        }
+         updateBehaviours.parallelStream().unordered().forEach(IUpdateBehaviour::onUpdate);
     }
 
     /**
@@ -51,8 +44,6 @@ public class BehaviourManager extends ComponentManager<AbstractBehaviour> {
 
             component.onStart();
 
-        } else {
-            disabledBehaviours.add(component);
         }
 
         ++size;
@@ -60,8 +51,6 @@ public class BehaviourManager extends ComponentManager<AbstractBehaviour> {
 
     @Override
     protected void enable(AbstractBehaviour component) {
-
-        disabledBehaviours.remove(component);
 
         addToProperCollection(component);
 
@@ -73,15 +62,12 @@ public class BehaviourManager extends ComponentManager<AbstractBehaviour> {
     @Override
     protected void disable(AbstractBehaviour component) {
         removeFromProperCollection(component);
-        disabledBehaviours.add(component);
     }
 
     @Override
     protected void remove(AbstractBehaviour component) {
         if(component.enabled()) {
             removeFromProperCollection(component);
-        } else {
-            disabledBehaviours.remove(component);
         }
         --size;
     }
@@ -90,7 +76,6 @@ public class BehaviourManager extends ComponentManager<AbstractBehaviour> {
     protected void removeAll() {
         updateBehaviours.clear();
         lateBehaviours.clear();
-        disabledBehaviours.clear();
         size = 0;
     }
 

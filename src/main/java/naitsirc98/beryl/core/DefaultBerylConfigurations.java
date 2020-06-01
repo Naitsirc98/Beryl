@@ -94,7 +94,8 @@ class DefaultBerylConfigurations {
 
     static final boolean DEFAULT_PRINT_SHADERS_SOURCE = false;
 
-    static void ensureDefaultConfigurationsClassIsLoaded() {
+    static final boolean DEFAULT_GRAPHICS_MULTITHREADING_ENABLED = true;
 
+    static void ensureDefaultConfigurationsClassIsLoaded() {
     }
 }

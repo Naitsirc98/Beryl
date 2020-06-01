@@ -38,7 +38,8 @@ public class PhongMaterialStorageHandler extends MaterialStorageHandler<PhongMat
 
             data.putInt(material.flags());
 
-            buffer.update(offset, data.rewind());
+            buffer.copy(offset, data.rewind());
+            // buffer.update(offset, data.rewind());
         }
     }
 
