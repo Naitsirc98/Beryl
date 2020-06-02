@@ -24,16 +24,19 @@ I have develop some example scenes to test all features out:
 You can develop outdoor 3D environments very easily with Beryl, like, for example, a beautiful forest:
 
 ![Forest daytime](img/forest_day.png)
+
 <sup>*Forest daytime, 1000 trees, water and shadows*</sup>
 
 Maybe you prefer adventuring into the woods at night with a flashlight:
 
 ![Forest at night](img/forest_night.png)
+
 <sup>*Forest at night, player porting a flashlight*</sup>
 
 You can't imagine how creepy becomes a forest with some fog around...
 
 ![Forest with dense fog](img/forest_fog.png)
+
 <sup>*Forest with dense fog*</sup>
 
 ### Indoor scenes
@@ -41,6 +44,7 @@ You can't imagine how creepy becomes a forest with some fog around...
 You can also render interiors, like your dream bedroom:
 
 ![Room](img/room.png)
+
 <sup>*Room scene, rendering with PBR*</sup>
 
 ### Lighting and texture mapping
@@ -48,9 +52,11 @@ You can also render interiors, like your dream bedroom:
 Using 2 textures and the sun light, you can simulate the Earth rotation and see the lights on the dark side!
 
 ![Sun and Earth 1](img/earth_day.png)
+
 <sup>*Earth, light side*</sup>
 
 ![Sun and Earth 2](img/earth_night.png) 
+
 <sup>*Earth, dark side*</sup>
 
 ### Physically Based Rendering scenes
@@ -58,12 +64,15 @@ Using 2 textures and the sun light, you can simulate the Earth rotation and see 
 Create incredible scenes with physically accurate algorithms and HDR environments to make the scene feel real.
 
 ![PBR Materials](img/pbr_materials.png)
+
 <sup>*Different PBR materials, rendered with IBL*</sup>
 
 ![PBR Rusted Iron](img/pbr_rusted_iron.png)
+
 <sup>*Rusted iron reflecting night lights*</sup>
 
 ![PBR Revolver](img/pbr_revolver.png)
+
 <sup>*PBR Model with metallic workflow: the amazing [Cerberus](https://artisaverb.info/Cerberus.html) model*</sup>
 
 ### Performance
@@ -72,6 +81,7 @@ Beryl uses bindless textures, frustum culling and multithreading drawing command
 objects are drawn at once, boosting the performance up to 400% faster in some scenes.
 
 ![Stress Test](img/50000_cubes.png)
+
 <sup>*Stress Test. 50000 cubes are drawn, all of them rotating each frame, and 1000 cubes are getting
  destroyed and created every 100 ms. I get 105 FPS on GTX 970*</sup>
 
@@ -80,6 +90,7 @@ objects are drawn at once, boosting the performance up to 400% faster in some sc
 The framework contains individual, single responsibility systems, that can be divided in 3 different levels:
 
 ![Beryl Systems](img/BerylSystems.png)
+
 <sup>*Beryl Systems*</sup>
 
 Each system can depend on other systems in the same or lower levels, but never on higher layers. This makes a hierarchical architecture that
