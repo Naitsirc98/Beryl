@@ -101,14 +101,14 @@ correctly defines the order in which these systems have to be initialized and te
 
 Beryl uses a scene system to update and render your worlds. A scene contains entities, which are the basic world
 objects. An entity is nothing by itself, but they can contain multiple components.
-A component can be almost everything data or behaviours. With this system, you get rid of complex inheritance hierarchies,
+A component can be just data, may define a behaviour, or both. With this system, you get rid of complex inheritance hierarchies,
 so the application is easier to scale.
 
 An entity only exists within its scene. Entities can only be in 1 scene, and a component must be in only 1 entity. In addition, 
 an entity can only contain 1 component of a specific class, but can contain multiple components of the same type.
 
 As you can see, the component **class** and the component **type** are different things. The class of a component refers to its Java class,
-i.e. **UpdateMutableBehaviour**. However, the *type* is usually the generic class of that kind of components, i.e. **AbstractBehaviour**.
+i.e. **UpdateMutableBehaviour**. However, the **type** is usually the base class of that kind of components, i.e. **AbstractBehaviour**.
 
 So, you cannot add 2 **UpdateMutableBehaviour** components in the same entity, but it may contain 100 different implementations of **AbstractBehaviour**.
 
@@ -138,8 +138,7 @@ public class MyGame extends BerylApplication {
 }
 ``` 
 
-When you inherit from **BerylApplication**, you must implement the method *onStart*. It will give you a **Scene** instance, so you can start
-to building up your world!
+When you inherit from **BerylApplication**, you must implement the method *onStart*. It will give you a **Scene** instance, so you can start building up your world!
 
 For example, lets make a simple example of a cube rotating each frame, a directional light and a skybox:
 
@@ -147,7 +146,7 @@ For example, lets make a simple example of a cube rotating each frame, a directi
     @Override
     public void onStart(Scene scene) {
     
-        // First of all, position the camera so we can see the cube
+        // First of all, position the camera so we can see the cube.
         scene.camera().position(0, 0, -20);
         
         // Create the cube entity. An entity may have a name, and it must be unique.
@@ -194,7 +193,7 @@ For example, lets make a simple example of a cube rotating each frame, a directi
 }
 ``` 
 
-Awesome! You have build your first application with Beryl! Now, its time to actually launch it:
+Awesome! You have built your first application with Beryl! Now, its time to actually launch it:
 
 ```java
 public class MyGame extends BerylApplication {
@@ -216,7 +215,7 @@ public class MyGame extends BerylApplication {
 
 You can customize many aspects of Beryl execution, like debugging, enable asserts, MSAA, logging parameters, and much more.
 
-These configuration parameters are stored in static final (immutable) variables when Beryl launches, so you only can modify them before
+These configuration parameters are stored in static final (immutable) variables when Beryl launches, so you can only modify them before
 starting Beryl.
 
 To modify the configuration settings, use the **BerylConfiguration** variables:
