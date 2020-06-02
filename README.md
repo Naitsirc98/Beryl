@@ -95,3 +95,151 @@ The framework contains individual, single responsibility systems, that can be di
 
 Each system can depend on other systems in the same or lower levels, but never on higher layers. This makes a hierarchical architecture that
 correctly defines the order in which these systems have to be initialized and terminated.    
+
+
+### Scenes and the Entity Component System
+
+Beryl uses a scene system to update and render your worlds. A scene contains entities, which are the basic world
+objects. An entity is nothing by itself, but they can contain multiple components.
+A component can be almost everything data or behaviours. With this system, you get rid of complex inheritance hierarchies,
+so the application is easier to scale.
+
+An entity only exists within its scene. Entities can only be in 1 scene, and a component must be in only 1 entity. In addition, 
+an entity can only contain 1 component of a specific class, but can contain multiple components of the same type.
+
+As you can see, the component **class** and the component **type** are different things. The class of a component refers to its Java class,
+i.e. **UpdateMutableBehaviour**. However, the *type* is usually the generic class of that kind of components, i.e. **AbstractBehaviour**.
+
+So, you cannot add 2 **UpdateMutableBehaviour** components in the same entity, but it may contain 100 different implementations of **AbstractBehaviour**.
+
+![Scene and ECS](img/scene_ecs.png)
+
+<sup>*Simple class diagram of the Beryl Scene Entity-Component System*</sup>
+
+Besides, the components are group by type, which are controlled by component managers, one for each type. This divides the  
+responsibility in multiple classes, so it is more maintainable, readable and faster. Faster because the scene does not have to
+traverse huge and complex graphs to search and update or render the required components, but update lists of components of one type.
+This lists, which are implemented as arrays, are super fast to iterate, can improve cache locality and most important, allows parallel
+processing of each component.
+
+
+### Getting started
+
+Developing with Beryl is very easy and straightforward. First of all, you need to extend the abstract class **BerylApplication**:
+
+```java
+public class MyGame extends BerylApplication {
+
+    @Override
+    public void onStart(Scene scene) {
+        // Cool things here
+    }
+
+}
+``` 
+
+When you inherit from **BerylApplication**, you must implement the method *onStart*. It will give you a **Scene** instance, so you can start
+to building up your world!
+
+For example, lets make a simple example of a cube rotating each frame, a directional light and a skybox:
+
+```java
+    @Override
+    public void onStart(Scene scene) {
+    
+        // First of all, position the camera so we can see the cube
+        scene.camera().position(0, 0, -20);
+        
+        // Create the cube entity. An entity may have a name, and it must be unique.
+        Entity cube = scene.newEntity("The Cube");
+        
+        // Add a Transform. It defines the position, scale and rotation of an object in the scene.
+        // A Transform is necessary in visible objects, but not in invisible objects, like in game controllers for example.
+        // Lets set this cube at position (0, 0, 0) and scale it by 2.
+        cube.add(Transform.class).position(0, 0, 0).scale(2.0f);
+        
+        // Now attach a mesh view to it to actually see it on the scene.
+        // Common meshes, like cube, sphere or quad, are already loaded and ready to use.
+        StaticMesh cubeMesh = StaticMesh.cube();
+        
+        // Now we need a material. Lets create a material with a green color.
+        // Materials have a unique name, and are created through a factory. This is to cached already created materials.
+        Material material = PhongMaterial.getFactory().getMaterial("My Material", mat -> {
+            // If the material named "My Material" has not been created, then this piece of code will be executed.
+            // Here you can initialize the material. The materials are mutable, so you can change their properties at runtime.
+            mat.color(Color.colorGreen()).shininess(32.0f);
+        });
+
+        // Create a StaticMeshInstance component and attach a new StaticMeshView to it.
+        // A mesh view simply binds a mesh with a material. A mesh instance is a component that can have multiple mesh views.
+        cube.add(StaticMeshInstance.class).meshView(new StaticMeshView(cubeMesh, material));
+
+        // Now, lets add a small behaviour script that rotates the cube each frame.
+        // UpdateMutableBehaviour is a special type of behaviour component that can change its onUpdate method at runtime.
+        cube.add(UpdateMutableBehaviour.class).onUpdate(self -> {
+            // This will be executed each frame. All onUpdate methods are invoked at the same time, in parallel.
+            // If you are going to perform tasks that should be executed in a single thread, use onLateUpdate instead.
+            // "Self" represents this behaviour component. You can get the components of its entity with the "get" method:
+            Transform transform = self.get(Transform.class);
+            transform.rotateY(Time.seconds());
+        });
+    
+        // Now, lets add the directional light
+        scene.environment().lighting().directionalLight(new DirectionalLight().direction(0, 0, 1));
+
+        // And finally, set the skybox
+        scene.environment().skybox(SkyboxFactory.newSkyboxHDR("Path-to-skybox.hdr"));
+    }
+
+}
+``` 
+
+Awesome! You have build your first application with Beryl! Now, its time to actually launch it:
+
+```java
+public class MyGame extends BerylApplication {
+
+    public static void main(String[] args) {
+        // Simply call Beryl's launch method with an instance of your BerylApplication class.
+        Beryl.launch(new MyGame());
+    }
+
+    @Override
+    public void onStart(Scene scene) {
+        // ...
+    }
+
+}
+``` 
+
+### Configuration
+
+You can customize many aspects of Beryl execution, like debugging, enable asserts, MSAA, logging parameters, and much more.
+
+These configuration parameters are stored in static final (immutable) variables when Beryl launches, so you only can modify them before
+starting Beryl.
+
+To modify the configuration settings, use the **BerylConfiguration** variables:
+
+```java
+public class MyGame extends BerylApplication {
+
+    public static void main(String[] args) {
+        // Customize configuration before Beryl launches:
+        BerylConfiguration.MSAA_SAMPLES.set(8);
+        BerylConfiguration.SCENE_SHADING_MODEL.set(ShadingModel.PHONG);
+        BerylConfiguration.FIRST_SCENE_NAME.set("My awesome Beryl game");
+        // BerylConfigurationHelper contains useful methods to set predefined sets of configurations.
+        BerylConfigurationHelper.debugConfiguration();
+        // Finally, launch your application.
+        Beryl.launch(new MyGame());
+    }
+
+    @Override
+    public void onStart(Scene scene) {
+        // ...
+    }
+}
+```
+
+
