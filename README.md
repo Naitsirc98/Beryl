@@ -84,4 +84,3 @@ The framework contains individual, single responsibility systems, that can be di
 
 Each system can depend on other systems in the same or lower levels, but never on higher layers. This makes a hierarchical architecture that
 correctly defines the order in which these systems have to be initialized and terminated.    
-
