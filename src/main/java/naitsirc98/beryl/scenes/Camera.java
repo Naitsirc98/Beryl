@@ -1,5 +1,7 @@
 package naitsirc98.beryl.scenes;
 
+import naitsirc98.beryl.events.EventManager;
+import naitsirc98.beryl.events.window.WindowResizedEvent;
 import naitsirc98.beryl.graphics.window.Window;
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.util.geometry.Sizec;
@@ -107,6 +109,8 @@ public final class Camera {
 		modified = true;
 
 		updateCameraVectors();
+
+		EventManager.addEventCallback(WindowResizedEvent.class, e -> viewport.set(0, 0, e.width(), e.height()));
 	}
 
 	public boolean modified() {

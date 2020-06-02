@@ -14,12 +14,12 @@ reducing the driver's work as much as possible, while putting much more responsi
 
 ## Features
 
-It supports multiple light sources, cascaded shadow maps, water, 3D sound, dynamic skybox, fog, 3D model loading, and various shading models, supporting Phong and PBR (Physically Based Rendering) Metallic-Roughness for now.
+It supports multiple light sources, cascaded shadow maps, terrain generation, water, 3D sound, dynamic skybox, fog, 3D model loading, and various shading models, supporting Phong and PBR (Physically Based Rendering) Metallic-Roughness for now.
 All of these functionalities are going to be continually improved in the future, as well as adding many others.
 
 I have develop some example scenes to test all features out:
 
-###Open World Scenes
+### Open World Scenes
 
 You can develop outdoor 3D environments very easily with Beryl, like, for example, a beautiful forest:
 
@@ -77,7 +77,11 @@ objects are drawn at once, boosting the performance up to 400% faster in some sc
 
 ## Framework architecture
 
-But Beryl is not only graphics; it has a game engine infrastructure, from Logging to an Entity-Component System.
+The framework contains individual, single responsibility systems, that can be divided in 3 different levels:
 
-*TODO...*
+![Beryl Systems](img/BerylSystems.png)
+<sup>*Beryl Systems*</sup>
+
+Each system can depend on other systems in the same or lower levels, but never on higher layers. This makes a hierarchical architecture that
+correctly defines the order in which these systems have to be initialized and terminated.    
 

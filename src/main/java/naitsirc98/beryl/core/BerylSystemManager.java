@@ -40,12 +40,12 @@ public class BerylSystemManager {
                 glfwLibrary = createSystem(GLFWLibrary.class),
                 time = createSystem(Time.class),
                 eventManager = createSystem(EventManager.class),
-                input = createSystem(Input.class),
-                graphics = createSystem(Graphics.class),
                 resourceManager = createSystem(ResourceManager.class),
+                graphics = createSystem(Graphics.class),
+                input = createSystem(Input.class),
+                audioSystem = createSystem(AudioSystem.class),
                 assetsSystem = createSystem(AssetsSystem.class),
                 renderSystem = createSystem(RenderSystem.class),
-                audioSystem = createSystem(AudioSystem.class),
                 taskManager = createSystem(TaskManager.class),
                 sceneManager = createSystem(SceneManager.class)
         };
