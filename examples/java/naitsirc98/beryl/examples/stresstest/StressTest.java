@@ -38,12 +38,8 @@ import java.util.WeakHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
 
 public class StressTest extends BerylApplication {
-
-    private List<String> imageList;
-    private Map<String, Texture2D> textureCache;
 
     public StressTest() {
         BerylConfiguration.SHADOWS_ENABLED_ON_START.set(false);
@@ -51,16 +47,6 @@ public class StressTest extends BerylApplication {
         BerylConfiguration.GRAPHICS_MULTITHREADING_ENABLED.set(true);
         BerylConfiguration.FIRST_SCENE_NAME.set("Stress Test");
         BerylConfigurationHelper.developmentConfiguration();
-
-        try {
-            imageList = Files.list(Paths.get("C:\\Users\\naits\\Downloads\\cats-master\\cat_photos"))
-                    .map(Path::toFile).map(File::toString)
-                    .collect(Collectors.toList());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        textureCache = new WeakHashMap<>();
     }
 
     @Override
@@ -75,13 +61,9 @@ public class StressTest extends BerylApplication {
 
         Random rand = new Random();
 
-        for(int i = 0;i < 20000;i++) {
+        for(int i = 0;i < 50000;i++) {
             createEntity(scene, rand, cubeMesh, i);
         }
-
-        Log.info("Loaded " + textureCache.size() + " textures");
-
-        // textureCache.clear();
 
         scene.environment().skybox(SkyboxFactory.newSkybox(BerylFiles.getString("textures/skybox/day")));
 
@@ -105,7 +87,7 @@ public class StressTest extends BerylApplication {
 
                 if(destroying.get()) {
 
-                    count.set(rand.nextInt(5000));
+                    count.set(1000);
 
                     int n = count.get();
 
@@ -161,37 +143,5 @@ public class StressTest extends BerylApplication {
         return PhongMaterial.getFactory().getMaterial(rand.nextInt(10000) + "material", material -> {
            material.color(Color.colorRandom());
         });
-        /*
-        return PBRMetallicMaterial.getFactory().getMaterial(rand.nextInt() + "", material -> {
-            // material.albedoMap(getRandomTexture(rand));
-            material.albedo(new Color(rand.nextFloat(), rand.nextFloat(), rand.nextFloat()));
-            material.roughness(rand.nextFloat());
-            material.metallic(rand.nextFloat());
-            material.occlusion(rand.nextFloat());
-            // material.colorMap(getRandomTexture(rand));
-            // material.color(new Color(rand.nextFloat(), rand.nextFloat(), rand.nextFloat()));
-        });
-
-         */
-    }
-
-    private Texture2D getRandomTexture(Random rand) {
-
-        final int index = rand.nextInt(imageList.size());
-
-        String file = imageList.get(index);
-
-        if(textureCache.containsKey(file)) {
-            return textureCache.get(file);
-        }
-
-        Texture2D texture = GraphicsFactory.get().newTexture2D(file, PixelFormat.RGBA);
-
-        texture.setQuality(Texture.Quality.MEDIUM);
-        texture.sampler().wrapMode(Sampler.WrapMode.REPEAT);
-
-        textureCache.put(file, texture);
-
-        return texture;
     }
 }

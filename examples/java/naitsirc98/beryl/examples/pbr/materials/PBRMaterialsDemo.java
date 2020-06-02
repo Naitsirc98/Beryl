@@ -11,11 +11,11 @@ public class PBRMaterialsDemo extends PBRDemo {
 
     @Override
     protected void setSceneObjects(Scene scene) {
-        PBRSphere.create(scene, 0, 0, 0, BerylFiles.getPath("textures/rusted_iron"));
-        PBRSphere.create(scene, 60, 0, 0, BerylFiles.getPath("textures/gold"));
+        PBRSphere.create(scene, 0, 0, 0, BerylFiles.getPath("textures/plastic"));
+        PBRSphere.create(scene, 60, 0, 0, BerylFiles.getPath("textures/grass"));
         PBRSphere.create(scene, 120, 0, 0, BerylFiles.getPath("textures/wall"));
-        PBRSphere.create(scene, -60, 0, 0, BerylFiles.getPath("textures/plastic"));
-        PBRSphere.create(scene, -120, 0, 0, BerylFiles.getPath("textures/grass"));
+        PBRSphere.create(scene, -60, 0, 0, BerylFiles.getPath("textures/rusted_iron"));
+        PBRSphere.create(scene, -120, 0, 0, BerylFiles.getPath("textures/gold"));
     }
 
     @Override
@@ -24,6 +24,8 @@ public class PBRMaterialsDemo extends PBRDemo {
         SceneEnvironment environment = scene.environment();
 
         Skybox skybox = SkyboxFactory.newSkyboxHDR(BerylFiles.getString("textures/skybox/hdr/indoor.hdr"));
+
+        skybox.prefilterLODBias(0.0f);
 
         environment.skybox(skybox);
     }

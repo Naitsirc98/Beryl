@@ -9,6 +9,7 @@ import naitsirc98.beryl.examples.pbr.materials.PBRMaterialsDemo;
 import naitsirc98.beryl.examples.pbr.revolver.PBRRevolverDemo;
 import naitsirc98.beryl.examples.room.RoomScene;
 import naitsirc98.beryl.examples.space.SolarSystem;
+import naitsirc98.beryl.examples.stresstest.StressTest;
 
 public class Main {
 
@@ -22,11 +23,11 @@ public class Main {
 
         // BerylApplication app = new PBRMaterialsDemo();
 
-        // BerylApplication app = new StressTest();
+        BerylApplication app = new StressTest();
 
         // BerylApplication app = new SolarSystem();
 
-        BerylApplication app = new RoomScene();
+        // BerylApplication app = new RoomScene();
 
         Beryl.launch(app);
     }

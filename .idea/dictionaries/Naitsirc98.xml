@@ -6,6 +6,7 @@
       <w>assimp</w>
       <w>attributef</w>
       <w>attributei</w>
+      <w>azdo</w>
       <w>bitangent</w>
       <w>bitangents</w>
       <w>blinn</w>
@@ -45,6 +46,7 @@
       <w>swapchain</w>
       <w>tesselation</w>
       <w>texcoords</w>
+      <w>ulpgc</w>
       <w>unnormalized</w>
       <w>unqueue</w>
       <w>untrack</w>

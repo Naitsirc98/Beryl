@@ -74,9 +74,9 @@ public class ForestDay extends BerylApplication {
 
         Grass.placeGrassUnderWater(scene, Terrain.getTerrainMesh(), (int) TERRAIN_SIZE, 8.0f, waterSurfaceY, 100);
 
-        Lamp.create(scene, 473.74f, 0.067f, 376.301f, 4.0f);
+        // Lamp.create(scene, 473.74f, 0.067f, 376.301f, 4.0f);
 
-        Tree.createRandomForest(scene, Terrain.getTerrainMesh(), (int) TERRAIN_SIZE, -4.0f, 500);
+        Tree.createRandomForest(scene, Terrain.getTerrainMesh(), (int) TERRAIN_SIZE, -4.0f, 700);
 
         Helicopter.getHelicopterModel();
     }
@@ -125,9 +125,9 @@ public class ForestDay extends BerylApplication {
 
         Skybox skybox = SkyboxFactory.newSkybox(BerylFiles.getString("textures/skybox/day"), BerylFiles.getString("textures/skybox/night"));
 
-        environment.skybox(skybox);
-        environment.ambientColor(new Color(0.8f));
-        environment.fog().density(DEFAULT_FOG_DENSITY);
+        // environment.skybox(skybox);
+        environment.ambientColor(new Color(0.4f));
+        environment.fog().color(environment.clearColor()).density(0.85f);
 
         setSceneLights(scene);
     }
@@ -138,8 +138,8 @@ public class ForestDay extends BerylApplication {
 
         DirectionalLight sun = new DirectionalLight();
 
-        lighting.directionalLight(sun);
-        lighting.directionalLight().direction(-0.365f, -0.808f, 0.462f);
+        // lighting.directionalLight(sun);
+        // lighting.directionalLight().color(Color.colorWhite().intensify(0.6f)).direction(-0.365f, -0.808f, 0.462f);
 
         lighting.pointLights().add(new PointLight()
                 .position(471.379f, 4.051f, 375.764f)

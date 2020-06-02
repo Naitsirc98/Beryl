@@ -71,10 +71,10 @@ public class GameController extends UpdateBehaviour {
 
         Skybox skybox = scene().environment().skybox();
 
-        // TODO
-        skybox.rotate(radians(0.0042f));
-
-        skybox.textureBlendFactor(time);
+        if(skybox != null) {
+            skybox.rotate(radians(0.0042f));
+            skybox.textureBlendFactor(time);
+        }
 
         DirectionalLight sun = scene().environment().lighting().directionalLight();
 
@@ -87,12 +87,12 @@ public class GameController extends UpdateBehaviour {
 
         scene().environment().fog().density(time / 2.0f);
 
-        scene().environment().lighting().pointLights().get(0).color().set(time * 1.25f, 1.0f);
+        // scene().environment().lighting().pointLights().get(0).color().set(time * 1.25f, 1.0f);
 
         scene().environment().ambientColor().set(clamp(0.2f, 1.0f, 1.0f - time), 1.0f);
 
-        PhongMaterial lampMaterial = (PhongMaterial) scene().entity(LAMP_NAME).get(StaticMeshInstance.class).meshView().material();
-        lampMaterial.emissiveColor(new Color().set(clamp(0.2f, 2.0f, time * 1.25f), 1.0f));
+        // PhongMaterial lampMaterial = (PhongMaterial) scene().entity(LAMP_NAME).get(StaticMeshInstance.class).meshView().material();
+        // lampMaterial.emissiveColor(new Color().set(clamp(0.2f, 2.0f, time * 1.25f), 1.0f));
     }
 
     private void updateAudioListener() {
