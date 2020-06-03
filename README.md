@@ -241,7 +241,7 @@ public class MyGame extends BerylApplication {
 }
 ```
 
-### How to include it in your project
+## How to include it in your project
 
 ### Download the binaries
 
