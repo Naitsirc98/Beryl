@@ -3,6 +3,25 @@ A Java Framework for building real time graphics applications. This is my final 
 
 ![Logo](img/beryl_logo.jpg) 
 
+---
+* [Introduction](#introduction)
+* [What you can create](#what-you-can-create)
+   * [Open World Scenes](#open-world-scenes)
+   * [Indoor Scenes](#open-world-scenes)
+   * [Lights and textures](#lights-and-textures)
+   * [Physically Based Rendering Scenes](#physically-based-rendering-scenes)
+* [Performance](#performance)
+* [Framework architecture](#framework-architecture)
+    * [Scenes and the Entity Component System](#scenes-and-the-entity-component-system)
+* [Getting Started](#getting-started)
+* [Configuration](#configuration)
+* [How to include it in your project](#how-to-include-it-in-your-project)
+    * [Download the binaries](#download-the-binaries)
+    * [Maven](#maven)
+
+
+## Introduction
+
 Beryl is a framework purely written in Java to develop high performance graphics applications.
 The main purpose of this project is to demonstrate the potential of the Java platform in making this kind of applications.
 
@@ -14,10 +33,25 @@ reducing the driver's work as much as possible, while putting much more responsi
 
 ## Features
 
-It supports multiple light sources, cascaded shadow maps, terrain generation, water, 3D sound, dynamic skybox, fog, 3D model loading, and various shading models, supporting Phong and PBR (Physically Based Rendering) Metallic-Roughness for now.
+Beryl supports the following features for now:
+
+- Multiple light sources
+- Cascaded shadow maps (only directional lights)
+- Terrain generation with heightmaps
+- Water
+ - 3D sound
+- Dynamic skybox (HDR or traditional 6-image sets)
+-  Fog
+-  3D model loading
+- Blinn-Phong
+- PBR metallic-roughness workflow
+- Customizable configuration settings
+
 All of these functionalities are going to be continually improved in the future, as well as adding many others.
 
-I have develop some example scenes to test all features out:
+## What you can create
+
+You can create quite different 3D scenes with Beryl very easily:
 
 ### Open World Scenes
 
@@ -47,7 +81,7 @@ You can also render interiors, like your dream bedroom:
 
 <sup>*Room scene, rendering with PBR*</sup>
 
-### Lighting and texture mapping
+### Lights and textures
 
 Using 2 textures and the sun light, you can simulate the Earth rotation and see the lights on the dark side!
 
@@ -59,7 +93,7 @@ Using 2 textures and the sun light, you can simulate the Earth rotation and see 
 
 <sup>*Earth, dark side*</sup>
 
-### Physically Based Rendering scenes
+### Physically Based Rendering Scenes
 
 Create incredible scenes with physically accurate algorithms and HDR environments to make the scene feel real.
 
@@ -75,7 +109,7 @@ Create incredible scenes with physically accurate algorithms and HDR environment
 
 <sup>*PBR Model with metallic workflow: the amazing [Cerberus](https://artisaverb.info/Cerberus.html) model*</sup>
 
-### Performance
+## Performance
 
 Beryl uses bindless textures, frustum culling and multithreading drawing command generation with indirect rendering. This means that multiple
 objects are drawn at once, boosting the performance up to 400% faster in some scenes.
@@ -123,7 +157,7 @@ This lists, which are implemented as arrays, are super fast to iterate, can impr
 processing of each component.
 
 
-### Getting started
+## Getting started
 
 Developing with Beryl is very easy and straightforward. First of all, you need to extend the abstract class **BerylApplication**:
 
@@ -211,7 +245,7 @@ public class MyGame extends BerylApplication {
 }
 ``` 
 
-### Configuration
+## Configuration
 
 You can customize many aspects of Beryl execution, like debugging, enable asserts, MSAA, logging parameters, and much more.
 
