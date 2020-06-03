@@ -241,4 +241,21 @@ public class MyGame extends BerylApplication {
 }
 ```
 
+### How to include it in your project
+
+### Download the binaries
+
+You can download the jar files in the [releases](https://github.com/Naitsirc98/Beryl/releases) section of this repository.
+
+### Maven
+
+To include Beryl as a Maven dependency, simply copy and paste this snipped below:
+
+```xml
+<dependency>
+  <groupId>naitsirc98</groupId>
+  <artifactId>beryl</artifactId>
+  <version>0.1-snapshot</version>
+</dependency>
+```
 
