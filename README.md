@@ -147,7 +147,7 @@ For example, lets make a simple example of a cube rotating each frame, a directi
     public void onStart(Scene scene) {
     
         // First of all, position the camera so we can see the cube.
-        scene.camera().position(0, 0, -20);
+        scene.camera().position(0, 0, 20);
         
         // Create the cube entity. An entity may have a name, and it must be unique.
         Entity cube = scene.newEntity("The Cube");
@@ -162,7 +162,7 @@ For example, lets make a simple example of a cube rotating each frame, a directi
         StaticMesh cubeMesh = StaticMesh.cube();
         
         // Now we need a material. Lets create a material with a green color.
-        // Materials have a unique name, and are created through a factory. This is to cached already created materials.
+        // Materials have a unique name, and are created through a factory.
         Material material = PhongMaterial.getFactory().getMaterial("My Material", mat -> {
             // If the material named "My Material" has not been created, then this piece of code will be executed.
             // Here you can initialize the material. The materials are mutable, so you can change their properties at runtime.
