@@ -20,7 +20,7 @@
         <repository>
             <id>github</id>
             <name>GitHub Naitsirc98 Apache Maven Packages</name>
-            <url>https://github.com/Naitsirc98/Beryl</url>
+            <url>https://maven.pkg.github.com/Naitsirc98/Beryl</url>
         </repository>
     </distributionManagement>
 
