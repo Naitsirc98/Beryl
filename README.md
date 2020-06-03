@@ -249,7 +249,7 @@ You can download the jar files in the [releases](https://github.com/Naitsirc98/B
 
 ### Maven
 
-To include Beryl as a Maven dependency, simply copy and paste this snipped below:
+To include Beryl as a Maven dependency, simply copy and paste this:
 
 ```xml
 <dependency>
@@ -259,3 +259,4 @@ To include Beryl as a Maven dependency, simply copy and paste this snipped below
 </dependency>
 ```
 
+Check out the [packages](https://github.com/Naitsirc98/Beryl/packages) section of this repository to see all the versions available.
