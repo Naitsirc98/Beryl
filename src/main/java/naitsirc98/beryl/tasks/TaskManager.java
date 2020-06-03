@@ -2,7 +2,6 @@ package naitsirc98.beryl.tasks;
 
 import naitsirc98.beryl.core.BerylSystem;
 import naitsirc98.beryl.core.BerylSystemManager;
-import naitsirc98.beryl.examples.forest.Helicopter;
 import naitsirc98.beryl.graphics.Graphics;
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.util.types.Singleton;

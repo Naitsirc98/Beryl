@@ -6,7 +6,7 @@
 
     <groupId>naitsirc98</groupId>
     <artifactId>beryl</artifactId>
-    <version>1.0</version>
+    <version>0.1-snapshot</version>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
