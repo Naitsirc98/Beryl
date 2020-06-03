@@ -100,6 +100,6 @@ public class Room {
     }
 
     private static Texture2D loadTexture(String name) {
-        return GraphicsFactory.get().newTexture2D(MODEL_ROOT_PATH.resolve(name).toString(), PixelFormat.RGBA);
+        return GraphicsFactory.get().newTexture2D(MODEL_ROOT_PATH.resolve(name), PixelFormat.RGBA);
     }
 }

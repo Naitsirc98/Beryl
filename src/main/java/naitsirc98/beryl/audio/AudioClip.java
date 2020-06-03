@@ -3,6 +3,7 @@ package naitsirc98.beryl.audio;
 import naitsirc98.beryl.assets.Asset;
 import naitsirc98.beryl.resources.ManagedResource;
 
+import java.nio.file.Path;
 import java.util.function.Consumer;
 
 public class AudioClip extends ManagedResource implements Asset {
@@ -82,14 +83,14 @@ public class AudioClip extends ManagedResource implements Asset {
 
     public static final class AudioClipParams {
 
-        private String audioFile;
+        private Path audioFile;
         private AudioDataFormat dataFormat;
 
         public AudioClipParams() {
             dataFormat = AudioDataFormat.OGG;
         }
 
-        public AudioClipParams audioFile(String audioFile) {
+        public AudioClipParams audioFile(Path audioFile) {
             this.audioFile = audioFile;
             return this;
         }

@@ -15,7 +15,7 @@ public class Main {
 
     public static void main(String[] args) {
 
-        // BerylApplication app = new ForestDay();
+        BerylApplication app = new ForestDay();
 
         // BerylApplication app = new ForestNight();
 
@@ -23,7 +23,7 @@ public class Main {
 
         // BerylApplication app = new PBRMaterialsDemo();
 
-        BerylApplication app = new StressTest();
+        // BerylApplication app = new StressTest();
 
         // BerylApplication app = new SolarSystem();
 

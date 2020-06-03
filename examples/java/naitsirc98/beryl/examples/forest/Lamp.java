@@ -17,6 +17,8 @@ import naitsirc98.beryl.scenes.components.math.Transform;
 import naitsirc98.beryl.scenes.components.meshes.StaticMeshInstance;
 import naitsirc98.beryl.util.Color;
 
+import java.nio.file.Path;
+
 public class Lamp {
 
     public static final String LAMP_NAME = "Lamp";
@@ -64,8 +66,8 @@ public class Lamp {
                 .emissiveColor(Color.colorWhite());
     }
 
-    private static String getTexturePath(String name) {
-        return BerylFiles.getString("textures/lamp/"+name);
+    private static Path getTexturePath(String name) {
+        return BerylFiles.getPath("textures/lamp/"+name);
     }
 
 }

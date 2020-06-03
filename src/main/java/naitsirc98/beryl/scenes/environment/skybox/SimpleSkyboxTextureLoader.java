@@ -7,7 +7,6 @@ import naitsirc98.beryl.images.ImageFactory;
 import naitsirc98.beryl.images.PixelFormat;
 
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.Map;
@@ -29,11 +28,11 @@ public class SimpleSkyboxTextureLoader extends AbstractSkyboxTextureLoader {
     }
 
     @Override
-    public Cubemap loadSkyboxTexture(String skyboxFolder) {
+    public Cubemap loadSkyboxTexture(Path skyboxFolder) {
 
         Cubemap cubemap = GraphicsFactory.get().newCubemap();
 
-        return setupCubemapFaces(cubemap, Paths.get(skyboxFolder), pixelFormat());
+        return setupCubemapFaces(cubemap, skyboxFolder, pixelFormat());
     }
 
     public Map<Cubemap.Face, String> cubemapFaceNames() {
@@ -52,7 +51,7 @@ public class SimpleSkyboxTextureLoader extends AbstractSkyboxTextureLoader {
 
             final String faceName = getImagePath(cubemapFaceNames.get(face));
 
-            try(Image image = ImageFactory.newImage(folder.resolve(faceName).toString(), pixelFormat)) {
+            try(Image image = ImageFactory.newImage(folder.resolve(faceName), pixelFormat)) {
 
                 final int size = image.width();
 

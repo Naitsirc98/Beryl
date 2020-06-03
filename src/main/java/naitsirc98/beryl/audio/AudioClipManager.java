@@ -7,6 +7,7 @@ import naitsirc98.beryl.util.types.Singleton;
 
 import java.io.File;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -34,7 +35,7 @@ public final class AudioClipManager implements AssetManager<AudioClip> {
 
     }
 
-    public synchronized AudioClip createAudioClip(String name, String audioFile,AudioDataFormat dataFormat) {
+    public synchronized AudioClip createAudioClip(String name, Path audioFile, AudioDataFormat dataFormat) {
 
         if(invalidAudioClipParameters(name, audioFile, dataFormat)) {
             return null;
@@ -83,7 +84,7 @@ public final class AudioClipManager implements AssetManager<AudioClip> {
         destroyAll();
     }
 
-    private boolean invalidAudioClipParameters(String name, String audioFile, AudioDataFormat dataFormat) {
+    private boolean invalidAudioClipParameters(String name, Path audioFile, AudioDataFormat dataFormat) {
 
         if(name == null) {
             Log.error("Name cannot be null");
@@ -100,7 +101,7 @@ public final class AudioClipManager implements AssetManager<AudioClip> {
             return true;
         }
 
-        if(Files.notExists(Paths.get(audioFile))) {
+        if(Files.notExists(audioFile)) {
             Log.error("File " + audioFile + "does not exists");
             return true;
         }
@@ -117,7 +118,7 @@ public final class AudioClipManager implements AssetManager<AudioClip> {
         return audioFile.substring(audioFile.lastIndexOf(File.pathSeparatorChar) + 1);
     }
 
-    private AudioBuffer decodeAudioData(String audioFile, AudioDataFormat dataFormat) {
+    private AudioBuffer decodeAudioData(Path audioFile, AudioDataFormat dataFormat) {
         return AudioDecoder.decode(audioFile, dataFormat);
     }
 

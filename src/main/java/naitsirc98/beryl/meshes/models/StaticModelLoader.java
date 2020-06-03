@@ -3,6 +3,7 @@ package naitsirc98.beryl.meshes.models;
 import naitsirc98.beryl.logging.Log;
 import naitsirc98.beryl.meshes.MeshManager;
 import naitsirc98.beryl.meshes.StaticMesh;
+import naitsirc98.beryl.util.FileUtils;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.assimp.AIMesh;
 import org.lwjgl.assimp.AIScene;
@@ -17,6 +18,7 @@ import static java.util.Objects.requireNonNull;
 import static naitsirc98.beryl.util.Asserts.assertNonNull;
 import static org.lwjgl.assimp.Assimp.*;
 import static org.lwjgl.system.MemoryUtil.memAlloc;
+import static org.lwjgl.system.MemoryUtil.memFree;
 
 public final class StaticModelLoader extends AssimpLoader {
 
@@ -76,7 +78,7 @@ public final class StaticModelLoader extends AssimpLoader {
 
         float end = (float) ((System.nanoTime() - start) / 1e6);
 
-        Log.info("Model " + path.getName(path.getNameCount() - 1) + " loaded in " + end + " ms");
+        Log.trace("Model " + path.getName(path.getNameCount() - 1) + " loaded in " + end + " ms");
 
         cache.put(path, model);
 
@@ -85,12 +87,17 @@ public final class StaticModelLoader extends AssimpLoader {
 
     private StaticModel loadAssimp(Path path, StaticVertexHandler handler, NameMapper nameMapper) {
 
-        AIScene aiScene = aiImportFile(path.toString(), DEFAULT_FLAGS);
+        ByteBuffer fileContents = FileUtils.readAllBytes(path);
+
+        AIScene aiScene = aiImportFileFromMemory(fileContents, DEFAULT_FLAGS, FileUtils.getFileExtension(path));
+
+        memFree(fileContents);
 
         try {
 
             if (aiScene == null || aiScene.mRootNode() == null) {
-                throw new IllegalStateException("Could not load model: " + aiGetErrorString());
+                Log.error("Could not load model: " + aiGetErrorString());
+                return null;
             }
 
             StaticModel model = new StaticModel(path);

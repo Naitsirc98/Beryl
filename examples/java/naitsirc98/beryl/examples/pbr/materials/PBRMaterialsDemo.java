@@ -23,7 +23,7 @@ public class PBRMaterialsDemo extends PBRDemo {
 
         SceneEnvironment environment = scene.environment();
 
-        Skybox skybox = SkyboxFactory.newSkyboxHDR(BerylFiles.getString("textures/skybox/hdr/indoor.hdr"));
+        Skybox skybox = SkyboxFactory.newSkyboxHDR(BerylFiles.getPath("textures/skybox/hdr/indoor.hdr"));
 
         skybox.prefilterLODBias(0.0f);
 

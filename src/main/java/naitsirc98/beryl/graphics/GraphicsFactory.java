@@ -11,6 +11,8 @@ import naitsirc98.beryl.images.PixelFormat;
 import naitsirc98.beryl.resources.Resource;
 import naitsirc98.beryl.scenes.environment.skybox.pbr.SkyboxPBRTextureFactory;
 
+import java.nio.file.Path;
+
 public interface GraphicsFactory extends Resource {
 
     static GraphicsFactory get() {
@@ -23,9 +25,9 @@ public interface GraphicsFactory extends Resource {
 
     Texture2D blackTexture2D();
 
-    Texture2D newTexture2D(String imagePath, PixelFormat pixelFormat);
+    Texture2D newTexture2D(Path imagePath, PixelFormat pixelFormat);
 
-    Texture2D newTexture2DFloat(String imagePath, PixelFormat pixelFormat);
+    Texture2D newTexture2D(Path imagePath, PixelFormat pixelFormat, boolean flipY);
 
     Texture2DMSAA newTexture2DMSAA();
 

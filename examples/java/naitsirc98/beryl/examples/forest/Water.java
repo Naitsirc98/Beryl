@@ -55,7 +55,7 @@ public class Water {
                 .rollOff(0.5f)
                 .looping(true);
         waterAudioPlayer.play(AudioClip.get("water", audioClipParams -> {
-            audioClipParams.audioFile(BerylFiles.getString("audio/water.ogg"));
+            audioClipParams.audioFile(BerylFiles.getPath("audio/water.ogg"));
         }));
     }
 
@@ -63,8 +63,8 @@ public class Water {
 
         return WaterMaterial.getFactory().getMaterial("water", material -> {
 
-            Texture2D dudv = GraphicsFactory.get().newTexture2D(BerylFiles.getString("textures/water/dudv.png"), PixelFormat.RGBA);
-            Texture2D normalMap = GraphicsFactory.get().newTexture2D(BerylFiles.getString("textures/water/normalMap.png"), PixelFormat.RGBA);
+            Texture2D dudv = GraphicsFactory.get().newTexture2D(BerylFiles.getPath("textures/water/dudv.png"), PixelFormat.RGBA);
+            Texture2D normalMap = GraphicsFactory.get().newTexture2D(BerylFiles.getPath("textures/water/normalMap.png"), PixelFormat.RGBA);
 
             dudv.generateMipmaps();
             dudv.sampler().wrapMode(Sampler.WrapMode.REPEAT);

@@ -7,6 +7,7 @@ import org.lwjgl.system.MemoryStack;
 
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
+import java.nio.file.Path;
 
 import static naitsirc98.beryl.util.handles.LongHandle.NULL;
 import static naitsirc98.beryl.util.types.DataType.INT16_SIZEOF;
@@ -25,7 +26,7 @@ public final class VorbisAudioDecoder implements AudioDecoder {
     }
 
     @Override
-    public AudioBuffer decode(String audioFile) {
+    public AudioBuffer decode(Path audioFile) {
 
         try(MemoryStack stack = stackPush()) {
 
@@ -33,17 +34,19 @@ public final class VorbisAudioDecoder implements AudioDecoder {
             IntBuffer channels = stack.ints(0);
             IntBuffer frequency = stack.ints(0);
 
-            final long decoder = stb_vorbis_open_filename(audioFile, error, null);
+            String filename = audioFile.toAbsolutePath().toString();
+
+            final long decoder = stb_vorbis_open_filename(filename, error, null);
 
             if(decoder == NULL) {
-                Log.error("Failed to open .ogg audio file: " + audioFile + ". Error " + error.get(0));
+                Log.error("Failed to open .ogg audio file: " + filename + ". Error " + error.get(0));
                 return null;
             }
 
-            ShortBuffer data = stb_vorbis_decode_filename(audioFile, channels, frequency);
+            ShortBuffer data = stb_vorbis_decode_filename(filename, channels, frequency);
 
             if(data == null) {
-                Log.error("Could not decode vorbis audio file: " + audioFile + ": " + stb_vorbis_get_error(decoder));
+                Log.error("Could not decode vorbis audio file: " + filename + ": " + stb_vorbis_get_error(decoder));
                 return null;
             }
 

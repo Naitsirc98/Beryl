@@ -6,7 +6,7 @@
 
     <groupId>naitsirc98</groupId>
     <artifactId>beryl</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0</version>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -15,6 +15,14 @@
         <lwjgl.version>3.2.3</lwjgl.version>
         <joml.version>1.9.20</joml.version>
     </properties>
+
+    <distributionManagement>
+        <repository>
+            <id>github</id>
+            <name>GitHub Naitsirc98 Apache Maven Packages</name>
+            <url>https://github.com/Naitsirc98/Beryl</url>
+        </repository>
+    </distributionManagement>
 
     <profiles>
         <profile>

@@ -95,7 +95,7 @@ public class ForestDay extends BerylApplication {
                 .position(new Vector3f(TERRAIN_SIZE/2, 0, TERRAIN_SIZE/2))
                 .looping(true);
 
-        forestAudioPlayer.clip(AudioClip.get("forest", params -> params.audioFile(BerylFiles.getString("audio/forest.ogg"))));
+        forestAudioPlayer.clip(AudioClip.get("forest", params -> params.audioFile(BerylFiles.getPath("audio/forest.ogg"))));
 
         Entity forestNightSound = scene.newEntity(FOREST_NIGHT_SOUND);
         AudioPlayer forestNightAudioPlayer = forestNightSound.add(AudioPlayer.class);
@@ -107,7 +107,7 @@ public class ForestDay extends BerylApplication {
                 .position(new Vector3f(TERRAIN_SIZE/2, 0, TERRAIN_SIZE/2))
                 .looping(true);
 
-        forestNightAudioPlayer.clip(AudioClip.get("forestNight", params -> params.audioFile(BerylFiles.getString("audio/forest_night.ogg"))));
+        forestNightAudioPlayer.clip(AudioClip.get("forestNight", params -> params.audioFile(BerylFiles.getPath("audio/forest_night.ogg"))));
     }
 
     private void initSceneCamera(Scene scene) {
@@ -123,11 +123,11 @@ public class ForestDay extends BerylApplication {
 
         SceneEnvironment environment = scene.environment();
 
-        Skybox skybox = SkyboxFactory.newSkybox(BerylFiles.getString("textures/skybox/day"), BerylFiles.getString("textures/skybox/night"));
+        Skybox skybox = SkyboxFactory.newSkybox(BerylFiles.getPath("textures/skybox/day"), BerylFiles.getPath("textures/skybox/night"));
 
-        // environment.skybox(skybox);
+        environment.skybox(skybox);
         environment.ambientColor(new Color(0.4f));
-        environment.fog().color(environment.clearColor()).density(0.85f);
+        // environment.fog().color(environment.clearColor()).density(0.85f);
 
         setSceneLights(scene);
     }
@@ -138,8 +138,8 @@ public class ForestDay extends BerylApplication {
 
         DirectionalLight sun = new DirectionalLight();
 
-        // lighting.directionalLight(sun);
-        // lighting.directionalLight().color(Color.colorWhite().intensify(0.6f)).direction(-0.365f, -0.808f, 0.462f);
+        lighting.directionalLight(sun);
+        lighting.directionalLight().color(Color.colorWhite().intensify(0.6f)).direction(-0.365f, -0.808f, 0.462f);
 
         lighting.pointLights().add(new PointLight()
                 .position(471.379f, 4.051f, 375.764f)

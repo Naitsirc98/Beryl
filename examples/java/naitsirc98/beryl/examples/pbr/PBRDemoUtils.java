@@ -37,7 +37,7 @@ public class PBRDemoUtils {
             return null;
         }
 
-        Texture2D texture = GraphicsFactory.get().newTexture2D(path.toString(), PixelFormat.RGBA);
+        Texture2D texture = GraphicsFactory.get().newTexture2D(path, PixelFormat.RGBA);
 
         texture.sampler()
                 .wrapMode(Sampler.WrapMode.REPEAT)

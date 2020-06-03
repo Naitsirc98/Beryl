@@ -11,7 +11,6 @@ import naitsirc98.beryl.examples.common.CameraController;
 import naitsirc98.beryl.examples.forest.*;
 import naitsirc98.beryl.graphics.rendering.ShadingModel;
 import naitsirc98.beryl.graphics.window.Window;
-import naitsirc98.beryl.lights.DirectionalLight;
 import naitsirc98.beryl.lights.LightRange;
 import naitsirc98.beryl.lights.PointLight;
 import naitsirc98.beryl.lights.SpotLight;
@@ -27,8 +26,9 @@ import naitsirc98.beryl.scenes.environment.skybox.SkyboxFactory;
 import naitsirc98.beryl.util.Color;
 import org.joml.Vector3f;
 
+import java.nio.file.Paths;
+
 import static naitsirc98.beryl.examples.forest.Terrain.TERRAIN_SIZE;
-import static naitsirc98.beryl.scenes.environment.Fog.DEFAULT_FOG_DENSITY;
 
 public class ForestNight extends BerylApplication {
 
@@ -88,7 +88,7 @@ public class ForestNight extends BerylApplication {
                 .position(new Vector3f(TERRAIN_SIZE/2, 0, TERRAIN_SIZE/2))
                 .looping(true);
 
-        forestNightAudioPlayer.clip(AudioClip.get("forestNight", params -> params.audioFile(BerylFiles.getString("audio/forest_night.ogg"))));
+        forestNightAudioPlayer.clip(AudioClip.get("forestNight", params -> params.audioFile(BerylFiles.getPath("audio/forest_night.ogg"))));
     }
 
     private void initSceneCamera(Scene scene) {
@@ -104,7 +104,7 @@ public class ForestNight extends BerylApplication {
 
         SceneEnvironment environment = scene.environment();
 
-        Skybox skybox = SkyboxFactory.newSkybox("C:\\Users\\naits\\Downloads\\skybox (2)");
+        Skybox skybox = SkyboxFactory.newSkybox(Paths.get("C:\\Users\\naits\\Downloads\\skybox (2)"));
         environment.skybox(skybox);
 
         Color fogColor = Color.colorWhite().intensify(0.15f);

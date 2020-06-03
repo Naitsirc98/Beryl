@@ -20,7 +20,7 @@ public final class GLTexture2D extends GLTexture implements Texture2D {
 
     public void allocate(int mipLevels, int width, int height, int internalFormat) {
         if(allocated) {
-            Log.fatal("Texture has been already allocated. Use reallocate instead");
+            Log.warning("Texture has been already allocated. Use reallocate instead");
             return;
         }
         glTextureStorage2D(handle(), mipLevels, internalFormat, width, height);
@@ -30,7 +30,7 @@ public final class GLTexture2D extends GLTexture implements Texture2D {
     @Override
     public void allocate(int mipLevels, int width, int height, PixelFormat internalFormat) {
         if(allocated) {
-            Log.fatal("Texture has been already allocated. Use reallocate instead");
+            Log.warning("Texture has been already allocated. Use reallocate instead");
             return;
         }
         glTextureStorage2D(handle(), mipLevels, mapper().mapToSizedInternalFormat(internalFormat), width, height);

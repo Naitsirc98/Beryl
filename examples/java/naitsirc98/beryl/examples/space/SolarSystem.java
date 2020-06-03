@@ -9,8 +9,6 @@ import naitsirc98.beryl.graphics.GraphicsFactory;
 import naitsirc98.beryl.graphics.rendering.ShadingModel;
 import naitsirc98.beryl.graphics.textures.Texture2D;
 import naitsirc98.beryl.images.PixelFormat;
-import naitsirc98.beryl.lights.DirectionalLight;
-import naitsirc98.beryl.lights.LightRange;
 import naitsirc98.beryl.lights.PointLight;
 import naitsirc98.beryl.materials.Material;
 import naitsirc98.beryl.materials.PhongMaterial;
@@ -18,15 +16,14 @@ import naitsirc98.beryl.meshes.StaticMesh;
 import naitsirc98.beryl.meshes.views.StaticMeshView;
 import naitsirc98.beryl.scenes.Entity;
 import naitsirc98.beryl.scenes.Scene;
-import naitsirc98.beryl.scenes.SceneManager;
 import naitsirc98.beryl.scenes.components.behaviours.UpdateBehaviour;
-import naitsirc98.beryl.scenes.components.behaviours.UpdateMutableBehaviour;
 import naitsirc98.beryl.scenes.components.math.Transform;
 import naitsirc98.beryl.scenes.components.meshes.StaticMeshInstance;
 import naitsirc98.beryl.scenes.environment.skybox.Skybox;
 import naitsirc98.beryl.scenes.environment.skybox.SkyboxFactory;
 import naitsirc98.beryl.util.Color;
-import org.joml.Vector2f;
+
+import java.nio.file.Paths;
 
 public class SolarSystem extends BerylApplication {
 
@@ -90,13 +87,13 @@ public class SolarSystem extends BerylApplication {
 
     private void setEnvironment(Scene scene) {
 
-        Skybox skybox = SkyboxFactory.newSkybox("C:\\Users\\naits\\Downloads\\skybox (2)");
+        Skybox skybox = SkyboxFactory.newSkybox(Paths.get("C:\\Users\\naits\\Downloads\\skybox (2)"));
 
         scene.environment().skybox(skybox);
     }
 
     private Texture2D loadTexture(String path) {
-        return GraphicsFactory.get().newTexture2D(path, PixelFormat.RGBA);
+        return GraphicsFactory.get().newTexture2D(Paths.get(path), PixelFormat.RGBA);
     }
 
     private static class PlanetRotation extends UpdateBehaviour {

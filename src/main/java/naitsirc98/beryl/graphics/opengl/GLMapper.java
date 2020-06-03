@@ -120,7 +120,7 @@ public class GLMapper extends GraphicsMapper {
         map.put(DataType.UINT16, GL_UNSIGNED_SHORT);
         map.put(DataType.INT32, GL_INT);
         map.put(DataType.UINT32, GL_UNSIGNED_INT);
-        map.put(DataType.FLOAT16, GL_HALF_FLOAT);
+        map.put(DataType.FLOAT16, GL_FLOAT);
         map.put(DataType.FLOAT32, GL_FLOAT);
         map.put(DataType.DOUBLE, GL_DOUBLE);
 

@@ -1,19 +1,27 @@
 package naitsirc98.beryl.core;
 
 import naitsirc98.beryl.logging.Log;
+import naitsirc98.beryl.resources.ManagedResource;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Utility class for getting Beryl internal resources
  */
 public final class BerylFiles {
+
+    private static BerylJarFileSystem jarFileSystem;
 
     /**
      * Converts the specified {@link String} path into a resource {@link URL}
@@ -27,29 +35,6 @@ public final class BerylFiles {
            Log.error("Failed to get resource " + path);
        }
        return url;
-    }
-
-    /**
-     * Converts the specified {@link String} path into a resource {@link String} path
-     *
-     * @param path the path
-     * @return the string
-     */
-    public static String getString(String path) {
-
-        URI uri = getURI(path);
-
-        if(uri == null) {
-            return null;
-        }
-
-        String newPath = uri.getPath();
-
-        if(newPath.charAt(0) == '/') {
-            return newPath.substring(1);
-        }
-
-        return newPath;
     }
 
     /**
@@ -71,11 +56,12 @@ public final class BerylFiles {
     /**
      * Converts the specified {@link String} path into a resource {@link File}
      *
-     * @param path the path
+     * @param filename the path
      * @return the file
      */
-    public static File getFile(String path) {
-        return new File(getString(path));
+    public static File getFile(String filename) {
+        Path path = getPath(filename);
+        return path == null ? null : path.toFile();
     }
 
     /**
@@ -85,8 +71,31 @@ public final class BerylFiles {
      * @return the path
      */
     public static Path getPath(String path) {
+
         URI uri = getURI(path);
-        return uri == null ? null : Paths.get(uri);
+
+        return uri == null ? null : getPath(uri);
+    }
+
+    private static Path getPath(URI uri) {
+
+        Path path;
+
+        if(uri.getScheme().contains("jar")) {
+
+            String[] uriParts = uri.toString().split("!");
+
+            if(jarFileSystem == null) {
+                jarFileSystem = new BerylJarFileSystem(uriParts[0]);
+            }
+
+            path = jarFileSystem.getPath(uriParts[1]);
+
+        } else {
+            path = Paths.get(uri);
+        }
+
+        return path;
     }
 
     /**
@@ -95,7 +104,7 @@ public final class BerylFiles {
      * @param path the path
      * @return the stream
      */
-    public static InputStream getStream(String path) {
+    public static InputStream getInputStream(String path) {
         return BerylFiles.class.getResourceAsStream(normalize(path));
     }
 
@@ -104,4 +113,39 @@ public final class BerylFiles {
     }
 
     private BerylFiles() {}
+
+    private static class BerylJarFileSystem extends ManagedResource {
+
+        private final FileSystem fileSystem;
+
+        public BerylJarFileSystem(String root) {
+            fileSystem = createFileSystem(root);
+        }
+
+        public Path getPath(String first, String... others) {
+            return fileSystem.getPath(first, others).toAbsolutePath();
+        }
+
+        @Override
+        protected void free() {
+            try {
+                fileSystem.close();
+            } catch (IOException e) {
+                Log.error("Failed to close file system " + fileSystem, e);
+            }
+        }
+
+        private FileSystem createFileSystem(String root) {
+            FileSystem fileSystem = null;
+            try {
+                Map<String, String> environment = new HashMap<>();
+                environment.put("create", "true");
+                environment.put("encoding", "UTF-8");
+                fileSystem = FileSystems.newFileSystem(URI.create(root), environment, ClassLoader.getSystemClassLoader());
+            } catch (Exception e) {
+                Log.error("Failed to create JAR FileSystem", e);
+            }
+            return fileSystem;
+        }
+    }
 }

@@ -65,7 +65,7 @@ public class StressTest extends BerylApplication {
             createEntity(scene, rand, cubeMesh, i);
         }
 
-        scene.environment().skybox(SkyboxFactory.newSkybox(BerylFiles.getString("textures/skybox/day")));
+        scene.environment().skybox(SkyboxFactory.newSkybox(BerylFiles.getPath("textures/skybox/day")));
 
         scene.environment().lighting().directionalLight(new DirectionalLight().direction(0, 0, -1));
 

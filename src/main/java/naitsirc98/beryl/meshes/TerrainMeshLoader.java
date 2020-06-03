@@ -5,6 +5,7 @@ import naitsirc98.beryl.images.ImageFactory;
 import naitsirc98.beryl.images.PixelFormat;
 
 import java.nio.ByteBuffer;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -34,11 +35,11 @@ public final class TerrainMeshLoader {
         cache = new HashMap<>();
     }
 
-    public TerrainMesh load(String name, String heightMapPath, float size) {
+    public TerrainMesh load(String name, Path heightMapPath, float size) {
         return load(name, heightMapPath, size, DEFAULT_MIN_HEIGHT, DEFAULT_MAX_HEIGHT);
     }
 
-    public TerrainMesh load(String name, String heightMapPath, float size, float minY, float maxY) {
+    public TerrainMesh load(String name, Path heightMapPath, float size, float minY, float maxY) {
 
         if(cache.containsKey(name)) {
             TerrainMesh mesh = cache.get(name);

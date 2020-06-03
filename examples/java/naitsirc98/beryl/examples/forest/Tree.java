@@ -111,8 +111,8 @@ public class Tree {
         }));
     }
 
-    private static String getTexturePath(String textureName) {
-        return BerylFiles.getString("textures/tree/"+textureName);
+    private static Path getTexturePath(String textureName) {
+        return BerylFiles.getPath("textures/tree/"+textureName);
     }
 
     public static class TreeRandomBouncing extends UpdateBehaviour {

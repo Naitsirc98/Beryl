@@ -56,7 +56,7 @@ public class Helicopter {
 
         AudioPlayer audio = helicopter.add(AudioPlayer.class);
 
-        audio.clip(AudioClip.get("helicopter", params -> params.audioFile(BerylFiles.getString("audio/helicopter.ogg"))));
+        audio.clip(AudioClip.get("helicopter", params -> params.audioFile(BerylFiles.getPath("audio/helicopter.ogg"))));
 
         audio.source()
                 .position(transform.position())

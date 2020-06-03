@@ -57,6 +57,8 @@ public class GLSkyboxPBRTextureFactory extends ManagedResource implements Skybox
     public static final String EQUIRECTANGULAR_MAP_UNIFORM_NAME = "u_EquirectangularMap";
     public static final String PROJECTION_VIEW_MATRIX_UNIFORM_NAME = "u_ProjectionViewMatrix";
 
+    private static final boolean HDR_TEXTURE_FLIP_Y = true;
+
 
     private final GLContext context;
     // Framebuffer
@@ -102,15 +104,15 @@ public class GLSkyboxPBRTextureFactory extends ManagedResource implements Skybox
     }
 
     @Override
-    public Cubemap createEnvironmentMap(String hdrTexturePath, int size) {
+    public Cubemap createEnvironmentMap(Path hdrTexturePath, int size, PixelFormat pixelFormat) {
 
-        GLTexture2D hdrTexture = (GLTexture2D) GraphicsFactory.get().newTexture2DFloat(hdrTexturePath, PixelFormat.RGB16F);
+        Texture2D hdrTexture = GraphicsFactory.get().newTexture2D(hdrTexturePath, pixelFormat, HDR_TEXTURE_FLIP_Y);
 
         SkyboxHelper.setSkyboxTextureSamplerParameters(hdrTexture);
 
         GLCubemap environmentTexture = createNewEnvironmentTexture(size);
 
-        bakeEnvironmentMap(hdrTexture, environmentTexture, size);
+        bakeEnvironmentMap((GLTexture2D) hdrTexture, environmentTexture, size);
 
         return environmentTexture;
     }

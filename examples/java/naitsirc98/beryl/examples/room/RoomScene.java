@@ -40,7 +40,7 @@ public class RoomScene extends BerylApplication {
 
         SceneEnvironment environment = scene.environment();
 
-        environment.skybox(SkyboxFactory.newSkybox(BerylFiles.getString("textures/skybox/day")));
+        environment.skybox(SkyboxFactory.newSkybox(BerylFiles.getPath("textures/skybox/day")));
 
         environment.lighting().directionalLight(new DirectionalLight()
                 .direction(-3.673E-1f, -3.019E-1f, -8.797E-1f)

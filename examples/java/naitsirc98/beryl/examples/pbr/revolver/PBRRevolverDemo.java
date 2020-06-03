@@ -20,7 +20,7 @@ public class PBRRevolverDemo extends PBRDemo {
 
         SceneEnvironment environment = scene.environment();
 
-        Skybox skybox = SkyboxFactory.newSkyboxHDR(BerylFiles.getString("textures/skybox/hdr/sunrise_beach_2k.hdr"));
+        Skybox skybox = SkyboxFactory.newSkyboxHDR(BerylFiles.getPath("textures/skybox/hdr/sunrise_beach_2k.hdr"));
 
         environment.skybox(skybox);
     }

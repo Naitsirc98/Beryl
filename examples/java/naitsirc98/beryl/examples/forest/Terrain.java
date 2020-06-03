@@ -14,11 +14,13 @@ import naitsirc98.beryl.scenes.Scene;
 import naitsirc98.beryl.scenes.components.math.Transform;
 import naitsirc98.beryl.scenes.components.meshes.StaticMeshInstance;
 
+import java.nio.file.Path;
+
 public class Terrain {
 
     public static final float TERRAIN_SIZE = 800;
 
-    public static final String TERRAIN_HEIGHTMAP = BerylFiles.getString("textures/terrain_heightmap.png");
+    public static final Path TERRAIN_HEIGHTMAP = BerylFiles.getPath("textures/terrain_heightmap.png");
 
     public static TerrainMesh getTerrainMesh() {
         return TerrainMeshLoader.get().load("Terrain", TERRAIN_HEIGHTMAP, TERRAIN_SIZE);
@@ -40,7 +42,7 @@ public class Terrain {
         return PhongMaterial.getFactory().getMaterial("Terrain", material -> {
 
             Texture2D colorMap = GraphicsFactory.get()
-                    .newTexture2D(BerylFiles.getString("textures/terrain_grass.jpg"), PixelFormat.SRGBA);
+                    .newTexture2D(BerylFiles.getPath("textures/terrain_grass.jpg"), PixelFormat.SRGBA);
 
             colorMap.setQuality(Texture.Quality.HIGH);
 
