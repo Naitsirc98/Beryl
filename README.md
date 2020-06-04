@@ -26,7 +26,7 @@ Beryl is a framework purely written in Java to develop high performance graphics
 The main purpose of this project is to demonstrate the potential of the Java platform in making this kind of applications.
 
 I have designed Beryl to run 3D desktop games and simulations, focusing on readability and performance, taking advantage of new hardware capabilities.
-One of the goals is the support of multiple graphics APIs, especially [Vulkan](https://www.khronos.org/vulkan/).
+One of the goals is the future support of multiple graphics APIs, especially [Vulkan](https://www.khronos.org/vulkan/).
 
 To achieve this, I worked with modern OpenGL techniques, following the AZDO philosophy ([Approaching Zero Drive Overhead](https://www.slideshare.net/CassEveritt/approaching-zero-driver-overhead)), that is,
 reducing the driver's work as much as possible, while putting much more responsibility on the application code. In other words, using OpenGL like Vulkan.
@@ -39,10 +39,10 @@ Beryl supports the following features for now:
 - Cascaded shadow maps (only directional lights)
 - Terrain generation with heightmaps
 - Water
- - 3D sound
+- 3D sound
 - Dynamic skybox (HDR or traditional 6-image sets)
--  Fog
--  3D model loading
+- Fog
+- 3D model loading
 - Blinn-Phong
 - PBR metallic-roughness workflow
 - Customizable configuration settings
@@ -187,7 +187,7 @@ For example, lets make a simple example of a cube rotating each frame, a directi
         Entity cube = scene.newEntity("The Cube");
         
         // Add a Transform. It defines the position, scale and rotation of an object in the scene.
-        // A Transform is necessary in visible objects, but not in invisible objects, like in game controllers for example.
+        // A Transform is necessary in visible objects, but not in invisible ones, like in game controllers for example.
         // Lets set this cube at position (0, 0, 0) and scale it by 2.
         cube.add(Transform.class).position(0, 0, 0).scale(2.0f);
         
