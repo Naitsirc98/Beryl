@@ -22,14 +22,19 @@ A Java Framework for building real time graphics applications. This is my final 
 
 ## Introduction
 
-Beryl is a framework purely written in Java to develop high performance graphics applications.
-The main purpose of this project is to demonstrate the potential of the Java platform in making this kind of applications.
+Beryl is a framework purely written in Java to develop high performance graphics applications. It is designed to run 3D desktop games and simulations, but maybe I add mobile and web support in the future.
 
-I have designed Beryl to run 3D desktop games and simulations, focusing on readability and performance, taking advantage of new hardware capabilities.
-One of the goals is the future support of multiple graphics APIs, especially [Vulkan](https://www.khronos.org/vulkan/).
+I have been learning a lot of things about graphics programming during this project, implementing features as I was learning them. My main motivations to create Beryl was:
 
-To achieve this, I worked with modern OpenGL techniques, following the AZDO philosophy ([Approaching Zero Drive Overhead](https://www.slideshare.net/CassEveritt/approaching-zero-driver-overhead)), that is,
-reducing the driver's work as much as possible, while putting much more responsibility on the application code. In other words, using OpenGL like Vulkan.
+- The fact that Java has a huge potential to create this kind of programs. Despite it is generally slower than C/C++, it can equal their performance or even beat them in some situations. Plus, Java is multiplatform and is an easier language to work with, because the programmer does not have to deal with manual memory management, for example.
+- The research of 3D batch-rendering techniques to improve performance.
+- Use concurrency to update scenes and generating rendering commands in multiple threads.
+- Make it easy and straightforward to develop with.
+- Design Beryl to support multiple graphics APIs in the future, especially [Vulkan](https://www.khronos.org/vulkan/).
+
+To achieve this, I worked with modern OpenGL techniques, following the AZDO philosophy ([Approaching Zero Drive Overhead](https://www.slideshare.net/CassEveritt/approaching-zero-driver-overhead)), that is, reducing the driver's work as much as possible, while putting much more responsibility on the application code. In other words, using OpenGL like Vulkan.
+
+Beryl uses [LWJGL3](https://www.lwjgl.org) as its backend, a great library that offers Java bindings to C libraries (like OpenGL, GLFW or Vulkan) and allows easy off-heap memory management.
 
 ## Features
 
